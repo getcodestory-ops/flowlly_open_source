@@ -79,7 +79,7 @@ function FileHandler({
       );
     };
     fetchFolderLists();
-  }, [userId, fetchFolderContents, refreshToken]);
+  }, [userId, fetchFolderContents, refreshToken, setFolderList]);
 
   useEffect(() => {
     if (!folderList) return;
