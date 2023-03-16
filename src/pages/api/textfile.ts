@@ -1,22 +1,26 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import formidable from "formidable";
+import FormData from "form-data";
 
 const Handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
-    const chatInput = req.query.chatInput;
-    const selectedContext = req.query.selectedContext;
 
     if (!token) {
       res.status(300).json({ message: "Not a valid token" });
     }
 
+    const folderName = req.query.folderName;
+    console.log(req.body);
+
     const response = await fetch(
-      `http://3.145.17.29:8443/context?question=${chatInput}&spacename=${selectedContext}`,
+      `http://3.145.17.29:8443/text?folderName=${folderName}`,
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        body: req.body,
       }
     );
 

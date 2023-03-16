@@ -138,103 +138,103 @@ function FileHandler({
       console.log("nopes");
     }
     if (selectedFile) {
-      const { data, error } = await supabase.storage
-        .from(`/users/${userId}/${folderName}`)
-        .upload(selectedFile.name, selectedFile);
-      if (error) {
-        console.log(error);
-        toast({
-          title: "Error uploading file",
-          description: error.message,
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          position: "top-right",
-        });
-      } else {
-        setPdfList((prevPdfList) => {
-          // Find the item with the matching name and update its fileList
-          const updatedItem = prevPdfList?.find(
-            (item) => item.name === folderName
-          );
-          if (
-            updatedItem &&
-            !updatedItem.fileList?.includes(selectedFile.name)
-          ) {
-            updatedItem.fileList = [
-              ...(updatedItem.fileList || []),
-              selectedFile.name,
-            ];
-          }
-          // Return the updated pdfList
-          return prevPdfList;
-        });
+      // const { data, error } = await supabase.storage
+      //   .from(`/users/${userId}/${folderName}`)
+      //   .upload(selectedFile.name, selectedFile);
+      // if (error) {
+      //   console.log(error);
+      //   toast({
+      //     title: "Error uploading file",
+      //     description: error.message,
+      //     status: "error",
+      //     duration: 5000,
+      //     isClosable: true,
+      //     position: "top-right",
+      //   });
+      // } else {
+      //   setPdfList((prevPdfList) => {
+      //     // Find the item with the matching name and update its fileList
+      //     const updatedItem = prevPdfList?.find(
+      //       (item) => item.name === folderName
+      //     );
+      //     if (
+      //       updatedItem &&
+      //       !updatedItem.fileList?.includes(selectedFile.name)
+      //     ) {
+      //       updatedItem.fileList = [
+      //         ...(updatedItem.fileList || []),
+      //         selectedFile.name,
+      //       ];
+      //     }
+      //     // Return the updated pdfList
+      //     return prevPdfList;
+      //   });
 
-        toast({
-          title: "File uploaded successfully",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-          position: "top-right",
-        });
-        const formData = new FormData();
-        formData.append("file", selectedFile);
+      toast({
+        title: "File uploaded successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+      const formData = new FormData();
+      formData.append("file", selectedFile);
 
-        const toastId = toast({
-          title: "File processing started !",
-          status: "loading",
-          duration: null,
-          isClosable: true,
-          position: "top-right",
-        });
+      const toastId = toast({
+        title: "File processing started !",
+        status: "loading",
+        duration: null,
+        isClosable: true,
+        position: "top-right",
+      });
 
-        fetch(`https://3.145.17.29:8443/text?folderName=${folderName}`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${sessionToken.access_token}`,
-          },
-          body: formData,
-        })
-          .then((response) => {
-            toast.close(toastId);
-            if (!response.ok) {
-              toast({
-                title: "Network response was not ok",
-                status: "error",
-                duration: 3000,
-                isClosable: true,
-                position: "top-right",
-              });
-              throw new Error("Network response was not ok");
-            }
-            return response.json();
-          })
-          .then((data) => {
-            console.log("Success:", data);
+      fetch(`api/textfile?folderName=${folderName}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${sessionToken.access_token}`,
+        },
+        body: formData,
+      })
+        .then((response) => {
+          toast.close(toastId);
+          if (!response.ok) {
             toast({
-              title: "File data processed !",
-              status: "success",
-              duration: 3000,
-              isClosable: true,
-              position: "top-right",
-            });
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-            toast({
-              title:
-                "There was an error in processing the file please try again!",
+              title: "Network response was not ok",
               status: "error",
               duration: 3000,
               isClosable: true,
               position: "top-right",
             });
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Success:", data);
+          toast({
+            title: "File data processed !",
+            status: "success",
+            duration: 3000,
+            isClosable: true,
+            position: "top-right",
           });
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          toast({
+            title:
+              "There was an error in processing the file please try again!",
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+            position: "top-right",
+          });
+        });
 
-        setSelectedFile(null);
-      }
+      setSelectedFile(null);
     }
   };
+  // };
 
   //ui
   return (
