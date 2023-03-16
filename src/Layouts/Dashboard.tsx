@@ -109,7 +109,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
 
     try {
       const response = await fetch(
-        `https://3.145.17.29:8443/context?question=${chatInput}&spacename=${selectedContext}`,
+        `/api/context?chatInput=${chatInput}&selectedContext=${selectedContext}`,
         {
           method: "POST",
           headers: {
