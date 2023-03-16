@@ -23,30 +23,33 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const toast = useToast();
 
-  const handleSignup = async () => {
-    console.log(email);
-    console.log(password);
-    try {
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error) {
-        throw error;
-      }
-      toast({
-        title: "Signup successful",
-        status: "success",
-        isClosable: true,
-      });
-      router.push("/dashboard");
-    } catch (error) {
-      toast({
-        title: "Signup failed",
-        description: "error",
-        status: "error",
-        isClosable: true,
-      });
-    }
-  };
+  // const handleSignup = async () => {
+  //   console.log(email);
+  //   console.log(password);
+  //   try {
+  //     const { data, error } = await supabase.auth.signUp({ email, password });
+  //     if (error) {
+  //       throw error;
+  //     }
+  //     toast({
+  //       title: "Signup successful",
+  //       status: "success",
+  //       isClosable: true,
+  //     });
+  //     router.push("/dashboard");
+  //   } catch (error) {
+  //     toast({
+  //       title: "Signup failed",
+  //       description: "error",
+  //       status: "error",
+  //       isClosable: true,
+  //     });
+  //   }
+  // };
 
+  const handleSignup = async () => {
+    console.log("hello not authorized");
+  };
   return (
     <Box p="4" mx="auto" w={{ base: "100%", md: "40%" }}>
       <Stack spacing="4">
