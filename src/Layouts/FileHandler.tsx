@@ -188,7 +188,7 @@ function FileHandler({
           position: "top-right",
         });
 
-        fetch(`http://3.145.17.29:8000/text?folderName=${folderName}`, {
+        fetch(`https://3.145.17.29:8443/text?folderName=${folderName}`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${sessionToken.access_token}`,
