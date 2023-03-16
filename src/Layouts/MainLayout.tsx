@@ -52,7 +52,7 @@ export default function MainLayout() {
       <Center
         p="2"
         width="full"
-        bgGradient="radial(gray.600 0%, gray.800 100%)"
+        bgGradient="radial(gray.100 0%, gray.300 100%)"
       >
         <Box p={6} borderRadius={8} width="full">
           <Heading
@@ -61,9 +61,9 @@ export default function MainLayout() {
             textAlign="center"
             fontWeight="bold"
             letterSpacing="tight"
-            color="white"
+            color="yellow.600"
           >
-            Construction Documents made EASY
+            future of documentation
           </Heading>
         </Box>
       </Center>

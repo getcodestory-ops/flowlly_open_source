@@ -18,7 +18,7 @@ const UserPanel = () => {
   useEffect(() => {
     async function getAndSetUser() {
       const session = await supabase.auth.getSession();
-      console.log(session.data.session?.user);
+      //console.log(session.data.session?.user.id);
 
       setUser(session.data.session?.user ?? null);
 
@@ -42,13 +42,14 @@ const UserPanel = () => {
       {user && (
         <Menu>
           <MenuButton
-            as={Avatar}
-            bg="gray.400"
-            color="blackAlpha.700"
+            bg="none"
+            color="blackAlpha.300"
             display="flex"
             justifyContent="center"
             cursor={"pointer"}
-          />
+          >
+            <Avatar name={user.email} bg={"blackAlpha.300"} />
+          </MenuButton>
           <MenuList>
             <MenuItem>{user.email}</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>

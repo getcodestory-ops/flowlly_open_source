@@ -2,38 +2,37 @@ import { useState, useEffect, useRef } from "react";
 import {
   Box,
   Button,
-  Center,
   Flex,
-  Heading,
   IconButton,
-  Input,
   InputGroup,
   InputRightElement,
   Stack,
-  Text,
   useToast,
   useColorModeValue,
   Textarea,
-  border,
-  AccordionIcon,
-  AccordionPanel,
-  AccordionButton,
-  Accordion,
-  AccordionItem,
-  Icon,
-  Slide,
-  Link,
+  Select,
   useDisclosure,
 } from "@chakra-ui/react";
-import { FaBars, FaUpload, FaTimes, FaPlus } from "react-icons/fa";
+import {
+  FaBars,
+  FaUpload,
+  FaTimes,
+  FaPlus,
+  FaPlug,
+  FaRegPaperPlane,
+  FaFile,
+  FaFolder,
+  FaFolderOpen,
+  FaChevronRight,
+  FaBrain,
+} from "react-icons/fa";
 import { AiOutlineClose } from "react-icons/ai";
 import { createClient } from "@supabase/supabase-js";
-import { FaRegPaperPlane } from "react-icons/fa";
-import { FaFile, FaFolder, FaFolderOpen, FaChevronRight } from "react-icons/fa";
 import ContextDisplay from "@/components/ContextDisplay";
 import { Session } from "@supabase/supabase-js";
 import UserPanel from "@/components/UserPanel";
-import PdfLoader from "@/components/PdfLoader";
+import CodeLoader from "@/components/CodeLoader";
+import FileHandler from "./FileHandler";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
@@ -62,7 +61,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [pdfList, setPdfList] = useState<string[]>([]);
+
   const chatBoxRef = useRef<HTMLDivElement>(null);
   const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(true);
   const [isPdfVisible, setPdfVisibility] = useState<Boolean>(false);
@@ -71,6 +70,8 @@ export default function Dashboard({ sessionToken }: SessionToken) {
   const [highlightDetails, setHighlightDetails] =
     useState<HighLightInterface | null>(null);
   const [isFileUploadDialogOpen, setIsFileUploadDialogOpen] = useState(false);
+  const [selectedContext, setSelectedContext] = useState("slack-conversations");
+  const [folderList, setFolderList] = useState<{ name: string }[] | null>(null);
 
   const handleToggleSidePanel = () => {
     setIsSidePanelCollapsed(!isSidePanelCollapsed);
@@ -81,32 +82,13 @@ export default function Dashboard({ sessionToken }: SessionToken) {
   };
   const { isOpen, onToggle } = useDisclosure();
 
-  const fetchPdfList = async () => {
-    const { data: pdfList, error } = await supabase.storage
-      .from("uploads")
-      .list("");
-    if (error) {
-      console.log(error);
-    } else {
-      setPdfList(
-        pdfList
-          .filter((pdf) => pdf.name !== ".emptyFolderPlaceholder")
-          ?.map((pdf) => pdf.name) || []
-      );
-    }
-  };
-
-  useEffect(() => {
-    fetchPdfList();
-  }, []);
-
   useEffect(() => {
     if (chatBoxRef.current) {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [chatMessages]);
 
-  const textColor = useColorModeValue("gray.600", "white");
+  const textColor = useColorModeValue("blackAlpha.600", "white");
 
   const handleMenuToggle = () => {
     setShowMenu(!showMenu);
@@ -127,7 +109,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/context?question=${chatInput}`,
+        `http://3.145.17.29:8000/context?question=${chatInput}&spacename=${selectedContext}`,
         {
           method: "POST",
           headers: {
@@ -165,72 +147,13 @@ export default function Dashboard({ sessionToken }: SessionToken) {
     setChatInput("");
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files && e.target.files[0];
-    setSelectedFile(file || null);
-  };
-
-  const handleFileUpload = async () => {
-    if (selectedFile) {
-      const { data, error } = await supabase.storage
-        .from("uploads")
-        .upload(selectedFile.name, selectedFile);
-      if (error) {
-        console.log(error);
-        toast({
-          title: "Error uploading file",
-          description: error.message,
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          position: "top-right",
-        });
-      } else {
-        console.log(data);
-        setPdfList([...pdfList, selectedFile.name]);
-        toast({
-          title: "File uploaded successfully",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-          position: "top-right",
-        });
-
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-
-        fetch("http://127.0.0.1:8000/pdf", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${sessionToken.access_token}`,
-          },
-          body: formData,
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("Network response was not ok");
-            }
-            return response.json();
-          })
-          .then((data) => {
-            console.log("Success:", data);
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-          });
-
-        setSelectedFile(null);
-      }
-    }
-  };
-
   return (
     <Box>
       <Flex height="100vh">
         {/* Column 1: Sidebar */}
         <Flex
           width="16"
-          bg="gray.100"
+          bg="blackAlpha.100"
           direction="column"
           alignItems="center"
           justifyContent="space-between"
@@ -238,106 +161,58 @@ export default function Dashboard({ sessionToken }: SessionToken) {
           py="6"
           display={{ base: showMenu ? "flex" : "none", md: "flex" }}
         >
-          <Button
-            // transform="translateY(-50%)"
-            zIndex="1"
-            onClick={handleToggleSidePanel}
-            bg="gray.300"
-            color="gray.500"
-            _hover={{ bg: "gray.200", color: "gray.700" }}
-          >
-            {isSidePanelCollapsed ? <FaFolder /> : <FaTimes />}
-          </Button>
-          {/* <IconButton
-          aria-label="Toggle menu"
-          bg="gray.300"
-          icon={showMenu ? <AiOutlineClose /> : <FaBars />}
-          onClick={handleMenuToggle}
-        /> */}
+          <Stack direction="column" spacing={4}>
+            <Button
+              // transform="translateY(-50%)"
+              zIndex="1"
+              onClick={handleToggleSidePanel}
+              bg="blackAlpha.300"
+              color="blackAlpha.500"
+              _hover={{ bg: "blackAlpha.200", color: "blackAlpha.700" }}
+            >
+              {isSidePanelCollapsed ? <FaFolder /> : <FaTimes />}
+            </Button>
+            <Button
+              // transform="translateY(-50%)"
+              zIndex="1"
+              bg="blackAlpha.300"
+              color="blackAlpha.500"
+              _hover={{ bg: "blackAlpha.200", color: "blackAlpha.700" }}
+            >
+              {true ? <FaPlug /> : <FaTimes />}
+            </Button>
+            <Button
+              // transform="translateY(-50%)"
+              zIndex="1"
+              bg="blackAlpha.300"
+              color="blackAlpha.500"
+              _hover={{ bg: "blackAlpha.200", color: "blackAlpha.700" }}
+            >
+              {true ? <FaBrain /> : <FaTimes />}
+            </Button>
+          </Stack>
+
           <Box as="nav" mt="8">
             <UserPanel />
-            {/* <Text fontWeight="bold" mb="4">
-            Sidebar
-          </Text>
-          <Button variant="ghost" mb="2">
-            Link 1
-          </Button>
-          <Button variant="ghost" mb="2">
-            Link 2
-          </Button>
-          <Button variant="ghost" mb="2">
-            Link 3
-          </Button> */}
           </Box>
         </Flex>
-        {/* Column 2: File upload */}
-        {/* {!isSidePanelCollapsed && ( */}
+        {/* column 2 */}
         <Flex
           width={isSidePanelCollapsed ? 0 : 96}
           visibility={isSidePanelCollapsed ? "hidden" : "visible"}
-          bg="gray.100"
+          bg="blackAlpha.100"
           direction="column"
           alignItems="center"
-          justifyContent="end"
+          justifyContent="space-between"
           py="6"
           px=""
           shadow="base"
         >
-          <Accordion
-            allowToggle
-            width="100%"
-            overflowY="scroll"
-            borderColor={"gray.300"}
-          >
-            {[{ name: "Specifications" }].map((folder) => (
-              <AccordionItem key={folder.name}>
-                <h2>
-                  <AccordionButton>
-                    <Flex flex="1" textAlign="left" align-items="center">
-                      <Icon as={FaFolder} mr={4} mt={1} />
-                      {folder.name}
-                    </Flex>
-                    {/* <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={handleAddFolder}
-                      aria-label="Add folder"
-                    >
-                      <Icon as={FaPlus} />
-                    </Button> */}
-
-                    <AccordionIcon />
-                  </AccordionButton>
-                </h2>
-                <AccordionPanel pb={1}>
-                  {pdfList.map((file) => (
-                    <Box key={file} pl="8" py="1" _hover={{ bg: "gray.400" }}>
-                      <Text>{file}</Text>
-                    </Box>
-                  ))}
-                  <Box p="2">
-                    <Stack spacing={4}>
-                      <Box>
-                        <input
-                          id="file-upload"
-                          type="file"
-                          accept="application/pdf"
-                          onChange={handleFileSelect}
-                        />
-                      </Box>
-                      <Button
-                        colorScheme="blackAlpha"
-                        onClick={handleFileUpload}
-                      >
-                        <FaUpload />
-                        <Text ml="2">Upload</Text>
-                      </Button>
-                    </Stack>
-                  </Box>
-                </AccordionPanel>
-              </AccordionItem>
-            ))}
-          </Accordion>
+          <FileHandler
+            sessionToken={sessionToken}
+            folderList={folderList}
+            setFolderList={setFolderList}
+          />
         </Flex>
         {/* )} */}
         {/* Column 3: Chat */}{" "}
@@ -358,7 +233,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                   maxW="full"
                   px="8"
                   py="6"
-                  bg={message.fromUser ? "gray.100" : "white"}
+                  bg={message.fromUser ? "blackAlpha.100" : "white"}
                   justifyContent="center"
                 >
                   <Box width="2xl">
@@ -372,6 +247,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                           setPageNumber={setPageNumber}
                           setFilePath={setFilePath}
                           setHighlightDetails={setHighlightDetails}
+                          selectedContext={selectedContext}
                         />
                         <Box mt={4}></Box>
                       </>
@@ -395,45 +271,44 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                     handleChatSubmit();
                   }
                 }}
-                border="1px solid gray"
+                border="1px solid blackAlpha.400"
+                outlineColor="blackAlpha.300"
                 minH="4rem"
                 h="auto"
                 resize="none"
                 maxH="12rem"
                 height={`${chatInput.length / 40}rem`}
               />
-              <InputRightElement>
-                <IconButton
-                  aria-label="send message"
+
+              <InputRightElement bg="white" border="none">
+                <Select
+                  placeholder="Select context"
+                  value={selectedContext}
                   bg="white"
-                  icon={<FaRegPaperPlane />}
-                  onClick={handleChatSubmit}
-                  size="sm"
-                />
+                  border="none"
+                  onChange={(e) => setSelectedContext(e.target.value)}
+                >
+                  {folderList?.map((option) => (
+                    <option key={option.name} value={option.name}>
+                      {option.name}
+                    </option>
+                  ))}
+                </Select>
               </InputRightElement>
             </InputGroup>
           </Stack>
         </Flex>
         <Flex>
-          {isPdfVisible && (
+          {selectedContext && isPdfVisible && (
             <Box
               width="full"
               flex="1"
               alignItems="start"
               justifyContent="end"
               height="100vh"
-              overflowY="hidden"
-              borderLeft="1px solid gray"
+              borderLeft="1px solid blackAlpha"
               pl={4}
             >
-              {/* <Slide direction="right" in={isOpen}>
-                <IconButton
-                  aria-label="Close"
-                  icon={<FaChevronRight />}
-                  onClick={onToggle}
-                  mb={2}
-                />
-              </Slide> */}
               <IconButton
                 aria-label="Close"
                 icon={<FaChevronRight />}
@@ -441,12 +316,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                 mb={2}
                 ml={-6}
               />
-              <PdfLoader
-                pageNumber={pageNumber}
-                setPageNumber={setPageNumber}
-                filePath={filePath}
-                highlightDetails={highlightDetails}
-              />
+              <CodeLoader filePath={filePath} />
             </Box>
           )}
         </Flex>
