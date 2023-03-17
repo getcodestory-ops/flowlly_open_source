@@ -32,7 +32,7 @@ import ContextDisplay from "@/components/ContextDisplay";
 import { Session } from "@supabase/supabase-js";
 import UserPanel from "@/components/UserPanel";
 import CodeLoader from "@/components/CodeLoader";
-import FileHandler from "./FileHandler";
+import SidePanel from "./SidePanel";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
@@ -54,6 +54,8 @@ interface HighLightInterface {
   chunk_number: number;
 }
 
+type SidePanelType = "fileSystem" | "integrations" | "memory" | null;
+
 export default function Dashboard({ sessionToken }: SessionToken) {
   const toast = useToast();
   const [showMenu, setShowMenu] = useState(false);
@@ -63,7 +65,9 @@ export default function Dashboard({ sessionToken }: SessionToken) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const chatBoxRef = useRef<HTMLDivElement>(null);
-  const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(true);
+  const [sidePanelType, setsidePanelType] = useState<SidePanelType | null>(
+    null
+  );
   const [isPdfVisible, setPdfVisibility] = useState<Boolean>(false);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [filePath, setFilePath] = useState<string>("tunnel.pdf");
@@ -73,8 +77,8 @@ export default function Dashboard({ sessionToken }: SessionToken) {
   const [selectedContext, setSelectedContext] = useState("slack-conversations");
   const [folderList, setFolderList] = useState<{ name: string }[] | null>(null);
 
-  const handleToggleSidePanel = () => {
-    setIsSidePanelCollapsed(!isSidePanelCollapsed);
+  const handleToggleSidePanel = (id: SidePanelType) => {
+    setsidePanelType((state) => (state === id ? null : id));
   };
 
   const handleAddFolder = () => {
@@ -165,30 +169,32 @@ export default function Dashboard({ sessionToken }: SessionToken) {
             <Button
               // transform="translateY(-50%)"
               zIndex="1"
-              onClick={handleToggleSidePanel}
+              onClick={() => handleToggleSidePanel("fileSystem")}
               bg="blackAlpha.300"
               color="blackAlpha.500"
               _hover={{ bg: "blackAlpha.200", color: "blackAlpha.700" }}
             >
-              {isSidePanelCollapsed ? <FaFolder /> : <FaTimes />}
+              {sidePanelType !== "fileSystem" ? <FaFolder /> : <FaTimes />}
             </Button>
             <Button
               // transform="translateY(-50%)"
               zIndex="1"
+              onClick={() => handleToggleSidePanel("integrations")}
               bg="blackAlpha.300"
               color="blackAlpha.500"
               _hover={{ bg: "blackAlpha.200", color: "blackAlpha.700" }}
             >
-              {true ? <FaPlug /> : <FaTimes />}
+              {sidePanelType !== "integrations" ? <FaPlug /> : <FaTimes />}
             </Button>
             <Button
               // transform="translateY(-50%)"
               zIndex="1"
+              onClick={() => handleToggleSidePanel("memory")}
               bg="blackAlpha.300"
               color="blackAlpha.500"
               _hover={{ bg: "blackAlpha.200", color: "blackAlpha.700" }}
             >
-              {true ? <FaBrain /> : <FaTimes />}
+              {sidePanelType !== "memory" ? <FaBrain /> : <FaTimes />}
             </Button>
           </Stack>
 
@@ -197,23 +203,12 @@ export default function Dashboard({ sessionToken }: SessionToken) {
           </Box>
         </Flex>
         {/* column 2 */}
-        <Flex
-          width={isSidePanelCollapsed ? 0 : 96}
-          visibility={isSidePanelCollapsed ? "hidden" : "visible"}
-          bg="blackAlpha.100"
-          direction="column"
-          alignItems="center"
-          justifyContent="space-between"
-          py="6"
-          px=""
-          shadow="base"
-        >
-          <FileHandler
-            sessionToken={sessionToken}
-            folderList={folderList}
-            setFolderList={setFolderList}
-          />
-        </Flex>
+        <SidePanel
+          sidePanelType={sidePanelType}
+          sessionToken={sessionToken}
+          folderList={folderList}
+          setFolderList={setFolderList}
+        />
         {/* )} */}
         {/* Column 3: Chat */}{" "}
         <Flex

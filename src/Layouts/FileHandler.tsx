@@ -13,7 +13,7 @@ import {
   AccordionPanel,
   useToast,
 } from "@chakra-ui/react";
-import { FaUpload, FaFolder, FaPlus } from "react-icons/fa";
+import { FaUpload, FaFolder, FaPlus, FaCheck } from "react-icons/fa";
 import { Session } from "@supabase/supabase-js";
 import supabase from "../utils/supabaseClient";
 import AddFolderMenu from "@/components/AddFolderMenu";
@@ -43,6 +43,9 @@ function FileHandler({
   const [isFolderSubMenuOpen, setIsFolderSubMenuOpen] =
     useState<boolean>(false);
   const [refreshToken, setrefreshToken] = useState(true);
+  const [listFileStatus, setListFileStatus] = useState<{ file_name: string }[]>(
+    []
+  );
 
   useEffect(() => {
     setUserId(sessionToken?.user.id);
@@ -69,17 +72,37 @@ function FileHandler({
     },
     [userId]
   );
+  const fetchFileProcessStatus = useCallback(async () => {
+    if (!userId) return;
+    const { data: fileStatus, error } = await supabase
+      .from("uploadfileTrack")
+      .select(`file_name`)
+      .eq("user_id", userId);
+    if (error) {
+      console.log(error);
+      return [];
+    } else {
+      setListFileStatus(fileStatus);
+    }
+  }, [userId]);
 
   useEffect(() => {
     const fetchFolderLists = async () => {
       const fileList = await fetchFolderContents("");
+      fetchFileProcessStatus();
       //console.log(fileList);
       setFolderList(
         fileList?.map((folderName: string) => ({ name: folderName })) || null
       );
     };
     fetchFolderLists();
-  }, [userId, fetchFolderContents, refreshToken, setFolderList]);
+  }, [
+    userId,
+    fetchFolderContents,
+    refreshToken,
+    setFolderList,
+    fetchFileProcessStatus,
+  ]);
 
   useEffect(() => {
     if (!folderList) return;
@@ -209,8 +232,7 @@ function FileHandler({
             }
             return response.json();
           })
-          .then((data) => {
-            console.log("Success:", data);
+          .then(async (data) => {
             toast({
               title: "File data processed !",
               status: "success",
@@ -218,6 +240,21 @@ function FileHandler({
               isClosable: true,
               position: "top-right",
             });
+
+            const { data: uploadMessage, error } = await supabase
+              .from("uploadfileTrack")
+              .insert({
+                user_id: sessionToken.user.id,
+                file_name: selectedFile.name,
+              });
+
+            if (error) {
+              console.log(error);
+              return error;
+            } else {
+              console.log("file status updated !");
+              return "okay";
+            }
           })
           .catch((error) => {
             console.error("Error:", error);
@@ -282,16 +319,25 @@ function FileHandler({
             <AccordionPanel pb={1}>
               {pdfList
                 ?.filter((folderNames) => folderNames.name === folder.name)[0]
-                ?.fileList?.map((files) => (
-                  <Box
-                    key={files}
-                    pl="8"
-                    py="1"
-                    _hover={{ bg: "blackAlpha.400" }}
-                  >
-                    <Text>{files}</Text>
-                  </Box>
-                ))}
+                ?.fileList?.map((files) => {
+                  const uploadedFile = listFileStatus.find(
+                    (f) => f.file_name === files
+                  );
+                  return (
+                    <Box
+                      key={files}
+                      display="flex"
+                      pl="8"
+                      py="1"
+                      _hover={{ bg: "blackAlpha.400" }}
+                    >
+                      <Text>{files}</Text>
+                      {uploadedFile && (
+                        <Icon as={FaCheck} color="green.500" ml="2" />
+                      )}
+                    </Box>
+                  );
+                })}
               <Box p="2">
                 <Stack spacing={4}>
                   <Box>
