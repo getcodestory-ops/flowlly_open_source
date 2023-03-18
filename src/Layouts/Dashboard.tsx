@@ -92,7 +92,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
     }
   }, [chatMessages]);
 
-  const textColor = useColorModeValue("blackAlpha.600", "white");
+  const textColor = useColorModeValue("blackAlpha.600", "blackAlpha.100");
 
   const handleMenuToggle = () => {
     setShowMenu(!showMenu);
@@ -157,7 +157,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
         {/* Column 1: Sidebar */}
         <Flex
           width="16"
-          bg="blackAlpha.100"
+          bg="blackAlpha.50"
           direction="column"
           alignItems="center"
           justifyContent="space-between"
@@ -216,19 +216,19 @@ export default function Dashboard({ sessionToken }: SessionToken) {
           direction="column"
           alignItems="start"
           justifyContent="end"
+          bg="blackAlpha.100"
         >
           <Box overflowY="scroll" width="full" ref={chatBoxRef}>
             {chatMessages.map((message) => (
               <Box
                 key={`${message?.id}-${message?.message?.slice(0, 5)}`}
                 width="full"
-                shadow="base"
               >
                 <Flex
                   maxW="full"
                   px="8"
                   py="6"
-                  bg={message.fromUser ? "blackAlpha.100" : "white"}
+                  bg={message.fromUser ? "blackAlpha.50" : ""}
                   justifyContent="center"
                 >
                   <Box width="2xl">
@@ -252,7 +252,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
               </Box>
             ))}
           </Box>
-          <Stack spacing={4} pb="4" bg="white" width="2xl" alignSelf={"center"}>
+          <Stack spacing={4} pb="4" width="2xl" alignSelf={"center"}>
             <InputGroup size="lg">
               <Textarea
                 placeholder="Type your questions..."
@@ -275,11 +275,10 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                 height={`${chatInput.length / 40}rem`}
               />
 
-              <InputRightElement bg="white" border="none">
+              <InputRightElement border="none">
                 <Select
                   placeholder="Select context"
                   value={selectedContext}
-                  bg="white"
                   border="none"
                   onChange={(e) => setSelectedContext(e.target.value)}
                 >

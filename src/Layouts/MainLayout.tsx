@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import {
   Box,
@@ -12,12 +12,7 @@ import {
   Heading,
   useToast,
 } from "@chakra-ui/react";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""
-);
+import supabase from "@/utils/supabaseClient";
 
 export default function MainLayout() {
   const router = useRouter();
@@ -26,7 +21,6 @@ export default function MainLayout() {
   const [password, setPassword] = useState("");
 
   const handleLogin = async (email: string, password: string) => {
-    console.log("Normal app");
     const { data: user, error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
@@ -34,7 +28,7 @@ export default function MainLayout() {
     if (error) {
       console.log(error);
       toast({
-        title: "Auth failed",
+        title: "signin to continue ",
         description: error.message,
         status: "error",
         duration: 5000,
@@ -43,9 +37,21 @@ export default function MainLayout() {
       });
       return;
     }
-    console.log(user);
     router.push("/dashboard");
   };
+
+  useEffect(() => {
+    async function loginCheck() {
+      const { data } = await supabase.auth.getSession();
+
+      if (data?.session?.user) {
+        router.replace("/dashboard");
+      } else {
+        console.log("Sign in to continue !");
+      }
+    }
+    loginCheck();
+  }, [router]);
 
   return (
     <Flex>

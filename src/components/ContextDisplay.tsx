@@ -85,12 +85,12 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
                     }
                     color="blue.500"
                     fontWeight="semibold"
-                    fontSize="lg"
+                    fontSize="smaller"
                     _hover={{
                       textDecoration: "underline",
                     }}
                   >
-                    reference - {page.metadata.filename}
+                    <i>{page.metadata.filename}</i>
                   </Link>
                 </Box>
 
@@ -115,9 +115,11 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
         <Flex justifyContent={"center"}>
           <Button
             onClick={() => setNumOfMessagesToShow(5)}
-            colorScheme="blackAlpha"
+            color="blue.500"
+            bg=""
+            size={"sm"}
           >
-            Load More Messages
+            Load more context
           </Button>
         </Flex>
       )}
