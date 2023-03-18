@@ -161,115 +161,119 @@ function FileHandler({
       console.log("nopes");
     }
     if (selectedFile) {
-      const { data, error } = await supabase.storage
-        .from(`/users/${userId}/${folderName}`)
-        .upload(selectedFile.name, selectedFile);
-      if (error) {
-        console.log(error);
-        toast({
-          title: "Error uploading file",
-          description: error.message,
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          position: "top-right",
-        });
-      } else {
-        setPdfList((prevPdfList) => {
-          // Find the item with the matching name and update its fileList
-          const updatedItem = prevPdfList?.find(
-            (item) => item.name === folderName
-          );
-          if (
-            updatedItem &&
-            !updatedItem.fileList?.includes(selectedFile.name)
-          ) {
-            updatedItem.fileList = [
-              ...(updatedItem.fileList || []),
-              selectedFile.name,
-            ];
-          }
-          // Return the updated pdfList
-          return prevPdfList;
-        });
+      const formData = new FormData();
+      formData.append("file", selectedFile);
 
-        toast({
-          title: "File uploaded successfully",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-          position: "top-right",
-        });
-        const formData = new FormData();
-        formData.append("file", selectedFile);
+      const toastId = toast({
+        title: "File processing started !",
+        status: "loading",
+        duration: null,
+        isClosable: true,
+        position: "top-right",
+      });
 
-        const toastId = toast({
-          title: "File processing started !",
-          status: "loading",
-          duration: null,
-          isClosable: true,
-          position: "top-right",
-        });
-
-        fetch(`api/textfile?folderName=${folderName}`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${sessionToken.access_token}`,
-          },
-          body: formData,
-        })
-          .then((response) => {
-            toast.close(toastId);
-            if (!response.ok) {
-              toast({
-                title: "Network response was not ok",
-                status: "error",
-                duration: 3000,
-                isClosable: true,
-                position: "top-right",
-              });
-              throw new Error("Network response was not ok");
-            }
-            return response.json();
-          })
-          .then(async (data) => {
+      fetch(`api/textfile?folderName=${folderName}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${sessionToken.access_token}`,
+        },
+        body: formData,
+      })
+        .then((response) => {
+          toast.close(toastId);
+          if (!response.ok) {
             toast({
-              title: "File data processed !",
-              status: "success",
-              duration: 3000,
-              isClosable: true,
-              position: "top-right",
-            });
-
-            const { data: uploadMessage, error } = await supabase
-              .from("uploadfileTrack")
-              .insert({
-                user_id: sessionToken.user.id,
-                file_name: selectedFile.name,
-              });
-
-            if (error) {
-              console.log(error);
-              return error;
-            } else {
-              console.log("file status updated !");
-              return "okay";
-            }
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-            toast({
-              title:
-                "There was an error in processing the file please try again!",
+              title: "Network response was not ok",
               status: "error",
               duration: 3000,
               isClosable: true,
               position: "top-right",
             });
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then(async (data) => {
+          toast({
+            title: "File data processed !",
+            status: "success",
+            duration: 3000,
+            isClosable: true,
+            position: "top-right",
           });
 
-        setSelectedFile(null);
-      }
+          //uploading file
+          const { data: uploadData, error: uploadError } =
+            await supabase.storage
+              .from(`/users/${userId}/${folderName}`)
+              .upload(selectedFile.name, selectedFile);
+          if (uploadError) {
+            console.log(uploadError);
+            toast({
+              title: "Error uploading file",
+              description: uploadError.message,
+              status: "error",
+              duration: 5000,
+              isClosable: true,
+              position: "top-right",
+            });
+          } else {
+            setPdfList((prevPdfList) => {
+              // Find the item with the matching name and update its fileList
+              const updatedItem = prevPdfList?.find(
+                (item) => item.name === folderName
+              );
+              if (
+                updatedItem &&
+                !updatedItem.fileList?.includes(selectedFile.name)
+              ) {
+                updatedItem.fileList = [
+                  ...(updatedItem.fileList || []),
+                  selectedFile.name,
+                ];
+              }
+              // Return the updated pdfList
+              return prevPdfList;
+            });
+
+            toast({
+              title: "File uploaded successfully",
+              status: "success",
+              duration: 3000,
+              isClosable: true,
+              position: "top-right",
+            });
+          }
+
+          //setting the sucess message
+          const { data: uploadMessage, error } = await supabase
+            .from("uploadfileTrack")
+            .insert({
+              user_id: sessionToken.user.id,
+              file_name: selectedFile.name,
+            });
+
+          if (error) {
+            console.log(error);
+            return error;
+          } else {
+            console.log("file status updated !");
+            return "okay";
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          toast({
+            title:
+              "There was an error in processing the file please try again!",
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+            position: "top-right",
+          });
+        });
+
+      setSelectedFile(null);
     }
   };
 
@@ -282,7 +286,7 @@ function FileHandler({
           onClick={() => setIsFolderSubMenuOpen(true)}
         >
           <FaPlus />
-          <Text ml="2">Add New Folder</Text>
+          <Text ml="2">Add New Group</Text>
         </Button>
         <AddFolderMenu
           isOpen={isFolderSubMenuOpen}

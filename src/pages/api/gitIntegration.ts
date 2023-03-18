@@ -37,7 +37,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const response = await fetch(
-      `http://3.145.17.29:8443/generate_token?installation_id=${installation_id}`,
+      `http://3.145.17.29/generate_token?installation_id=${installation_id}`,
       {
         method: "POST",
         headers: {

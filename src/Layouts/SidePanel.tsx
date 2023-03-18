@@ -30,13 +30,19 @@ function SidePanel({
       px=""
       shadow="base"
     >
-      {sidePanelType === "fileSystem" && (
+      <Flex
+        w="full"
+        visibility={sidePanelType === "fileSystem" ? "visible" : "hidden"}
+        h="100vh"
+        direction="column"
+        alignItems="center"
+      >
         <FileHandler
           sessionToken={sessionToken}
           folderList={folderList}
           setFolderList={setFolderList}
         />
-      )}
+      </Flex>
       {sidePanelType === "integrations" && (
         <Integrationhandler sessionToken={sessionToken} />
       )}

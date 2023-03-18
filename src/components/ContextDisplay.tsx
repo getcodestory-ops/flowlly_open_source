@@ -1,5 +1,5 @@
-import React from "react";
-import { Box, Link, Icon, Flex } from "@chakra-ui/react";
+import React, { useState } from "react";
+import { Box, Link, Icon, Flex, Button } from "@chakra-ui/react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
 import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
@@ -55,10 +55,11 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
       chunk_number: chunk_number,
     });
   };
+  const [numOfMessagesToShow, setNumOfMessagesToShow] = useState<number>(2);
 
   return (
     <div>
-      {documentData.map((page, index) => {
+      {documentData.slice(0, numOfMessagesToShow).map((page, index) => {
         // console.log(page);
         return (
           <div key={`${index}`}>
@@ -109,6 +110,16 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
           </div>
         );
       })}
+      {numOfMessagesToShow === 2 && (
+        <Flex justifyContent={"center"}>
+          <Button
+            onClick={() => setNumOfMessagesToShow(5)}
+            colorScheme="blackAlpha"
+          >
+            Load More Messages
+          </Button>
+        </Flex>
+      )}
     </div>
   );
 };
