@@ -63,13 +63,7 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
         // console.log(page);
         return (
           <div key={`${index}`}>
-            <Box
-              py="16"
-              borderTop={"2px solid gray"}
-              lineHeight="7"
-              textAlign={"justify"}
-              fontFamily="sans"
-            >
+            <Box py="8" lineHeight="7" textAlign={"justify"}>
               {page.metadata.styleType === "code" ? (
                 <SyntaxHighlighter language="javascript">
                   {page.page_content}
@@ -77,34 +71,41 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
               ) : (
                 page.page_content
               )}
-              <Box>
-                <Link
-                  cursor="pointer"
-                  onClick={() =>
-                    handleRefereces(
-                      page.metadata.page_number,
-                      page.metadata.filename,
-                      page.metadata.total_chunks,
-                      page.metadata.chunk_number
-                    )
-                  }
-                  color="blue.500"
-                  fontWeight="semibold"
-                  fontSize="lg"
-                  _hover={{
-                    textDecoration: "underline",
-                  }}
-                >
-                  reference - {page.metadata.filename}
-                </Link>
-              </Box>
-              <Flex direction={"row"}>
-                <Box marginLeft="4" display="flex" alignItems="center">
-                  <Icon as={FaThumbsUp} cursor="pointer" />
+              <Flex justifyContent={"space-between"} mt="2">
+                <Box>
+                  <Link
+                    cursor="pointer"
+                    onClick={() =>
+                      handleRefereces(
+                        page.metadata.page_number,
+                        page.metadata.filename,
+                        page.metadata.total_chunks,
+                        page.metadata.chunk_number
+                      )
+                    }
+                    color="blue.500"
+                    fontWeight="semibold"
+                    fontSize="lg"
+                    _hover={{
+                      textDecoration: "underline",
+                    }}
+                  >
+                    reference - {page.metadata.filename}
+                  </Link>
                 </Box>
-                <Box marginLeft="4" display="flex" alignItems="center">
-                  <Icon as={FaThumbsDown} cursor="pointer" />
-                </Box>
+
+                <Flex direction={"row"}>
+                  <Box marginLeft="4" display="flex" alignItems="center">
+                    <Icon as={FaThumbsUp} cursor="pointer" color={"blue.500"} />
+                  </Box>
+                  <Box marginLeft="4" display="flex" alignItems="center">
+                    <Icon
+                      as={FaThumbsDown}
+                      cursor="pointer"
+                      color={"gray.500"}
+                    />
+                  </Box>
+                </Flex>
               </Flex>
             </Box>
           </div>
