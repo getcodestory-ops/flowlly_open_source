@@ -63,7 +63,7 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
         // console.log(page);
         return (
           <div key={`${index}`}>
-            <Box py="8" lineHeight="7" textAlign={"justify"}>
+            <Box py="8" lineHeight="7">
               {page.metadata.styleType === "code" ? (
                 <SyntaxHighlighter language="javascript">
                   {page.page_content}

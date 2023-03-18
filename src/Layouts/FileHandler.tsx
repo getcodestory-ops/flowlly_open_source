@@ -280,35 +280,35 @@ function FileHandler({
   //ui
   return (
     <>
-      <Stack direction="row" justify="space-between" mb={4}>
-        <Button
-          colorScheme="blackAlpha"
-          onClick={() => setIsFolderSubMenuOpen(true)}
-        >
-          <FaPlus />
-          <Text ml="2">Add New Group</Text>
-        </Button>
-        <AddFolderMenu
-          isOpen={isFolderSubMenuOpen}
-          onClose={() => setIsFolderSubMenuOpen(false)}
-          onCreateFolder={handleCreateFolder}
-        />
-      </Stack>
-      <Accordion
-        allowToggle
-        width="100%"
-        overflowY="scroll"
-        borderColor={"blackAlpha.300"}
-      >
-        {folderList?.map((folder) => (
-          <AccordionItem key={folder.name}>
-            <h2>
-              <AccordionButton>
-                <Flex flex="1" textAlign="left" align-items="center">
-                  <Icon as={FaFolder} mr={4} mt={1} />
-                  {folder.name}
-                </Flex>
-                {/* <Button
+      <>
+        <Stack direction="row" justify="space-between" mb={4}>
+          <Button
+            colorScheme="blackAlpha"
+            onClick={() => setIsFolderSubMenuOpen(true)}
+          >
+            <FaPlus />
+            <Text ml="2" fontSize={"small"}>
+              Add New Group
+            </Text>
+          </Button>
+          <AddFolderMenu
+            isOpen={isFolderSubMenuOpen}
+            onClose={() => setIsFolderSubMenuOpen(false)}
+            onCreateFolder={handleCreateFolder}
+          />
+        </Stack>
+      </>
+      <>
+        <Accordion allowToggle width="100%" overflowY="scroll" mt="4">
+          {folderList?.map((folder) => (
+            <AccordionItem key={folder.name}>
+              <h2>
+                <AccordionButton>
+                  <Flex flex="1" textAlign="left" align-items="center">
+                    <Icon as={FaFolder} mr={4} mt={1} />
+                    {folder.name}
+                  </Flex>
+                  {/* <Button
                       size="sm"
                       variant="ghost"
                       onClick={handleAddFolder}
@@ -317,55 +317,56 @@ function FileHandler({
                       <Icon as={FaPlus} />
                     </Button> */}
 
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={1}>
-              {pdfList
-                ?.filter((folderNames) => folderNames.name === folder.name)[0]
-                ?.fileList?.map((files) => {
-                  const uploadedFile = listFileStatus.find(
-                    (f) => f.file_name === files
-                  );
+                  <AccordionIcon />
+                </AccordionButton>
+              </h2>
+              <AccordionPanel pb={1}>
+                {pdfList
+                  ?.filter((folderNames) => folderNames.name === folder.name)[0]
+                  ?.fileList?.map((files) => {
+                    const uploadedFile = listFileStatus.find(
+                      (f) => f.file_name === files
+                    );
 
-                  return (
-                    <Box
-                      key={files}
-                      display="flex"
-                      pl="8"
-                      py="1"
-                      _hover={{ bg: "blackAlpha.400" }}
-                    >
-                      <Text>{files}</Text>
-                      {uploadedFile && (
-                        <Icon as={FaCheck} color="green.500" ml="2" />
-                      )}
+                    return (
+                      <Box
+                        key={files}
+                        display="flex"
+                        pl="8"
+                        py="1"
+                        _hover={{ bg: "blackAlpha.400" }}
+                      >
+                        <Text>{files}</Text>
+                        {uploadedFile && (
+                          <Icon as={FaCheck} color="green.500" ml="2" />
+                        )}
+                      </Box>
+                    );
+                  })}
+                <Box p="2">
+                  <Stack spacing={4}>
+                    <Box>
+                      <input
+                        id="file-upload"
+                        type="file"
+                        accept=" .txt,.js,.jsx,.ts,.tsx"
+                        onChange={handleFileSelect}
+                      />
                     </Box>
-                  );
-                })}
-              <Box p="2">
-                <Stack spacing={4}>
-                  <Box>
-                    <input
-                      id="file-upload"
-                      type="file"
-                      accept=" .txt,.js,.jsx,.ts,.tsx"
-                      onChange={handleFileSelect}
-                    />
-                  </Box>
-                  <Button
-                    colorScheme="blackAlpha"
-                    onClick={() => handleFileUpload(folder.name)}
-                  >
-                    <FaUpload />
-                    <Text ml="2">Upload</Text>
-                  </Button>
-                </Stack>
-              </Box>
-            </AccordionPanel>
-          </AccordionItem>
-        ))}
-      </Accordion>
+                    <Button
+                      colorScheme="blackAlpha"
+                      onClick={() => handleFileUpload(folder.name)}
+                    >
+                      <FaUpload />
+                      <Text ml="2">Upload</Text>
+                    </Button>
+                  </Stack>
+                </Box>
+              </AccordionPanel>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </>
     </>
   );
 }

@@ -157,7 +157,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
         {/* Column 1: Sidebar */}
         <Flex
           width="16"
-          bg="blackAlpha.50"
+          bg="blackAlpha.200"
           direction="column"
           alignItems="center"
           justifyContent="space-between"
@@ -218,7 +218,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
           justifyContent="end"
           bg="blackAlpha.100"
         >
-          <Box overflowY="scroll" width="full" ref={chatBoxRef}>
+          <Box overflowY="scroll" width="full" ref={chatBoxRef} mb="8">
             {chatMessages.map((message) => (
               <Box
                 key={`${message?.id}-${message?.message?.slice(0, 5)}`}
@@ -266,8 +266,13 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                     handleChatSubmit();
                   }
                 }}
-                border="1px solid blackAlpha.400"
-                outlineColor="blackAlpha.300"
+                border="1px solid"
+                borderColor="blue.400"
+                _hover={{ boderColor: "blue.500" }}
+                _focus={{
+                  outline: "none",
+                  borderColor: "blue.500",
+                }}
                 minH="4rem"
                 h="auto"
                 resize="none"
