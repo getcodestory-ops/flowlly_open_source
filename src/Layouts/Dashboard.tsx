@@ -220,7 +220,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
           <Box overflowY="scroll" width="full" ref={chatBoxRef}>
             {chatMessages.map((message) => (
               <Box
-                key={`${message.id}-${message.message.slice(0, 5)}`}
+                key={`${message?.id}-${message?.message?.slice(0, 5)}`}
                 width="full"
                 shadow="base"
               >

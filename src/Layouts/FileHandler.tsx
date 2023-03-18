@@ -327,6 +327,7 @@ function FileHandler({
                   const uploadedFile = listFileStatus.find(
                     (f) => f.file_name === files
                   );
+
                   return (
                     <Box
                       key={files}

@@ -9,7 +9,7 @@ export const config = {
 
 const handler = (req: NextApiRequest, res: NextApiResponse) => {
   httpProxyMiddleware(req, res, {
-    target: "http://3.145.17.29/",
+    target: "http://3.145.17.29:8443/",
   });
 };
 
