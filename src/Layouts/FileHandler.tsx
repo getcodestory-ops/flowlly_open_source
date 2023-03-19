@@ -195,8 +195,8 @@ function FileHandler({
         })
         .then(async (data) => {
           toast({
-            title: "File data processed !",
-            status: "success",
+            title: "File processing added in backend! ",
+            status: "loading",
             duration: 3000,
             isClosable: true,
             position: "top-right",
@@ -237,7 +237,8 @@ function FileHandler({
             });
 
             toast({
-              title: "File uploaded successfully",
+              title:
+                "File uploaded successfully but data is still processed, check after 5 mins",
               status: "success",
               duration: 3000,
               isClosable: true,
