@@ -12,8 +12,10 @@ import {
   Button,
   AccordionPanel,
   useToast,
+  Spinner,
 } from "@chakra-ui/react";
 import { FaUpload, FaFolder, FaPlus, FaCheck } from "react-icons/fa";
+import { BiRefresh } from "react-icons/bi";
 import { Session } from "@supabase/supabase-js";
 import supabase from "../utils/supabaseClient";
 import AddFolderMenu from "@/components/AddFolderMenu";
@@ -44,7 +46,7 @@ function FileHandler({
     useState<boolean>(false);
   const [refreshToken, setrefreshToken] = useState(true);
   const [listFileStatus, setListFileStatus] = useState<
-    { file_name: string; status?: boolean | null }[]
+    { file_name: string; status?: boolean | null; folder_name?: string }[]
   >([]);
 
   useEffect(() => {
@@ -76,7 +78,7 @@ function FileHandler({
     if (!userId) return;
     const { data: fileStatus, error } = await supabase
       .from("uploadfileTrack")
-      .select("file_name, status")
+      .select("file_name, status, folder_name")
       .eq("user_id", userId);
     if (error) {
       console.log(error);
@@ -213,6 +215,7 @@ function FileHandler({
             await supabase.storage
               .from(`/users/${userId}/${folderName}`)
               .upload(selectedFile.name, selectedFile);
+
           if (uploadError) {
             console.log(uploadError);
             toast({
@@ -332,7 +335,8 @@ function FileHandler({
                   ?.filter((folderNames) => folderNames.name === folder.name)[0]
                   ?.fileList?.map((files) => {
                     const uploadedFile = listFileStatus.find(
-                      (f) => f.file_name === files
+                      (f) =>
+                        f.file_name === files && f.folder_name === folder.name
                     );
 
                     return (
@@ -346,6 +350,16 @@ function FileHandler({
                         <Text>{files}</Text>
                         {uploadedFile?.status && (
                           <Icon as={FaCheck} color="green.500" ml="2" />
+                        )}
+                        {uploadedFile?.status === null && (
+                          <>
+                            <Spinner size="sm" ml="2" mt="1" color="blue.500" />
+                            <Icon
+                              as={BiRefresh}
+                              ml={4}
+                              onClick={fetchFileProcessStatus}
+                            />
+                          </>
                         )}
                       </Box>
                     );
