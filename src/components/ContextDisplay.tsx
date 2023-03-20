@@ -59,58 +59,63 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
 
   return (
     <div>
-      {documentData.slice(0, numOfMessagesToShow).map((page, index) => {
-        // console.log(page);
-        return (
-          <div key={`${index}`}>
-            <Box py="8" lineHeight="7">
-              {page.metadata.styleType === "code" ? (
-                <SyntaxHighlighter language="javascript">
-                  {page.page_content}
-                </SyntaxHighlighter>
-              ) : (
-                page.page_content
-              )}
-              <Flex justifyContent={"space-between"} mt="2">
-                <Box>
-                  <Link
-                    cursor="pointer"
-                    onClick={() =>
-                      handleRefereces(
-                        page.metadata.page_number,
-                        page.metadata.filename,
-                        page.metadata.total_chunks,
-                        page.metadata.chunk_number
-                      )
-                    }
-                    color="blue.500"
-                    fontWeight="semibold"
-                    fontSize="smaller"
-                    _hover={{
-                      textDecoration: "underline",
-                    }}
-                  >
-                    <i>{page.metadata.filename}</i>
-                  </Link>
-                </Box>
-
-                <Flex direction={"row"}>
-                  <Box marginLeft="4" display="flex" alignItems="center">
-                    <Icon as={FaThumbsUp} cursor="pointer" color={"blue.500"} />
-                  </Box>
-                  <Box marginLeft="4" display="flex" alignItems="center">
-                    <Icon
-                      as={FaThumbsDown}
+      {documentData &&
+        documentData.slice(0, numOfMessagesToShow).map((page, index) => {
+          // console.log(page);
+          return (
+            <div key={`${index}`}>
+              <Box py="8" lineHeight="7">
+                {page.metadata.styleType === "code" ? (
+                  <SyntaxHighlighter language="javascript">
+                    {page.page_content}
+                  </SyntaxHighlighter>
+                ) : (
+                  page.page_content
+                )}
+                <Flex justifyContent={"space-between"} mt="2">
+                  <Box>
+                    <Link
                       cursor="pointer"
-                      color={"gray.500"}
-                    />
+                      onClick={() =>
+                        handleRefereces(
+                          page.metadata.page_number,
+                          page.metadata.filename,
+                          page.metadata.total_chunks,
+                          page.metadata.chunk_number
+                        )
+                      }
+                      color="blue.500"
+                      fontWeight="semibold"
+                      fontSize="smaller"
+                      _hover={{
+                        textDecoration: "underline",
+                      }}
+                    >
+                      <i>{page.metadata.filename}</i>
+                    </Link>
                   </Box>
+
+                  <Flex direction={"row"}>
+                    <Box marginLeft="4" display="flex" alignItems="center">
+                      <Icon
+                        as={FaThumbsUp}
+                        cursor="pointer"
+                        color={"blue.500"}
+                      />
+                    </Box>
+                    <Box marginLeft="4" display="flex" alignItems="center">
+                      <Icon
+                        as={FaThumbsDown}
+                        cursor="pointer"
+                        color={"gray.500"}
+                      />
+                    </Box>
+                  </Flex>
                 </Flex>
-              </Flex>
-            </Box>
-          </div>
-        );
-      })}
+              </Box>
+            </div>
+          );
+        })}
       {numOfMessagesToShow === 2 && (
         <Flex justifyContent={"center"}>
           <Button

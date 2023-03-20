@@ -67,9 +67,9 @@ export default function MainLayout() {
             textAlign="center"
             fontWeight="bold"
             letterSpacing="tight"
-            color="yellow.600"
+            color="gray.600"
           >
-            future of documentation
+            Construction documentation
           </Heading>
         </Box>
       </Center>

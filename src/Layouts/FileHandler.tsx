@@ -180,7 +180,7 @@ function FileHandler({
         position: "top-right",
       });
 
-      fetch(`api/textfile?folderName=${folderName}`, {
+      fetch(`api/pdf?folderName=${folderName}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${sessionToken.access_token}`,
@@ -370,7 +370,7 @@ function FileHandler({
                       <input
                         id="file-upload"
                         type="file"
-                        accept=" .txt,.js,.jsx,.ts,.tsx"
+                        accept="application/pdf"
                         onChange={handleFileSelect}
                       />
                     </Box>
