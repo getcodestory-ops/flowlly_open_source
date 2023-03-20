@@ -43,9 +43,9 @@ function FileHandler({
   const [isFolderSubMenuOpen, setIsFolderSubMenuOpen] =
     useState<boolean>(false);
   const [refreshToken, setrefreshToken] = useState(true);
-  const [listFileStatus, setListFileStatus] = useState<{ file_name: string }[]>(
-    []
-  );
+  const [listFileStatus, setListFileStatus] = useState<
+    { file_name: string; status?: boolean | null }[]
+  >([]);
 
   useEffect(() => {
     setUserId(sessionToken?.user.id);
@@ -76,7 +76,7 @@ function FileHandler({
     if (!userId) return;
     const { data: fileStatus, error } = await supabase
       .from("uploadfileTrack")
-      .select(`file_name`)
+      .select("file_name, status")
       .eq("user_id", userId);
     if (error) {
       console.log(error);
@@ -158,7 +158,13 @@ function FileHandler({
 
   const handleFileUpload = async (folderName: string) => {
     if (!selectedFile) {
-      console.log("nopes");
+      toast({
+        title: "Select a file again",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
     }
     if (selectedFile) {
       const formData = new FormData();
@@ -238,7 +244,7 @@ function FileHandler({
 
             toast({
               title:
-                "File uploaded successfully but data is still processed, check after 5 mins",
+                "File uploaded successfully but data is being processed, check after few mins",
               status: "success",
               duration: 3000,
               isClosable: true,
@@ -247,20 +253,20 @@ function FileHandler({
           }
 
           //setting the sucess message
-          const { data: uploadMessage, error } = await supabase
-            .from("uploadfileTrack")
-            .insert({
-              user_id: sessionToken.user.id,
-              file_name: selectedFile.name,
-            });
+          // const { data: uploadMessage, error } = await supabase
+          //   .from("uploadfileTrack")
+          //   .insert({
+          //     user_id: sessionToken.user.id,
+          //     file_name: selectedFile.name,
+          //   });
 
-          if (error) {
-            console.log(error);
-            return error;
-          } else {
-            console.log("file status updated !");
-            return "okay";
-          }
+          // if (error) {
+          //   console.log(error);
+          //   return error;
+          // } else {
+          //   console.log("file status updated !");
+          //   return "okay";
+          // }
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -338,7 +344,7 @@ function FileHandler({
                         _hover={{ bg: "blackAlpha.400" }}
                       >
                         <Text>{files}</Text>
-                        {uploadedFile && (
+                        {uploadedFile?.status && (
                           <Icon as={FaCheck} color="green.500" ml="2" />
                         )}
                       </Box>

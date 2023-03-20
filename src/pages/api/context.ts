@@ -11,7 +11,7 @@ const Handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const response = await fetch(
-      `http://4.236.141.7/context?question=${chatInput}&spacename=${selectedContext}`,
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/context?question=${chatInput}&spacename=${selectedContext}`,
       {
         method: "POST",
         headers: {

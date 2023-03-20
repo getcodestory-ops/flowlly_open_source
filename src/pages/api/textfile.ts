@@ -9,7 +9,7 @@ export const config = {
 
 const handler = (req: NextApiRequest, res: NextApiResponse) => {
   httpProxyMiddleware(req, res, {
-    target: "http://4.236.141.7/",
+    target: process.env.NEXT_PUBLIC_SERVER_URL,
   });
 };
 
