@@ -26,12 +26,11 @@ import {
   FaChevronRight,
   FaBrain,
 } from "react-icons/fa";
-import { AiOutlineClose } from "react-icons/ai";
 import { createClient } from "@supabase/supabase-js";
 import ContextDisplay from "@/components/ContextDisplay";
 import { Session } from "@supabase/supabase-js";
 import UserPanel from "@/components/UserPanel";
-import CodeLoader from "@/components/CodeLoader";
+import PdfLoader from "@/components/PdfLoader";
 import SidePanel from "./SidePanel";
 
 const supabase = createClient(
@@ -315,7 +314,12 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                 mb={2}
                 ml={-6}
               />
-              <CodeLoader filePath={filePath} />
+              <PdfLoader
+                pageNumber={pageNumber}
+                setPageNumber={setPageNumber}
+                filePath={filePath}
+                highlightDetails={highlightDetails}
+              />
             </Box>
           )}
         </Flex>

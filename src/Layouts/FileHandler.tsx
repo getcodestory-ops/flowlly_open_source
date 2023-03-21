@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Flex,
   Box,
@@ -13,6 +13,7 @@ import {
   AccordionPanel,
   useToast,
   Spinner,
+  Progress,
 } from "@chakra-ui/react";
 import { FaUpload, FaFolder, FaPlus, FaCheck } from "react-icons/fa";
 import { BiRefresh } from "react-icons/bi";
@@ -29,6 +30,16 @@ interface SessionToken {
   >;
 }
 
+interface FileUploadStatus {
+  id: number;
+  file_name: string;
+  status?: boolean | null;
+  folder_name?: string;
+  total_size?: number;
+  uploaded_size?: number;
+  unique_id?: string;
+}
+
 function FileHandler({
   sessionToken,
   folderList,
@@ -36,6 +47,7 @@ function FileHandler({
 }: SessionToken) {
   //states
   const toast = useToast();
+  const inputRef = useRef(null);
   const [pdfList, setPdfList] = useState<
     { name: string; fileList: string[] | undefined }[] | null
   >(null);
@@ -45,9 +57,7 @@ function FileHandler({
   const [isFolderSubMenuOpen, setIsFolderSubMenuOpen] =
     useState<boolean>(false);
   const [refreshToken, setrefreshToken] = useState(true);
-  const [listFileStatus, setListFileStatus] = useState<
-    { file_name: string; status?: boolean | null; folder_name?: string }[]
-  >([]);
+  const [listFileStatus, setListFileStatus] = useState<FileUploadStatus[]>([]);
 
   useEffect(() => {
     setUserId(sessionToken?.user.id);
@@ -76,13 +86,16 @@ function FileHandler({
   );
   const fetchFileProcessStatus = useCallback(async () => {
     if (!userId) return;
+
     const { data: fileStatus, error } = await supabase
       .from("uploadfileTrack")
-      .select("file_name, status, folder_name")
+      .select(
+        "id, file_name, status, folder_name, uploaded_size, total_size, unique_id"
+      )
       .eq("user_id", userId);
+
     if (error) {
       console.log(error);
-      return [];
     } else {
       setListFileStatus(fileStatus);
     }
@@ -97,6 +110,7 @@ function FileHandler({
         fileList?.map((folderName: string) => ({ name: folderName })) || null
       );
     };
+
     fetchFolderLists();
   }, [
     userId,
@@ -105,6 +119,36 @@ function FileHandler({
     setFolderList,
     fetchFileProcessStatus,
   ]);
+
+  useEffect(() => {
+    const realtime = supabase
+      .channel("any")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "uploadfileTrack" },
+        (payload: { new: FileUploadStatus }) => {
+          const index = listFileStatus.findIndex(
+            (item) => item.unique_id === payload.new.unique_id
+          );
+          if (index !== -1) {
+            // Update the existing record
+            const newListFileStatus = [...listFileStatus];
+            newListFileStatus[index] = payload.new;
+
+            // Update the state with the new array
+            setListFileStatus(newListFileStatus);
+          } else {
+            setListFileStatus((state) => [...state, payload.new]);
+          }
+          // }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      realtime.unsubscribe();
+    };
+  }, [listFileStatus]);
 
   useEffect(() => {
     if (!folderList) return;
@@ -254,22 +298,6 @@ function FileHandler({
               position: "top-right",
             });
           }
-
-          //setting the sucess message
-          // const { data: uploadMessage, error } = await supabase
-          //   .from("uploadfileTrack")
-          //   .insert({
-          //     user_id: sessionToken.user.id,
-          //     file_name: selectedFile.name,
-          //   });
-
-          // if (error) {
-          //   console.log(error);
-          //   return error;
-          // } else {
-          //   console.log("file status updated !");
-          //   return "okay";
-          // }
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -282,9 +310,11 @@ function FileHandler({
             position: "top-right",
           });
         });
-
-      setSelectedFile(null);
     }
+
+    // if (inputRef.current) {
+    //   inputRef.current = null;
+    // }
   };
 
   //ui
@@ -349,16 +379,31 @@ function FileHandler({
                       >
                         <Text>{files}</Text>
                         {uploadedFile?.status && (
-                          <Icon as={FaCheck} color="green.500" ml="2" />
-                        )}
-                        {uploadedFile?.status === null && (
                           <>
-                            <Spinner size="sm" ml="2" mt="1" color="blue.500" />
-                            <Icon
-                              as={BiRefresh}
-                              ml={4}
-                              onClick={fetchFileProcessStatus}
-                            />
+                            {(
+                              (uploadedFile?.uploaded_size! * 100) /
+                              (uploadedFile?.total_size! ?? 1)
+                            ).toFixed(1) === "100.0" ? (
+                              <Icon as={FaCheck} color="green.500" ml="2" />
+                            ) : (
+                              <>
+                                <Progress
+                                  size="sm"
+                                  color={"blue.100"}
+                                  value={
+                                    (uploadedFile?.uploaded_size! * 100) /
+                                    (uploadedFile?.total_size! ?? 1)
+                                  }
+                                />
+                                <Text ml="4" color="gray.500" fontSize={"xs"}>
+                                  {(
+                                    (uploadedFile?.uploaded_size! * 100) /
+                                    (uploadedFile?.total_size! ?? 1)
+                                  ).toFixed(1)}
+                                  %
+                                </Text>
+                              </>
+                            )}
                           </>
                         )}
                       </Box>
@@ -371,6 +416,7 @@ function FileHandler({
                         id="file-upload"
                         type="file"
                         accept="application/pdf"
+                        ref={inputRef}
                         onChange={handleFileSelect}
                       />
                     </Box>
