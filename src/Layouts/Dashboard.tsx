@@ -112,7 +112,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
 
     try {
       const response = await fetch(
-        `/api/context?chatInput=${chatInput}&selectedContext=${selectedContext}`,
+        `https://fastapi.eastus.cloudapp.azure.com/context?question=${chatInput}&spacename=${selectedContext}`,
         {
           method: "POST",
           headers: {

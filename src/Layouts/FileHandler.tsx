@@ -224,13 +224,16 @@ function FileHandler({
         position: "top-right",
       });
 
-      fetch(`api/pdf?folderName=${folderName}`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${sessionToken.access_token}`,
-        },
-        body: formData,
-      })
+      fetch(
+        `https://fastapi.eastus.cloudapp.azure.com/pdf?folderName=${folderName}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${sessionToken.access_token}`,
+          },
+          body: formData,
+        }
+      )
         .then((response) => {
           toast.close(toastId);
           if (!response.ok) {
