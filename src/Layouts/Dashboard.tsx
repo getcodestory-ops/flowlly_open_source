@@ -73,7 +73,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
   const [highlightDetails, setHighlightDetails] =
     useState<HighLightInterface | null>(null);
   const [isFileUploadDialogOpen, setIsFileUploadDialogOpen] = useState(false);
-  const [selectedContext, setSelectedContext] = useState("slack-conversations");
+  const [selectedContext, setSelectedContext] = useState("null");
   const [folderList, setFolderList] = useState<{ name: string }[] | null>(null);
 
   const handleToggleSidePanel = (id: SidePanelType) => {
@@ -169,9 +169,9 @@ export default function Dashboard({ sessionToken }: SessionToken) {
               // transform="translateY(-50%)"
               zIndex="1"
               onClick={() => handleToggleSidePanel("fileSystem")}
-              bg="blackAlpha.300"
-              color="blackAlpha.500"
-              _hover={{ bg: "blackAlpha.200", color: "blackAlpha.700" }}
+              bg="teal.300"
+              color="teal.500"
+              _hover={{ bg: "teal.200", color: "teal.700" }}
             >
               {sidePanelType !== "fileSystem" ? <FaFolder /> : <FaTimes />}
             </Button>
@@ -179,9 +179,9 @@ export default function Dashboard({ sessionToken }: SessionToken) {
               // transform="translateY(-50%)"
               zIndex="1"
               onClick={() => handleToggleSidePanel("integrations")}
-              bg="blackAlpha.300"
-              color="blackAlpha.500"
-              _hover={{ bg: "blackAlpha.200", color: "blackAlpha.700" }}
+              bg="teal.300"
+              color="teal.500"
+              _hover={{ bg: "teal.200", color: "teal.700" }}
             >
               {sidePanelType !== "integrations" ? <FaPlug /> : <FaTimes />}
             </Button>
@@ -189,9 +189,9 @@ export default function Dashboard({ sessionToken }: SessionToken) {
               // transform="translateY(-50%)"
               zIndex="1"
               onClick={() => handleToggleSidePanel("memory")}
-              bg="blackAlpha.300"
-              color="blackAlpha.500"
-              _hover={{ bg: "blackAlpha.200", color: "blackAlpha.700" }}
+              bg="teal.300"
+              color="teal.500"
+              _hover={{ bg: "teal.200", color: "teal.700" }}
             >
               {sidePanelType !== "memory" ? <FaBrain /> : <FaTimes />}
             </Button>
@@ -266,11 +266,11 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                   }
                 }}
                 border="1px solid"
-                borderColor="blue.400"
-                _hover={{ boderColor: "blue.500" }}
+                borderColor="teal.400"
+                _hover={{ boderColor: "teal.500" }}
                 _focus={{
                   outline: "none",
-                  borderColor: "blue.500",
+                  borderColor: "teal.500",
                 }}
                 minH="4rem"
                 h="auto"
@@ -282,7 +282,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
               <InputRightElement border="none">
                 <Select
                   placeholder="Select context"
-                  value={selectedContext}
+                  value={selectedContext ?? folderList?.[0].name}
                   border="none"
                   onChange={(e) => setSelectedContext(e.target.value)}
                 >

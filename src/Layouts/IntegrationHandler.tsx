@@ -8,7 +8,7 @@ import { Session } from "@supabase/supabase-js";
 const IntegrationHandler = ({ sessionToken }: { sessionToken: Session }) => {
   return (
     <Flex direction="column" justifyContent="end" height="100vh">
-      <Button colorScheme="blackAlpha">Integrate Prolog Soon</Button>
+      <Button colorScheme="teal">Integrate Prolog Soon</Button>
     </Flex>
   );
 };

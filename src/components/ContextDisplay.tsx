@@ -84,7 +84,7 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
                           page.metadata.chunk_number
                         )
                       }
-                      color="blue.500"
+                      color="teal.500"
                       fontWeight="semibold"
                       fontSize="smaller"
                       _hover={{
@@ -100,7 +100,7 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
                       <Icon
                         as={FaThumbsUp}
                         cursor="pointer"
-                        color={"blue.500"}
+                        color={"teal.500"}
                       />
                     </Box>
                     <Box marginLeft="4" display="flex" alignItems="center">
@@ -120,7 +120,7 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
         <Flex justifyContent={"center"}>
           <Button
             onClick={() => setNumOfMessagesToShow(5)}
-            color="blue.500"
+            color="teal.500"
             bg=""
             size={"sm"}
           >

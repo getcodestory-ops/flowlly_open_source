@@ -41,16 +41,16 @@ export default function AddFolderMenu({
           />
         </ModalBody>
         <ModalFooter>
-          <Button onClick={onClose} variant="ghost">
-            Cancel
-          </Button>
           <Button
-            colorScheme="blackAlpha"
+            colorScheme="teal"
             onClick={handleCreateFolder}
             ml={3}
             disabled={!folderName}
           >
             Create
+          </Button>
+          <Button onClick={onClose} variant="ghost">
+            Cancel
           </Button>
         </ModalFooter>
       </ModalContent>

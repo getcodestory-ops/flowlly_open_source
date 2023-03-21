@@ -43,15 +43,18 @@ const UserPanel = () => {
         <Menu>
           <MenuButton
             bg="none"
-            color="blackAlpha.300"
+            color="teal.300"
             display="flex"
             justifyContent="center"
             cursor={"pointer"}
           >
-            <Avatar name={user.email} bg={"blackAlpha.300"} />
+            <Avatar name={user.email} bg={"teal.300"} />
           </MenuButton>
           <MenuList>
             <MenuItem>{user.email}</MenuItem>
+            <MenuItem onClick={() => router.push("/auth/passwordChange")}>
+              Change Password
+            </MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </MenuList>
         </Menu>

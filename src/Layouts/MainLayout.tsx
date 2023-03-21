@@ -95,15 +95,20 @@ export default function MainLayout() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  handleLogin(email, password);
+                }
+              }}
             />
+            <Button
+              colorScheme="gray"
+              onClick={() => handleLogin(email, password)}
+              mt={2}
+            >
+              Login with Email
+            </Button>
           </FormControl>
-          <Button
-            colorScheme="gray"
-            onClick={() => handleLogin(email, password)}
-            mt={2}
-          >
-            Login with Email
-          </Button>
         </Box>
       </Flex>
     </Flex>

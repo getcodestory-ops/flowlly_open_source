@@ -176,7 +176,7 @@ function FileHandler({
         type: "text/plain",
       });
       const { data, error } = await supabase.storage
-        .from(`/users/${userId}/${folderName}`)
+        .from(`users/${userId}/${folderName}`)
         .upload(emptyFile.name, emptyFile);
       if (error) {
         console.log(error);
@@ -326,12 +326,12 @@ function FileHandler({
       <>
         <Stack direction="row" justify="space-between" mb={4}>
           <Button
-            colorScheme="blackAlpha"
+            colorScheme="teal"
             onClick={() => setIsFolderSubMenuOpen(true)}
           >
             <FaPlus />
             <Text ml="2" fontSize={"small"}>
-              Add New Group
+              Add New Folder
             </Text>
           </Button>
           <AddFolderMenu

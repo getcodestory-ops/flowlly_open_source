@@ -82,12 +82,7 @@ function ResetPassword() {
               onChange={(event) => setConfirmPassword(event.target.value)}
             />
           </FormControl>
-          <Button
-            type="submit"
-            colorScheme="yellow"
-            isLoading={isLoading}
-            mt={4}
-          >
+          <Button type="submit" colorScheme="teal" isLoading={isLoading} mt={4}>
             Set Password
           </Button>
         </form>
@@ -98,7 +93,6 @@ function ResetPassword() {
 
 export default function AcceptInvite() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
 
   return <ResetPassword />;
 }
