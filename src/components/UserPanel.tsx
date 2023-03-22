@@ -43,12 +43,12 @@ const UserPanel = () => {
         <Menu>
           <MenuButton
             bg="none"
-            color="teal.300"
+            color="teal.500"
             display="flex"
             justifyContent="center"
             cursor={"pointer"}
           >
-            <Avatar name={user.email} bg={"teal.300"} />
+            <Avatar name={user.email} bg={"teal.500"} />
           </MenuButton>
           <MenuList>
             <MenuItem>{user.email}</MenuItem>

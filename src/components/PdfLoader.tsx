@@ -3,7 +3,8 @@ import { Document, Page, pdfjs } from "react-pdf";
 import supabase from "@/utils/supabaseClient";
 
 import { Box, Button, Flex, IconButton, Text } from "@chakra-ui/react";
-import { FaChevronCircleLeft, FaChevronCircleRight } from "react-icons/fa";
+import { AiOutlineLeft, AiOutlineRight } from "react-icons/ai";
+import { BsArrowBarRight } from "react-icons/bs";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
@@ -54,14 +55,15 @@ const PdfLoader: React.FC<pdfMetaData> = ({
   return (
     <Flex alignItems="center" flexDir="row">
       <IconButton
-        aria-label="send message"
-        bg="white"
-        icon={<FaChevronCircleLeft />}
+        aria-label="move right"
+        color="gray.400"
+        bg="gray.50"
+        icon={<AiOutlineLeft />}
         onClick={() => setPageNumber(Math.max(pageNumber - 1, 1))}
         disabled={pageNumber <= 1}
-        size="xl"
+        fontSize="xl"
         position="absolute"
-        top="100px"
+        top="50%"
         zIndex="10"
       />
 
@@ -91,18 +93,19 @@ const PdfLoader: React.FC<pdfMetaData> = ({
       </Box>
       <IconButton
         position="absolute"
-        top="100px"
-        right="4"
+        top="50%"
         zIndex="10"
+        right="4"
+        color="gray.400"
+        bg="gray.50"
         aria-label="send message"
-        bg="white"
-        icon={<FaChevronCircleRight />}
+        icon={<AiOutlineRight />}
         onClick={() => {
           setPageNumber(Math.min(pageNumber + 1, numPages ?? 1));
           setHighlightVisibility(false);
         }}
         disabled={pageNumber >= (numPages ?? 1)}
-        size="xl"
+        fontSize="xl"
       />
     </Flex>
   );

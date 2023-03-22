@@ -26,6 +26,7 @@ import {
   FaChevronRight,
   FaBrain,
 } from "react-icons/fa";
+import { BsArrowBarRight } from "react-icons/bs";
 import { createClient } from "@supabase/supabase-js";
 import ContextDisplay from "@/components/ContextDisplay";
 import { Session } from "@supabase/supabase-js";
@@ -73,7 +74,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
   const [highlightDetails, setHighlightDetails] =
     useState<HighLightInterface | null>(null);
   const [isFileUploadDialogOpen, setIsFileUploadDialogOpen] = useState(false);
-  const [selectedContext, setSelectedContext] = useState("null");
+  const [selectedContext, setSelectedContext] = useState<string | null>(null);
   const [folderList, setFolderList] = useState<{ name: string }[] | null>(null);
 
   const handleToggleSidePanel = (id: SidePanelType) => {
@@ -169,9 +170,9 @@ export default function Dashboard({ sessionToken }: SessionToken) {
               // transform="translateY(-50%)"
               zIndex="1"
               onClick={() => handleToggleSidePanel("fileSystem")}
-              bg="teal.300"
-              color="teal.500"
-              _hover={{ bg: "teal.200", color: "teal.700" }}
+              bg="teal.500"
+              color="teal.50"
+              _hover={{ bg: "teal.300", color: "teal.700" }}
             >
               {sidePanelType !== "fileSystem" ? <FaFolder /> : <FaTimes />}
             </Button>
@@ -179,9 +180,9 @@ export default function Dashboard({ sessionToken }: SessionToken) {
               // transform="translateY(-50%)"
               zIndex="1"
               onClick={() => handleToggleSidePanel("integrations")}
-              bg="teal.300"
-              color="teal.500"
-              _hover={{ bg: "teal.200", color: "teal.700" }}
+              bg="teal.500"
+              color="teal.50"
+              _hover={{ bg: "teal.300", color: "teal.700" }}
             >
               {sidePanelType !== "integrations" ? <FaPlug /> : <FaTimes />}
             </Button>
@@ -189,9 +190,9 @@ export default function Dashboard({ sessionToken }: SessionToken) {
               // transform="translateY(-50%)"
               zIndex="1"
               onClick={() => handleToggleSidePanel("memory")}
-              bg="teal.300"
-              color="teal.500"
-              _hover={{ bg: "teal.200", color: "teal.700" }}
+              bg="teal.500"
+              color="teal.50"
+              _hover={{ bg: "teal.300", color: "teal.700" }}
             >
               {sidePanelType !== "memory" ? <FaBrain /> : <FaTimes />}
             </Button>
@@ -202,12 +203,18 @@ export default function Dashboard({ sessionToken }: SessionToken) {
           </Box>
         </Flex>
         {/* column 2 */}
-        <SidePanel
-          sidePanelType={sidePanelType}
-          sessionToken={sessionToken}
-          folderList={folderList}
-          setFolderList={setFolderList}
-        />
+        <Flex
+          position={selectedContext && isPdfVisible ? "absolute" : "relative"}
+          ml={selectedContext && isPdfVisible ? "16" : ""}
+          zIndex="10"
+        >
+          <SidePanel
+            sidePanelType={sidePanelType}
+            sessionToken={sessionToken}
+            folderList={folderList}
+            setFolderList={setFolderList}
+          />
+        </Flex>
         {/* )} */}
         {/* Column 3: Chat */}{" "}
         <Flex
@@ -267,10 +274,10 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                 }}
                 border="1px solid"
                 borderColor="teal.400"
-                _hover={{ boderColor: "teal.500" }}
+                _hover={{ boderColor: "teal.300" }}
                 _focus={{
                   outline: "none",
-                  borderColor: "teal.500",
+                  borderColor: "teal.300",
                 }}
                 minH="4rem"
                 h="auto"
@@ -306,13 +313,16 @@ export default function Dashboard({ sessionToken }: SessionToken) {
               height="100vh"
               borderLeft="1px solid blackAlpha"
               pl={4}
+              overflowY="scroll"
             >
               <IconButton
                 aria-label="Close"
-                icon={<FaChevronRight />}
+                icon={<BsArrowBarRight />}
                 onClick={() => setPdfVisibility(false)}
                 mb={2}
                 ml={-6}
+                pl="2"
+                zIndex="overlay"
               />
               <PdfLoader
                 pageNumber={pageNumber}

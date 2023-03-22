@@ -2,6 +2,7 @@ import { Flex, Box } from "@chakra-ui/react";
 import FileHandler from "./FileHandler";
 import Integrationhandler from "./IntegrationHandler";
 import { Session } from "@supabase/supabase-js";
+import MemoryPane from "./MemoryPane";
 
 interface SidePanel {
   sidePanelType: "fileSystem" | "integrations" | "memory" | null;
@@ -25,15 +26,11 @@ function SidePanel({
       bg="blackAlpha.100"
       direction="column"
       alignItems="center"
-      justifyContent="space-between"
-      py="6"
-      px=""
       shadow="base"
     >
       <Flex
         w="full"
-        visibility={sidePanelType === "fileSystem" ? "visible" : "hidden"}
-        h="100vh"
+        display={sidePanelType === "fileSystem" ? "visible" : "none"}
         direction="column"
         alignItems="center"
       >
@@ -45,6 +42,23 @@ function SidePanel({
       </Flex>
       {sidePanelType === "integrations" && (
         <Integrationhandler sessionToken={sessionToken} />
+      )}
+      {sidePanelType === "memory" && (
+        <Flex width="full" height="100vh">
+          <MemoryPane
+            conversations={[
+              {
+                id: 1,
+                title: "Current Conversation",
+                message: [{ id: 1, message: "hello", fromUser: false }],
+              },
+            ]}
+            onNewChatClick={() => console.log("new chat click")}
+            onConversationClick={() => {
+              console.log("this");
+            }}
+          />
+        </Flex>
       )}
     </Flex>
   );

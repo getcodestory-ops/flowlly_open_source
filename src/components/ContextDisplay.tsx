@@ -30,7 +30,7 @@ interface ContextDisplayProps extends DocumentProps {
   setHighlightDetails: React.Dispatch<
     React.SetStateAction<HighLightInterface | null>
   >;
-  selectedContext: string;
+  selectedContext: string | null;
 }
 
 const ContextDisplay: React.FC<ContextDisplayProps> = ({

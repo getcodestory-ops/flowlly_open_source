@@ -12,7 +12,7 @@ import {
   Button,
   AccordionPanel,
   useToast,
-  Spinner,
+  Heading,
   Progress,
 } from "@chakra-ui/react";
 import { FaUpload, FaFolder, FaPlus, FaCheck } from "react-icons/fa";
@@ -322,18 +322,28 @@ function FileHandler({
 
   //ui
   return (
-    <>
+    <Flex direction={"column"} p="4" background="teal.500" height="100vh">
       <>
-        <Stack direction="row" justify="space-between" mb={4}>
-          <Button
-            colorScheme="teal"
-            onClick={() => setIsFolderSubMenuOpen(true)}
-          >
-            <FaPlus />
-            <Text ml="2" fontSize={"small"}>
-              Add New Folder
-            </Text>
-          </Button>
+        <Box marginBottom="4">
+          <Heading as="h2" size="md" color="white">
+            Explorer
+          </Heading>
+        </Box>
+        <Stack direction="row" justify="space-between" mb={2}>
+          <Stack justify="start" width="full">
+            <Button
+              colorScheme="teal"
+              bg="teal.600"
+              size={"sm"}
+              onClick={() => setIsFolderSubMenuOpen(true)}
+              _hover={{ bg: "teal.400" }}
+            >
+              <FaPlus />
+              <Text ml="2" fontSize={"base"}>
+                Add New Folder
+              </Text>
+            </Button>
+          </Stack>
           <AddFolderMenu
             isOpen={isFolderSubMenuOpen}
             onClose={() => setIsFolderSubMenuOpen(false)}
@@ -342,13 +352,19 @@ function FileHandler({
         </Stack>
       </>
       <>
-        <Accordion allowToggle width="100%" overflowY="scroll" mt="4">
+        <Accordion
+          allowToggle
+          width="100%"
+          overflowY="scroll"
+          mt="2"
+          color="white"
+        >
           {folderList?.map((folder) => (
             <AccordionItem key={folder.name}>
               <h2>
                 <AccordionButton>
                   <Flex flex="1" textAlign="left" align-items="center">
-                    <Icon as={FaFolder} mr={4} mt={1} />
+                    <Icon as={FaFolder} mr={4} mt={1} color="white" />
                     {folder.name}
                   </Flex>
                   {/* <Button
@@ -363,7 +379,7 @@ function FileHandler({
                   <AccordionIcon />
                 </AccordionButton>
               </h2>
-              <AccordionPanel pb={1}>
+              <AccordionPanel pb={1} color="white">
                 {pdfList
                   ?.filter((folderNames) => folderNames.name === folder.name)[0]
                   ?.fileList?.map((files) => {
@@ -378,7 +394,7 @@ function FileHandler({
                         display="flex"
                         pl="8"
                         py="1"
-                        _hover={{ bg: "blackAlpha.400" }}
+                        _hover={{ bg: "teal.400" }}
                       >
                         <Text>{files}</Text>
                         {uploadedFile?.status && (
@@ -387,7 +403,12 @@ function FileHandler({
                               (uploadedFile?.uploaded_size! * 100) /
                               (uploadedFile?.total_size! ?? 1)
                             ).toFixed(1) === "100.0" ? (
-                              <Icon as={FaCheck} color="green.500" ml="2" />
+                              <Icon
+                                as={FaCheck}
+                                ml="2"
+                                mt="2"
+                                fontSize={"xs"}
+                              />
                             ) : (
                               <>
                                 <Progress
@@ -398,7 +419,7 @@ function FileHandler({
                                     (uploadedFile?.total_size! ?? 1)
                                   }
                                 />
-                                <Text ml="4" color="gray.500" fontSize={"xs"}>
+                                <Text ml="4" fontSize={"xs"}>
                                   {(
                                     (uploadedFile?.uploaded_size! * 100) /
                                     (uploadedFile?.total_size! ?? 1)
@@ -413,7 +434,13 @@ function FileHandler({
                     );
                   })}
                 <Box p="2">
-                  <Stack spacing={4}>
+                  <Stack
+                    spacing={4}
+                    border="1px"
+                    p="4"
+                    borderRadius={"md"}
+                    borderColor="teal.400"
+                  >
                     <Box>
                       <input
                         id="file-upload"
@@ -424,7 +451,10 @@ function FileHandler({
                       />
                     </Box>
                     <Button
-                      colorScheme="blackAlpha"
+                      colorScheme="teal"
+                      size="sm"
+                      bg="teal.600"
+                      _hover={{ bg: "teal.400" }}
                       onClick={() => handleFileUpload(folder.name)}
                     >
                       <FaUpload />
@@ -437,7 +467,7 @@ function FileHandler({
           ))}
         </Accordion>
       </>
-    </>
+    </Flex>
   );
 }
 
