@@ -50,7 +50,7 @@ const UserPanel = () => {
           >
             <Avatar name={user.email} bg={"teal.500"} />
           </MenuButton>
-          <MenuList>
+          <MenuList zIndex="50">
             <MenuItem>{user.email}</MenuItem>
             <MenuItem onClick={() => router.push("/auth/passwordChange")}>
               Change Password
