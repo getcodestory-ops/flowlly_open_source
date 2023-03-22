@@ -339,6 +339,7 @@ function FileHandler({
               _hover={{ bg: "teal.400" }}
             >
               <FaPlus />
+
               <Text ml="2" fontSize={"base"}>
                 Add New Folder
               </Text>

@@ -7,6 +7,7 @@ import {
   InputGroup,
   InputRightElement,
   Stack,
+  Text,
   useToast,
   useColorModeValue,
   Textarea,
@@ -150,6 +151,10 @@ export default function Dashboard({ sessionToken }: SessionToken) {
 
     setChatInput("");
   };
+  // const handleBlur = (event: React.FocusEvent<HTMLSelectElement>) => {
+  //   event.target.style.outline = "none";
+  //   event.target.style.border = "none";
+  // };
 
   return (
     <Box>
@@ -259,6 +264,37 @@ export default function Dashboard({ sessionToken }: SessionToken) {
             ))}
           </Box>
           <Stack spacing={4} pb="4" width="2xl" alignSelf={"center"}>
+            <Flex justifyContent={"end"} alignItems="center" mb="-4">
+              <Flex
+                justifyContent={"end"}
+                alignItems="center"
+                borderTop="1px"
+                borderLeft="1px"
+                borderRight="1px"
+                borderColor="teal.400"
+                pl="2"
+                borderRadius={"md"}
+                fontSize="xs"
+              >
+                <Text mr="4">Search folder</Text>
+                <Select
+                  placeholder="Select context"
+                  value={selectedContext ?? folderList?.[0].name}
+                  border="none"
+                  width="48"
+                  fontSize={"xs"}
+                  onChange={(e) => setSelectedContext(e.target.value)}
+
+                  // onBlur={handleBlur}
+                >
+                  {folderList?.map((option) => (
+                    <option key={option.name} value={option.name}>
+                      {option.name}
+                    </option>
+                  ))}
+                </Select>
+              </Flex>
+            </Flex>
             <InputGroup size="lg">
               <Textarea
                 placeholder="Type your questions..."
@@ -285,21 +321,6 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                 maxH="12rem"
                 height={`${chatInput.length / 40}rem`}
               />
-
-              <InputRightElement border="none">
-                <Select
-                  placeholder="Select context"
-                  value={selectedContext ?? folderList?.[0].name}
-                  border="none"
-                  onChange={(e) => setSelectedContext(e.target.value)}
-                >
-                  {folderList?.map((option) => (
-                    <option key={option.name} value={option.name}>
-                      {option.name}
-                    </option>
-                  ))}
-                </Select>
-              </InputRightElement>
             </InputGroup>
           </Stack>
         </Flex>

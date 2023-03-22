@@ -77,14 +77,15 @@ const MemoryPane: React.FC<Props> = ({
           <ListItem
             backgroundColor={
               activeConversation?.id === conversation.id
-                ? "teal.700"
-                : undefined
+                ? "teal.600"
+                : "teal.500"
             }
             cursor="pointer"
             key={conversation.id}
             onClick={() => handleConversationClick(conversation)}
-            padding="2"
-            rounded="md"
+            p="2"
+            pl="4"
+            borderY="1px"
             _hover={{
               backgroundColor: "teal.400",
             }}
