@@ -278,7 +278,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
               >
                 <Text mr="4">Search folder</Text>
                 <Select
-                  placeholder="Select context"
+                  placeholder="Search within"
                   value={selectedContext ?? folderList?.[0].name}
                   border="none"
                   width="48"
