@@ -93,6 +93,10 @@ export default function Dashboard({ sessionToken }: SessionToken) {
     }
   }, [chatMessages]);
 
+  useEffect(() => {
+    setSelectedContext(folderList?.[0]?.name ?? "");
+  }, [folderList]);
+
   const textColor = useColorModeValue("blackAlpha.600", "blackAlpha.100");
 
   const handleMenuToggle = () => {
@@ -279,7 +283,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                 <Text mr="4">Search folder</Text>
                 <Select
                   placeholder="Search within"
-                  value={selectedContext ?? folderList?.[0]?.name}
+                  value={selectedContext ?? ""}
                   border="none"
                   width="48"
                   fontSize={"xs"}
