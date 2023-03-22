@@ -279,7 +279,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                 <Text mr="4">Search folder</Text>
                 <Select
                   placeholder="Search within"
-                  value={selectedContext ?? folderList?.[0].name}
+                  value={selectedContext ?? folderList?.[0]?.name}
                   border="none"
                   width="48"
                   fontSize={"xs"}
@@ -288,8 +288,8 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                   // onBlur={handleBlur}
                 >
                   {folderList?.map((option) => (
-                    <option key={option.name} value={option.name}>
-                      {option.name}
+                    <option key={option?.name} value={option?.name}>
+                      {option?.name}
                     </option>
                   ))}
                 </Select>
