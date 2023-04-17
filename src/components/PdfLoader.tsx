@@ -8,8 +8,6 @@ import { BsArrowBarRight } from "react-icons/bs";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
-const bucketName = "uploads";
-const pageNum = 2;
 interface HighLightInterface {
   total_chunks: number;
   chunk_number: number;
@@ -20,6 +18,8 @@ interface pdfMetaData {
   pageNumber: number;
   setPageNumber: React.Dispatch<React.SetStateAction<number>>;
   highlightDetails: HighLightInterface | null;
+  selectedFolder: string;
+  userId: string;
 }
 
 const PdfLoader: React.FC<pdfMetaData> = ({
@@ -27,6 +27,8 @@ const PdfLoader: React.FC<pdfMetaData> = ({
   pageNumber,
   setPageNumber,
   highlightDetails,
+  selectedFolder,
+  userId,
 }) => {
   const [pdfUrl, setPdfUrl] = useState<string | undefined>();
   const [numPages, setNumPages] = useState<number | null>(null);
@@ -34,15 +36,17 @@ const PdfLoader: React.FC<pdfMetaData> = ({
 
   useEffect(() => {
     async function setUrlForPdf() {
+      console.log(userId, selectedFolder);
+      if (!userId && !selectedFolder) return;
       const { data: downloadUrl } = await supabase.storage
-        .from(bucketName)
+        .from(`users/${userId}/${selectedFolder}`)
         .createSignedUrl(filePath, 60);
 
       setPdfUrl(downloadUrl?.signedUrl);
     }
 
     setUrlForPdf();
-  }, [filePath]);
+  }, [filePath, userId, selectedFolder]);
 
   useEffect(() => {
     setHighlightVisibility(true);

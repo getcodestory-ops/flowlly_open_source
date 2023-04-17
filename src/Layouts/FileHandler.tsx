@@ -225,7 +225,7 @@ function FileHandler({
       });
 
       fetch(
-        `https://fastapi.eastus.cloudapp.azure.com/pdf?folderName=${folderName}`,
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/file_process?folderName=${folderName}`,
         {
           method: "POST",
           headers: {
@@ -397,7 +397,9 @@ function FileHandler({
                         py="1"
                         _hover={{ bg: "teal.400" }}
                       >
-                        <Text>{files}</Text>
+                        <Text fontSize="xs" overflowX="scroll">
+                          {files}
+                        </Text>
                         {uploadedFile?.status && (
                           <>
                             {(

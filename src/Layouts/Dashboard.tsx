@@ -13,6 +13,8 @@ import {
   Textarea,
   Select,
   useDisclosure,
+  Spinner,
+  Icon,
 } from "@chakra-ui/react";
 import {
   FaBars,
@@ -34,6 +36,7 @@ import { Session } from "@supabase/supabase-js";
 import UserPanel from "@/components/UserPanel";
 import PdfLoader from "@/components/PdfLoader";
 import SidePanel from "./SidePanel";
+import { BiUserVoice } from "react-icons/bi";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
@@ -43,7 +46,7 @@ const supabase = createClient(
 interface ChatMessage {
   id: number;
   message: any;
-  fromUser: boolean;
+  fromUser: "question" | "context" | "answer";
 }
 
 interface SessionToken {
@@ -75,7 +78,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
   const [highlightDetails, setHighlightDetails] =
     useState<HighLightInterface | null>(null);
   const [isFileUploadDialogOpen, setIsFileUploadDialogOpen] = useState(false);
-  const [selectedContext, setSelectedContext] = useState<string | null>(null);
+  const [selectedContext, setSelectedContext] = useState<string>("");
   const [folderList, setFolderList] = useState<{ name: string }[] | null>(null);
 
   const handleToggleSidePanel = (id: SidePanelType) => {
@@ -111,14 +114,14 @@ export default function Dashboard({ sessionToken }: SessionToken) {
     const newMessage: ChatMessage = {
       id: chatMessages.length + 1,
       message: chatInput,
-      fromUser: true,
+      fromUser: "question",
     };
 
     setChatMessages([...chatMessages, newMessage]);
 
     try {
       const response = await fetch(
-        `https://fastapi.eastus.cloudapp.azure.com/context?question=${chatInput}&spacename=${selectedContext}`,
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/context?question=${chatInput}&spacename=${selectedContext}`,
         {
           method: "POST",
           headers: {
@@ -130,10 +133,41 @@ export default function Dashboard({ sessionToken }: SessionToken) {
       const newContext: ChatMessage = {
         id: chatMessages.length + 3,
         message: context.response,
-        fromUser: false,
+        fromUser: "context",
       };
 
       setChatMessages([...chatMessages, newMessage, newContext]);
+
+      try {
+        let newResponse: ChatMessage = {
+          id: chatMessages.length + 4,
+          message: "loading...",
+          fromUser: "answer",
+        };
+        setChatMessages((state) => [...state, newResponse]);
+        const response = await fetch(`/api/answers?question=${chatInput}`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${sessionToken.access_token}`,
+          },
+          body: context.response[0].page_content,
+        });
+        const answer = await response.json();
+
+        newResponse = {
+          id: chatMessages.length + 4,
+          message: answer.response,
+          fromUser: "answer",
+        };
+        setChatMessages((state) => {
+          const data = state.filter(
+            (response) => response.id !== chatMessages.length + 4
+          );
+          return [...data, newResponse];
+        });
+      } catch (error: any) {
+        console.log(error);
+      }
     } catch (error: any) {
       let description = "";
       if (error instanceof Response) {
@@ -239,17 +273,43 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                 key={`${message?.id}-${message?.message?.slice(0, 5)}`}
                 width="full"
               >
-                <Flex
-                  maxW="full"
-                  px="8"
-                  py="6"
-                  bg={message.fromUser ? "blackAlpha.50" : ""}
-                  justifyContent="center"
-                >
+                <Flex maxW="full" px="8" py="2" justifyContent="center">
                   <Box width="2xl">
-                    {message.fromUser ? (
-                      message.message
-                    ) : (
+                    {message.fromUser === "question" && (
+                      <Flex
+                        color="white"
+                        fontWeight={"bold"}
+                        bg="teal.500"
+                        p="4"
+                        rounded="md"
+                        mt="16"
+                        alignItems={"center"}
+                      >
+                        <Icon as={BiUserVoice} mr="2" boxSize={"6"} />
+                        {message.message}
+                      </Flex>
+                    )}
+                    {message.fromUser === "answer" && (
+                      <Box borderBottom="2px " borderBottomColor={"teal.500"}>
+                        <Box
+                          mb="16"
+                          color="white"
+                          bg="teal.500"
+                          p="4"
+                          rounded="md"
+                        >
+                          {message.message === "loading..." ? (
+                            <div>
+                              <Spinner size="sm" />
+                              If stuck we are throttled by openAI
+                            </div>
+                          ) : (
+                            message.message
+                          )}
+                        </Box>
+                      </Box>
+                    )}
+                    {message.fromUser === "context" && (
                       <>
                         <ContextDisplay
                           documentData={message.message}
@@ -259,7 +319,6 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                           setHighlightDetails={setHighlightDetails}
                           selectedContext={selectedContext}
                         />
-                        <Box mt={4}></Box>
                       </>
                     )}
                   </Box>
@@ -354,6 +413,8 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                 setPageNumber={setPageNumber}
                 filePath={filePath}
                 highlightDetails={highlightDetails}
+                selectedFolder={selectedContext}
+                userId={sessionToken?.user.id}
               />
             </Box>
           )}

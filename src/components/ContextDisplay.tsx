@@ -1,9 +1,16 @@
 import React, { useState } from "react";
-import { Box, Link, Icon, Flex, Button } from "@chakra-ui/react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
-import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { FaThumbsUp, FaThumbsDown } from "react-icons/fa";
+import {
+  Box,
+  Link,
+  Icon,
+  Flex,
+  Button,
+  Text,
+  Grid,
+  GridItem,
+} from "@chakra-ui/react";
+
+import { GiBlackBook } from "react-icons/gi";
 
 interface DocumentProps {
   documentData: {
@@ -30,7 +37,7 @@ interface ContextDisplayProps extends DocumentProps {
   setHighlightDetails: React.Dispatch<
     React.SetStateAction<HighLightInterface | null>
   >;
-  selectedContext: string | null;
+  selectedContext: string;
 }
 
 const ContextDisplay: React.FC<ContextDisplayProps> = ({
@@ -41,47 +48,46 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
   setHighlightDetails,
   selectedContext,
 }) => {
-  const handleRefereces = (
-    pageNumber: number,
-    filePath: string,
-    total_chunks: number,
-    chunk_number: number
-  ) => {
+  const handleRefereces = (filePath: string, pageNumber: number) => {
     setPageNumber(pageNumber);
     setFilePath(filePath);
     setPdfVisibility(true);
-    setHighlightDetails({
-      total_chunks: total_chunks,
-      chunk_number: chunk_number,
-    });
+    // setHighlightDetails({
+    //   total_chunks: total_chunks,
+    //   chunk_number: chunk_number,
+    // });
   };
   const [numOfMessagesToShow, setNumOfMessagesToShow] = useState<number>(2);
+  const [isExpandedNumber, setIsExpandedNumber] = useState<number | null>(null);
 
   return (
     <div>
-      {documentData &&
-        documentData.slice(0, numOfMessagesToShow).map((page, index) => {
+      <Text
+        fontSize={"md"}
+        color="teal.500"
+        fontWeight={"bold"}
+        alignContent={"center"}
+      >
+        <Icon as={GiBlackBook} cursor="pointer" color={"teal.500"} mr="2" />
+        Sources:
+      </Text>
+      <Grid templateColumns={"repeat(2, 1fr)"}>
+        {documentData.slice(0, numOfMessagesToShow).map((page, index) => {
           // console.log(page);
           return (
-            <div key={`${index}`}>
-              <Box py="8" lineHeight="7">
-                {page.metadata.styleType === "code" ? (
-                  <SyntaxHighlighter language="javascript">
-                    {page.page_content}
-                  </SyntaxHighlighter>
-                ) : (
-                  page.page_content
-                )}
-                <Flex justifyContent={"space-between"} mt="2">
+            <GridItem
+              key={`${index}`}
+              colSpan={isExpandedNumber === index ? 2 : 1}
+            >
+              <Box lineHeight="7">
+                <Flex justifyContent={"space-between"}>
                   <Box>
                     <Link
                       cursor="pointer"
                       onClick={() =>
                         handleRefereces(
-                          page.metadata.page_number,
                           page.metadata.filename,
-                          page.metadata.total_chunks,
-                          page.metadata.chunk_number
+                          page.metadata.page_number
                         )
                       }
                       color="teal.500"
@@ -91,31 +97,54 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
                         textDecoration: "underline",
                       }}
                     >
-                      <i>{page.metadata.filename}</i>
+                      {index + 1}.{" "}
+                      <i>
+                        {" "}
+                        {page.metadata.filename} - {page.metadata.page_number}
+                      </i>
                     </Link>
                   </Box>
 
-                  <Flex direction={"row"}>
-                    <Box marginLeft="4" display="flex" alignItems="center">
-                      <Icon
-                        as={FaThumbsUp}
-                        cursor="pointer"
-                        color={"teal.500"}
-                      />
-                    </Box>
-                    <Box marginLeft="4" display="flex" alignItems="center">
-                      <Icon
-                        as={FaThumbsDown}
-                        cursor="pointer"
-                        color={"gray.500"}
-                      />
-                    </Box>
-                  </Flex>
+                  {/* <Flex direction={"row"}>
+                  <Box marginLeft="4" display="flex" alignItems="center">
+                    <Icon as={FaThumbsUp} cursor="pointer" color={"teal.500"} />
+                  </Box>
+                  <Box marginLeft="4" display="flex" alignItems="center">
+                    <Icon
+                      as={FaThumbsDown}
+                      cursor="pointer"
+                      color={"orange.500"}
+                    />
+                  </Box>
+                </Flex> */}
                 </Flex>
+
+                <Text
+                  color="teal.700"
+                  fontSize="small"
+                  maxH={isExpandedNumber === index ? "none" : "4rem"} // set maximum height to 8rem when not expanded
+                  overflow="hidden"
+                  rounded="md"
+                  px="2"
+                  _hover={{ bg: "teal.50" }}
+                  // reveal full text on hover
+                  onClick={() =>
+                    setIsExpandedNumber((state) =>
+                      state === index ? null : index
+                    )
+                  }
+                  cursor="pointer"
+                  transition="max-height 0.3s ease-out"
+                >
+                  {" "}
+                  {page.page_content}
+                </Text>
+                {/* )} */}
               </Box>
-            </div>
+            </GridItem>
           );
         })}
+      </Grid>
       {numOfMessagesToShow === 2 && (
         <Flex justifyContent={"center"}>
           <Button
@@ -124,7 +153,7 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
             bg=""
             size={"sm"}
           >
-            Load more context
+            Load more sources
           </Button>
         </Flex>
       )}

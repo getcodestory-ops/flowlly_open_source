@@ -8,8 +8,6 @@ import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { Box, Button, Flex, IconButton, Text } from "@chakra-ui/react";
 import { FaChevronCircleLeft, FaChevronCircleRight } from "react-icons/fa";
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
-
 const bucketName = "users/userA/code";
 
 interface codeMetaData {
