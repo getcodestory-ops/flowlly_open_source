@@ -356,9 +356,19 @@ function FileHandler({
         <Accordion
           allowToggle
           width="100%"
-          overflowY="scroll"
+          overflowY="auto"
           mt="2"
           color="white"
+          sx={{
+            '&::-webkit-scrollbar': {
+              width: '8px',
+              borderRadius: '8px',
+              backgroundColor: `rgba(0, 0, 0, 0.05)`,
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: `rgba(0, 0, 0, 0.05)`,
+            },
+          }}
         >
           {folderList?.map((folder) => (
             <AccordionItem key={folder.name}>
@@ -397,7 +407,7 @@ function FileHandler({
                         py="1"
                         _hover={{ bg: "teal.400" }}
                       >
-                        <Text fontSize="xs" overflowX="scroll">
+                        <Text fontSize="xs" overflowX="auto">
                           {files}
                         </Text>
                         {uploadedFile?.status && (
