@@ -28,6 +28,7 @@ interface SessionToken {
   setFolderList: React.Dispatch<
     React.SetStateAction<{ name: string }[] | null>
   >;
+  hasAdminRights: boolean;
 }
 
 interface FileUploadStatus {
@@ -44,6 +45,7 @@ function FileHandler({
   sessionToken,
   folderList,
   setFolderList,
+  hasAdminRights
 }: SessionToken) {
   //states
   const toast = useToast();
@@ -329,7 +331,7 @@ function FileHandler({
             Explorer
           </Heading>
         </Box>
-        <Stack direction="row" justify="space-between" mb={2}>
+{ hasAdminRights &&       <Stack direction="row" justify="space-between" mb={2}>
           <Stack justify="start" width="full">
             <Button
               colorScheme="teal"
@@ -350,7 +352,7 @@ function FileHandler({
             onClose={() => setIsFolderSubMenuOpen(false)}
             onCreateFolder={handleCreateFolder}
           />
-        </Stack>
+        </Stack>}
       </>
       <>
         <Accordion
@@ -447,7 +449,7 @@ function FileHandler({
                       </Box>
                     );
                   })}
-                <Box p="2">
+     {    hasAdminRights &&       <Box p="2">
                   <Stack
                     spacing={4}
                     border="1px"
@@ -465,6 +467,7 @@ function FileHandler({
                       />
                     </Box>
                     <Button
+                    id="upload_button_id"
                       colorScheme="teal"
                       size="sm"
                       bg="teal.600"
@@ -475,7 +478,7 @@ function FileHandler({
                       <Text ml="2">Upload</Text>
                     </Button>
                   </Stack>
-                </Box>
+                </Box>}
               </AccordionPanel>
             </AccordionItem>
           ))}

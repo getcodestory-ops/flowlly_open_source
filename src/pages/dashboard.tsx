@@ -5,10 +5,12 @@ import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import supabase from "@/utils/supabaseClient";
+import checkAdminRights from "@/utils/checkAdminRights";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [sessionToken, setSessionToken] = useState<Session | null>();
+  const [hasAdminRights, setAdminRights] = useState<boolean>(false);
 
   useEffect(() => {
     async function loginCheck() {
@@ -23,6 +25,15 @@ export default function DashboardPage() {
     loginCheck();
   }, [router]);
 
+  useEffect(()=>{
+    async function getAdminRights() {
+    if(!sessionToken?.user.id) return;
+    const adminRights = await checkAdminRights(sessionToken?.user.id)
+    setAdminRights(adminRights)
+  }
+    getAdminRights()
+  },[sessionToken?.user])
+
   return (
     <>
       <Head>
@@ -32,7 +43,7 @@ export default function DashboardPage() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <Dashboard sessionToken={sessionToken!} />
+        <Dashboard sessionToken={sessionToken!} hasAdminRights={hasAdminRights}/>
       </main>
     </>
   );

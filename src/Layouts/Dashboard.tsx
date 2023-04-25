@@ -37,6 +37,7 @@ import UserPanel from "@/components/UserPanel";
 import PdfLoader from "@/components/PdfLoader";
 import SidePanel from "./SidePanel";
 import { BiUserVoice } from "react-icons/bi";
+import ChatbotInstructions from "@/components/ChatBotInstructions";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
@@ -51,6 +52,7 @@ interface ChatMessage {
 
 interface SessionToken {
   sessionToken: Session;
+  hasAdminRights: boolean;
 }
 
 interface HighLightInterface {
@@ -60,7 +62,7 @@ interface HighLightInterface {
 
 type SidePanelType = "fileSystem" | "integrations" | "memory" | null;
 
-export default function Dashboard({ sessionToken }: SessionToken) {
+export default function Dashboard({ sessionToken,  hasAdminRights }: SessionToken) {
   const toast = useToast();
   const [showMenu, setShowMenu] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -256,6 +258,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
             sessionToken={sessionToken}
             folderList={folderList}
             setFolderList={setFolderList}
+            hasAdminRights={hasAdminRights}
           />
         </Flex>
         {/* )} */}
@@ -268,6 +271,7 @@ export default function Dashboard({ sessionToken }: SessionToken) {
           bg="blackAlpha.100"
         >
           <Box overflowY="scroll" width="full" ref={chatBoxRef} mb="8">
+         <ChatbotInstructions />
             {chatMessages.map((message) => (
               <Box
                 key={`${message?.id}-${message?.message?.slice(0, 5)}`}
@@ -304,7 +308,10 @@ export default function Dashboard({ sessionToken }: SessionToken) {
                               If stuck we are throttled by openAI
                             </div>
                           ) : (
-                            message.message
+                            <Box fontSize="lg"
+                            lineHeight="1.5">
+                                  {message?.message?.split("/n").map((line:string, i:number)=>( <Box key={i} mb="2">{line}</Box> ))}
+                            </Box>
                           )}
                         </Box>
                       </Box>

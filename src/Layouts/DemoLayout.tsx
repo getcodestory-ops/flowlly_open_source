@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import supabase from "@/utils/supabaseClient";
 
-export default function MainLayout() {
+export default function DemoLayout() {
   const router = useRouter();
   const toast = useToast();
   const [email, setEmail] = useState("");
@@ -47,7 +47,8 @@ export default function MainLayout() {
       if (data?.session?.user) {
         router.replace("/dashboard");
       } else {
-        console.log("Sign in to continue !");
+        console.log("Sign in to demo account");
+        handleLogin("demo@getcodestory.com", "Codestory2023")
       }
     }
     loginCheck();

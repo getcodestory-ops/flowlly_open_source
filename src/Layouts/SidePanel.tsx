@@ -11,6 +11,7 @@ interface SidePanel {
   setFolderList: React.Dispatch<
     React.SetStateAction<{ name: string }[] | null>
   >;
+  hasAdminRights: boolean;
 }
 
 function SidePanel({
@@ -18,6 +19,7 @@ function SidePanel({
   sessionToken,
   folderList,
   setFolderList,
+  hasAdminRights
 }: SidePanel) {
   return (
     <Flex
@@ -38,6 +40,7 @@ function SidePanel({
           sessionToken={sessionToken}
           folderList={folderList}
           setFolderList={setFolderList}
+          hasAdminRights={hasAdminRights}
         />
       </Flex>
       {sidePanelType === "integrations" && (
