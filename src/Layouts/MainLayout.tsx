@@ -60,7 +60,8 @@ export default function MainLayout() {
       <Center
         p="2"
         width="full"
-        bgGradient="radial(gray.100 0%, gray.300 100%)"
+        // bgGradient="radial(gray.100 0%, gray.300 100%)"
+        bg='brand.dark'
       >
         <Box p={6} borderRadius={8} width="full">
           <Heading
@@ -69,7 +70,7 @@ export default function MainLayout() {
             textAlign="center"
             fontWeight="bold"
             letterSpacing="tight"
-            color="gray.600"
+            color="brand.accent"
           >
             Construction documentation
           </Heading>
@@ -79,10 +80,10 @@ export default function MainLayout() {
         height="100vh"
         alignItems="center"
         justifyContent="center"
-        backgroundColor="gray.100"
+        backgroundColor="brand.mid"
         width="2xl"
       >
-        <Box p={8} backgroundColor="white" borderRadius="md" width="xl" m="8">
+        <Box p={8} backgroundColor="brand.light" borderRadius="md" width="xl" m="8">
           <FormControl id="email" mb="4">
             <FormLabel>Email address</FormLabel>
             <Input
