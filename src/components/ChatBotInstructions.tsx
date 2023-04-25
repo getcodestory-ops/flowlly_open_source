@@ -32,19 +32,7 @@ const ChatbotInstructions = () => {
             You can quickly search through all the specifications and find relevant information within seconds using the text box below, 
           </Flex>
           <Grid templateColumns="repeat(2, 1fr)" gap={4} mt="4">
-            <GridItem border="1px solid teal" borderRadius="md" p="2" >
-                <Flex alignItems="center" gap={2} direction={"column"}>
-                <Icon as={FaFolder} boxSize="6" color="teal"/>
-                <Text>
-                    You can upload all of your specifications, drawings, calculation sheets etc. and get answers from these documents.
-                    <br/><br/>
-                    To upload the documents sign up for the app and look for folder icon on top left side and then expand the folder and select your files.
 
-                    <br/><br/>
-                    We are integrating with procore and your favorite cloud provider for faster and swift experience. 
-                </Text>
-                </Flex>
-            </GridItem>
             <GridItem border="1px solid teal" borderRadius="md" p="2">
                 <Flex alignItems="center" gap={2} direction={"column"}>
                 <Icon as={FaComment} boxSize="6" color="teal" />
@@ -61,6 +49,19 @@ const ChatbotInstructions = () => {
                     <br/>
                     4. How to maintain observation wells?
 
+                </Text>
+                </Flex>
+            </GridItem>
+            <GridItem border="1px solid teal" borderRadius="md" p="2" >
+                <Flex alignItems="center" gap={2} direction={"column"}>
+                <Icon as={FaFolder} boxSize="6" color="teal"/>
+                <Text>
+                    You can upload all of your specifications, drawings, calculation sheets etc. and get answers from these documents.
+                    <br/><br/>
+                    To upload the documents sign up for the app and look for folder icon on top left side and then expand the folder and select your files.
+
+                    <br/><br/>
+                    We are integrating with procore and your favorite cloud provider for faster and swift experience. 
                 </Text>
                 </Flex>
             </GridItem>
