@@ -76,7 +76,7 @@ const ChatbotInstructions = () => {
                 <Flex alignItems="center" gap={2} direction={"column"}>
                 <Icon as={FaInfoCircle} boxSize="6" color="teal"/>
                 <Text>
-                    Click on a source to get additional information and context for the chatbot's response.
+                    Click on a source to get additional information and context for the chatbot&apos;s response.
                 </Text>
                 </Flex>
             </GridItem>
