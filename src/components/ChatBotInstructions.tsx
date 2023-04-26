@@ -20,9 +20,9 @@ const ChatbotInstructions = () => {
       <Flex maxW="full" px="8" py="2" justifyContent="center">
         <Box width="2xl">
           <Flex
-            color="white"
+            color="brand.light"
             fontWeight="bold"
-            bg="teal.500"
+            bg="brand.mid"
             p="4"
             rounded="md"
             mt="16"
@@ -33,10 +33,10 @@ const ChatbotInstructions = () => {
           </Flex>
           <Grid templateColumns="repeat(2, 1fr)" gap={4} mt="4">
 
-            <GridItem border="1px solid teal" borderRadius="md" p="2">
+            <GridItem p="2" bg='brand.mid'>
                 <Flex alignItems="center" gap={2} direction={"column"}>
-                <Icon as={FaComment} boxSize="6" color="teal" />
-                <Text>
+                <Icon as={FaComment} boxSize="6" color="brand.accent" />
+                <Text color='brand.light'>
                     Type your questions in the text box given below to get the answers.
                     <br/><br/>
                     Get answers to all of your questions,
@@ -52,10 +52,10 @@ const ChatbotInstructions = () => {
                 </Text>
                 </Flex>
             </GridItem>
-            <GridItem border="1px solid teal" borderRadius="md" p="2" >
+            <GridItem p="2" bg='brand.mid'>
                 <Flex alignItems="center" gap={2} direction={"column"}>
-                <Icon as={FaFolder} boxSize="6" color="teal"/>
-                <Text>
+                <Icon as={FaFolder} boxSize="6" color="brand.accent"/>
+                <Text color='brand.light'>
                     You can upload all of your specifications, drawings, calculation sheets etc. and get answers from these documents.
                     <br/><br/>
                     To upload the documents sign up for the app and look for folder icon on top left side and then expand the folder and select your files.
@@ -65,18 +65,18 @@ const ChatbotInstructions = () => {
                 </Text>
                 </Flex>
             </GridItem>
-            <GridItem border="1px solid teal" borderRadius="md" p="2">
+            <GridItem p="2" bg='brand.mid'>
                 <Flex alignItems="center" gap={2} direction={"column"}>
-                <Icon as={FaExpandAlt} boxSize="6" color="teal"/>
-                <Text>
+                <Icon as={FaExpandAlt} boxSize="6" color="brand.accent"/>
+                <Text color='brand.light'>
                     You can load exact file where the answers to your questions are hidden by simply clicking the source materials. 
                 </Text>
                 </Flex>
             </GridItem>
-            <GridItem border="1px solid teal" borderRadius="md" p="2" >
+            <GridItem p="2" bg='brand.mid' >
                 <Flex alignItems="center" gap={2} direction={"column"}>
-                <Icon as={FaInfoCircle} boxSize="6" color="teal"/>
-                <Text>
+                <Icon as={FaInfoCircle} boxSize="6" color="brand.accent"/>
+                <Text color='brand.light'>
                     Click on a source to get additional information and context for the chatbot&apos;s response.
                 </Text>
                 </Flex>

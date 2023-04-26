@@ -15,6 +15,8 @@ import {
   useDisclosure,
   Spinner,
   Icon,
+  Grid,
+  GridItem,
 } from "@chakra-ui/react";
 import {
   FaBars,
@@ -30,6 +32,7 @@ import {
   FaBrain,
 } from "react-icons/fa";
 import { BsArrowBarRight } from "react-icons/bs";
+import {IoChatboxEllipses} from "react-icons/io5"
 import { createClient } from "@supabase/supabase-js";
 import ContextDisplay from "@/components/ContextDisplay";
 import { Session } from "@supabase/supabase-js";
@@ -83,6 +86,8 @@ export default function Dashboard({ sessionToken,  hasAdminRights }: SessionToke
   const [selectedContext, setSelectedContext] = useState<string>("");
   const [folderList, setFolderList] = useState<{ name: string }[] | null>(null);
 
+  const [questionAnswered, setQuestionAnswered] = useState<Boolean>(false);
+
   const handleToggleSidePanel = (id: SidePanelType) => {
     setsidePanelType((state) => (state === id ? null : id));
   };
@@ -113,6 +118,9 @@ export default function Dashboard({ sessionToken,  hasAdminRights }: SessionToke
   };
 
   const handleChatSubmit = async () => {
+    console.log('question answered', questionAnswered)
+    // setQuestionAnswered(false);
+
     const newMessage: ChatMessage = {
       id: chatMessages.length + 1,
       message: chatInput,
@@ -133,7 +141,7 @@ export default function Dashboard({ sessionToken,  hasAdminRights }: SessionToke
       );
       const context = await response.json();
       const newContext: ChatMessage = {
-        id: chatMessages.length + 3,
+        id: chatMessages.length + 8,
         message: context.response,
         fromUser: "context",
       };
@@ -167,6 +175,7 @@ export default function Dashboard({ sessionToken,  hasAdminRights }: SessionToke
           );
           return [...data, newResponse];
         });
+        // setQuestionAnswered(true);
       } catch (error: any) {
         console.log(error);
       }
@@ -190,11 +199,14 @@ export default function Dashboard({ sessionToken,  hasAdminRights }: SessionToke
     }
 
     setChatInput("");
+    
   };
   // const handleBlur = (event: React.FocusEvent<HTMLSelectElement>) => {
   //   event.target.style.outline = "none";
   //   event.target.style.border = "none";
   // };
+
+  
 
   return (
     <Box>
@@ -202,11 +214,11 @@ export default function Dashboard({ sessionToken,  hasAdminRights }: SessionToke
         {/* Column 1: Sidebar */}
         <Flex
           width="16"
-          bg="blackAlpha.200"
+          bg="brand.dark"
           direction="column"
           alignItems="center"
           justifyContent="space-between"
-          shadow="base"
+          // shadow="base"
           py="6"
           display={{ base: showMenu ? "flex" : "none", md: "flex" }}
         >
@@ -215,9 +227,9 @@ export default function Dashboard({ sessionToken,  hasAdminRights }: SessionToke
               // transform="translateY(-50%)"
               zIndex="1"
               onClick={() => handleToggleSidePanel("fileSystem")}
-              bg="teal.500"
-              color="teal.50"
-              _hover={{ bg: "teal.300", color: "teal.700" }}
+              bg="brand.dark"
+              color="brand.accent"
+              _hover={{ bg: "brand.mid", color: "brand.accent" }}
             >
               {sidePanelType !== "fileSystem" ? <FaFolder /> : <FaTimes />}
             </Button>
@@ -225,9 +237,9 @@ export default function Dashboard({ sessionToken,  hasAdminRights }: SessionToke
               // transform="translateY(-50%)"
               zIndex="1"
               onClick={() => handleToggleSidePanel("integrations")}
-              bg="teal.500"
-              color="teal.50"
-              _hover={{ bg: "teal.300", color: "teal.700" }}
+              bg="brand.dark"
+              color="brand.accent"
+              _hover={{ bg: "brand.mid", color: "brand.accent" }}
             >
               {sidePanelType !== "integrations" ? <FaPlug /> : <FaTimes />}
             </Button>
@@ -235,9 +247,9 @@ export default function Dashboard({ sessionToken,  hasAdminRights }: SessionToke
               // transform="translateY(-50%)"
               zIndex="1"
               onClick={() => handleToggleSidePanel("memory")}
-              bg="teal.500"
-              color="teal.50"
-              _hover={{ bg: "teal.300", color: "teal.700" }}
+              bg="brand.dark"
+              color="brand.accent"
+              _hover={{ bg: "brand.mid", color: "brand.accent" }}
             >
               {sidePanelType !== "memory" ? <FaBrain /> : <FaTimes />}
             </Button>
@@ -268,40 +280,64 @@ export default function Dashboard({ sessionToken,  hasAdminRights }: SessionToke
           direction="column"
           alignItems="start"
           justifyContent="end"
-          bg="blackAlpha.100"
+          bg="brand.dark"
         >
           <Box overflowY="scroll" width="full" ref={chatBoxRef} mb="8">
          <ChatbotInstructions />
-            {chatMessages.map((message) => (
+            {/* {chatMessages.sort((a, b) => {
+    if (a.fromUser === "question" && b.fromUser === "answer") {
+      console.log('case1',a.fromUser, b.fromUser)
+      return -1;
+      
+    } else if (a.fromUser === "answer" && b.fromUser === "question") {
+      console.log('case2',a.fromUser, b.fromUser)
+      return 1;
+    } else if (a.fromUser === "answer" && b.fromUser === "context") {
+      console.log('case3',a.fromUser, b.fromUser)
+      return -1;
+    } else if (a.fromUser === "context" && b.fromUser === "answer") {
+      console.log('case4',a.fromUser, b.fromUser)
+      return 1;
+    } else {
+      console.log('case5',a.fromUser, b.fromUser)
+      return 0;
+    }
+  }) */}
+  {chatMessages.map((message) => (
               <Box
-                key={`${message?.id}-${message?.message?.slice(0, 5)}`}
-                width="full"
+              key={`${message?.id}-${message?.message?.slice(0, 5)}`}
+              width="full"
               >
+                
                 <Flex maxW="full" px="8" py="2" justifyContent="center">
                   <Box width="2xl">
-                    {message.fromUser === "question" && (
+                    {message.fromUser === "question" &&  (
                       <Flex
-                        color="white"
-                        fontWeight={"bold"}
-                        bg="teal.500"
-                        p="4"
-                        rounded="md"
-                        mt="16"
-                        alignItems={"center"}
+                      color="white"
+                      fontWeight={"bold"}
+                      bg="brand.dark"
+                      p="4"
+                      rounded="md"
+                      mt="16"
+                      alignItems={"center"}
                       >
-                        <Icon as={BiUserVoice} mr="2" boxSize={"6"} />
+                        
+                        <Icon as={IoChatboxEllipses} mr="2" boxSize={"6"} color={"brand.accent"}/>
                         {message.message}
                       </Flex>
                     )}
-                    {message.fromUser === "answer" && (
-                      <Box borderBottom="2px " borderBottomColor={"teal.500"}>
+                    {message.fromUser === "answer" &&   (
+
+                      <Box borderBottom="2px " borderBottomColor={"brand.mid"}>
+                
                         <Box
                           mb="16"
-                          color="white"
-                          bg="teal.500"
-                          p="4"
-                          rounded="md"
-                        >
+                          color="brand.light"
+                          bg="brand.mid"
+                          p="8"
+                          borderRadius="14px"
+                          >
+               
                           {message.message === "loading..." ? (
                             <div>
                               <Spinner size="sm" />
@@ -311,13 +347,15 @@ export default function Dashboard({ sessionToken,  hasAdminRights }: SessionToke
                             <Box fontSize="lg"
                             lineHeight="1.5">
                                   {message?.message?.split("/n").map((line:string, i:number)=>( <Box key={i} mb="2">{line}</Box> ))}
+                                  {/* {setQuestionAnswered(true)} */}
                             </Box>
                           )}
                         </Box>
                       </Box>
                     )}
-                    {message.fromUser === "context" && (
+                    {message.fromUser === "context" &&    (
                       <>
+                        
                         <ContextDisplay
                           documentData={message.message}
                           setPdfVisibility={setPdfVisibility}
@@ -330,29 +368,30 @@ export default function Dashboard({ sessionToken,  hasAdminRights }: SessionToke
                     )}
                   </Box>
                 </Flex>
+                
               </Box>
+
             ))}
+           
+            
           </Box>
           <Stack spacing={4} pb="4" width="2xl" alignSelf={"center"}>
             <Flex justifyContent={"end"} alignItems="center" mb="-4">
               <Flex
                 justifyContent={"end"}
                 alignItems="center"
-                borderTop="1px"
-                borderLeft="1px"
-                borderRight="1px"
-                borderColor="teal.400"
                 pl="2"
-                borderRadius={"md"}
                 fontSize="xs"
               >
-                <Text mr="4">Search folder</Text>
+                <Text color='brand.light' mr="4">Search folder</Text>
                 <Select
+                  color='brand.accent'
                   placeholder="Search within"
                   value={selectedContext ?? ""}
                   border="none"
                   width="48"
                   fontSize={"xs"}
+                  fontWeight='bold'
                   onChange={(e) => setSelectedContext(e.target.value)}
 
                   // onBlur={handleBlur}
@@ -365,8 +404,9 @@ export default function Dashboard({ sessionToken,  hasAdminRights }: SessionToke
                 </Select>
               </Flex>
             </Flex>
-            <InputGroup size="lg">
+            <InputGroup size="lg" >
               <Textarea
+                color='brand.light'
                 placeholder="Type your questions..."
                 value={chatInput}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
@@ -375,17 +415,21 @@ export default function Dashboard({ sessionToken,  hasAdminRights }: SessionToke
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
+                    setQuestionAnswered(false)
                     handleChatSubmit();
                   }
                 }}
+                boxShadow='0px 0px 8px 1px rgba(255,221,0, 0.8)'
                 border="1px solid"
-                borderColor="teal.400"
-                _hover={{ boderColor: "teal.300" }}
+                borderColor="brand.dark"
+                borderRadius={'40px'}
+                _hover={{ boderColor: "brand.dark" }}
                 _focus={{
-                  outline: "none",
-                  borderColor: "teal.300",
+                  // outline: "none",
+                  borderColor: "brand.dark",
+                  boxShadow: "0px 0px 8px 1px rgba(255,221,0, 0.8)",
                 }}
-                minH="4rem"
+                minH="3rem"
                 h="auto"
                 resize="none"
                 maxH="12rem"

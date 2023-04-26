@@ -6,17 +6,17 @@ import { Session } from "@supabase/supabase-js";
 
 const IntegrationHandler = ({ sessionToken }: { sessionToken: Session }) => {
   return (
-    <Flex direction="column" height="100vh" bg="teal.500" width="full" p="4">
+    <Flex direction="column" height="100vh" bg="brand.mid" width="full" p="4">
       <Box marginBottom="4">
         <Heading as="h2" size="md" color="white">
           Integrations
         </Heading>
       </Box>
       <Button
-        bg="teal.600"
+        bg="brand.dark"
         colorScheme="teal"
         size="sm"
-        _hover={{ bg: "teal.400" }}
+        _hover={{ bg: "brand.accent", color:"brand.dark"}}
       >
         Prolog integration coming soon
       </Button>

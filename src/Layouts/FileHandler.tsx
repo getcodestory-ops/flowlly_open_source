@@ -324,7 +324,7 @@ function FileHandler({
 
   //ui
   return (
-    <Flex direction={"column"} p="4" background="teal.500" height="100vh">
+    <Flex direction={"column"} p="4" background="brand.mid" height="100vh">
       <>
         <Box marginBottom="4">
           <Heading as="h2" size="md" color="white">
@@ -335,7 +335,7 @@ function FileHandler({
           <Stack justify="start" width="full">
             <Button
               colorScheme="teal"
-              bg="teal.600"
+              bg="purple"
               size={"sm"}
               onClick={() => setIsFolderSubMenuOpen(true)}
               _hover={{ bg: "teal.400" }}
