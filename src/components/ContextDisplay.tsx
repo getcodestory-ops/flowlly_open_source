@@ -8,9 +8,11 @@ import {
   Text,
   Grid,
   GridItem,
+  Center,
 } from "@chakra-ui/react";
 
 import { GiBlackBook } from "react-icons/gi";
+import {FaAngleDown} from 'react-icons/fa' ;
 
 interface DocumentProps {
   documentData: {
@@ -57,32 +59,47 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
     //   chunk_number: chunk_number,
     // });
   };
-  const [numOfMessagesToShow, setNumOfMessagesToShow] = useState<number>(2);
+  const [numOfMessagesToShow, setNumOfMessagesToShow] = useState<number>(4);
   const [isExpandedNumber, setIsExpandedNumber] = useState<number | null>(null);
 
   return (
     <div>
       <Text
         fontSize={"md"}
-        color="teal.500"
+        color="brand.accent"
         fontWeight={"bold"}
         alignContent={"center"}
+        mb='1em'
       >
-        <Icon as={GiBlackBook} cursor="pointer" color={"teal.500"} mr="2" />
+        {/* <Icon as={GiBlackBook} cursor="pointer" color={"brand.accent"} mr="2" /> */}
         Sources:
       </Text>
-      <Grid templateColumns={"repeat(2, 1fr)"}>
+      <Grid templateColumns={"repeat(4, 1fr)"} templateRows="repeat(2, 1fr)">
         {documentData.slice(0, numOfMessagesToShow).map((page, index) => {
           // console.log(page);
           return (
             <GridItem
               key={`${index}`}
               colSpan={isExpandedNumber === index ? 2 : 1}
+              rowSpan={1}
             >
               <Box lineHeight="7">
-                <Flex justifyContent={"space-between"}>
-                  <Box>
+                <Flex justifyContent={"space-between"} >
+                  <Box
+                  minW='10em'
+                  bg='brand.mid' 
+                  pr='.6em' 
+                  pl='.6em' 
+                  borderRadius='20px'
+                  onClick={() =>
+                    setIsExpandedNumber((state) =>
+                    state === index ? null : index
+                    )}
+                    transition="max-height 0.3s ease-out"
+                    >
+                  <Center> 
                     <Link
+                      
                       cursor="pointer"
                       onClick={() =>
                         handleRefereces(
@@ -90,9 +107,9 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
                           page.metadata.page_number
                         )
                       }
-                      color="teal.500"
+                      color="brand.light"
                       fontWeight="semibold"
-                      fontSize="smaller"
+                      fontSize="10px"
                       _hover={{
                         textDecoration: "underline",
                       }}
@@ -103,36 +120,27 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
                         {page.metadata.filename} - {page.metadata.page_number}
                       </i>
                     </Link>
+                    <Icon as={FaAngleDown} cursor='pointer' color='brand.light' ml='.7em' />
+                  </Center>
                   </Box>
-
-                  {/* <Flex direction={"row"}>
-                  <Box marginLeft="4" display="flex" alignItems="center">
-                    <Icon as={FaThumbsUp} cursor="pointer" color={"teal.500"} />
-                  </Box>
-                  <Box marginLeft="4" display="flex" alignItems="center">
-                    <Icon
-                      as={FaThumbsDown}
-                      cursor="pointer"
-                      color={"orange.500"}
-                    />
-                  </Box>
-                </Flex> */}
                 </Flex>
 
                 <Text
+                  minW='2em'
+                  maxW='8em'
                   color="teal.700"
                   fontSize="small"
-                  maxH={isExpandedNumber === index ? "none" : "4rem"} // set maximum height to 8rem when not expanded
+                  maxH={isExpandedNumber === index ? "none" : "0rem"} // set maximum height to 8rem when not expanded
                   overflow="hidden"
                   rounded="md"
                   px="2"
                   _hover={{ bg: "teal.50" }}
                   // reveal full text on hover
-                  onClick={() =>
-                    setIsExpandedNumber((state) =>
-                      state === index ? null : index
-                    )
-                  }
+                  // onClick={() =>
+                  //   setIsExpandedNumber((state) =>
+                  //     state === index ? null : index
+                  //   )
+                  // }
                   cursor="pointer"
                   transition="max-height 0.3s ease-out"
                 >

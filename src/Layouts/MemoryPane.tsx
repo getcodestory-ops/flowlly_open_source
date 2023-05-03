@@ -47,7 +47,7 @@ const MemoryPane: React.FC<Props> = ({
 
   return (
     <Box
-      backgroundColor="teal.500"
+      backgroundColor="brand.mid"
       color="white"
       width="full"
       height="100vh"
@@ -77,17 +77,23 @@ const MemoryPane: React.FC<Props> = ({
           <ListItem
             backgroundColor={
               activeConversation?.id === conversation.id
-                ? "teal.600"
-                : "teal.500"
+                ? "brand.accent"
+                : "brand.mid"
+            }
+            color={
+              activeConversation?.id === conversation.id
+                ? "brand.dark"
+                : "brand.mid"
             }
             cursor="pointer"
             key={conversation.id}
             onClick={() => handleConversationClick(conversation)}
             p="2"
             pl="4"
-            borderY="1px"
+            // borderY="1px"
             _hover={{
-              backgroundColor: "teal.400",
+              backgroundColor: "brand.dark",
+              color:"brand.light"
             }}
           >
             {conversation.title}
