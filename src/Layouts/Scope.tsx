@@ -32,20 +32,22 @@ import {
   FaBrain,
 } from "react-icons/fa";
 import { BsArrowBarRight } from "react-icons/bs";
+
 import { IoChatboxEllipses } from "react-icons/io5";
 import { createClient } from "@supabase/supabase-js";
-import ContextDisplay from "@/components/ContextDisplay";
+import ScopeDisplay from "@/components/ScopeDisplay";
 import { Session } from "@supabase/supabase-js";
 import UserPanel from "@/components/UserPanel";
 import PdfLoader from "@/components/PdfLoader";
 import SidePanel from "./SidePanel";
 import { BiUserVoice } from "react-icons/bi";
 import ChatbotInstructions from "@/components/ChatBotInstructions";
+import { scopeConfig } from "@/utils/projectconfig";
 
-// const supabase = createClient(
-//   process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-//   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""
-// );
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""
+);
 
 interface ChatMessage {
   id: number;
@@ -65,14 +67,11 @@ interface HighLightInterface {
 
 type SidePanelType = "fileSystem" | "integrations" | "memory" | null;
 
-export default function Dashboard({
-  sessionToken,
-  hasAdminRights,
-}: SessionToken) {
+export default function Scope({ sessionToken, hasAdminRights }: SessionToken) {
   const toast = useToast();
   const [showMenu, setShowMenu] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [chatInput, setChatInput] = useState("");
+  const [chatInput, setChatInput] = useState(scopeConfig.scope);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -89,7 +88,7 @@ export default function Dashboard({
   const [selectedContext, setSelectedContext] = useState<string>("");
   const [folderList, setFolderList] = useState<{ name: string }[] | null>(null);
 
-  const [questionAnswered, setQuestionAnswered] = useState<Boolean>(false);
+  const [questionAnswered, setQuestionAnswered] = useState<Boolean>(true);
 
   const handleToggleSidePanel = (id: SidePanelType) => {
     setsidePanelType((state) => (state === id ? null : id));
@@ -120,21 +119,28 @@ export default function Dashboard({
     setChatInput(e.target.value);
   };
 
-  const handleChatSubmit = async () => {
-    console.log("question answered", questionAnswered);
-    // setQuestionAnswered(false);
+  const handleChatSubmit = async (question: string, queryType: string) => {
+    const loadingToastId = toast({
+      title: "Fetching  Scope for your project",
+      status: "loading",
+      duration: null,
+      isClosable: true,
+      position: "top-right",
+    });
 
-    const newMessage: ChatMessage = {
-      id: chatMessages.length + 1,
-      message: chatInput,
-      fromUser: "question",
-    };
+    setChatMessages((chatMessage) => {
+      const newMessage: ChatMessage = {
+        id: chatMessage.length + 1,
+        message: `Loading ${queryType} for your project`,
+        fromUser: "question",
+      };
 
-    setChatMessages([...chatMessages, newMessage]);
+      return [...chatMessage, newMessage];
+    });
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/context?question=${chatInput}&spacename=${selectedContext}`,
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/scope?question=${question}&spacename=${selectedContext}`,
         {
           method: "POST",
           headers: {
@@ -142,46 +148,29 @@ export default function Dashboard({
           },
         }
       );
+
       const context = await response.json();
-      const newContext: ChatMessage = {
-        id: chatMessages.length + 8,
-        message: context.response,
-        fromUser: "context",
-      };
 
-      setChatMessages([...chatMessages, newMessage, newContext]);
+      // console.log(context.response)
 
-      try {
-        let newResponse: ChatMessage = {
-          id: chatMessages.length + 4,
-          message: "loading...",
-          fromUser: "answer",
+      setChatMessages((chatMessage) => {
+        const newContext: ChatMessage = {
+          id: chatMessage.length + 1,
+          message: context.response,
+          fromUser: "context",
         };
-        setChatMessages((state) => [...state, newResponse]);
-        const response = await fetch(`/api/answers?question=${chatInput}`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${sessionToken.access_token}`,
-          },
-          body: context.response[0].page_content,
-        });
-        const answer = await response.json();
 
-        newResponse = {
-          id: chatMessages.length + 4,
-          message: answer.response,
-          fromUser: "answer",
-        };
-        setChatMessages((state) => {
-          const data = state.filter(
-            (response) => response.id !== chatMessages.length + 4
-          );
-          return [...data, newResponse];
+        toast.close(loadingToastId);
+        toast({
+          title: "Scope reference documents fetched successfully",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+          position: "top-right",
         });
-        // setQuestionAnswered(true);
-      } catch (error: any) {
-        console.log(error);
-      }
+
+        return [...chatMessage, newContext];
+      });
     } catch (error: any) {
       let description = "";
       if (error instanceof Response) {
@@ -200,8 +189,6 @@ export default function Dashboard({
         position: "top-right",
       });
     }
-
-    setChatInput("");
   };
 
   return (
@@ -279,26 +266,8 @@ export default function Dashboard({
           bg="brand.dark"
         >
           <Box overflowY="scroll" width="full" ref={chatBoxRef} mb="8">
-            <ChatbotInstructions />
-            {/* {chatMessages.sort((a, b) => {
-    if (a.fromUser === "question" && b.fromUser === "answer") {
-      console.log('case1',a.fromUser, b.fromUser)
-      return -1;
-      
-    } else if (a.fromUser === "answer" && b.fromUser === "question") {
-      console.log('case2',a.fromUser, b.fromUser)
-      return 1;
-    } else if (a.fromUser === "answer" && b.fromUser === "context") {
-      console.log('case3',a.fromUser, b.fromUser)
-      return -1;
-    } else if (a.fromUser === "context" && b.fromUser === "answer") {
-      console.log('case4',a.fromUser, b.fromUser)
-      return 1;
-    } else {
-      console.log('case5',a.fromUser, b.fromUser)
-      return 0;
-    }
-  }) */}
+            {/* <ChatbotInstructions /> */}
+
             {chatMessages.map((message) => (
               <Box
                 key={`${message?.id}-${message?.message?.slice(0, 5)}`}
@@ -356,7 +325,7 @@ export default function Dashboard({
                     )}
                     {message.fromUser === "context" && (
                       <>
-                        <ContextDisplay
+                        <ScopeDisplay
                           documentData={message.message}
                           setPdfVisibility={setPdfVisibility}
                           setPageNumber={setPageNumber}
@@ -406,37 +375,29 @@ export default function Dashboard({
                 </Select>
               </Flex>
             </Flex>
-            <InputGroup size="lg">
-              <Textarea
-                color="brand.light"
-                placeholder="Type your questions..."
-                value={chatInput}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  setChatInput(e.target.value)
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    setQuestionAnswered(false);
-                    handleChatSubmit();
-                  }
-                }}
-                boxShadow="0px 0px 8px 1px rgba(255,221,0, 0.8)"
+            <InputGroup size="lg" justifyContent={"end"}>
+              <Button
+                color="brand.dark"
                 border="1px solid"
-                borderColor="brand.dark"
-                borderRadius={"40px"}
-                _hover={{ boderColor: "brand.dark" }}
+                bg="brand.accent"
+                borderRadius="40px"
+                _hover={{ borderColor: "brand.dark" }}
                 _focus={{
                   // outline: "none",
                   borderColor: "brand.dark",
                   boxShadow: "0px 0px 8px 1px rgba(255,221,0, 0.8)",
                 }}
-                minH="3rem"
-                h="auto"
-                resize="none"
-                maxH="12rem"
-                height={`${chatInput.length / 40}rem`}
-              />
+                onClick={async () => {
+                  setQuestionAnswered(false);
+                  await handleChatSubmit(scopeConfig.scope, "scope");
+                  // await handleChatSubmit(scopeConfig.risks, "risks");
+                  setQuestionAnswered(true);
+                }}
+              >
+                {questionAnswered
+                  ? "Get detailed project scope with relevant sections"
+                  : "loading..."}
+              </Button>
             </InputGroup>
           </Stack>
         </Flex>

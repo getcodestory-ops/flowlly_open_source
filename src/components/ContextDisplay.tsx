@@ -157,7 +157,7 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
         <Flex justifyContent={"center"}>
           <Button
             onClick={() => setNumOfMessagesToShow(5)}
-            color="teal.500"
+            color="brand.accent"
             bg=""
             size={"sm"}
           >

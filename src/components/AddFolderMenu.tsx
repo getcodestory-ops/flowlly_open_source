@@ -42,7 +42,8 @@ export default function AddFolderMenu({
         </ModalBody>
         <ModalFooter>
           <Button
-            colorScheme="teal"
+            bg="purple"
+            color="white"
             onClick={handleCreateFolder}
             ml={3}
             disabled={!folderName}

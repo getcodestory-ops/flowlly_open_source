@@ -45,7 +45,7 @@ function FileHandler({
   sessionToken,
   folderList,
   setFolderList,
-  hasAdminRights
+  hasAdminRights,
 }: SessionToken) {
   //states
   const toast = useToast();
@@ -86,6 +86,7 @@ function FileHandler({
     },
     [userId]
   );
+
   const fetchFileProcessStatus = useCallback(async () => {
     if (!userId) return;
 
@@ -331,28 +332,30 @@ function FileHandler({
             Explorer
           </Heading>
         </Box>
-{ hasAdminRights &&       <Stack direction="row" justify="space-between" mb={2}>
-          <Stack justify="start" width="full">
-            <Button
-              colorScheme="teal"
-              bg="purple"
-              size={"sm"}
-              onClick={() => setIsFolderSubMenuOpen(true)}
-              _hover={{ bg: "teal.400" }}
-            >
-              <FaPlus />
+        {hasAdminRights && (
+          <Stack direction="row" justify="space-between" mb={2}>
+            <Stack justify="start" width="full">
+              <Button
+                colorScheme="teal"
+                bg="purple"
+                size={"sm"}
+                onClick={() => setIsFolderSubMenuOpen(true)}
+                _hover={{ bg: "purple.600" }}
+              >
+                <FaPlus />
 
-              <Text ml="2" fontSize={"base"}>
-                Add New Folder
-              </Text>
-            </Button>
+                <Text ml="2" fontSize={"base"}>
+                  Add New Folder
+                </Text>
+              </Button>
+            </Stack>
+            <AddFolderMenu
+              isOpen={isFolderSubMenuOpen}
+              onClose={() => setIsFolderSubMenuOpen(false)}
+              onCreateFolder={handleCreateFolder}
+            />
           </Stack>
-          <AddFolderMenu
-            isOpen={isFolderSubMenuOpen}
-            onClose={() => setIsFolderSubMenuOpen(false)}
-            onCreateFolder={handleCreateFolder}
-          />
-        </Stack>}
+        )}
       </>
       <>
         <Accordion
@@ -362,12 +365,12 @@ function FileHandler({
           mt="2"
           color="white"
           sx={{
-            '&::-webkit-scrollbar': {
-              width: '8px',
-              borderRadius: '8px',
+            "&::-webkit-scrollbar": {
+              width: "8px",
+              borderRadius: "8px",
               backgroundColor: `rgba(0, 0, 0, 0.05)`,
             },
-            '&::-webkit-scrollbar-thumb': {
+            "&::-webkit-scrollbar-thumb": {
               backgroundColor: `rgba(0, 0, 0, 0.05)`,
             },
           }}
@@ -403,13 +406,7 @@ function FileHandler({
                     );
 
                     return (
-                      <Box
-                        key={files}
-                        display="flex"
-                        pl="8"
-                        py="1"
-                        _hover={{ bg: "teal.400" }}
-                      >
+                      <Box key={files} display="flex" pl="8" py="1">
                         <Text fontSize="xs" overflowX="auto">
                           {files}
                         </Text>
@@ -449,36 +446,38 @@ function FileHandler({
                       </Box>
                     );
                   })}
-     {    hasAdminRights &&       <Box p="2">
-                  <Stack
-                    spacing={4}
-                    border="1px"
-                    p="4"
-                    borderRadius={"md"}
-                    borderColor="teal.400"
-                  >
-                    <Box>
-                      <input
-                        id="file-upload"
-                        type="file"
-                        accept="application/pdf"
-                        ref={inputRef}
-                        onChange={handleFileSelect}
-                      />
-                    </Box>
-                    <Button
-                    id="upload_button_id"
-                      colorScheme="teal"
-                      size="sm"
-                      bg="teal.600"
-                      _hover={{ bg: "teal.400" }}
-                      onClick={() => handleFileUpload(folder.name)}
+                {hasAdminRights && (
+                  <Box p="2">
+                    <Stack
+                      spacing={4}
+                      border="1px"
+                      p="4"
+                      borderRadius={"md"}
+                      borderColor="brand.dark"
                     >
-                      <FaUpload />
-                      <Text ml="2">Upload</Text>
-                    </Button>
-                  </Stack>
-                </Box>}
+                      <Box>
+                        <input
+                          id="file-upload"
+                          type="file"
+                          accept="application/pdf"
+                          ref={inputRef}
+                          onChange={handleFileSelect}
+                        />
+                      </Box>
+                      <Button
+                        id="upload_button_id"
+                        colorScheme="teal"
+                        size="sm"
+                        bg="brand.dark"
+                        _hover={{ bg: "purple" }}
+                        onClick={() => handleFileUpload(folder.name)}
+                      >
+                        <FaUpload />
+                        <Text ml="2">Upload</Text>
+                      </Button>
+                    </Stack>
+                  </Box>
+                )}
               </AccordionPanel>
             </AccordionItem>
           ))}
