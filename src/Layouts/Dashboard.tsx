@@ -344,7 +344,7 @@ export default function Dashboard({
                               {message?.message
                                 ?.split("/n")
                                 .map((line: string, i: number) => (
-                                  <Box key={i} mb="2">
+                                  <Box key={i} mb="2" whiteSpace="pre-line">
                                     {line}
                                   </Box>
                                 ))}
