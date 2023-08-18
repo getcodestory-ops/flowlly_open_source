@@ -158,27 +158,81 @@ export default function Dashboard({
           fromUser: "answer",
         };
         setChatMessages((state) => [...state, newResponse]);
-        const response = await fetch(`/api/answers?question=${chatInput}`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${sessionToken.access_token}`,
-          },
-          body: context.response[0].page_content,
-        });
-        const answer = await response.json();
 
-        newResponse = {
-          id: chatMessages.length + 4,
-          message: answer.response,
-          fromUser: "answer",
-        };
-        setChatMessages((state) => {
-          const data = state.filter(
-            (response) => response.id !== chatMessages.length + 4
-          );
-          return [...data, newResponse];
-        });
-        // setQuestionAnswered(true);
+        const response = await fetch(
+          `https://fastapi.eastus.cloudapp.azure.com/answers_next?question=${chatInput}`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${sessionToken.access_token}`,
+            },
+            body: context.response[0].page_content,
+          }
+        );
+        // const answer = await response.json();
+        if (response.body) {
+          const reader = response.body.getReader();
+          let partialText = "";
+          let asnwer_text = "";
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+              break;
+            }
+
+            partialText += new TextDecoder().decode(value);
+
+            // Process complete lines and leave the rest for the next iteration
+            let eolIndex;
+            const activeChatIndex = chatMessages.length + 4;
+
+            while ((eolIndex = partialText.indexOf("\n")) >= 0) {
+              const line = partialText.slice(0, eolIndex).trim();
+              partialText = partialText.slice(eolIndex + 1);
+
+              if (line.startsWith("data:")) {
+                const jsonStr = line.slice(5).trim();
+                const item = JSON.parse(jsonStr);
+                if (item["choices"].length > 0) {
+                  if ("delta" in item["choices"][0]) {
+                    if ("content" in item["choices"][0]["delta"]) {
+                      asnwer_text =
+                        asnwer_text + item["choices"][0]["delta"]["content"];
+                      console.log(asnwer_text);
+
+                      newResponse = {
+                        id: activeChatIndex,
+                        message: asnwer_text,
+                        fromUser: "answer",
+                      };
+                      setChatMessages((state) => {
+                        const data = state.filter(
+                          (response) => response.id !== activeChatIndex
+                        );
+                        return [...data, newResponse];
+                      });
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          console.error("No response body");
+        }
+
+        // newResponse = {
+        //   id: chatMessages.length + 4,
+        //   message: answer.response,
+        //   fromUser: "answer",
+        // };
+        // setChatMessages((state) => {
+        //   const data = state.filter(
+        //     (response) => response.id !== chatMessages.length + 4
+        //   );
+        //   return [...data, newResponse];
+        // });
+        setQuestionAnswered(true);
       } catch (error: any) {
         console.log(error);
       }
