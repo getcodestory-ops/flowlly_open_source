@@ -306,7 +306,7 @@ export default function Scope({ sessionToken, hasAdminRights }: SessionToken) {
                           {message.message === "loading..." ? (
                             <div>
                               <Spinner size="sm" />
-                              If stuck we are throttled by openAI
+                              Thinking...
                             </div>
                           ) : (
                             <Box fontSize="lg" lineHeight="1.5">
