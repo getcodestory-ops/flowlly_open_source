@@ -160,7 +160,7 @@ export default function Dashboard({
         setChatMessages((state) => [...state, newResponse]);
 
         const response = await fetch(
-          `https://fastapi.eastus.cloudapp.azure.com/answers_next?question=${chatInput}`,
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/answers_next?question=${chatInput}`,
           {
             method: "POST",
             headers: {
