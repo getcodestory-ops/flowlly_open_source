@@ -319,7 +319,6 @@ export default function Dashboard({
             />
           </Box>
         </Flex>
-        {/* column 2 */}
         <Flex
           position={selectedContext && isPdfVisible ? "absolute" : "relative"}
           ml={selectedContext && isPdfVisible ? "16" : ""}
