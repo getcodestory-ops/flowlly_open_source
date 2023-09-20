@@ -11,13 +11,14 @@ import {
 } from "@chakra-ui/react";
 import supabase from "../utils/supabaseClient";
 
-interface Props {
-  setIsChatbotInstructionsOpen: (isOpen: boolean) => void;
-}
+// interface Props {
+//   setIsChatbotInstructionsOpen: (isOpen: boolean) => void;
+// }
 
-const UserPanel: React.FC<Props> = ({
-  setIsChatbotInstructionsOpen,
-}: Props) => {
+// const UserPanel: React.FC<Props> = ({
+//   setIsChatbotInstructionsOpen,
+// }: Props) => {
+const UserPanel = () => {
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
 
@@ -61,9 +62,9 @@ const UserPanel: React.FC<Props> = ({
             <MenuItem onClick={() => router.push("/auth/passwordChange")}>
               Change Password
             </MenuItem>
-            <MenuItem onClick={() => setIsChatbotInstructionsOpen(true)}>
+            {/* <MenuItem onClick={() => setIsChatbotInstructionsOpen(true)}>
               Show Instructions
-            </MenuItem>
+            </MenuItem> */}
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </MenuList>
         </Menu>

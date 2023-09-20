@@ -315,7 +315,7 @@ export default function Dashboard({
 
           <Box as="nav">
             <UserPanel
-              setIsChatbotInstructionsOpen={setIsChatbotInstructionsOpen}
+            // setIsChatbotInstructionsOpen={setIsChatbotInstructionsOpen}
             />
           </Box>
         </Flex>
