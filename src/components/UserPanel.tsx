@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import {
   Box,
@@ -11,7 +11,13 @@ import {
 } from "@chakra-ui/react";
 import supabase from "../utils/supabaseClient";
 
-const UserPanel = () => {
+interface Props {
+  setIsChatbotInstructionsOpen: (isOpen: boolean) => void;
+}
+
+const UserPanel: React.FC<Props> = ({
+  setIsChatbotInstructionsOpen,
+}: Props) => {
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
 
@@ -48,12 +54,15 @@ const UserPanel = () => {
             justifyContent="center"
             cursor={"pointer"}
           >
-            <Avatar name={user.email} bg={"brand.mid"} />
+            <Avatar name={user.email} bg={"brand.mid"} color="brand.accent" />
           </MenuButton>
           <MenuList zIndex="50">
             <MenuItem>{user.email}</MenuItem>
             <MenuItem onClick={() => router.push("/auth/passwordChange")}>
               Change Password
+            </MenuItem>
+            <MenuItem onClick={() => setIsChatbotInstructionsOpen(true)}>
+              Show Instructions
             </MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </MenuList>
