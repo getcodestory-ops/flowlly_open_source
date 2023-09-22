@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Link,
@@ -62,28 +62,136 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
   const [numOfMessagesToShow, setNumOfMessagesToShow] = useState<number>(4);
   const [isExpandedNumber, setIsExpandedNumber] = useState<number | null>(null);
 
+  useEffect(() => {
+    console.log("expanded Number", isExpandedNumber);
+  }, [isExpandedNumber]);
+
   return (
-    <div>
-      <Text
-        fontSize={"md"}
-        color="brand.accent"
-        fontWeight={"bold"}
-        alignContent={"center"}
-        mb="1em"
-      >
-        {/* <Icon as={GiBlackBook} cursor="pointer" color={"brand.accent"} mr="2" /> */}
-        Sources:
-      </Text>
-      <Grid templateColumns={"repeat(4, 1fr)"} templateRows="repeat(2, 1fr)">
+    <Flex px={{ base: "8%", md: "0" }} direction={"column"}>
+      <Box w={{ base: "350px", md: "full" }}>
+        <Text
+          fontSize={"md"}
+          color="brand.accent"
+          fontWeight={"bold"}
+          alignContent={"center"}
+          mb="1em"
+        >
+          Sources:
+        </Text>
+        <Flex overflowY={"auto"}>
+          {documentData.slice(0, numOfMessagesToShow).map((page, index) => {
+            // {
+            //   console.log(page);
+            // }
+            return (
+              <>
+                <Flex
+                  key={index}
+                  bg={index === isExpandedNumber ? "brand.accent" : "brand.mid"}
+                  color={index === isExpandedNumber ? "brand.dark" : "white"}
+                  mx={2}
+                  py={1}
+                  px={3}
+                  rounded={"full"}
+                  fontSize={"sm"}
+                  alignItems={"center"}
+                  cursor={"pointer"}
+                  onClick={() =>
+                    setIsExpandedNumber((state) =>
+                      state === index ? null : index
+                    )
+                  }
+                >
+                  <Flex mr={1} w={"100px"}>
+                    {page.metadata.filename.slice(0, 5)}... - p.{" "}
+                    {page.metadata.page_number}
+                  </Flex>
+                  <FaAngleDown />
+                </Flex>
+              </>
+            );
+          })}
+        </Flex>
+
+        {numOfMessagesToShow === 2 && (
+          <Flex justifyContent={"center"}>
+            <Button
+              onClick={() => setNumOfMessagesToShow(5)}
+              color="brand.accent"
+              bg=""
+              size={"sm"}
+            >
+              Load more sources
+            </Button>
+          </Flex>
+        )}
+      </Box>
+      <Box>
+        <Flex mt={4}>
+          {documentData.slice(0, numOfMessagesToShow).map((page, index) => {
+            {
+              console.log(page);
+            }
+            if (index === isExpandedNumber) {
+              return (
+                <Flex
+                  bg={"brand.accent"}
+                  color={"brand.dark"}
+                  key={index}
+                  p={"8"}
+                  direction={"column"}
+                  rounded={"2xl"}
+                  h={"300px"}
+                  overflowY={"auto"}
+                >
+                  <Box
+                    bg={"brand.mid"}
+                    color={"white"}
+                    fontSize={"sm"}
+                    px={2}
+                    py={1}
+                    w={28}
+                    rounded={"full"}
+                    textAlign={"center"}
+                    shadow={"md"}
+                    mb={2}
+                    cursor={"pointer"}
+                    onClick={() =>
+                      handleRefereces(
+                        page.metadata.filename,
+                        page.metadata.page_number
+                      )
+                    }
+                  >
+                    Open in PDF
+                  </Box>
+                  <Text>Context:</Text>
+                  {page.page_content}
+                </Flex>
+              );
+            } else {
+              return null;
+            }
+          })}
+        </Flex>
+      </Box>
+    </Flex>
+  );
+};
+
+export default ContextDisplay;
+
+{
+  /* <Grid templateColumns={"repeat(4, 1fr)"} templateRows="repeat(1, 1fr)">
         {documentData.slice(0, numOfMessagesToShow).map((page, index) => {
           return (
             <GridItem
               key={`${index}`}
               colSpan={isExpandedNumber === index ? 4 : 1}
-              rowSpan={4}
+              rowSpan={2}
             >
               <Box lineHeight="7">
-                <Flex justifyContent={"space-between"}>
+                <Flex>
                   <Box
                     minW="10em"
                     bg="brand.mid"
@@ -116,7 +224,8 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
                         {index + 1}.{" "}
                         <i>
                           {" "}
-                          {page.metadata.filename} - {page.metadata.page_number}
+                          {page.metadata.filename.slice(0, 5)}... - page
+                          {page.metadata.page_number}
                         </i>
                       </Link>
                       <Icon
@@ -150,26 +259,12 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
                   {" "}
                   {page.page_content}
                 </Text>
-                {/* )} */}
-              </Box>
+                {/* )} */
+}
+{
+  /* </Box>
             </GridItem>
           );
         })}
-      </Grid>
-      {numOfMessagesToShow === 2 && (
-        <Flex justifyContent={"center"}>
-          <Button
-            onClick={() => setNumOfMessagesToShow(5)}
-            color="brand.accent"
-            bg=""
-            size={"sm"}
-          >
-            Load more sources
-          </Button>
-        </Flex>
-      )}
-    </div>
-  );
-};
-
-export default ContextDisplay;
+      </Grid> */
+}

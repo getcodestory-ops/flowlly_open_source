@@ -262,10 +262,9 @@ export default function Dashboard({
   };
 
   return (
-    <Box>
+    <Box h={{ base: "98vh", md: "100vh" }} bg={"brand.dark"}>
       <Flex
         height="100vh"
-        display="flex"
         flexDirection={{ base: "column", md: "row" }}
         // flexDirection="column"
       >
@@ -340,8 +339,15 @@ export default function Dashboard({
           alignItems="start"
           justifyContent="end"
           bg="brand.dark"
+          maxH={{ base: "80%", md: "100%" }}
         >
-          <Box overflowY="scroll" width="full" ref={chatBoxRef} mb="8">
+          <Box
+            overflowY="auto"
+            width="full"
+            ref={chatBoxRef}
+            mb="8"
+            h={{ base: "500px", md: "100%" }}
+          >
             {isChatbotInstructionsOpen && (
               <ChatbotInstructions
                 setIsChatbotInstructionsOpen={setIsChatbotInstructionsOpen}
@@ -352,6 +358,8 @@ export default function Dashboard({
               <Box
                 key={`${message?.id}-${message?.message?.slice(0, 5)}`}
                 width="full"
+                // h={"90%"}
+                // overflowY={"auto"}
               >
                 <Flex maxW="full" px="8" py="2" justifyContent="center">
                   <Box width="2xl">
@@ -404,7 +412,7 @@ export default function Dashboard({
                       </Box>
                     )}
                     {message.fromUser === "context" && (
-                      <>
+                      <Box>
                         <ContextDisplay
                           documentData={message.message}
                           setPdfVisibility={setPdfVisibility}
@@ -413,7 +421,7 @@ export default function Dashboard({
                           setHighlightDetails={setHighlightDetails}
                           selectedContext={selectedContext}
                         />
-                      </>
+                      </Box>
                     )}
                   </Box>
                 </Flex>
@@ -501,18 +509,23 @@ export default function Dashboard({
               width="full"
               flex="1"
               alignItems="start"
-              justifyContent="end"
+              justifyContent={{ base: "start", md: "end" }}
               height="100vh"
               borderLeft="1px solid blackAlpha"
-              pl={4}
+              pl={1}
               overflowY="scroll"
+              bg={"brand.accent"}
+              position={{ base: "absolute", md: "relative" }}
+              top={{ base: "0", md: "unset" }}
+              left={{ base: "0", md: "unset" }}
+              zIndex={{ base: "overlay", md: "unset" }}
             >
               <IconButton
                 aria-label="Close"
                 icon={<BsArrowBarRight />}
                 onClick={() => setPdfVisibility(false)}
                 mb={2}
-                ml={-6}
+                ml={-3}
                 pl="2"
                 zIndex="overlay"
               />

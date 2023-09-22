@@ -57,7 +57,17 @@ const PdfLoader: React.FC<pdfMetaData> = ({
   };
 
   return (
-    <Flex alignItems="center" flexDir="row">
+    <Flex
+      alignItems="center"
+      flexDir="row"
+      overflowX={"auto"}
+      overflowY={"auto"}
+      h={"90%"}
+
+      // position={{ base: "absolute", md: "unset" }}
+      // top={{ base: "0", md: "unset" }}
+      // left={{ base: "0", md: "unset" }}
+    >
       <IconButton
         aria-label="move right"
         color="gray.400"
@@ -79,11 +89,15 @@ const PdfLoader: React.FC<pdfMetaData> = ({
         )}
         {pdfUrl && (
           <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess}>
-            <Page pageNumber={pageNumber} renderTextLayer={false} />
-            <Flex
+            <Page
+              pageNumber={pageNumber}
+              renderTextLayer={false}
+              renderAnnotationLayer={false}
+            />
+            {/* <Flex
               position={"absolute"}
               zIndex="1"
-              width="2xl"
+              width="sm"
               top={`${
                 (highlightDetails?.chunk_number! * 80) /
                 highlightDetails?.total_chunks!
@@ -91,7 +105,7 @@ const PdfLoader: React.FC<pdfMetaData> = ({
               bg="yellow.100"
               opacity={isHighlightVisible ? "0.4" : "0"}
               height={`${70 / (highlightDetails?.total_chunks! + 1) + 20}%`}
-            ></Flex>
+            ></Flex> */}
           </Document>
         )}
       </Box>
