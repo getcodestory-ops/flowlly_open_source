@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Button,
@@ -31,6 +31,7 @@ import {
   FaChevronRight,
   FaBrain,
 } from "react-icons/fa";
+import { TbMenu2 } from "react-icons/tb";
 import { BsArrowBarRight } from "react-icons/bs";
 import { IoChatboxEllipses } from "react-icons/io5";
 import { createClient } from "@supabase/supabase-js";
@@ -90,6 +91,8 @@ export default function Dashboard({
   const [folderList, setFolderList] = useState<{ name: string }[] | null>(null);
 
   const [questionAnswered, setQuestionAnswered] = useState<Boolean>(false);
+  const [isChatbotInstructionsOpen, setIsChatbotInstructionsOpen] =
+    useState<Boolean>(true);
 
   const handleToggleSidePanel = (id: SidePanelType) => {
     setsidePanelType((state) => (state === id ? null : id));
@@ -259,20 +262,24 @@ export default function Dashboard({
   };
 
   return (
-    <Box>
-      <Flex height="100vh">
+    <Box h={{ base: "98vh", md: "100vh" }} bg={"brand.dark"}>
+      <Flex
+        height="100vh"
+        flexDirection={{ base: "column", md: "row" }}
+        // flexDirection="column"
+      >
         {/* Column 1: Sidebar */}
         <Flex
-          width="16"
+          // width="16"
           bg="brand.dark"
-          direction="column"
+          direction={{ sm: "row", md: "column" }}
           alignItems="center"
           justifyContent="space-between"
           // shadow="base"
-          py="6"
-          display={{ base: showMenu ? "flex" : "none", md: "flex" }}
+          p="6"
+          // display={{ base: showMenu ? "flex" : "none", md: "flex" }}
         >
-          <Stack direction="column" spacing={4}>
+          <Stack direction={{ md: "column", sm: "row" }} spacing={4}>
             <Button
               // transform="translateY(-50%)"
               zIndex="1"
@@ -305,11 +312,12 @@ export default function Dashboard({
             </Button>
           </Stack>
 
-          <Box as="nav" mt="8">
-            <UserPanel />
+          <Box as="nav">
+            <UserPanel
+            // setIsChatbotInstructionsOpen={setIsChatbotInstructionsOpen}
+            />
           </Box>
         </Flex>
-        {/* column 2 */}
         <Flex
           position={selectedContext && isPdfVisible ? "absolute" : "relative"}
           ml={selectedContext && isPdfVisible ? "16" : ""}
@@ -331,32 +339,27 @@ export default function Dashboard({
           alignItems="start"
           justifyContent="end"
           bg="brand.dark"
+          maxH={{ base: "80%", md: "100%" }}
         >
-          <Box overflowY="scroll" width="full" ref={chatBoxRef} mb="8">
-            <ChatbotInstructions />
-            {/* {chatMessages.sort((a, b) => {
-    if (a.fromUser === "question" && b.fromUser === "answer") {
-      console.log('case1',a.fromUser, b.fromUser)
-      return -1;
-      
-    } else if (a.fromUser === "answer" && b.fromUser === "question") {
-      console.log('case2',a.fromUser, b.fromUser)
-      return 1;
-    } else if (a.fromUser === "answer" && b.fromUser === "context") {
-      console.log('case3',a.fromUser, b.fromUser)
-      return -1;
-    } else if (a.fromUser === "context" && b.fromUser === "answer") {
-      console.log('case4',a.fromUser, b.fromUser)
-      return 1;
-    } else {
-      console.log('case5',a.fromUser, b.fromUser)
-      return 0;
-    }
-  }) */}
+          <Box
+            overflowY="auto"
+            width="full"
+            ref={chatBoxRef}
+            mb="8"
+            h={{ base: "500px", md: "100%" }}
+          >
+            {isChatbotInstructionsOpen && (
+              <ChatbotInstructions
+                setIsChatbotInstructionsOpen={setIsChatbotInstructionsOpen}
+              />
+            )}
+
             {chatMessages.map((message) => (
               <Box
                 key={`${message?.id}-${message?.message?.slice(0, 5)}`}
                 width="full"
+                // h={"90%"}
+                // overflowY={"auto"}
               >
                 <Flex maxW="full" px="8" py="2" justifyContent="center">
                   <Box width="2xl">
@@ -409,7 +412,7 @@ export default function Dashboard({
                       </Box>
                     )}
                     {message.fromUser === "context" && (
-                      <>
+                      <Box>
                         <ContextDisplay
                           documentData={message.message}
                           setPdfVisibility={setPdfVisibility}
@@ -418,14 +421,20 @@ export default function Dashboard({
                           setHighlightDetails={setHighlightDetails}
                           selectedContext={selectedContext}
                         />
-                      </>
+                      </Box>
                     )}
                   </Box>
                 </Flex>
               </Box>
             ))}
           </Box>
-          <Stack spacing={4} pb="4" width="2xl" alignSelf={"center"}>
+          <Stack
+            spacing={4}
+            pb="4"
+            width="2xl"
+            alignSelf={"center"}
+            w={{ base: "85%", md: "60%" }}
+          >
             <Flex justifyContent={"end"} alignItems="center" mb="-4">
               <Flex
                 justifyContent={"end"}
@@ -500,18 +509,23 @@ export default function Dashboard({
               width="full"
               flex="1"
               alignItems="start"
-              justifyContent="end"
+              justifyContent={{ base: "start", md: "end" }}
               height="100vh"
               borderLeft="1px solid blackAlpha"
-              pl={4}
+              pl={1}
               overflowY="scroll"
+              bg={"brand.accent"}
+              position={{ base: "absolute", md: "relative" }}
+              top={{ base: "0", md: "unset" }}
+              left={{ base: "0", md: "unset" }}
+              zIndex={{ base: "overlay", md: "unset" }}
             >
               <IconButton
                 aria-label="Close"
                 icon={<BsArrowBarRight />}
                 onClick={() => setPdfVisibility(false)}
                 mb={2}
-                ml={-6}
+                ml={-3}
                 pl="2"
                 zIndex="overlay"
               />

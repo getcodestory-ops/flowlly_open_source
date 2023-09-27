@@ -11,8 +11,10 @@ import {
   Text,
   Heading,
   useToast,
+  Image,
 } from "@chakra-ui/react";
 import supabase from "@/utils/supabaseClient";
+import logo from "../img/logo_full.svg"
 
 export default function MainLayout() {
   const router = useRouter();
@@ -60,23 +62,63 @@ export default function MainLayout() {
       <Center
         p="2"
         width="full"
+        height='100vh'
         // bgGradient="radial(gray.100 0%, gray.300 100%)"
         bg='brand.dark'
+        display="flex"
+        alignItems="center"
+        flexDirection="column"
       >
         <Box p={6} borderRadius={8} width="full">
           <Heading
-            size="2xl"
+            size="xl"
             mb={4}
             textAlign="center"
             fontWeight="bold"
             letterSpacing="tight"
             color="brand.accent"
+            display="flex"
+            alignItems="center"
+            flexDirection="column"
+
           >
-            Construction documentation
+            <Image src='https://qfktimnmlcnfowxuoune.supabase.co/storage/v1/object/public/logos/logo_full.svg' alt='logo' w={60} mb={4} />
+            Project Knowledge Base
           </Heading>
         </Box>
+          <Box p={8} backgroundColor="brand.mid" borderRadius="md" width="sm" m="8" textColor='white'>
+          <FormControl id="email" mb="4">
+            <FormLabel>Email address</FormLabel>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </FormControl>
+          <FormControl id="password" mb="4">
+            <FormLabel>Password</FormLabel>
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  handleLogin(email, password);
+                }
+              }}
+            />
+            <Button
+              colorScheme="gray"
+              textColor='black'
+              onClick={() => handleLogin(email, password)}
+              mt={4}
+            >
+              Login with Email
+            </Button>
+          </FormControl>
+        </Box>
       </Center>
-      <Flex
+      {/* <Flex
         height="100vh"
         alignItems="center"
         justifyContent="center"
@@ -113,7 +155,7 @@ export default function MainLayout() {
             </Button>
           </FormControl>
         </Box>
-      </Flex>
+      </Flex> */}
     </Flex>
   );
 }

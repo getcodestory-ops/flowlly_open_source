@@ -72,7 +72,7 @@ export default function DemoLayout() {
             letterSpacing="tight"
             color="gray.600"
           >
-            Construction documentation
+            Construction documentation 2
           </Heading>
         </Box>
       </Center>
