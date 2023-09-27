@@ -228,7 +228,7 @@ function FileHandler({
       });
 
       fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/file_process?folderName=${folderName}`,
+        `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/file_process?folderName=${folderName}`,
         {
           method: "POST",
           headers: {

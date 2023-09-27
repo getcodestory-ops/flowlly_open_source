@@ -68,7 +68,7 @@ export default function DataPage() {
       console.log(code, installation_id);
       if (installation_id) {
         fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/generate_token?installation_id=${installation_id}&user_id=${sessionToken?.user.id}`,
+          `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/generate_token?installation_id=${installation_id}&user_id=${sessionToken?.user.id}`,
           {
             method: "POST",
             headers: {

@@ -11,7 +11,7 @@ const Handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/answers_next?question=${question}`,
+      `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/answers_next?question=${question}`,
       {
         method: "POST",
         headers: {

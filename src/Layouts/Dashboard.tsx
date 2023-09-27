@@ -134,7 +134,7 @@ export default function Dashboard({
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/context?question=${chatInput}&spacename=${selectedContext}`,
+        `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/context?question=${chatInput}&spacename=${selectedContext}`,
         {
           method: "POST",
           headers: {
@@ -160,7 +160,7 @@ export default function Dashboard({
         setChatMessages((state) => [...state, newResponse]);
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/answers_next?question=${chatInput}`,
+          `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/answers_next?question=${chatInput}`,
           {
             method: "POST",
             headers: {

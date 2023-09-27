@@ -140,7 +140,7 @@ export default function Scope({ sessionToken, hasAdminRights }: SessionToken) {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/scope?question=${question}&spacename=${selectedContext}`,
+        `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/scope?question=${question}&spacename=${selectedContext}`,
         {
           method: "POST",
           headers: {
