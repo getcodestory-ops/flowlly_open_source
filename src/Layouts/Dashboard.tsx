@@ -1,52 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
-  Button,
   Flex,
   IconButton,
   InputGroup,
-  InputRightElement,
   Stack,
   Text,
   useToast,
-  useColorModeValue,
   Textarea,
   Select,
-  useDisclosure,
   Spinner,
   Icon,
-  Grid,
-  GridItem,
 } from "@chakra-ui/react";
-import {
-  FaBars,
-  FaUpload,
-  FaTimes,
-  FaPlus,
-  FaPlug,
-  FaRegPaperPlane,
-  FaFile,
-  FaFolder,
-  FaFolderOpen,
-  FaChevronRight,
-  FaBrain,
-} from "react-icons/fa";
-import { TbMenu2 } from "react-icons/tb";
 import { BsArrowBarRight } from "react-icons/bs";
 import { IoChatboxEllipses } from "react-icons/io5";
-import { createClient } from "@supabase/supabase-js";
 import ContextDisplay from "@/components/ContextDisplay";
-import { Session } from "@supabase/supabase-js";
-import UserPanel from "@/components/UserPanel";
 import PdfLoader from "@/components/PdfLoader";
-import SidePanel from "./SidePanel";
-import { BiUserVoice } from "react-icons/bi";
-import ChatbotInstructions from "@/components/ChatBotInstructions";
-
-// const supabase = createClient(
-//   process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-//   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""
-// );
+import SidePanel from "@/Layouts/SidePanel";
+import { useStore } from "@/utils/store";
 
 interface ChatMessage {
   id: number;
@@ -54,29 +25,26 @@ interface ChatMessage {
   fromUser: "question" | "context" | "answer";
 }
 
-interface SessionToken {
-  sessionToken: Session;
-  hasAdminRights: boolean;
-}
-
 interface HighLightInterface {
   total_chunks: number;
   chunk_number: number;
 }
 
-type SidePanelType = "fileSystem" | "integrations" | "memory" | null;
+type SidePanelType =
+  | "fileSystem"
+  | "integrations"
+  | "memory"
+  | "assistant"
+  | null;
 
-export default function Dashboard({
-  sessionToken,
-  hasAdminRights,
-}: SessionToken) {
+export default function Dashboard() {
   const toast = useToast();
-  const [showMenu, setShowMenu] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const { sessionToken, hasAdminRights } = useStore((state) => ({
+    sessionToken: state.session,
+    hasAdminRights: state.hasAdminRights,
+  }));
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
   const chatBoxRef = useRef<HTMLDivElement>(null);
   const [sidePanelType, setsidePanelType] = useState<SidePanelType | null>(
     null
@@ -86,22 +54,9 @@ export default function Dashboard({
   const [filePath, setFilePath] = useState<string>("tunnel.pdf");
   const [highlightDetails, setHighlightDetails] =
     useState<HighLightInterface | null>(null);
-  const [isFileUploadDialogOpen, setIsFileUploadDialogOpen] = useState(false);
   const [selectedContext, setSelectedContext] = useState<string>("");
   const [folderList, setFolderList] = useState<{ name: string }[] | null>(null);
-
   const [questionAnswered, setQuestionAnswered] = useState<Boolean>(false);
-  const [isChatbotInstructionsOpen, setIsChatbotInstructionsOpen] =
-    useState<Boolean>(true);
-
-  const handleToggleSidePanel = (id: SidePanelType) => {
-    setsidePanelType((state) => (state === id ? null : id));
-  };
-
-  const handleAddFolder = () => {
-    setIsFileUploadDialogOpen(true);
-  };
-  const { isOpen, onToggle } = useDisclosure();
 
   useEffect(() => {
     if (chatBoxRef.current) {
@@ -113,19 +68,8 @@ export default function Dashboard({
     setSelectedContext(folderList?.[0]?.name ?? "");
   }, [folderList]);
 
-  const textColor = useColorModeValue("blackAlpha.600", "blackAlpha.100");
-
-  const handleMenuToggle = () => {
-    setShowMenu(!showMenu);
-  };
-
-  const handleChatInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setChatInput(e.target.value);
-  };
-
   const handleChatSubmit = async () => {
     console.log("question answered", questionAnswered);
-    // setQuestionAnswered(false);
 
     const newMessage: ChatMessage = {
       id: chatMessages.length + 1,
@@ -141,7 +85,7 @@ export default function Dashboard({
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${sessionToken.access_token}`,
+            Authorization: `Bearer ${sessionToken!.access_token}`,
           },
         }
       );
@@ -167,7 +111,7 @@ export default function Dashboard({
           {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${sessionToken.access_token}`,
+              Authorization: `Bearer ${sessionToken!.access_token}`,
             },
             body: context.response[0].page_content,
           }
@@ -224,17 +168,6 @@ export default function Dashboard({
           console.error("No response body");
         }
 
-        // newResponse = {
-        //   id: chatMessages.length + 4,
-        //   message: answer.response,
-        //   fromUser: "answer",
-        // };
-        // setChatMessages((state) => {
-        //   const data = state.filter(
-        //     (response) => response.id !== chatMessages.length + 4
-        //   );
-        //   return [...data, newResponse];
-        // });
         setQuestionAnswered(true);
       } catch (error: any) {
         console.log(error);
@@ -268,56 +201,6 @@ export default function Dashboard({
         flexDirection={{ base: "column", md: "row" }}
         // flexDirection="column"
       >
-        {/* Column 1: Sidebar */}
-        <Flex
-          // width="16"
-          bg="brand.dark"
-          direction={{ sm: "row", md: "column" }}
-          alignItems="center"
-          justifyContent="space-between"
-          // shadow="base"
-          p="6"
-          // display={{ base: showMenu ? "flex" : "none", md: "flex" }}
-        >
-          <Stack direction={{ md: "column", sm: "row" }} spacing={4}>
-            <Button
-              // transform="translateY(-50%)"
-              zIndex="1"
-              onClick={() => handleToggleSidePanel("fileSystem")}
-              bg="brand.dark"
-              color="brand.accent"
-              _hover={{ bg: "brand.mid", color: "brand.accent" }}
-            >
-              {sidePanelType !== "fileSystem" ? <FaFolder /> : <FaTimes />}
-            </Button>
-            <Button
-              // transform="translateY(-50%)"
-              zIndex="1"
-              onClick={() => handleToggleSidePanel("integrations")}
-              bg="brand.dark"
-              color="brand.accent"
-              _hover={{ bg: "brand.mid", color: "brand.accent" }}
-            >
-              {sidePanelType !== "integrations" ? <FaPlug /> : <FaTimes />}
-            </Button>
-            <Button
-              // transform="translateY(-50%)"
-              zIndex="1"
-              onClick={() => handleToggleSidePanel("memory")}
-              bg="brand.dark"
-              color="brand.accent"
-              _hover={{ bg: "brand.mid", color: "brand.accent" }}
-            >
-              {sidePanelType !== "memory" ? <FaBrain /> : <FaTimes />}
-            </Button>
-          </Stack>
-
-          <Box as="nav">
-            <UserPanel
-            // setIsChatbotInstructionsOpen={setIsChatbotInstructionsOpen}
-            />
-          </Box>
-        </Flex>
         <Flex
           position={selectedContext && isPdfVisible ? "absolute" : "relative"}
           ml={selectedContext && isPdfVisible ? "16" : ""}
@@ -325,14 +208,13 @@ export default function Dashboard({
         >
           <SidePanel
             sidePanelType={sidePanelType}
-            sessionToken={sessionToken}
+            sessionToken={sessionToken!}
             folderList={folderList}
             setFolderList={setFolderList}
             hasAdminRights={hasAdminRights}
           />
         </Flex>
-        {/* )} */}
-        {/* Column 3: Chat */}{" "}
+
         <Flex
           flex="1"
           direction="column"
@@ -348,12 +230,6 @@ export default function Dashboard({
             mb="8"
             h={{ base: "500px", md: "100%" }}
           >
-            {isChatbotInstructionsOpen && (
-              <ChatbotInstructions
-                setIsChatbotInstructionsOpen={setIsChatbotInstructionsOpen}
-              />
-            )}
-
             {chatMessages.map((message) => (
               <Box
                 key={`${message?.id}-${message?.message?.slice(0, 5)}`}
@@ -405,7 +281,6 @@ export default function Dashboard({
                                     {line}
                                   </Box>
                                 ))}
-                              {/* {setQuestionAnswered(true)} */}
                             </Box>
                           )}
                         </Box>
@@ -454,8 +329,6 @@ export default function Dashboard({
                   fontSize={"xs"}
                   fontWeight="bold"
                   onChange={(e) => setSelectedContext(e.target.value)}
-
-                  // onBlur={handleBlur}
                 >
                   {folderList?.map((option) => (
                     <option
@@ -535,7 +408,7 @@ export default function Dashboard({
                 filePath={filePath}
                 highlightDetails={highlightDetails}
                 selectedFolder={selectedContext}
-                userId={sessionToken?.user.id}
+                userId={sessionToken?.user.id!}
               />
             </Box>
           )}

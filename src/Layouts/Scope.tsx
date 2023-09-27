@@ -39,7 +39,7 @@ import ScopeDisplay from "@/components/ScopeDisplay";
 import { Session } from "@supabase/supabase-js";
 import UserPanel from "@/components/UserPanel";
 import PdfLoader from "@/components/PdfLoader";
-import SidePanel from "./SidePanel";
+import SidePanel from "./SidePanelExtension";
 import { BiUserVoice } from "react-icons/bi";
 import ChatbotInstructions from "@/components/ChatBotInstructions";
 import { scopeConfig } from "@/utils/projectconfig";

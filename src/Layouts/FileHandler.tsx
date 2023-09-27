@@ -16,19 +16,15 @@ import {
   Progress,
 } from "@chakra-ui/react";
 import { FaUpload, FaFolder, FaPlus, FaCheck } from "react-icons/fa";
-import { BiRefresh } from "react-icons/bi";
-import { Session } from "@supabase/supabase-js";
 import supabase from "../utils/supabaseClient";
 import AddFolderMenu from "@/components/AddFolderMenu";
-// import useCreateFolderIfNotExists from "@/utils/useCreateFolderIfNotExists";
+import { useStore } from "@/utils/store";
 
 interface SessionToken {
-  sessionToken: Session;
   folderList: { name: string }[] | null;
   setFolderList: React.Dispatch<
     React.SetStateAction<{ name: string }[] | null>
   >;
-  hasAdminRights: boolean;
 }
 
 interface FileUploadStatus {
@@ -41,32 +37,23 @@ interface FileUploadStatus {
   unique_id?: string;
 }
 
-function FileHandler({
-  sessionToken,
-  folderList,
-  setFolderList,
-  hasAdminRights,
-}: SessionToken) {
-  //states
+function FileHandler({ folderList, setFolderList }: SessionToken) {
   const toast = useToast();
   const inputRef = useRef(null);
   const [pdfList, setPdfList] = useState<
     { name: string; fileList: string[] | undefined }[] | null
   >(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
   const [userId, setUserId] = useState<string | null>(null);
   const [isFolderSubMenuOpen, setIsFolderSubMenuOpen] =
     useState<boolean>(false);
   const [refreshToken, setrefreshToken] = useState(true);
   const [listFileStatus, setListFileStatus] = useState<FileUploadStatus[]>([]);
+  const { sessionToken, hasAdminRights } = useStore((state) => ({
+    sessionToken: state.session,
+    hasAdminRights: state.hasAdminRights,
+  }));
 
-  useEffect(() => {
-    setUserId(sessionToken?.user.id);
-  }, [sessionToken]);
-
-  // useCreateFolderIfNotExists({ sessionToken });
-  //initial state update
   const fetchFolderContents = useCallback(
     async (folderName: string) => {
       if (!userId) return;
@@ -108,7 +95,6 @@ function FileHandler({
     const fetchFolderLists = async () => {
       const fileList = await fetchFolderContents("");
       fetchFileProcessStatus();
-      //console.log(fileList);
       setFolderList(
         fileList?.map((folderName: string) => ({ name: folderName })) || null
       );
@@ -232,7 +218,7 @@ function FileHandler({
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${sessionToken.access_token}`,
+            Authorization: `Bearer ${sessionToken?.access_token}`,
           },
           body: formData,
         }
@@ -317,10 +303,6 @@ function FileHandler({
           });
         });
     }
-
-    // if (inputRef.current) {
-    //   inputRef.current = null;
-    // }
   };
 
   //ui
@@ -382,17 +364,7 @@ function FileHandler({
                   <Flex flex="1" textAlign="left" align-items="center">
                     <Icon as={FaFolder} mr={4} mt={1} color="white" />
                     {folder.name}
-                  </Flex>
-                  {/* <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={handleAddFolder}
-                      aria-label="Add folder"
-                    >
-                      <Icon as={FaPlus} />
-                      //
-                    </Button> */}
-
+                  </Flex>{" "}
                   <AccordionIcon />
                 </AccordionButton>
               </h2>
