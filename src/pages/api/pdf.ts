@@ -11,7 +11,7 @@ export const config = {
 
 const handler = (req: NextApiRequest, res: NextApiResponse) => {
   httpProxyMiddleware(req, res, {
-    target: process.env.NEXT_PUBLIC_SERVER_URL,
+    target: process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL,
   });
 };
 

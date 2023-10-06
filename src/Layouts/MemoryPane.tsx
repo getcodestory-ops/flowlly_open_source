@@ -8,7 +8,6 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { FaPlus } from "react-icons/fa";
 
 type Conversation = {
   id: number;
@@ -85,6 +84,7 @@ const MemoryPane: React.FC<Props> = ({
                 ? "brand.dark"
                 : "brand.mid"
             }
+            borderRadius={"4px"}
             cursor="pointer"
             key={conversation.id}
             onClick={() => handleConversationClick(conversation)}
@@ -93,7 +93,7 @@ const MemoryPane: React.FC<Props> = ({
             // borderY="1px"
             _hover={{
               backgroundColor: "brand.dark",
-              color:"brand.light"
+              color: "brand.light",
             }}
           >
             {conversation.title}

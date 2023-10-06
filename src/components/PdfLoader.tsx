@@ -1,45 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import supabase from "@/utils/supabaseClient";
-
-import { Box, Button, Flex, IconButton, Text } from "@chakra-ui/react";
-import { AiOutlineLeft, AiOutlineRight } from "react-icons/ai";
-import { BsArrowBarRight } from "react-icons/bs";
+import { Box, Flex, IconButton, Text } from "@chakra-ui/react";
+import { AiOutlineLeft, AiOutlineRight, AiOutlineClose } from "react-icons/ai";
+import { useStore } from "@/utils/store";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
-interface HighLightInterface {
-  total_chunks: number;
-  chunk_number: number;
-}
+const PdfLoader = () => {
+  const { pdfViewer, userId, selectedFolder, setPdfViewer, selectedContext } =
+    useStore((state) => ({
+      pdfViewer: state.pdfViewer,
+      userId: state.session?.user.id!,
+      selectedFolder: state.selectedContext,
+      setPdfViewer: state.setPdfViewer,
+      selectedContext: state.selectedContext,
+    }));
 
-interface pdfMetaData {
-  filePath: string;
-  pageNumber: number;
-  setPageNumber: React.Dispatch<React.SetStateAction<number>>;
-  highlightDetails: HighLightInterface | null;
-  selectedFolder: string;
-  userId: string;
-}
+  const { isPdfVisible, filePath, pageNumber, highlightDetails } = pdfViewer;
 
-const PdfLoader: React.FC<pdfMetaData> = ({
-  filePath,
-  pageNumber,
-  setPageNumber,
-  highlightDetails,
-  selectedFolder,
-  userId,
-}) => {
   const [pdfUrl, setPdfUrl] = useState<string | undefined>();
-  const [numPages, setNumPages] = useState<number | null>(null);
+  const [numPages, setNumPages] = useState<number>(1);
   const [isHighlightVisible, setHighlightVisibility] = useState<Boolean>(true);
 
   useEffect(() => {
     async function setUrlForPdf() {
-      console.log(userId, selectedFolder);
+      if (!selectedContext?.id || !filePath) return;
+
       if (!userId && !selectedFolder) return;
+
       const { data: downloadUrl } = await supabase.storage
-        .from(`users/${userId}/${selectedFolder}`)
+        .from(`users/${selectedContext.id}`)
         .createSignedUrl(filePath, 60);
 
       setPdfUrl(downloadUrl?.signedUrl);
@@ -57,74 +48,79 @@ const PdfLoader: React.FC<pdfMetaData> = ({
   };
 
   return (
-    <Flex
-      alignItems="center"
-      flexDir="row"
-      overflowX={"auto"}
-      overflowY={"auto"}
-      h={"90%"}
-
-      // position={{ base: "absolute", md: "unset" }}
-      // top={{ base: "0", md: "unset" }}
-      // left={{ base: "0", md: "unset" }}
-    >
-      <IconButton
-        aria-label="move right"
-        color="gray.400"
-        bg="gray.50"
-        icon={<AiOutlineLeft />}
-        onClick={() => setPageNumber(Math.max(pageNumber - 1, 1))}
-        disabled={pageNumber <= 1}
-        fontSize="xl"
-        position="absolute"
-        top="50%"
-        zIndex="10"
-      />
-
-      <Box>
-        {numPages && (
-          <Text textAlign={"center"} fontSize="xx-small">
-            Page {pageNumber} of {numPages}
-          </Text>
-        )}
-        {pdfUrl && (
-          <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess}>
-            <Page
-              pageNumber={pageNumber}
-              renderTextLayer={false}
-              renderAnnotationLayer={false}
+    <Flex>
+      {selectedFolder && isPdfVisible && (
+        <Box maxWidth="50vw" overflow={"auto"}>
+          <IconButton
+            aria-label="Close"
+            icon={<AiOutlineClose />}
+            onClick={() => setPdfViewer({ isPdfVisible: false })}
+            mb={2}
+            ml={-3}
+            pl="2"
+            color="red.400"
+            bg="gray.50"
+            zIndex="overlay"
+          />
+          <Flex
+            alignItems="center"
+            flexDir="row"
+            overflowX={"auto"}
+            overflowY={"auto"}
+            h={"90%"}
+          >
+            <IconButton
+              aria-label="move right"
+              color="gray.400"
+              bg="gray.50"
+              icon={<AiOutlineLeft />}
+              onClick={() =>
+                setPdfViewer({ pageNumber: Math.max(pageNumber - 1, 1) })
+              }
+              disabled={pageNumber <= 1}
+              fontSize="xl"
+              position="absolute"
+              top="50%"
+              zIndex="10"
             />
-            {/* <Flex
-              position={"absolute"}
-              zIndex="1"
-              width="sm"
-              top={`${
-                (highlightDetails?.chunk_number! * 80) /
-                highlightDetails?.total_chunks!
-              }%`}
-              bg="yellow.100"
-              opacity={isHighlightVisible ? "0.4" : "0"}
-              height={`${70 / (highlightDetails?.total_chunks! + 1) + 20}%`}
-            ></Flex> */}
-          </Document>
-        )}
-      </Box>
-      <IconButton
-        position="absolute"
-        top="50%"
-        zIndex="10"
-        right="4"
-        color="gray.400"
-        bg="gray.50"
-        aria-label="send message"
-        icon={<AiOutlineRight />}
-        onClick={() => {
-          setPageNumber(Math.min(pageNumber + 1, numPages ?? 1));
-          setHighlightVisibility(false);
-        }}
-        disabled={pageNumber >= (numPages ?? 1)}
-        fontSize="xl"
-      />
+
+            <Box width="100%" height="100%">
+              {numPages && (
+                <Text textAlign={"center"} fontSize="xx-small">
+                  Page {pageNumber} of {numPages}
+                </Text>
+              )}
+              {pdfUrl && (
+                <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess}>
+                  <Page
+                    pageNumber={pageNumber}
+                    renderTextLayer={false}
+                    renderAnnotationLayer={false}
+                  />
+                </Document>
+              )}
+            </Box>
+            <IconButton
+              position="absolute"
+              top="50%"
+              zIndex="10"
+              right="4"
+              color="gray.400"
+              bg="gray.50"
+              aria-label="send message"
+              icon={<AiOutlineRight />}
+              onClick={() => {
+                setPdfViewer({
+                  pageNumber: Math.min(numPages, pageNumber + 1),
+                });
+                setHighlightVisibility(false);
+              }}
+              disabled={pageNumber >= (numPages ?? 1)}
+              fontSize="xl"
+            />
+          </Flex>
+        </Box>
+      )}
     </Flex>
   );
 };

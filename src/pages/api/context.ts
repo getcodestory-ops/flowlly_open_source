@@ -11,7 +11,7 @@ const Handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/context?question=${chatInput}&spacename=${selectedContext}`,
+      `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/context?question=${chatInput}&spacename=${selectedContext}`,
       {
         method: "POST",
         headers: {
@@ -22,6 +22,7 @@ const Handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const data = await response.json();
     res.status(200).json(data);
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });

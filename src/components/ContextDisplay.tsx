@@ -1,24 +1,16 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Link,
-  Icon,
-  Flex,
-  Button,
-  Text,
-  Grid,
-  GridItem,
-  Center,
-} from "@chakra-ui/react";
-
-import { GiBlackBook } from "react-icons/gi";
+import { Box, Flex, Button, Text, Tooltip } from "@chakra-ui/react";
+import PdfLoader from "@/components/PdfLoader";
 import { FaAngleDown } from "react-icons/fa";
+import { useStore } from "@/utils/store";
+import { Brain } from "@/utils/store";
 
 interface DocumentProps {
+  chatFolder: Brain | null;
   documentData: {
     page_content: string;
     metadata: {
-      filename: string;
+      file_name: string;
       page_number: number;
       total_chunks: number;
       chunk_number: number;
@@ -27,44 +19,36 @@ interface DocumentProps {
   }[];
 }
 
-interface HighLightInterface {
-  total_chunks: number;
-  chunk_number: number;
-}
-
-interface ContextDisplayProps extends DocumentProps {
-  setPdfVisibility: React.Dispatch<React.SetStateAction<Boolean>>;
-  setPageNumber: React.Dispatch<React.SetStateAction<number>>;
-  setFilePath: React.Dispatch<React.SetStateAction<string>>;
-  setHighlightDetails: React.Dispatch<
-    React.SetStateAction<HighLightInterface | null>
-  >;
-  selectedContext: string;
-}
-
-const ContextDisplay: React.FC<ContextDisplayProps> = ({
+const ContextDisplay: React.FC<DocumentProps> = ({
   documentData,
-  setPdfVisibility,
-  setPageNumber,
-  setFilePath,
-  setHighlightDetails,
-  selectedContext,
+  chatFolder,
 }) => {
+  const [sourceFolder, setSourceFolder] = useState(chatFolder);
+  const { pdfViewer, setPdfViewer, setSelectedContext, folderList } = useStore(
+    (state) => ({
+      pdfViewer: state.pdfViewer,
+      setPdfViewer: state.setPdfViewer,
+      setSelectedContext: state.setSelectedContext,
+      folderList: state.folderList,
+    })
+  );
+
   const handleRefereces = (filePath: string, pageNumber: number) => {
-    setPageNumber(pageNumber);
-    setFilePath(filePath);
-    setPdfVisibility(true);
-    // setHighlightDetails({
-    //   total_chunks: total_chunks,
-    //   chunk_number: chunk_number,
-    // });
+    console.log("foldername", sourceFolder);
+    console.log(folderList);
+
+    setSelectedContext(
+      folderList?.filter((state) => state.name === sourceFolder?.name)[0]!
+    );
+
+    setPdfViewer({
+      pageNumber: pageNumber,
+      filePath: filePath,
+      isPdfVisible: true,
+    });
   };
   const [numOfMessagesToShow, setNumOfMessagesToShow] = useState<number>(4);
   const [isExpandedNumber, setIsExpandedNumber] = useState<number | null>(null);
-
-  useEffect(() => {
-    console.log("expanded Number", isExpandedNumber);
-  }, [isExpandedNumber]);
 
   return (
     <Flex px={{ base: "8%", md: "0" }} direction={"column"}>
@@ -79,38 +63,46 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
           Sources:
         </Text>
         <Flex overflowY={"auto"}>
-          {documentData.slice(0, numOfMessagesToShow).map((page, index) => {
-            // {
-            //   console.log(page);
-            // }
-            return (
-              <>
-                <Flex
-                  key={index}
-                  bg={index === isExpandedNumber ? "brand.accent" : "brand.mid"}
-                  color={index === isExpandedNumber ? "brand.dark" : "white"}
-                  mx={2}
-                  py={1}
-                  px={3}
-                  rounded={"full"}
-                  fontSize={"sm"}
-                  alignItems={"center"}
-                  cursor={"pointer"}
-                  onClick={() =>
-                    setIsExpandedNumber((state) =>
-                      state === index ? null : index
-                    )
-                  }
-                >
-                  <Flex mr={1} w={"100px"}>
-                    {page.metadata.filename.slice(0, 5)}... - p.{" "}
-                    {page.metadata.page_number}
+          {documentData &&
+            documentData.slice(0, numOfMessagesToShow).map((page, index) => {
+              return (
+                <>
+                  <Flex
+                    key={`page-${page.metadata.file_name}-${index}`}
+                    bg={
+                      index === isExpandedNumber ? "brand.accent" : "brand.mid"
+                    }
+                    color={index === isExpandedNumber ? "brand.dark" : "white"}
+                    mx={2}
+                    py={1}
+                    px={3}
+                    rounded={"full"}
+                    fontSize={"sm"}
+                    alignItems={"center"}
+                    cursor={"pointer"}
+                    onClick={() =>
+                      setIsExpandedNumber((state) =>
+                        state === index ? null : index
+                      )
+                    }
+                  >
+                    <Flex mr={1} w={"100px"}>
+                      <Tooltip
+                        label={page.metadata.file_name}
+                        fontSize="md"
+                        placement="top"
+                      >
+                        <span>
+                          {page.metadata.file_name?.slice(0, 5)}... - p.{" "}
+                        </span>
+                      </Tooltip>
+                      {page.metadata.page_number + 1}
+                    </Flex>
+                    <FaAngleDown />
                   </Flex>
-                  <FaAngleDown />
-                </Flex>
-              </>
-            );
-          })}
+                </>
+              );
+            })}
         </Flex>
 
         {numOfMessagesToShow === 2 && (
@@ -129,15 +121,12 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
       <Box>
         <Flex mt={4}>
           {documentData.slice(0, numOfMessagesToShow).map((page, index) => {
-            {
-              console.log(page);
-            }
             if (index === isExpandedNumber) {
               return (
                 <Flex
                   bg={"brand.accent"}
                   color={"brand.dark"}
-                  key={index}
+                  key={`index-${page.metadata.file_name}-${index}`}
                   p={"8"}
                   direction={"column"}
                   rounded={"2xl"}
@@ -156,12 +145,13 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
                     shadow={"md"}
                     mb={2}
                     cursor={"pointer"}
-                    onClick={() =>
+                    onClick={() => {
+                      setPdfViewer({ isPdfVisible: true });
                       handleRefereces(
-                        page.metadata.filename,
-                        page.metadata.page_number
-                      )
-                    }
+                        page.metadata.file_name,
+                        page.metadata.page_number + 1
+                      );
+                    }}
                   >
                     Open in PDF
                   </Box>
@@ -180,91 +170,3 @@ const ContextDisplay: React.FC<ContextDisplayProps> = ({
 };
 
 export default ContextDisplay;
-
-{
-  /* <Grid templateColumns={"repeat(4, 1fr)"} templateRows="repeat(1, 1fr)">
-        {documentData.slice(0, numOfMessagesToShow).map((page, index) => {
-          return (
-            <GridItem
-              key={`${index}`}
-              colSpan={isExpandedNumber === index ? 4 : 1}
-              rowSpan={2}
-            >
-              <Box lineHeight="7">
-                <Flex>
-                  <Box
-                    minW="10em"
-                    bg="brand.mid"
-                    pr=".6em"
-                    pl=".6em"
-                    borderRadius="20px"
-                    onClick={() =>
-                      setIsExpandedNumber((state) =>
-                        state === index ? null : index
-                      )
-                    }
-                    transition="max-height 0.3s ease-out"
-                  >
-                    <Center>
-                      <Link
-                        cursor="pointer"
-                        onClick={() =>
-                          handleRefereces(
-                            page.metadata.filename,
-                            page.metadata.page_number
-                          )
-                        }
-                        color="brand.light"
-                        fontWeight="semibold"
-                        fontSize="10px"
-                        _hover={{
-                          textDecoration: "underline",
-                        }}
-                      >
-                        {index + 1}.{" "}
-                        <i>
-                          {" "}
-                          {page.metadata.filename.slice(0, 5)}... - page
-                          {page.metadata.page_number}
-                        </i>
-                      </Link>
-                      <Icon
-                        as={FaAngleDown}
-                        cursor="pointer"
-                        color="brand.light"
-                        ml=".7em"
-                      />
-                    </Center>
-                  </Box>
-                </Flex>
-
-                <Text
-                  minW="2em"
-                  color="teal.100"
-                  fontSize="medium"
-                  maxH={isExpandedNumber === index ? "none" : "0rem"} // set maximum height to 8rem when not expanded
-                  overflow="hidden"
-                  rounded="md"
-                  px="2"
-                  _hover={{ bg: "teal.700" }}
-                  // reveal full text on hover
-                  // onClick={() =>
-                  //   setIsExpandedNumber((state) =>
-                  //     state === index ? null : index
-                  //   )
-                  // }
-                  cursor="pointer"
-                  transition="max-height 0.3s ease-out"
-                >
-                  {" "}
-                  {page.page_content}
-                </Text>
-                {/* )} */
-}
-{
-  /* </Box>
-            </GridItem>
-          );
-        })}
-      </Grid> */
-}
