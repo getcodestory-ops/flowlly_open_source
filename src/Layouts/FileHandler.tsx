@@ -19,13 +19,8 @@ import { FaUpload, FaFolder, FaPlus, FaCheck } from "react-icons/fa";
 import supabase from "../utils/supabaseClient";
 import AddFolderMenu from "@/components/AddFolderMenu";
 import { useStore } from "@/utils/store";
-
-interface SessionToken {
-  folderList: { name: string }[] | null;
-  setFolderList: React.Dispatch<
-    React.SetStateAction<{ name: string }[] | null>
-  >;
-}
+import { Brain } from "@/utils/store";
+import { getBrains } from "@/api/brainRoutes";
 
 interface FileUploadStatus {
   id: number;
@@ -37,29 +32,48 @@ interface FileUploadStatus {
   unique_id?: string;
 }
 
-function FileHandler({ folderList, setFolderList }: SessionToken) {
+function FileHandler() {
+  const {
+    sessionToken,
+    hasAdminRights,
+    folderList,
+    setFolderList,
+    setPdfViewer,
+    setSelectedContext,
+  } = useStore((state) => ({
+    sessionToken: state.session,
+    hasAdminRights: state.hasAdminRights,
+    folderList: state.folderList,
+    setFolderList: state.setFolderList,
+    setPdfViewer: state.setPdfViewer,
+    setSelectedContext: state.setSelectedContext,
+  }));
+
   const toast = useToast();
   const inputRef = useRef(null);
   const [pdfList, setPdfList] = useState<
     { name: string; fileList: string[] | undefined }[] | null
   >(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const [userId, setUserId] = useState<string | null>(null);
   const [isFolderSubMenuOpen, setIsFolderSubMenuOpen] =
     useState<boolean>(false);
   const [refreshToken, setrefreshToken] = useState(true);
   const [listFileStatus, setListFileStatus] = useState<FileUploadStatus[]>([]);
-  const { sessionToken, hasAdminRights } = useStore((state) => ({
-    sessionToken: state.session,
-    hasAdminRights: state.hasAdminRights,
-  }));
 
+  useEffect(() => {
+    if (!sessionToken) return;
+    setUserId(sessionToken?.user.id);
+  }, [sessionToken]);
+
+  //initial state update
   const fetchFolderContents = useCallback(
     async (folderName: string) => {
       if (!userId) return;
       const { data: pdfList, error } = await supabase.storage
         .from(`users`)
-        .list(`${userId}/${folderName}`);
+        .list(`${folderName}`);
       if (error) {
         console.log(error);
         return [];
@@ -74,40 +88,30 @@ function FileHandler({ folderList, setFolderList }: SessionToken) {
     [userId]
   );
 
-  const fetchFileProcessStatus = useCallback(async () => {
-    if (!userId) return;
+  // const fetchFileProcessStatus = useCallback(async () => {
+  //   if (!userId) return;
 
-    const { data: fileStatus, error } = await supabase
-      .from("uploadfileTrack")
-      .select(
-        "id, file_name, status, folder_name, uploaded_size, total_size, unique_id"
-      )
-      .eq("user_id", userId);
+  //   const { data: fileStatus, error } = await supabase
+  //     .from("uploadfileTrack")
+  //     .select("id, file_name, status, folder_name, uploaded_size, total_size")
+  //     .eq("user_id", userId);
 
-    if (error) {
-      console.log(error);
-    } else {
-      setListFileStatus(fileStatus);
-    }
-  }, [userId]);
+  //   if (error) {
+  //     console.log(error);
+  //   } else {
+  //     setListFileStatus(fileStatus);
+  //   }
+  // }, [userId]);
 
   useEffect(() => {
     const fetchFolderLists = async () => {
-      const fileList = await fetchFolderContents("");
-      fetchFileProcessStatus();
-      setFolderList(
-        fileList?.map((folderName: string) => ({ name: folderName })) || null
-      );
+      if (!sessionToken) return;
+      const brains = await getBrains(sessionToken);
+      setFolderList(brains || null);
     };
 
     fetchFolderLists();
-  }, [
-    userId,
-    fetchFolderContents,
-    refreshToken,
-    setFolderList,
-    fetchFileProcessStatus,
-  ]);
+  }, [sessionToken, setFolderList]);
 
   useEffect(() => {
     const realtime = supabase
@@ -143,7 +147,7 @@ function FileHandler({ folderList, setFolderList }: SessionToken) {
     if (!folderList) return;
     const fetchFileList = async () => {
       const promises = folderList.map(async (folder) => {
-        const fileList = await fetchFolderContents(folder.name);
+        const fileList = await fetchFolderContents(folder.id!);
         return { name: folder.name, fileList: fileList };
       });
       const results = await Promise.all(promises);
@@ -160,38 +164,39 @@ function FileHandler({ folderList, setFolderList }: SessionToken) {
 
   const handleCreateFolder = (folderName: string) => {
     async function createFolder() {
-      console.log("Creating folder:", folderName);
-      const emptyFile = new File([], ".emptyFolderPlaceholder", {
-        type: "text/plain",
-      });
-      const { data, error } = await supabase.storage
-        .from(`users/${userId}/${folderName}`)
-        .upload(emptyFile.name, emptyFile);
-      if (error) {
-        console.log(error);
-        toast({
-          title: "something went wrong while creating folder",
-          description: error.message,
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          position: "top-right",
+      if (!sessionToken) return;
+      const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/brains/`; // Replace 'YOUR_API_ENDPOINT' with your actual API URL.
+
+      const brainData = {
+        name: folderName,
+      };
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${sessionToken.access_token}`, // Replace 'YOUR_BEARER_TOKEN' with your actual token.
+          },
+          body: JSON.stringify(brainData),
         });
-      } else {
-        toast({
-          title: `folder ${folderName} created !  `,
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-          position: "top-right",
-        });
-        setrefreshToken((state) => !state);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setFolderList([...folderList!, data]);
+        console.log(data);
+      } catch (error) {
+        console.error("There was a problem with the fetch operation:", error);
       }
     }
     createFolder();
   };
 
-  const handleFileUpload = async (folderName: string) => {
+  const handleFileUpload = async (folderName: Brain) => {
+    if (!sessionToken) return;
     if (!selectedFile) {
       toast({
         title: "Select a file again",
@@ -214,11 +219,11 @@ function FileHandler({ folderList, setFolderList }: SessionToken) {
       });
 
       fetch(
-        `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/file_process?folderName=${folderName}`,
+        `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/file_upload?brain_id=${folderName.id}`,
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${sessionToken?.access_token}`,
+            Authorization: `Bearer ${sessionToken.access_token}`,
           },
           body: formData,
         }
@@ -245,51 +250,6 @@ function FileHandler({ folderList, setFolderList }: SessionToken) {
             isClosable: true,
             position: "top-right",
           });
-
-          //uploading file
-          const { data: uploadData, error: uploadError } =
-            await supabase.storage
-              .from(`/users/${userId}/${folderName}`)
-              .upload(selectedFile.name, selectedFile);
-
-          if (uploadError) {
-            console.log(uploadError);
-            toast({
-              title: "Error uploading file",
-              description: uploadError.message,
-              status: "error",
-              duration: 5000,
-              isClosable: true,
-              position: "top-right",
-            });
-          } else {
-            setPdfList((prevPdfList) => {
-              // Find the item with the matching name and update its fileList
-              const updatedItem = prevPdfList?.find(
-                (item) => item.name === folderName
-              );
-              if (
-                updatedItem &&
-                !updatedItem.fileList?.includes(selectedFile.name)
-              ) {
-                updatedItem.fileList = [
-                  ...(updatedItem.fileList || []),
-                  selectedFile.name,
-                ];
-              }
-              // Return the updated pdfList
-              return prevPdfList;
-            });
-
-            toast({
-              title:
-                "File uploaded successfully but data is being processed, check after few mins",
-              status: "success",
-              duration: 3000,
-              isClosable: true,
-              position: "top-right",
-            });
-          }
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -303,11 +263,21 @@ function FileHandler({ folderList, setFolderList }: SessionToken) {
           });
         });
     }
+
+    // if (inputRef.current) {
+    //   inputRef.current = null;
+    // }
   };
 
   //ui
   return (
-    <Flex direction={"column"} p="4" background="brand.mid" height="100vh">
+    <Flex
+      direction={"column"}
+      p="4"
+      background="brand.mid"
+      height="100vh"
+      width="full"
+    >
       <>
         <Box marginBottom="4">
           <Heading as="h2" size="md" color="white">
@@ -364,7 +334,17 @@ function FileHandler({ folderList, setFolderList }: SessionToken) {
                   <Flex flex="1" textAlign="left" align-items="center">
                     <Icon as={FaFolder} mr={4} mt={1} color="white" />
                     {folder.name}
-                  </Flex>{" "}
+                  </Flex>
+                  {/* <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleAddFolder}
+                      aria-label="Add folder"
+                    >
+                      <Icon as={FaPlus} />
+                      //
+                    </Button> */}
+
                   <AccordionIcon />
                 </AccordionButton>
               </h2>
@@ -379,7 +359,19 @@ function FileHandler({ folderList, setFolderList }: SessionToken) {
 
                     return (
                       <Box key={files} display="flex" pl="8" py="1">
-                        <Text fontSize="xs" overflowX="auto">
+                        <Text
+                          fontSize="xs"
+                          overflowX="auto"
+                          cursor={"pointer"}
+                          onClick={() => {
+                            setPdfViewer({
+                              isPdfVisible: true,
+                              pageNumber: 1,
+                              filePath: files,
+                            });
+                            setSelectedContext(folder);
+                          }}
+                        >
                           {files}
                         </Text>
                         {uploadedFile?.status && (
@@ -442,7 +434,7 @@ function FileHandler({ folderList, setFolderList }: SessionToken) {
                         size="sm"
                         bg="brand.dark"
                         _hover={{ bg: "purple" }}
-                        onClick={() => handleFileUpload(folder.name)}
+                        onClick={() => handleFileUpload(folder)}
                       >
                         <FaUpload />
                         <Text ml="2">Upload</Text>

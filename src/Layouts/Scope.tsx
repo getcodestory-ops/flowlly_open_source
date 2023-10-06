@@ -39,7 +39,7 @@ import ScopeDisplay from "@/components/ScopeDisplay";
 import { Session } from "@supabase/supabase-js";
 import UserPanel from "@/components/UserPanel";
 import PdfLoader from "@/components/PdfLoader";
-import SidePanel from "./SidePanelExtension";
+import SidePanel from "@/Layouts/SidePanel";
 import { BiUserVoice } from "react-icons/bi";
 import ChatbotInstructions from "@/components/ChatBotInstructions";
 import { scopeConfig } from "@/utils/projectconfig";
@@ -248,13 +248,7 @@ export default function Scope({ sessionToken, hasAdminRights }: SessionToken) {
           ml={selectedContext && isPdfVisible ? "16" : ""}
           zIndex="10"
         >
-          <SidePanel
-            sidePanelType={sidePanelType}
-            sessionToken={sessionToken}
-            folderList={folderList}
-            setFolderList={setFolderList}
-            hasAdminRights={hasAdminRights}
-          />
+          <SidePanel />
         </Flex>
         {/* )} */}
         {/* Column 3: Chat */}{" "}
@@ -422,14 +416,7 @@ export default function Scope({ sessionToken, hasAdminRights }: SessionToken) {
                 pl="2"
                 zIndex="overlay"
               />
-              <PdfLoader
-                pageNumber={pageNumber}
-                setPageNumber={setPageNumber}
-                filePath={filePath}
-                highlightDetails={highlightDetails}
-                selectedFolder={selectedContext}
-                userId={sessionToken?.user.id}
-              />
+              <PdfLoader />
             </Box>
           )}
         </Flex>

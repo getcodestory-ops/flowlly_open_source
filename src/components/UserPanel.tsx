@@ -10,17 +10,12 @@ import {
   Button,
 } from "@chakra-ui/react";
 import supabase from "../utils/supabaseClient";
+import { useStore } from "@/utils/store";
 
-// interface Props {
-//   setIsChatbotInstructionsOpen: (isOpen: boolean) => void;
-// }
-
-// const UserPanel: React.FC<Props> = ({
-//   setIsChatbotInstructionsOpen,
-// }: Props) => {
 const UserPanel = () => {
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
+  // const session = useStore(state=>state.session)
 
   useEffect(() => {
     async function getAndSetUser() {

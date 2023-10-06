@@ -13,14 +13,11 @@ interface SidePanel {
   hasAdminRights: boolean;
 }
 
-export default function SidePanel({ folderList, setFolderList }: SidePanel) {
+export default function SidePanel() {
   return (
     <Flex>
       <SwitchPanel />
-      <SidePanelExtension
-        folderList={folderList}
-        setFolderList={setFolderList}
-      />
+      <SidePanelExtension />
     </Flex>
   );
 }

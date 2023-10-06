@@ -1,5 +1,5 @@
 import { Flex, Stack, Button, Box } from "@chakra-ui/react";
-import { FaTimes, FaSearch, FaPlug, FaBrain } from "react-icons/fa";
+import { FaTimes, FaSearch, FaPlug, FaBrain, FaFolder } from "react-icons/fa";
 import { SiFoursquarecityguide } from "react-icons/si";
 import UserPanel from "@/components/UserPanel";
 import { useStore } from "@/utils/store";
@@ -32,11 +32,7 @@ export default function SwitchPanel() {
           color="brand.accent"
           _hover={{ bg: "brand.mid", color: "brand.accent" }}
         >
-          {sidePanelExtensionView !== "assistant" ? (
-            <SiFoursquarecityguide />
-          ) : (
-            <FaTimes />
-          )}
+          {sidePanelExtensionView !== "assistant" ? <FaBrain /> : <FaTimes />}
         </Button>
         <Button
           // transform="translateY(-50%)"
@@ -46,9 +42,9 @@ export default function SwitchPanel() {
           color="brand.accent"
           _hover={{ bg: "brand.mid", color: "brand.accent" }}
         >
-          {sidePanelExtensionView !== "fileSystem" ? <FaSearch /> : <FaTimes />}
+          {sidePanelExtensionView !== "fileSystem" ? <FaFolder /> : <FaTimes />}
         </Button>
-        <Button
+        {/* <Button
           // transform="translateY(-50%)"
           zIndex="1"
           onClick={() => setSidePanelExtensionView("integrations")}
@@ -67,7 +63,7 @@ export default function SwitchPanel() {
           _hover={{ bg: "brand.mid", color: "brand.accent" }}
         >
           {sidePanelExtensionView !== "memory" ? <FaBrain /> : <FaTimes />}
-        </Button>
+        </Button> */}
       </Stack>
 
       <Box as="nav">

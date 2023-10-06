@@ -29,7 +29,7 @@ interface DocumentProps {
   documentData: {
     page_content: string;
     metadata: {
-      filename: string;
+      file_name: string;
       page_number: number;
       total_chunks: number;
       chunk_number: number;
@@ -103,7 +103,7 @@ const ScopeDisplay: React.FC<ContextDisplayProps> = ({
   const getAnswers = async (
     context: string,
     index: number,
-    filename?: string
+    file_name?: string
   ) => {
     try {
       if (Object.keys(furtherAnalysis).length > 0) return;
@@ -113,7 +113,7 @@ const ScopeDisplay: React.FC<ContextDisplayProps> = ({
       }));
       const loadingToastId = toast({
         title: `Fetching  detailed description for section ${
-          `${filename}-${index}` ?? index
+          `${file_name}-${index}` ?? index
         }`,
         status: "loading",
         duration: null,
@@ -129,7 +129,7 @@ const ScopeDisplay: React.FC<ContextDisplayProps> = ({
       toast.close(loadingToastId);
       toast({
         title: `Successfully analyzed scope for section ${
-          `${filename}-${index}` ?? index
+          `${file_name}-${index}` ?? index
         }`,
         status: "success",
         duration: 5000,
@@ -152,7 +152,7 @@ const ScopeDisplay: React.FC<ContextDisplayProps> = ({
 
   const fetchAnalysis = async () => {
     const promises = documentData.slice(0, 2).map((page, index) => {
-      return getAnswers(page.page_content, index, page.metadata.filename);
+      return getAnswers(page.page_content, index, page.metadata.file_name);
     });
     const results = await Promise.all(promises);
     setIsLoading(false);
@@ -235,7 +235,7 @@ const ScopeDisplay: React.FC<ContextDisplayProps> = ({
                         cursor="pointer"
                         onClick={() =>
                           handleRefereces(
-                            page.metadata.filename,
+                            page.metadata.file_name,
                             page.metadata.page_number
                           )
                         }
@@ -249,7 +249,8 @@ const ScopeDisplay: React.FC<ContextDisplayProps> = ({
                         {index + 1}.{" "}
                         <i>
                           {" "}
-                          {page.metadata.filename} - {page.metadata.page_number}
+                          {page.metadata.file_name} -{" "}
+                          {page.metadata.page_number}
                         </i>
                       </Link>
                       <Icon

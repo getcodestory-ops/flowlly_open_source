@@ -5,21 +5,10 @@ import AssistantPane from "@/Layouts/AssistantPane";
 import MemoryPane from "@/Layouts/MemoryPane";
 import { useStore } from "@/utils/store";
 
-interface SidePanel {
-  folderList: { name: string }[] | null;
-  setFolderList: React.Dispatch<
-    React.SetStateAction<{ name: string }[] | null>
-  >;
-}
-
-function SidePanelExtension({ folderList, setFolderList }: SidePanel) {
-  const { sidePanelExtensionView, sessionToken, hasAdminRights } = useStore(
-    (state) => ({
-      sidePanelExtensionView: state.sidePanelExtensionView,
-      sessionToken: state.session,
-      hasAdminRights: state.hasAdminRights,
-    })
-  );
+function SidePanelExtension() {
+  const { sidePanelExtensionView } = useStore((state) => ({
+    sidePanelExtensionView: state.sidePanelExtensionView,
+  }));
 
   return (
     <Flex
@@ -30,20 +19,16 @@ function SidePanelExtension({ folderList, setFolderList }: SidePanel) {
       alignItems="center"
       shadow="base"
     >
-      <Flex
+      {/* <Flex
         w="full"
         display={sidePanelExtensionView === "fileSystem" ? "visible" : "none"}
         direction="column"
         alignItems="center"
-      >
-        <FileHandler folderList={folderList} setFolderList={setFolderList} />
-      </Flex>
-      {sidePanelExtensionView === "assistant" && (
-        <AssistantPane sessionToken={sessionToken!} />
-      )}
-      {sidePanelExtensionView === "integrations" && (
-        <Integrationhandler sessionToken={sessionToken!} />
-      )}
+      > */}
+      {sidePanelExtensionView === "fileSystem" && <FileHandler />}
+      {/* </Flex> */}
+      {sidePanelExtensionView === "assistant" && <AssistantPane />}
+      {/* {sidePanelExtensionView === "integrations" && <Integrationhandler />}
       {sidePanelExtensionView === "memory" && (
         <Flex width="full" height="100vh">
           <MemoryPane
@@ -55,10 +40,12 @@ function SidePanelExtension({ folderList, setFolderList }: SidePanel) {
               },
             ]}
             onNewChatClick={() => console.log("new chat click")}
-            onConversationClick={() => {}}
+            onConversationClick={() => {
+              console.log("this");
+            }}
           />
         </Flex>
-      )}
+      )} */}
     </Flex>
   );
 }
