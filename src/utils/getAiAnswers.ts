@@ -1,5 +1,6 @@
 import { Session } from "@supabase/supabase-js";
 import { Brain } from "@/utils/store";
+import { useHandleStream } from "./useHandleStream";
 
 export const getContext = async (
   sessionToken: Session,
@@ -44,21 +45,35 @@ export const getContexualAnswer = async (
   brain_id: string,
   question: string
 ) => {
+  const { handleStream } = useHandleStream();
+
   const chat_query = {
     question: question,
   };
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/chat/${chat_id}/question/stream?brain_id=${brain_id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionToken!.access_token}`,
+        },
+        body: JSON.stringify(chat_query),
+      }
+    );
+    if (!response.ok) {
+      console.log(response);
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/chat/${chat_id}/question?brain_id=${brain_id}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${sessionToken!.access_token}`,
-      },
-      body: JSON.stringify(chat_query),
+      return;
     }
-  );
 
-  return response;
+    if (response.body === null) {
+      throw new Error("Did not get response");
+    }
+
+    await handleStream(response.body.getReader());
+  } catch (error) {
+    console.log(error);
+  }
 };

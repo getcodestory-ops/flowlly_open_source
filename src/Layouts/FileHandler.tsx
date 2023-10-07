@@ -39,6 +39,7 @@ function FileHandler() {
     folderList,
     setFolderList,
     setPdfViewer,
+    selectedContext,
     setSelectedContext,
   } = useStore((state) => ({
     sessionToken: state.session,
@@ -46,6 +47,7 @@ function FileHandler() {
     folderList: state.folderList,
     setFolderList: state.setFolderList,
     setPdfViewer: state.setPdfViewer,
+    selectedContext: state.selectedContext,
     setSelectedContext: state.setSelectedContext,
   }));
 
@@ -288,11 +290,12 @@ function FileHandler() {
           <Stack direction="row" justify="space-between" mb={2}>
             <Stack justify="start" width="full">
               <Button
-                colorScheme="teal"
-                bg="purple"
-                size={"sm"}
+                color="white"
+                width="full"
+                variant="outline"
+                borderColor="white"
+                _hover={{ bg: "gray.600" }}
                 onClick={() => setIsFolderSubMenuOpen(true)}
-                _hover={{ bg: "purple.600" }}
               >
                 <FaPlus />
 
@@ -328,22 +331,21 @@ function FileHandler() {
           }}
         >
           {folderList?.map((folder) => (
-            <AccordionItem key={folder.name}>
+            <AccordionItem
+              key={folder.name}
+              onClick={() => setSelectedContext(folder)}
+              boxShadow={
+                folder.id === selectedContext?.id
+                  ? "0px 0px 8px 1px white"
+                  : "none"
+              }
+            >
               <h2>
                 <AccordionButton>
                   <Flex flex="1" textAlign="left" align-items="center">
                     <Icon as={FaFolder} mr={4} mt={1} color="white" />
                     {folder.name}
                   </Flex>
-                  {/* <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={handleAddFolder}
-                      aria-label="Add folder"
-                    >
-                      <Icon as={FaPlus} />
-                      //
-                    </Button> */}
 
                   <AccordionIcon />
                 </AccordionButton>

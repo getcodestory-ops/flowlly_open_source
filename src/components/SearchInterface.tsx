@@ -17,6 +17,7 @@ import {
 } from "@/utils/getAiAnswers";
 import { createNewChatSession, getChatHistory } from "@/api/chatRoutes";
 import { getFirstFiveWords } from "@/utils/getFirstWords";
+import { getBrains } from "@/api/brainRoutes";
 
 function SearchInterface() {
   const toast = useToast();
@@ -34,6 +35,7 @@ function SearchInterface() {
     setChatSession,
     setChatSessions,
     setChatHistory,
+    setFolderList,
   } = useStore((state) => ({
     sessionToken: state.session,
     folderList: state.folderList,
@@ -46,6 +48,7 @@ function SearchInterface() {
     setChatSession: state.setChatSession,
     setChatSessions: state.setChatSessions,
     setChatHistory: state.setChatHistory,
+    setFolderList: state.setFolderList,
   }));
 
   useEffect(() => {
@@ -87,10 +90,10 @@ function SearchInterface() {
         chatInput
       );
 
-      const data = await response.json();
-      console.log(data);
+      // const data = await response.json();
+      // console.log(data);
 
-      setChatMessages(data.assistant, "answer", activeChatIndex);
+      // setChatMessages(data.assistant, "answer", activeChatIndex);
     } catch (error: any) {
       console.log(error);
     }
@@ -116,6 +119,16 @@ function SearchInterface() {
     };
     fetchChatHistory();
   }, [sessionToken, chatSession]);
+
+  useEffect(() => {
+    const fetchFolderLists = async () => {
+      if (!sessionToken) return;
+      const brains = await getBrains(sessionToken);
+      setFolderList(brains || null);
+    };
+
+    fetchFolderLists();
+  }, [sessionToken, setFolderList]);
 
   return (
     <Flex
