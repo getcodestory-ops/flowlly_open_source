@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Button, Flex, Box, Icon, useToast, Input } from "@chakra-ui/react";
+import {
+  Button,
+  Flex,
+  Box,
+  Icon,
+  useToast,
+  Input,
+  Heading,
+} from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { Session } from "@supabase/supabase-js";
 import {
@@ -81,6 +89,11 @@ const AssistantPane = () => {
 
   return (
     <Flex direction="column" height="100vh" bg="brand.mid" width="full" p="4">
+      <Box marginBottom="4">
+        <Heading as="h2" size="md" color="white">
+          Conversations
+        </Heading>
+      </Box>
       <Flex>
         <CreateNewChatButton />
       </Flex>

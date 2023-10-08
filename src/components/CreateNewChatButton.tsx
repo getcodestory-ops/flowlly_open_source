@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Icon, useToast } from "@chakra-ui/react";
+import { Box, Button, Icon, useToast, Heading } from "@chakra-ui/react";
 import { FiPlus, FiTrash } from "react-icons/fi";
 import { useStore } from "@/utils/store";
 import { createNewChatSession } from "@/api/chatRoutes";
@@ -51,7 +51,7 @@ const CreateNewChatButton = () => {
         _hover={{ bg: "gray.600" }}
         onClick={() => createNewChat()}
       >
-        New Chat
+        New Conversation
       </Button>
     </Box>
   );

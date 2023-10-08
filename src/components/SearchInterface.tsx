@@ -17,6 +17,7 @@ import {
 } from "@/utils/getAiAnswers";
 import { createNewChatSession, getChatHistory } from "@/api/chatRoutes";
 import { getFirstFiveWords } from "@/utils/getFirstWords";
+import { getBrains } from "@/api/brainRoutes";
 
 function SearchInterface() {
   const toast = useToast();
@@ -34,6 +35,7 @@ function SearchInterface() {
     setChatSession,
     setChatSessions,
     setChatHistory,
+    setFolderList,
   } = useStore((state) => ({
     sessionToken: state.session,
     folderList: state.folderList,
@@ -46,6 +48,7 @@ function SearchInterface() {
     setChatSession: state.setChatSession,
     setChatSessions: state.setChatSessions,
     setChatHistory: state.setChatHistory,
+    setFolderList: state.setFolderList,
   }));
 
   useEffect(() => {
@@ -54,14 +57,17 @@ function SearchInterface() {
   }, [folderList]);
 
   const handleChatSubmit = async () => {
-    const chatTitle = getFirstFiveWords(chatInput);
+    const activeChatIndex = chatMessages.length + 1;
+    setChatMessages(chatInput, "question", activeChatIndex);
     let newChatSession = null;
     if (!chatSession) {
+      const chatTitle = getFirstFiveWords(chatInput);
       newChatSession = await createNewChatSession(sessionToken!, chatTitle);
       setChatSession(newChatSession);
       setChatSessions([newChatSession, ...chatSessions]);
     }
 
+    // setChatMessages([], "context", activeChatIndex + 1);
     try {
       const context = await getContext(
         sessionToken!,
@@ -69,16 +75,15 @@ function SearchInterface() {
         selectedContext!
       );
 
-      setChatMessages(context, "context");
+      setChatMessages(context, "context", activeChatIndex + 1);
     } catch (error: any) {
       console.log(error);
     }
 
     try {
-      const activeChatIndex =
-        chatMessages.length === 0 ? 2 : chatMessages.length;
+      // const activeChatIndex = chatMessages.length + 1;
 
-      setChatMessages("loading...", "answer", activeChatIndex);
+      setChatMessages("loading...", "answer", activeChatIndex + 2);
 
       const response = await getContexualAnswer(
         sessionToken!,
@@ -87,10 +92,17 @@ function SearchInterface() {
         chatInput
       );
 
-      const data = await response.json();
-      console.log(data);
-
-      setChatMessages(data.assistant, "answer", activeChatIndex);
+      // const data = await response.json();
+      // console.log(data);
+      if (response) {
+        setChatMessages(response.assistant, "answer", activeChatIndex + 2);
+      } else {
+        setChatMessages(
+          "Something went wrong !",
+          "answer",
+          activeChatIndex + 2
+        );
+      }
     } catch (error: any) {
       console.log(error);
     }
@@ -116,6 +128,16 @@ function SearchInterface() {
     };
     fetchChatHistory();
   }, [sessionToken, chatSession]);
+
+  useEffect(() => {
+    const fetchFolderLists = async () => {
+      if (!sessionToken) return;
+      const brains = await getBrains(sessionToken);
+      setFolderList(brains || null);
+    };
+
+    fetchFolderLists();
+  }, [sessionToken, setFolderList]);
 
   return (
     <Flex
