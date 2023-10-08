@@ -50,7 +50,7 @@ const UserPanel = () => {
             justifyContent="center"
             cursor={"pointer"}
           >
-            <Avatar name={user.email} bg={"brand.mid"} color="brand.accent" />
+            <Avatar name={user.email} bg={"brand.mid"} color="white" />
           </MenuButton>
           <MenuList zIndex="50">
             <MenuItem>{user.email}</MenuItem>

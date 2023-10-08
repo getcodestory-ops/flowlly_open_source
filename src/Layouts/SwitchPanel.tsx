@@ -29,8 +29,8 @@ export default function SwitchPanel() {
           zIndex="1"
           onClick={() => setSidePanelExtensionView("assistant")}
           bg="brand.dark"
-          color="brand.accent"
-          _hover={{ bg: "brand.mid", color: "brand.accent" }}
+          color="white"
+          _hover={{ bg: "brand.mid", color: "white" }}
         >
           {sidePanelExtensionView !== "assistant" ? <FaBrain /> : <FaTimes />}
         </Button>
@@ -39,8 +39,8 @@ export default function SwitchPanel() {
           zIndex="1"
           onClick={() => setSidePanelExtensionView("fileSystem")}
           bg="brand.dark"
-          color="brand.accent"
-          _hover={{ bg: "brand.mid", color: "brand.accent" }}
+          color="white"
+          _hover={{ bg: "brand.mid", color: "white" }}
         >
           {sidePanelExtensionView !== "fileSystem" ? <FaFolder /> : <FaTimes />}
         </Button>
@@ -49,8 +49,8 @@ export default function SwitchPanel() {
           zIndex="1"
           onClick={() => setSidePanelExtensionView("integrations")}
           bg="brand.dark"
-          color="brand.accent"
-          _hover={{ bg: "brand.mid", color: "brand.accent" }}
+          color="white"
+          _hover={{ bg: "brand.mid", color: "white" }}
         >
           {sidePanelExtensionView !== "integrations" ? <FaPlug /> : <FaTimes />}
         </Button>
@@ -59,8 +59,8 @@ export default function SwitchPanel() {
           zIndex="1"
           onClick={() => setSidePanelExtensionView("memory")}
           bg="brand.dark"
-          color="brand.accent"
-          _hover={{ bg: "brand.mid", color: "brand.accent" }}
+          color="white"
+          _hover={{ bg: "brand.mid", color: "white" }}
         >
           {sidePanelExtensionView !== "memory" ? <FaBrain /> : <FaTimes />}
         </Button> */}

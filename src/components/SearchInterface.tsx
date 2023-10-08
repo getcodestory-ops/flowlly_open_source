@@ -204,7 +204,7 @@ function SearchInterface() {
                 handleChatSubmit();
               }
             }}
-            boxShadow="0px 0px 8px 1px rgba(255,221,0, 0.8)"
+            boxShadow="0px 0px 8px 1px rgba(255,255,255, 0.8)"
             border="1px solid"
             borderColor="brand.dark"
             borderRadius={"40px"}
@@ -212,7 +212,7 @@ function SearchInterface() {
             _focus={{
               // outline: "none",
               borderColor: "brand.dark",
-              boxShadow: "0px 0px 8px 1px rgba(255,221,0, 0.8)",
+              boxShadow: "0px 0px 8px 1px rgba(255,255,255, 0.8)",
             }}
             minH="3rem"
             h="auto"
