@@ -57,14 +57,17 @@ function SearchInterface() {
   }, [folderList]);
 
   const handleChatSubmit = async () => {
-    const chatTitle = getFirstFiveWords(chatInput);
+    const activeChatIndex = chatMessages.length + 1;
+    setChatMessages(chatInput, "question", activeChatIndex);
     let newChatSession = null;
     if (!chatSession) {
+      const chatTitle = getFirstFiveWords(chatInput);
       newChatSession = await createNewChatSession(sessionToken!, chatTitle);
       setChatSession(newChatSession);
       setChatSessions([newChatSession, ...chatSessions]);
     }
 
+    // setChatMessages([], "context", activeChatIndex + 1);
     try {
       const context = await getContext(
         sessionToken!,
@@ -72,16 +75,15 @@ function SearchInterface() {
         selectedContext!
       );
 
-      setChatMessages(context, "context");
+      setChatMessages(context, "context", activeChatIndex + 1);
     } catch (error: any) {
       console.log(error);
     }
 
     try {
-      const activeChatIndex =
-        chatMessages.length === 0 ? 2 : chatMessages.length;
+      // const activeChatIndex = chatMessages.length + 1;
 
-      setChatMessages("loading...", "answer", activeChatIndex);
+      setChatMessages("loading...", "answer", activeChatIndex + 2);
 
       const response = await getContexualAnswer(
         sessionToken!,
@@ -92,8 +94,15 @@ function SearchInterface() {
 
       // const data = await response.json();
       // console.log(data);
-
-      // setChatMessages(data.assistant, "answer", activeChatIndex);
+      if (response) {
+        setChatMessages(response.assistant, "answer", activeChatIndex + 2);
+      } else {
+        setChatMessages(
+          "Something went wrong !",
+          "answer",
+          activeChatIndex + 2
+        );
+      }
     } catch (error: any) {
       console.log(error);
     }

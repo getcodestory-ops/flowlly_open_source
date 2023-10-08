@@ -3,7 +3,7 @@
 // import { ChatMessage } from "../types";
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const useHandleStream = () => {
+export const handleStreams = () => {
   //   const { updateStreamingHistory } = useChatContext();
 
   const handleStream = async (

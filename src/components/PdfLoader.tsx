@@ -2,7 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import supabase from "@/utils/supabaseClient";
 import { Box, Flex, IconButton, Text } from "@chakra-ui/react";
-import { AiOutlineLeft, AiOutlineRight, AiOutlineClose } from "react-icons/ai";
+import {
+  AiOutlineLeft,
+  AiOutlineRight,
+  AiOutlineClose,
+  AiOutlinePlus,
+  AiOutlineMinus,
+} from "react-icons/ai";
 import { useStore } from "@/utils/store";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
@@ -18,6 +24,7 @@ const PdfLoader = () => {
     }));
 
   const { isPdfVisible, filePath, pageNumber, highlightDetails } = pdfViewer;
+  const [scale, setScale] = useState<number>(1.0);
 
   const [pdfUrl, setPdfUrl] = useState<string | undefined>();
   const [numPages, setNumPages] = useState<number>(1);
@@ -50,7 +57,7 @@ const PdfLoader = () => {
   return (
     <Flex>
       {selectedFolder && isPdfVisible && (
-        <Box maxWidth="50vw" overflow={"auto"}>
+        <Box overflow={"auto"} h={"100vh"}>
           <IconButton
             aria-label="Close"
             icon={<AiOutlineClose />}
@@ -62,12 +69,33 @@ const PdfLoader = () => {
             bg="gray.50"
             zIndex="overlay"
           />
+          <IconButton
+            aria-label="Close"
+            icon={<AiOutlinePlus />}
+            onClick={() => setScale((state) => state + 0.2)}
+            mb={2}
+            ml={4}
+            size={"sm"}
+            color="red.400"
+            bg="gray.50"
+            zIndex="overlay"
+          />
+          <IconButton
+            aria-label="Close"
+            icon={<AiOutlineMinus />}
+            onClick={() => setScale((state) => state - 0.2)}
+            mb={2}
+            ml={2}
+            size={"sm"}
+            color="red.400"
+            bg="gray.50"
+            zIndex="overlay"
+          />
           <Flex
             alignItems="center"
             flexDir="row"
             overflowX={"auto"}
             overflowY={"auto"}
-            h={"90%"}
           >
             <IconButton
               aria-label="move right"
@@ -96,6 +124,7 @@ const PdfLoader = () => {
                     pageNumber={pageNumber}
                     renderTextLayer={false}
                     renderAnnotationLayer={false}
+                    scale={scale}
                   />
                 </Document>
               )}
