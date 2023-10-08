@@ -14,7 +14,7 @@ import {
   Image,
 } from "@chakra-ui/react";
 import supabase from "@/utils/supabaseClient";
-import logo from "../img/logo_full.svg"
+import logo from "../img/logo_full.svg";
 
 export default function MainLayout() {
   const router = useRouter();
@@ -28,10 +28,14 @@ export default function MainLayout() {
       password: password,
     });
     if (error) {
-      console.log(error);
+      let message = "An error occured";
+      if (error.name === "AuthApiError") {
+        message =
+          "Please verify your email before logging in. Check your spam folder if you can't find the email in main inbox.";
+      }
       toast({
-        title: "signin to continue ",
-        description: error.message,
+        title: error.message,
+        description: message,
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -53,8 +57,6 @@ export default function MainLayout() {
       }
     }
     loginCheck();
-
-    
   }, [router]);
 
   return (
@@ -62,9 +64,9 @@ export default function MainLayout() {
       <Center
         p="2"
         width="full"
-        height='100vh'
+        height="100vh"
         // bgGradient="radial(gray.100 0%, gray.300 100%)"
-        bg='brand.dark'
+        bg="brand.dark"
         display="flex"
         alignItems="center"
         flexDirection="column"
@@ -80,13 +82,24 @@ export default function MainLayout() {
             display="flex"
             alignItems="center"
             flexDirection="column"
-
           >
-            <Image src='https://qfktimnmlcnfowxuoune.supabase.co/storage/v1/object/public/logos/logo_full.svg' alt='logo' w={60} mb={4} />
+            <Image
+              src="https://qfktimnmlcnfowxuoune.supabase.co/storage/v1/object/public/logos/logo_full.svg"
+              alt="logo"
+              w={60}
+              mb={4}
+            />
             Project Knowledge Base
           </Heading>
         </Box>
-          <Box p={8} backgroundColor="brand.mid" borderRadius="md" width="sm" m="8" textColor='white'>
+        <Box
+          p={8}
+          backgroundColor="brand.mid"
+          borderRadius="md"
+          width="sm"
+          m="8"
+          textColor="white"
+        >
           <FormControl id="email" mb="4">
             <FormLabel>Email address</FormLabel>
             <Input
@@ -109,7 +122,7 @@ export default function MainLayout() {
             />
             <Button
               colorScheme="gray"
-              textColor='black'
+              textColor="black"
               onClick={() => handleLogin(email, password)}
               mt={4}
             >
