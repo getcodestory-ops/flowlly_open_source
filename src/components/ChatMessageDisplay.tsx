@@ -6,6 +6,7 @@ import { IoChatboxEllipses } from "react-icons/io5";
 
 function ChatMessageDisplay() {
   const chatBoxRef = useRef<HTMLDivElement>(null);
+  const lastMessageRef = useRef<HTMLDivElement>(null);
   const chatMessages = useStore((state) => state.chatMessages);
   const selectedContext = useStore((state) => state.selectedContext);
   const context = useRef(selectedContext);
@@ -13,6 +14,11 @@ function ChatMessageDisplay() {
   useEffect(() => {
     context.current = selectedContext;
   }, [selectedContext]);
+
+  useEffect(() => {
+    if (!lastMessageRef) return;
+    lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
 
   return (
     <Box
@@ -22,10 +28,11 @@ function ChatMessageDisplay() {
       mb="8"
       h={{ base: "500px", md: "100%" }}
     >
-      {chatMessages.map((message) => (
+      {chatMessages.map((message, index) => (
         <Box
           key={`${message?.id}-${message?.message?.slice(0, 5)}`}
           width="full"
+          ref={index === chatMessages.length - 1 ? lastMessageRef : null}
         >
           <Flex maxW="full" px="8" py="2" justifyContent="center">
             <Box width="2xl">
