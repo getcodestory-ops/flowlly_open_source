@@ -32,6 +32,7 @@ const DraggablePaneDivider: React.FC<DraggablePaneDividerProps> = ({
 
   const handleDrag = (_: any, data: DraggableData) => {
     setPaneWidth(paneWidth + data.deltaX);
+    console.log(paneWidth);
   };
 
   return (
@@ -53,8 +54,7 @@ const DraggablePaneDivider: React.FC<DraggablePaneDividerProps> = ({
           zIndex="10"
         />
       </Draggable>
-      <Pane flex="1">
-        {" "}
+      <Pane flex="1" maxWidth={window.innerWidth - paneWidth - 100}>
         <RightPanel />
       </Pane>
     </Box>
