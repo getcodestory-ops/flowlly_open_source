@@ -144,8 +144,12 @@ export const useStore = create<State>((set) => ({
       chatToUpdate.chat_history = chatHistory;
 
       // Replace the original chat with the updated one
-      chatSessions[chatIndex] = chatToUpdate;
+      const updatedChatSessions = [
+        ...chatSessions.slice(0, chatIndex),
+        chatToUpdate,
+        ...chatSessions.slice(chatIndex + 1),
+      ];
 
-      return { chatSessions: chatSessions };
+      return { chatSessions: updatedChatSessions };
     }),
 }));

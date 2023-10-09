@@ -135,13 +135,7 @@ function SearchInterface() {
       }
     };
     fetchChatHistory();
-  }, [
-    sessionToken,
-    chatSessions,
-    chatSession,
-    setChatHistory,
-    updateChatHistory,
-  ]);
+  }, [sessionToken, chatSession, setChatHistory, updateChatHistory]);
 
   useEffect(() => {
     const fetchFolderLists = async () => {
