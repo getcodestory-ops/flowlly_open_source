@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { Session } from "@supabase/supabase-js";
 import { scopeConfig } from "./projectconfig";
-import { Chat, ChatMessage } from "@/types/chat";
+import { Chat, ChatMessage, ChatHistory } from "@/types/chat";
 
 type SidePanelExtension =
   | "fileSystem"
@@ -58,6 +58,7 @@ type State = {
   setChatHistory: (chatMessages: ChatMessage[]) => void;
   setSelectedContext: (context: Brain | null) => void;
   setPdfViewer: (pdfDetails: any) => void;
+  updateChatHistory: (id: string, chatHistory: ChatHistory[]) => void;
 };
 
 export const useStore = create<State>((set) => ({
@@ -122,4 +123,29 @@ export const useStore = create<State>((set) => ({
     set(() => ({ selectedContext })),
   setPdfViewer: (pdfDetails: any) =>
     set((state) => ({ pdfViewer: { ...state.pdfViewer, ...pdfDetails } })),
+
+  updateChatHistory: (id: string, chatHistory: ChatHistory[]) =>
+    set((state) => {
+      // Find the index of the chat with the matching chat_id
+      const chatSessions = state.chatSessions;
+
+      const chatIndex = chatSessions.findIndex((chat) => chat.chat_id === id);
+
+      if (chatIndex === -1) {
+        // If the chat_id is not found in the list, you might want to handle this case.
+        console.error("Chat ID not found!");
+        return { chatSessions: chatSessions };
+      }
+
+      const chatToUpdate = chatSessions[chatIndex];
+
+      // If chat_history exists, push the new session, otherwise, initialize it
+
+      chatToUpdate.chat_history = chatHistory;
+
+      // Replace the original chat with the updated one
+      chatSessions[chatIndex] = chatToUpdate;
+
+      return { chatSessions: chatSessions };
+    }),
 }));

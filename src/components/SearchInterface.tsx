@@ -36,6 +36,7 @@ function SearchInterface() {
     setChatSessions,
     setChatHistory,
     setFolderList,
+    updateChatHistory,
   } = useStore((state) => ({
     sessionToken: state.session,
     folderList: state.folderList,
@@ -49,16 +50,17 @@ function SearchInterface() {
     setChatSessions: state.setChatSessions,
     setChatHistory: state.setChatHistory,
     setFolderList: state.setFolderList,
+    updateChatHistory: state.updateChatHistory,
   }));
 
   useEffect(() => {
     if (!folderList) return;
     setSelectedContext(folderList?.[0] ?? null);
-  }, [folderList]);
+  }, [folderList, setSelectedContext]);
 
   const handleChatSubmit = async () => {
-    const activeChatIndex = chatMessages.length + 1;
-    setChatMessages(chatInput, "question", activeChatIndex);
+    // const activeChatIndex = chatMessages.length + 1;
+    // setChatMessages(chatInput, "question", activeChatIndex);
     let newChatSession = null;
     if (!chatSession) {
       const chatTitle = getFirstFiveWords(chatInput);
@@ -68,41 +70,52 @@ function SearchInterface() {
     }
 
     // setChatMessages([], "context", activeChatIndex + 1);
-    try {
-      const context = await getContext(
-        sessionToken!,
-        chatInput,
-        selectedContext!
-      );
+    // try {
+    //   const context = await getContext(
+    //     sessionToken!,
+    //     chatInput,
+    //     selectedContext!
+    //   );
 
-      setChatMessages(context, "context", activeChatIndex + 1);
-    } catch (error: any) {
-      console.log(error);
-    }
+    //   setChatMessages(context, "context", activeChatIndex + 1);
+    // } catch (error: any) {
+    //   console.log(error);
+    // }
 
     try {
       // const activeChatIndex = chatMessages.length + 1;
 
-      setChatMessages("loading...", "answer", activeChatIndex + 2);
+      // setChatMessages("loading...", "answer", activeChatIndex + 2);
 
-      const response = await getContexualAnswer(
+      const assistant_response = await getContexualAnswer(
         sessionToken!,
         newChatSession?.chat_id! ?? chatSession?.chat_id!,
         selectedContext?.id!,
         chatInput
       );
 
-      // const data = await response.json();
-      // console.log(data);
-      if (response) {
-        setChatMessages(response.assistant, "answer", activeChatIndex + 2);
-      } else {
-        setChatMessages(
-          "Something went wrong !",
-          "answer",
-          activeChatIndex + 2
-        );
-      }
+      console.log("response", assistant_response);
+
+      const historyItem = { body: assistant_response, item_type: "MESSAGE" };
+      const existingHistory = [
+        ...chatSessions.filter(
+          (session) => session.chat_id === chatSession?.chat_id
+        )[0].chat_history!,
+        historyItem,
+      ];
+
+      console.log("existingHistory", existingHistory);
+      updateChatHistory(chatSession?.chat_id!, existingHistory);
+
+      // if (response) {
+      //   setChatMessages(response.assistant, "answer", activeChatIndex + 2);
+      // } else {
+      //   setChatMessages(
+      //     "Something went wrong !",
+      //     "answer",
+      //     activeChatIndex + 2
+      //   );
+      // }
     } catch (error: any) {
       console.log(error);
     }
@@ -116,18 +129,19 @@ function SearchInterface() {
       try {
         const chats = await getChatHistory(sessionToken, chatSession.chat_id);
         setChatHistory([]);
-        const messages = chats
-          .filter((message: any) => message.item_type === "MESSAGE")
-          .map((message: any, index: number) => {
-            setChatMessages(message.body.user_message, "question");
-            setChatMessages(message.body.assistant, "answer");
-          });
+        updateChatHistory(chatSession.chat_id, chats);
       } catch (error) {
         console.error("There was a problem with the fetch operation:", error);
       }
     };
     fetchChatHistory();
-  }, [sessionToken, chatSession]);
+  }, [
+    sessionToken,
+    chatSessions,
+    chatSession,
+    setChatHistory,
+    updateChatHistory,
+  ]);
 
   useEffect(() => {
     const fetchFolderLists = async () => {

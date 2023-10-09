@@ -57,6 +57,7 @@ export const getChatHistory = async (sessionToken: Session, chatId: string) => {
   );
 
   const data = await response.json();
+  // console.log(data);
   return data;
 };
 
