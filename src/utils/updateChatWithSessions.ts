@@ -6,7 +6,7 @@ export function updateChatWithSession(
 ): Chat[] {
   // Find the index of the chat with the matching chat_id
   const chatIndex = chats.findIndex(
-    (chat) => chat.chat_id === newSession.chat_id
+    (chat) => chat.chat_id === newSession.body.chat_id
   );
 
   if (chatIndex === -1) {
