@@ -1,3 +1,10 @@
+import React from "react";
+
+function AdobePDFViewer() {
+  return <div>AdobePDFViewer</div>;
+}
+
+export default AdobePDFViewer;
 // import React, { useEffect, useRef } from "react";
 // import ReactViewAdobe from "react-adobe-embed";
 
