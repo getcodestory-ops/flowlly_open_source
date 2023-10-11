@@ -13,6 +13,7 @@ import ChatMessageDisplay from "@/components/ChatMessageDisplay";
 import {
   getContext,
   getAnswer,
+  updateContext,
   getContexualAnswer,
 } from "@/utils/getAiAnswers";
 import { createNewChatSession, getChatHistory } from "@/api/chatRoutes";
@@ -59,8 +60,6 @@ function SearchInterface() {
   }, [folderList, setSelectedContext]);
 
   const handleChatSubmit = async () => {
-    // const activeChatIndex = chatMessages.length + 1;
-    // setChatMessages(chatInput, "question", activeChatIndex);
     let newChatSession = null;
     if (!chatSession) {
       const chatTitle = getFirstFiveWords(chatInput);
@@ -69,23 +68,33 @@ function SearchInterface() {
       setChatSessions([newChatSession, ...chatSessions]);
     }
 
-    // setChatMessages([], "context", activeChatIndex + 1);
-    // try {
-    //   const context = await getContext(
-    //     sessionToken!,
-    //     chatInput,
-    //     selectedContext!
-    //   );
+    const newChatItem = {
+      body: {
+        user_message: chatInput,
+        chat_id: newChatSession?.chat_id! ?? chatSession?.chat_id!,
+        context: [],
+        assistant: "loading...",
+      },
+      item_type: "MESSAGE",
+    };
+    const chatHistory = chatSessions.filter(
+      (session) => session.chat_id === chatSession?.chat_id
+    )[0]?.chat_history!;
 
-    //   setChatMessages(context, "context", activeChatIndex + 1);
-    // } catch (error: any) {
-    //   console.log(error);
-    // }
+    updateChatHistory(chatSession?.chat_id!, [...chatHistory, newChatItem]);
 
     try {
-      // const activeChatIndex = chatMessages.length + 1;
+      const context = await getContext(
+        sessionToken!,
+        newChatSession?.chat_id! ?? chatSession?.chat_id!,
+        chatInput,
+        selectedContext!
+      );
 
-      // setChatMessages("loading...", "answer", activeChatIndex + 2);
+      const context_id = context?.context_id;
+      newChatItem.body.context = context.context;
+
+      updateChatHistory(chatSession?.chat_id!, [...chatHistory, newChatItem]);
 
       const assistant_response = await getContexualAnswer(
         sessionToken!,
@@ -94,28 +103,11 @@ function SearchInterface() {
         chatInput
       );
 
-      console.log("response", assistant_response);
+      const message_id = assistant_response?.message_id;
+      updateContext(sessionToken!, message_id!, context_id!);
 
-      const historyItem = { body: assistant_response, item_type: "MESSAGE" };
-      const existingHistory = [
-        ...chatSessions.filter(
-          (session) => session.chat_id === chatSession?.chat_id
-        )[0].chat_history!,
-        historyItem,
-      ];
-
-      console.log("existingHistory", existingHistory);
-      updateChatHistory(chatSession?.chat_id!, existingHistory);
-
-      // if (response) {
-      //   setChatMessages(response.assistant, "answer", activeChatIndex + 2);
-      // } else {
-      //   setChatMessages(
-      //     "Something went wrong !",
-      //     "answer",
-      //     activeChatIndex + 2
-      //   );
-      // }
+      newChatItem.body.assistant = assistant_response.assistant;
+      updateChatHistory(chatSession?.chat_id!, [...chatHistory, newChatItem]);
     } catch (error: any) {
       console.log(error);
     }

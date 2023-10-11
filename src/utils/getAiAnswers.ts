@@ -4,11 +4,12 @@ import { handleStreams } from "./handleStream";
 
 export const getContext = async (
   sessionToken: Session,
+  chat_id: string,
   query: string,
   selectedContext: Brain
 ) => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/context?question=${query}&spacename=${selectedContext.id}`,
+    `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/chat/context?chat_question=${query}&brain_id=${selectedContext.id}&chat_id=${chat_id}`,
     {
       method: "POST",
       headers: {
@@ -17,7 +18,40 @@ export const getContext = async (
     }
   );
   const context = await response.json();
-  return context.response;
+  return context.context;
+};
+
+export const updateContext = async (
+  sessionToken: Session,
+  message_id: string,
+  context_id: string
+) => {
+  const context_data = {
+    message_id: message_id,
+  };
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/chat/context?context_id=${context_id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionToken!.access_token}`,
+        },
+        body: JSON.stringify(context_data),
+      }
+    );
+    if (!response.ok) {
+      console.log(response);
+      throw new Error("Somethign went wrong");
+      return;
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const getAnswer = async (

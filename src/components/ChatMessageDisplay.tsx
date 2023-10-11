@@ -46,7 +46,7 @@ function ChatMessageDisplay() {
       {activeChatMessages &&
         activeChatMessages?.map((message, index) => (
           <Box
-            key={message?.body.message_id}
+            key={`${message?.body.message_id}-${index}`}
             width="full"
             ref={
               index === activeChatMessages.length - 1 ? lastMessageRef : null
@@ -79,6 +79,14 @@ function ChatMessageDisplay() {
                     {message.body.user_message}
                   </Flex>
                 )}
+                {message.body?.context && (
+                  <Box>
+                    <ContextDisplay
+                      documentData={message.body.context}
+                      chatFolder={context.current}
+                    />
+                  </Box>
+                )}
                 {message.body?.assistant && (
                   <Box borderBottom="2px " borderBottomColor={"brand.mid"}>
                     <Box
@@ -107,14 +115,6 @@ function ChatMessageDisplay() {
                     </Box>
                   </Box>
                 )}
-                {/* {message.fromUser === "context" && (
-                <Box>
-                  <ContextDisplay
-                    documentData={message.message}
-                    chatFolder={context.current}
-                  />
-                </Box>
-              )} */}
               </Box>
             </Flex>
           </Box>
