@@ -66,41 +66,37 @@ const ContextDisplay: React.FC<DocumentProps> = ({
           {documentData &&
             documentData.slice(0, numOfMessagesToShow).map((page, index) => {
               return (
-                <>
-                  <Flex
-                    key={`page-${page.metadata.file_name}-${index}`}
-                    bg={
-                      index === isExpandedNumber ? "brand.accent" : "brand.mid"
-                    }
-                    color={index === isExpandedNumber ? "brand.dark" : "white"}
-                    mx={2}
-                    py={1}
-                    px={3}
-                    rounded={"full"}
-                    fontSize={"sm"}
-                    alignItems={"center"}
-                    cursor={"pointer"}
-                    onClick={() =>
-                      setIsExpandedNumber((state) =>
-                        state === index ? null : index
-                      )
-                    }
-                  >
-                    <Flex mr={1} w={"100px"}>
-                      <Tooltip
-                        label={page.metadata.file_name}
-                        fontSize="md"
-                        placement="top"
-                      >
-                        <span>
-                          {page.metadata.file_name?.slice(0, 5)}... - p.{" "}
-                        </span>
-                      </Tooltip>
-                      {page.metadata.page_number + 1}
-                    </Flex>
-                    <FaAngleDown />
+                <Flex
+                  key={`page-${page.metadata.file_name}-${index}`}
+                  bg={index === isExpandedNumber ? "brand.accent" : "brand.mid"}
+                  color={index === isExpandedNumber ? "brand.dark" : "white"}
+                  mx={2}
+                  py={1}
+                  px={3}
+                  rounded={"full"}
+                  fontSize={"sm"}
+                  alignItems={"center"}
+                  cursor={"pointer"}
+                  onClick={() =>
+                    setIsExpandedNumber((state) =>
+                      state === index ? null : index
+                    )
+                  }
+                >
+                  <Flex mr={1} w={"100px"}>
+                    <Tooltip
+                      label={page.metadata.file_name}
+                      fontSize="md"
+                      placement="top"
+                    >
+                      <span>
+                        {page.metadata.file_name?.slice(0, 5)}... - p.{" "}
+                      </span>
+                    </Tooltip>
+                    {page.metadata.page_number + 1}
                   </Flex>
-                </>
+                  <FaAngleDown />
+                </Flex>
               );
             })}
         </Flex>

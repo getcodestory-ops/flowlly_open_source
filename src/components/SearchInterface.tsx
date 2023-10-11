@@ -13,6 +13,7 @@ import ChatMessageDisplay from "@/components/ChatMessageDisplay";
 import {
   getContext,
   getAnswer,
+  updateContext,
   getContexualAnswer,
 } from "@/utils/getAiAnswers";
 import { createNewChatSession, getChatHistory } from "@/api/chatRoutes";
@@ -36,6 +37,7 @@ function SearchInterface() {
     setChatSessions,
     setChatHistory,
     setFolderList,
+    updateChatHistory,
   } = useStore((state) => ({
     sessionToken: state.session,
     folderList: state.folderList,
@@ -49,16 +51,15 @@ function SearchInterface() {
     setChatSessions: state.setChatSessions,
     setChatHistory: state.setChatHistory,
     setFolderList: state.setFolderList,
+    updateChatHistory: state.updateChatHistory,
   }));
 
   useEffect(() => {
     if (!folderList) return;
     setSelectedContext(folderList?.[0] ?? null);
-  }, [folderList]);
+  }, [folderList, setSelectedContext]);
 
   const handleChatSubmit = async () => {
-    const activeChatIndex = chatMessages.length + 1;
-    setChatMessages(chatInput, "question", activeChatIndex);
     let newChatSession = null;
     if (!chatSession) {
       const chatTitle = getFirstFiveWords(chatInput);
@@ -67,42 +68,46 @@ function SearchInterface() {
       setChatSessions([newChatSession, ...chatSessions]);
     }
 
-    // setChatMessages([], "context", activeChatIndex + 1);
+    const newChatItem = {
+      body: {
+        user_message: chatInput,
+        chat_id: newChatSession?.chat_id! ?? chatSession?.chat_id!,
+        context: [],
+        assistant: "loading...",
+      },
+      item_type: "MESSAGE",
+    };
+    const chatHistory = chatSessions.filter(
+      (session) => session.chat_id === chatSession?.chat_id
+    )[0]?.chat_history!;
+
+    updateChatHistory(chatSession?.chat_id!, [...chatHistory, newChatItem]);
+
     try {
       const context = await getContext(
         sessionToken!,
+        newChatSession?.chat_id! ?? chatSession?.chat_id!,
         chatInput,
         selectedContext!
       );
 
-      setChatMessages(context, "context", activeChatIndex + 1);
-    } catch (error: any) {
-      console.log(error);
-    }
+      const context_id = context?.context_id;
+      newChatItem.body.context = context.context;
 
-    try {
-      // const activeChatIndex = chatMessages.length + 1;
+      updateChatHistory(chatSession?.chat_id!, [...chatHistory, newChatItem]);
 
-      setChatMessages("loading...", "answer", activeChatIndex + 2);
-
-      const response = await getContexualAnswer(
+      const assistant_response = await getContexualAnswer(
         sessionToken!,
         newChatSession?.chat_id! ?? chatSession?.chat_id!,
         selectedContext?.id!,
         chatInput
       );
 
-      // const data = await response.json();
-      // console.log(data);
-      if (response) {
-        setChatMessages(response.assistant, "answer", activeChatIndex + 2);
-      } else {
-        setChatMessages(
-          "Something went wrong !",
-          "answer",
-          activeChatIndex + 2
-        );
-      }
+      const message_id = assistant_response?.message_id;
+      updateContext(sessionToken!, message_id!, context_id!);
+
+      newChatItem.body.assistant = assistant_response.assistant;
+      updateChatHistory(chatSession?.chat_id!, [...chatHistory, newChatItem]);
     } catch (error: any) {
       console.log(error);
     }
@@ -116,18 +121,13 @@ function SearchInterface() {
       try {
         const chats = await getChatHistory(sessionToken, chatSession.chat_id);
         setChatHistory([]);
-        const messages = chats
-          .filter((message: any) => message.item_type === "MESSAGE")
-          .map((message: any, index: number) => {
-            setChatMessages(message.body.user_message, "question");
-            setChatMessages(message.body.assistant, "answer");
-          });
+        updateChatHistory(chatSession.chat_id, chats);
       } catch (error) {
         console.error("There was a problem with the fetch operation:", error);
       }
     };
     fetchChatHistory();
-  }, [sessionToken, chatSession]);
+  }, [sessionToken, chatSession, setChatHistory, updateChatHistory]);
 
   useEffect(() => {
     const fetchFolderLists = async () => {

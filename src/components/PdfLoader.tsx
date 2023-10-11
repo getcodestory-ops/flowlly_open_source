@@ -10,6 +10,7 @@ import {
   AiOutlineMinus,
 } from "react-icons/ai";
 import { useStore } from "@/utils/store";
+// import AdobePDFViewer from "./adobePdfViewer/AdobePDFViewer";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
@@ -119,6 +120,7 @@ const PdfLoader = () => {
                 </Text>
               )}
               {pdfUrl && (
+                // <AdobePDFViewer pdfUrl={pdfUrl} />
                 <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess}>
                   <Page
                     pageNumber={pageNumber}

@@ -1,6 +1,7 @@
 {
-    "editor.formatOnSave": true,
-    "notebook.formatOnSave.enabled": true,
-    "html.format.enable": true,
-    "typescript.format.insertSpaceAfterConstructor": true
+  "editor.formatOnSave": true,
+  "notebook.formatOnSave.enabled": true,
+  "html.format.enable": true,
+  "typescript.format.insertSpaceAfterConstructor": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
 }
