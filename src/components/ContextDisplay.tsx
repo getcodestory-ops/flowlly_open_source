@@ -62,7 +62,7 @@ const ContextDisplay: React.FC<DocumentProps> = ({
         >
           Sources:
         </Text>
-        <Flex overflowY={"auto"}>
+        <Flex overflowY={"auto"} flexWrap={"wrap"}>
           {documentData &&
             documentData.slice(0, numOfMessagesToShow).map((page, index) => {
               return (
@@ -71,6 +71,7 @@ const ContextDisplay: React.FC<DocumentProps> = ({
                   bg={index === isExpandedNumber ? "brand.accent" : "brand.mid"}
                   color={index === isExpandedNumber ? "brand.dark" : "white"}
                   mx={2}
+                  my={2}
                   py={1}
                   px={3}
                   rounded={"full"}
@@ -83,7 +84,7 @@ const ContextDisplay: React.FC<DocumentProps> = ({
                     )
                   }
                 >
-                  <Flex mr={1} w={"100px"}>
+                  <Flex mr={1} w={"100px"} flexWrap={"wrap"}>
                     <Tooltip
                       label={page.metadata.file_name}
                       fontSize="md"
@@ -101,10 +102,10 @@ const ContextDisplay: React.FC<DocumentProps> = ({
             })}
         </Flex>
 
-        {numOfMessagesToShow === 2 && (
+        {numOfMessagesToShow < documentData.length && (
           <Flex justifyContent={"center"}>
             <Button
-              onClick={() => setNumOfMessagesToShow(5)}
+              onClick={() => setNumOfMessagesToShow((state) => state + 4)}
               color="brand.accent"
               bg=""
               size={"sm"}

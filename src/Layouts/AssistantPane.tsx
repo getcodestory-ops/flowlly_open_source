@@ -103,11 +103,11 @@ const AssistantPane = () => {
         </Heading> */}
       </Box>
       {chatSessions.length > 0 &&
-        chatSessions.map((chats) => (
-          <>
+        chatSessions.map((chats, index) => (
+          <Flex key={`chat-${chats.chat_id}-index-${index}`}>
             {editChatSessionId !== chats?.chat_id && (
               <Flex
-                key={chats.chat_id}
+                key={`chat-${chats.chat_id}-index-${index}`}
                 color="white"
                 justifyContent={"space-between"}
                 borderRadius="md"
@@ -208,7 +208,7 @@ const AssistantPane = () => {
                 )}
               </Flex>
             )}
-          </>
+          </Flex>
         ))}
     </Flex>
   );

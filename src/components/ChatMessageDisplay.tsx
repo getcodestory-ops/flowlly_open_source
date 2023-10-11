@@ -30,9 +30,7 @@ function ChatMessageDisplay() {
     const chatHistory = chatSessions.filter(
       (session) => session.chat_id === chatSession?.chat_id
     )[0];
-    console.log(chatHistory);
     setActiveChatMessages(chatHistory?.chat_history ?? null);
-    // console.log(activeChatMessages);
   }, [chatSession, chatSessions]);
 
   return (
