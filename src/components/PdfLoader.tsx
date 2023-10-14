@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import supabase from "@/utils/supabaseClient";
 import { Box, Flex, IconButton, Text } from "@chakra-ui/react";
@@ -10,9 +10,19 @@ import {
   AiOutlineMinus,
 } from "react-icons/ai";
 import { useStore } from "@/utils/store";
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
-const PdfLoader = () => {
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+const pdfjsOptions = pdfjs.GlobalWorkerOptions;
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+const pdfjsVersion = pdfjs.version;
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+pdfjsOptions.workerSrc =
+  "//unpkg.com/pdfjs-dist@" +
+  String(pdfjsVersion) +
+  "/legacy/build/pdf.worker.min.js";
+
+const VirtualPdfLoader = () => {
   const { pdfViewer, userId, selectedFolder, setPdfViewer, selectedContext } =
     useStore((state) => ({
       pdfViewer: state.pdfViewer,
@@ -24,7 +34,7 @@ const PdfLoader = () => {
 
   const { isPdfVisible, filePath, pageNumber, highlightDetails } = pdfViewer;
   const [scale, setScale] = useState<number>(1.0);
-
+  const pageRefs = useRef<HTMLElement[] | null>([]); // Array to hold refs for all pages
   const [pdfUrl, setPdfUrl] = useState<string | undefined>();
   const [numPages, setNumPages] = useState<number>(1);
   const [isHighlightVisible, setHighlightVisibility] = useState<Boolean>(true);
@@ -53,43 +63,60 @@ const PdfLoader = () => {
     setNumPages(numPages);
   };
 
+  useEffect(() => {
+    if (pageRefs.current && pageRefs.current[pageNumber - 1]) {
+      (pageRefs.current[pageNumber - 1] as HTMLElement).scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [pageNumber]);
+
   return (
     <Flex>
       {selectedFolder && isPdfVisible && (
         <Box overflow={"auto"} h={"100vh"}>
           <IconButton
             aria-label="Close"
+            position={"absolute"}
             icon={<AiOutlineClose />}
             onClick={() => setPdfViewer({ isPdfVisible: false })}
             mb={2}
-            ml={-3}
+            ml={-2}
             pl="2"
             color="red.400"
-            bg="gray.50"
-            zIndex="overlay"
+            bg="gray.200"
+            zIndex={"popover"}
           />
-          <IconButton
-            aria-label="Close"
-            icon={<AiOutlinePlus />}
-            onClick={() => setScale((state) => state + 0.2)}
-            mb={2}
-            ml={4}
-            size={"sm"}
-            color="red.400"
-            bg="gray.50"
-            zIndex="overlay"
-          />
-          <IconButton
-            aria-label="Close"
-            icon={<AiOutlineMinus />}
-            onClick={() => setScale((state) => state - 0.2)}
-            mb={2}
-            ml={2}
-            size={"sm"}
-            color="red.400"
-            bg="gray.50"
-            zIndex="overlay"
-          />
+          <Flex
+            position="absolute"
+            right="16"
+            top="2"
+            background="brand.accent"
+            px="8"
+            py="2"
+            borderRadius="lg"
+            gap={2}
+          >
+            <IconButton
+              aria-label="zoomout"
+              icon={<AiOutlinePlus />}
+              onClick={() => setScale((state) => state + 0.2)}
+              size={"xs"}
+              color="red.400"
+              bg="gray.300"
+              zIndex="overlay"
+            />
+            <IconButton
+              aria-label="zoomin"
+              icon={<AiOutlineMinus />}
+              onClick={() => setScale((state) => state - 0.2)}
+              size={"xs"}
+              color="red.400"
+              bg="gray.300"
+              zIndex="overlay"
+            />
+          </Flex>
           <Flex
             alignItems="center"
             flexDir="row"
@@ -99,7 +126,7 @@ const PdfLoader = () => {
             <IconButton
               aria-label="move right"
               color="gray.400"
-              bg="gray.50"
+              bg="gray.300"
               icon={<AiOutlineLeft />}
               onClick={() =>
                 setPdfViewer({ pageNumber: Math.max(pageNumber - 1, 1) })
@@ -119,12 +146,29 @@ const PdfLoader = () => {
               )}
               {pdfUrl && (
                 <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess}>
-                  <Page
-                    pageNumber={pageNumber}
-                    renderTextLayer={false}
-                    renderAnnotationLayer={false}
-                    scale={scale}
-                  />
+                  {Array.from({ length: numPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <div key={page}>
+                        (
+                        <div
+                          key={page}
+                          ref={(el) => {
+                            if (pageRefs?.current) {
+                              pageRefs.current[page - 1] = el!; // Use non-null assertion operator
+                            }
+                          }}
+                        >
+                          <Page
+                            pageNumber={page}
+                            renderTextLayer={false}
+                            renderAnnotationLayer={false}
+                            scale={scale}
+                          />
+                        </div>
+                        )
+                      </div>
+                    )
+                  )}
                 </Document>
               )}
             </Box>
@@ -134,7 +178,7 @@ const PdfLoader = () => {
               zIndex="10"
               right="4"
               color="gray.400"
-              bg="gray.50"
+              bg="gray.300"
               aria-label="send message"
               icon={<AiOutlineRight />}
               onClick={() => {
@@ -151,6 +195,11 @@ const PdfLoader = () => {
       )}
     </Flex>
   );
+};
+
+const PdfLoader: React.FC = () => {
+  const memoizedPdfLoader = useMemo(() => <VirtualPdfLoader />, []);
+  return memoizedPdfLoader;
 };
 
 export default PdfLoader;
