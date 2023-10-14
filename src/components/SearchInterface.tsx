@@ -1,12 +1,4 @@
-import {
-  Flex,
-  Stack,
-  Text,
-  Select,
-  Textarea,
-  InputGroup,
-  useToast,
-} from "@chakra-ui/react";
+import { Flex, Stack, Textarea, InputGroup, useToast } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { useStore } from "@/utils/store";
 import ChatMessageDisplay from "@/components/ChatMessageDisplay";
@@ -19,6 +11,7 @@ import {
 import { createNewChatSession, getChatHistory } from "@/api/chatRoutes";
 import { getFirstFiveWords } from "@/utils/getFirstWords";
 import { getBrains } from "@/api/brainRoutes";
+import ContextSelection from "@/components/ChatInput/ContextSelection";
 
 function SearchInterface() {
   const toast = useToast();
@@ -157,38 +150,7 @@ function SearchInterface() {
         w={{ base: "85%", md: "60%" }}
       >
         <Flex justifyContent={"end"} alignItems="center" mb="-4">
-          <Flex justifyContent={"end"} alignItems="center" pl="2" fontSize="xs">
-            <Text color="brand.light" mr="4">
-              Search folder
-            </Text>
-
-            <Select
-              color="brand.accent"
-              placeholder="Search within"
-              value={selectedContext?.name ?? ""}
-              border="none"
-              width="48"
-              fontSize={"xs"}
-              fontWeight="bold"
-              onChange={(e) =>
-                setSelectedContext(
-                  folderList?.filter(
-                    (folder) => folder.name === e.target.value
-                  )?.[0] ?? null
-                )
-              }
-            >
-              {folderList?.map((option) => (
-                <option
-                  key={option?.name}
-                  value={option?.name}
-                  style={{ backgroundColor: "#393E46" }}
-                >
-                  {option?.name}
-                </option>
-              ))}
-            </Select>
-          </Flex>
+          <ContextSelection />
         </Flex>
         <InputGroup size="lg">
           <Textarea

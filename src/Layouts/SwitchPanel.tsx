@@ -1,8 +1,9 @@
 import { Flex, Stack, Button, Box } from "@chakra-ui/react";
 import { FaTimes, FaSearch, FaPlug, FaBrain, FaFolder } from "react-icons/fa";
-import { SiFoursquarecityguide } from "react-icons/si";
 import UserPanel from "@/components/UserPanel";
 import { useStore } from "@/utils/store";
+import { FcConferenceCall } from "react-icons/fc";
+import { HiUserGroup } from "react-icons/hi";
 
 export default function SwitchPanel() {
   const { sidePanelExtensionView, setSidePanelExtensionView } = useStore(
@@ -25,45 +26,44 @@ export default function SwitchPanel() {
     >
       <Stack direction={{ md: "column", sm: "row" }} spacing={4}>
         <Button
-          // transform="translateY(-50%)"
           zIndex="1"
           onClick={() => setSidePanelExtensionView("assistant")}
-          bg="brand.dark"
+          bg={`${
+            sidePanelExtensionView !== "assistant"
+              ? "brand.dark"
+              : "brand.accent"
+          }`}
           color="white"
           _hover={{ bg: "brand.mid", color: "white" }}
         >
-          {sidePanelExtensionView !== "assistant" ? <FaBrain /> : <FaTimes />}
+          {" "}
+          <FaBrain />
         </Button>
         <Button
-          // transform="translateY(-50%)"
           zIndex="1"
           onClick={() => setSidePanelExtensionView("fileSystem")}
-          bg="brand.dark"
+          bg={`${
+            sidePanelExtensionView !== "fileSystem"
+              ? "brand.dark"
+              : "brand.accent"
+          }`}
           color="white"
           _hover={{ bg: "brand.mid", color: "white" }}
         >
-          {sidePanelExtensionView !== "fileSystem" ? <FaFolder /> : <FaTimes />}
-        </Button>
-        {/* <Button
-          // transform="translateY(-50%)"
-          zIndex="1"
-          onClick={() => setSidePanelExtensionView("integrations")}
-          bg="brand.dark"
-          color="white"
-          _hover={{ bg: "brand.mid", color: "white" }}
-        >
-          {sidePanelExtensionView !== "integrations" ? <FaPlug /> : <FaTimes />}
+          {" "}
+          <FaFolder />
         </Button>
         <Button
-          // transform="translateY(-50%)"
           zIndex="1"
-          onClick={() => setSidePanelExtensionView("memory")}
-          bg="brand.dark"
+          onClick={() => setSidePanelExtensionView("agent")}
+          bg={`${
+            sidePanelExtensionView !== "agent" ? "brand.dark" : "brand.accent"
+          }`}
           color="white"
           _hover={{ bg: "brand.mid", color: "white" }}
         >
-          {sidePanelExtensionView !== "memory" ? <FaBrain /> : <FaTimes />}
-        </Button> */}
+          <HiUserGroup />
+        </Button>
       </Stack>
 
       <Box as="nav">

@@ -8,6 +8,7 @@ type SidePanelExtension =
   | "integrations"
   | "memory"
   | "assistant"
+  | "agent"
   | null;
 
 interface PdfViewer {
@@ -26,7 +27,7 @@ export interface Brain {
 
 type State = {
   session: Session | null;
-  appView: "assistant" | "search";
+  appView: "assistant" | "search" | "agent";
   hasAdminRights: boolean;
   prompts: {
     scope: string;

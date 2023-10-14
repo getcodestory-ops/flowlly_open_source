@@ -4,9 +4,11 @@ import SidePanel from "@/Layouts/SidePanel";
 import SearchInterface from "@/components/SearchInterface";
 import DraggablePaneDivider from "@/components/DraggablePaneDivider";
 import { useStore } from "@/utils/store";
+import AgentInterface from "./AgentInterface";
 
 export default function Dashboard() {
   const pdfViewer = useStore((state) => state.pdfViewer);
+  const appView = useStore((state) => state.sidePanelExtensionView);
   const { isPdfVisible } = pdfViewer;
 
   return (
@@ -15,18 +17,18 @@ export default function Dashboard() {
         <Flex zIndex="10">
           <SidePanel />
         </Flex>
-        {!isPdfVisible && <SearchInterface />}
-        {isPdfVisible && (
-          <DraggablePaneDivider
-            LeftPanel={SearchInterface}
-            RightPanel={PdfLoader}
-          />
+        {appView === "agent" && <AgentInterface />}
+        {appView !== "agent" && (
+          <>
+            {!isPdfVisible && <SearchInterface />}
+            {isPdfVisible && (
+              <DraggablePaneDivider
+                LeftPanel={SearchInterface}
+                RightPanel={PdfLoader}
+              />
+            )}
+          </>
         )}
-
-        {/* <SearchInterface /> */}
-        {/* <Flex>
-          <PdfLoader />
-        </Flex> */}
       </Flex>
     </Box>
   );

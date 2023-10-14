@@ -1,0 +1,42 @@
+import { Session } from "@supabase/supabase-js";
+import { AgentInterfaceProps } from "@/types/agent";
+
+interface AgentTask {
+  agent_task: string;
+  sessionToken: Session;
+}
+
+export const submitTaskToAgent = async (
+  sessionToken: Session,
+  agent_task: string,
+  brain_id: string
+): Promise<AgentInterfaceProps["agent_history"]> => {
+  try {
+    const body = {
+      task: agent_task,
+      brain_id: brain_id,
+    };
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionToken.access_token}`,
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    const data = await response.json();
+    console.log(data.agent_response);
+    return data.agent_response;
+  } catch (error) {
+    throw new Error("Network response was not ok");
+  }
+};
