@@ -12,11 +12,8 @@ import {
 import { useStore } from "@/utils/store";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
 const pdfjsOptions = pdfjs.GlobalWorkerOptions;
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
 const pdfjsVersion = pdfjs.version;
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
 pdfjsOptions.workerSrc =
   "//unpkg.com/pdfjs-dist@" +
   String(pdfjsVersion) +
