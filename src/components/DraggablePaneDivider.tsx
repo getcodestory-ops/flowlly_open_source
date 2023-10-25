@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Box } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 import Draggable, { DraggableEvent, DraggableData } from "react-draggable";
 
 interface PaneProps {
@@ -21,6 +21,7 @@ const DraggablePaneDivider: React.FC<DraggablePaneDividerProps> = ({
   RightPanel,
 }) => {
   const [paneWidth, setPaneWidth] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -31,33 +32,38 @@ const DraggablePaneDivider: React.FC<DraggablePaneDividerProps> = ({
   if (paneWidth === null) return null;
 
   const handleDrag = (_: any, data: DraggableData) => {
-    setPaneWidth(paneWidth + data.deltaX);
-    console.log(paneWidth);
+    setPaneWidth((prevWidth) => prevWidth! + data.deltaX);
   };
 
   return (
-    <Box display="flex" height="100vh">
-      <Pane width={paneWidth} maxWidth="calc(100% - 10px)">
+    <Flex flexDirection={{ base: "column", md: "row" }} height="100vh">
+      <Flex width={paneWidth}>
         <LeftPanel />
-      </Pane>
+      </Flex>
       <Draggable
         axis="x"
         position={{ x: 0, y: 0 }}
         onDrag={handleDrag}
         nodeRef={ref}
+        onStart={() => setIsDragging(true)}
+        onStop={() => setIsDragging(false)}
       >
-        <Box
+        <Flex
           ref={ref}
           cursor="ew-resize"
           width="10px"
-          background="gray.200"
           zIndex="10"
+          backgroundColor={isDragging ? "none" : "gray"}
         />
       </Draggable>
-      <Pane flex="1" maxWidth={window.innerWidth - paneWidth - 100}>
+      <Flex
+        flex="1"
+        maxWidth={window.innerWidth - paneWidth - 100}
+        zIndex={"overlay"}
+      >
         <RightPanel />
-      </Pane>
-    </Box>
+      </Flex>
+    </Flex>
   );
 };
 

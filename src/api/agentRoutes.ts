@@ -1,5 +1,7 @@
 import { Session } from "@supabase/supabase-js";
 import { AgentInterfaceProps } from "@/types/agent";
+import { AgentChat } from "@/types/agentChats";
+import axios from "axios";
 
 interface AgentTask {
   agent_task: string;
@@ -39,4 +41,19 @@ export const submitTaskToAgent = async (
   } catch (error) {
     throw new Error("Network response was not ok");
   }
+};
+
+export const getAgentChats = async (
+  session: Session,
+  projectId: string
+): Promise<AgentChat[]> => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chats/${projectId}`;
+  const response = await axios.get(url, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  return response.data.chats;
 };

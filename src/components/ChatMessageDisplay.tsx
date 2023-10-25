@@ -42,7 +42,8 @@ function ChatMessageDisplay() {
       h={{ base: "500px", md: "100%" }}
     >
       {activeChatMessages &&
-        activeChatMessages?.map((message, index) => (
+        activeChatMessages.length > 0 &&
+        activeChatMessages.map((message, index) => (
           <Box
             key={`${message?.body.message_id}-${index}`}
             width="full"

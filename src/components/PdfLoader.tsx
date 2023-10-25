@@ -76,34 +76,24 @@ const VirtualPdfLoader = () => {
     <Flex>
       {selectedFolder && isPdfVisible && (
         <Box overflow={"auto"} h={"100vh"}>
-          <IconButton
-            aria-label="Close"
-            position={"absolute"}
-            icon={<AiOutlineClose />}
-            onClick={() => setPdfViewer({ isPdfVisible: false })}
-            mb={2}
-            ml={-2}
-            pl="2"
-            color="red.400"
-            bg="gray.50"
-          />
           <Flex
-            position="absolute"
+            position={"sticky"}
+            top={0}
+            left={0}
             right="16"
-            top="2"
-            background="brand.accent"
             px="8"
             py="2"
-            borderRadius="lg"
             gap={2}
+            background="gray"
+            zIndex={"overlay"}
           >
             <IconButton
               aria-label="zoomout"
               icon={<AiOutlinePlus />}
               onClick={() => setScale((state) => state + 0.2)}
               size={"xs"}
-              color="red.400"
-              bg="gray.500"
+              color="white"
+              bg="green.500"
               zIndex="overlay"
             />
             <IconButton
@@ -111,9 +101,19 @@ const VirtualPdfLoader = () => {
               icon={<AiOutlineMinus />}
               onClick={() => setScale((state) => state - 0.2)}
               size={"xs"}
-              color="red.400"
-              bg="gray.500"
+              color="white"
+              bg="blue.500"
               zIndex="overlay"
+            />
+            <IconButton
+              width={4}
+              aria-label="Close"
+              size={"xs"}
+              icon={<AiOutlineClose />}
+              onClick={() => setPdfViewer({ isPdfVisible: false })}
+              color="white"
+              bg="red.400"
+              zIndex={"overlay"}
             />
           </Flex>
           <Flex

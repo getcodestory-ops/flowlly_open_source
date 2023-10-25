@@ -13,7 +13,7 @@ import { getFirstFiveWords } from "@/utils/getFirstWords";
 import { getBrains } from "@/api/brainRoutes";
 import ContextSelection from "@/components/ChatInput/ContextSelection";
 
-function SearchInterface() {
+function SearchPanel() {
   const toast = useToast();
 
   const [chatInput, setChatInput] = useState("");
@@ -188,4 +188,4 @@ function SearchInterface() {
   );
 }
 
-export default SearchInterface;
+export default SearchPanel;

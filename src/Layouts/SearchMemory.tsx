@@ -19,7 +19,7 @@ import CreateNewChatButton from "@/components/CreateNewChatButton";
 import { FiEdit, FiTrash, FiCheck, FiX } from "react-icons/fi";
 import { BsChatLeftDots } from "react-icons/bs";
 
-const AssistantPane = () => {
+const SearchMemory = () => {
   const toast = useToast();
   const {
     session,
@@ -214,4 +214,4 @@ const AssistantPane = () => {
   );
 };
 
-export default AssistantPane;
+export default SearchMemory;

@@ -2,16 +2,16 @@ import { Flex, Stack, Button, Box } from "@chakra-ui/react";
 import { FaTimes, FaSearch, FaPlug, FaBrain, FaFolder } from "react-icons/fa";
 import UserPanel from "@/components/UserPanel";
 import { useStore } from "@/utils/store";
-import { FcConferenceCall } from "react-icons/fc";
+import { AiFillSchedule } from "react-icons/ai";
 import { HiUserGroup } from "react-icons/hi";
 
 export default function SwitchPanel() {
-  const { sidePanelExtensionView, setSidePanelExtensionView } = useStore(
-    (state) => ({
+  const { sidePanelExtensionView, setSidePanelExtensionView, setAppView } =
+    useStore((state) => ({
       sidePanelExtensionView: state.sidePanelExtensionView,
       setSidePanelExtensionView: state.setSidePanelExtensionView,
-    })
-  );
+      setAppView: state.setAppView,
+    }));
 
   return (
     <Flex
@@ -27,11 +27,12 @@ export default function SwitchPanel() {
       <Stack direction={{ md: "column", sm: "row" }} spacing={4}>
         <Button
           zIndex="1"
-          onClick={() => setSidePanelExtensionView("assistant")}
+          onClick={() => {
+            setSidePanelExtensionView("memory");
+            setAppView("search");
+          }}
           bg={`${
-            sidePanelExtensionView !== "assistant"
-              ? "brand.dark"
-              : "brand.accent"
+            sidePanelExtensionView !== "memory" ? "brand.dark" : "brand.accent"
           }`}
           color="white"
           _hover={{ bg: "brand.mid", color: "white" }}
@@ -41,9 +42,12 @@ export default function SwitchPanel() {
         </Button>
         <Button
           zIndex="1"
-          onClick={() => setSidePanelExtensionView("fileSystem")}
+          onClick={() => {
+            setSidePanelExtensionView("fileExplorer");
+            setAppView("search");
+          }}
           bg={`${
-            sidePanelExtensionView !== "fileSystem"
+            sidePanelExtensionView !== "fileExplorer"
               ? "brand.dark"
               : "brand.accent"
           }`}
@@ -55,7 +59,10 @@ export default function SwitchPanel() {
         </Button>
         <Button
           zIndex="1"
-          onClick={() => setSidePanelExtensionView("agent")}
+          onClick={() => {
+            setSidePanelExtensionView("agent");
+            setAppView("agent");
+          }}
           bg={`${
             sidePanelExtensionView !== "agent" ? "brand.dark" : "brand.accent"
           }`}
@@ -63,6 +70,22 @@ export default function SwitchPanel() {
           _hover={{ bg: "brand.mid", color: "white" }}
         >
           <HiUserGroup />
+        </Button>
+        <Button
+          zIndex="1"
+          onClick={() => {
+            setSidePanelExtensionView("schedule");
+            setAppView("schedule");
+          }}
+          bg={`${
+            sidePanelExtensionView !== "schedule"
+              ? "brand.dark"
+              : "brand.accent"
+          }`}
+          color="white"
+          _hover={{ bg: "brand.mid", color: "white" }}
+        >
+          <AiFillSchedule />
         </Button>
       </Stack>
 

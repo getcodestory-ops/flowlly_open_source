@@ -1,9 +1,9 @@
-import { Flex, Box } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
 import FileHandler from "@/Layouts/FileHandler";
-import Integrationhandler from "@/Layouts/IntegrationHandler";
-import AssistantPane from "@/Layouts/AssistantPane";
-import MemoryPane from "@/Layouts/MemoryPane";
+import SearchMemory from "@/Layouts/SearchMemory";
+import AgentMemoryPane from "@/components/Agent/MemoryPane";
 import { useStore } from "@/utils/store";
+import ScheduleProjectPanel from "@/components/Schedule/ScheduleProjectPane";
 
 function SidePanelExtension() {
   const { sidePanelExtensionView } = useStore((state) => ({
@@ -12,17 +12,17 @@ function SidePanelExtension() {
 
   return (
     <Flex
-      width={
-        !sidePanelExtensionView || sidePanelExtensionView === "agent" ? 0 : 96
-      }
+      width={sidePanelExtensionView ? 96 : 0}
       visibility={!sidePanelExtensionView ? "hidden" : "visible"}
       bg="blackAlpha.100"
       direction="column"
       alignItems="center"
       shadow="base"
     >
-      {sidePanelExtensionView === "fileSystem" && <FileHandler />}
-      {sidePanelExtensionView === "assistant" && <AssistantPane />}
+      {sidePanelExtensionView === "fileExplorer" && <FileHandler />}
+      {sidePanelExtensionView === "memory" && <SearchMemory />}
+      {sidePanelExtensionView === "schedule" && <ScheduleProjectPanel />}
+      {sidePanelExtensionView === "agent" && <AgentMemoryPane />}
     </Flex>
   );
 }
