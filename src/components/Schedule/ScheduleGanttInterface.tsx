@@ -1,18 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Task, ViewMode, Gantt } from "gantt-task-react";
 import { ViewSwitcher } from "./view-switcher";
-import { Icon } from "@chakra-ui/react";
+import { Icon, useToast } from "@chakra-ui/react";
 import { getStartEndDateForProject, initTasks } from "./helper";
 import "gantt-task-react/dist/index.css";
 import { Flex } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { getActivities } from "@/api/activity_routes";
-import { useQuery } from "@tanstack/react-query";
+import { getCriticalPath } from "@/api/schedule_routes";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { activityEntityToTask } from "@/utils/activityEntityToTask";
-import { PiMagnifyingGlassPlus, PiMagnifyingGlassMinus } from "react-icons/pi";
+import {
+  PiMagnifyingGlassPlus,
+  PiMagnifyingGlassMinus,
+  PiPathDuotone,
+} from "react-icons/pi";
 import { from } from "form-data";
 
 const ScheduleGanttInterface = () => {
+  const toast = useToast();
+  const queryClient = useQueryClient();
   const [fontSize, setFontSize] = useState(12);
   const { session, activeProject } = useStore((state) => ({
     session: state.session,
@@ -38,7 +45,37 @@ const ScheduleGanttInterface = () => {
     enabled: !!session?.access_token && !!activeProject?.project_id,
   });
 
-  React.useEffect(() => {
+  const { mutate, isPending } = useMutation({
+    mutationFn: getCriticalPath,
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: "Critical path calculated !",
+        status: "success",
+        duration: 4000,
+        isClosable: true,
+        position: "bottom-right",
+      });
+      queryClient.invalidateQueries({ queryKey: ["activityList"] });
+    },
+  });
+
+  const handleCriticalPath = () => {
+    if (!session || !activeProject) {
+      toast({
+        title: "Error",
+        description: "Set session first !",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+        position: "bottom-right",
+      });
+      return Promise.reject("Set session first !");
+    }
+    mutate({ session, projectId: activeProject.project_id });
+  };
+
+  useEffect(() => {
     if (isSuccess && activities) {
       if (activities.length > 0) {
         const transformedTasks = activities.map(activityEntityToTask); // Assuming the data you want is in activities.data
@@ -151,6 +188,11 @@ const ScheduleGanttInterface = () => {
           as={PiMagnifyingGlassMinus}
           cursor={"pointer"}
           onClick={() => setFontSize((state) => state - 1)}
+        />
+        <Icon
+          as={PiPathDuotone}
+          cursor={"pointer"}
+          onClick={handleCriticalPath}
         />
       </Flex>
       <ViewSwitcher

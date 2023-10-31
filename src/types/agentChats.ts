@@ -14,3 +14,21 @@ export interface AgentChat {
     };
   };
 }
+
+export interface ScheduleResponse {
+  status: string;
+  result?: any;
+}
+
+export interface CreateAgentChatEntity {
+  project_id: string;
+  chat_name: string;
+  chat_details?: string;
+}
+
+export interface AgentChatEntity {
+  id: string;
+  project_id: string;
+  chat_name: string;
+  chat_details?: string;
+}

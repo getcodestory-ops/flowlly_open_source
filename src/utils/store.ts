@@ -3,6 +3,8 @@ import { Session } from "@supabase/supabase-js";
 import { scopeConfig } from "./projectconfig";
 import { Chat, ChatMessage, ChatHistory } from "@/types/chat";
 import { ProjectEntity } from "@/types/projects";
+import { AgentChatEntity } from "@/types/agentChats";
+
 type SidePanelExtension =
   | "fileExplorer"
   | "memory"
@@ -29,6 +31,7 @@ type State = {
   appView: "schedule" | "search" | "agent";
   hasAdminRights: boolean;
   activeProject: ProjectEntity | null;
+  activeChatEntity: AgentChatEntity;
   prompts: {
     scope: string;
     risks: string;
@@ -45,6 +48,7 @@ type State = {
   setSession: (session: Session | null) => void;
   setAppView: (appView: "schedule" | "search" | "agent") => void;
   setActiveProject: (activeProject: ProjectEntity | null) => void;
+  setActiveChatEntity: (activeChatEntity: AgentChatEntity) => void;
   setAdminRights: (hasAdminRights: boolean) => void;
   setSidePanelExtensionView: (
     sidePanelExtensionView: SidePanelExtension
@@ -67,6 +71,7 @@ export const useStore = create<State>((set) => ({
   session: null,
   appView: "search",
   activeProject: null,
+  activeChatEntity: { id: "", project_id: "", chat_name: "", chat_details: "" },
   hasAdminRights: false,
   prompts: scopeConfig,
   sidePanelExtensionView: "memory",
@@ -87,6 +92,8 @@ export const useStore = create<State>((set) => ({
     set(() => ({ appView })),
   setActiveProject: (activeProject: ProjectEntity | null) =>
     set(() => ({ activeProject })),
+  setActiveChatEntity: (activeChatEntity: AgentChatEntity) =>
+    set(() => ({ activeChatEntity })),
   setSidePanelExtensionView: (sidePanelExtensionView: SidePanelExtension) =>
     set((state) => ({
       sidePanelExtensionView:

@@ -6,12 +6,17 @@ import { AiFillSchedule } from "react-icons/ai";
 import { HiUserGroup } from "react-icons/hi";
 
 export default function SwitchPanel() {
-  const { sidePanelExtensionView, setSidePanelExtensionView, setAppView } =
-    useStore((state) => ({
-      sidePanelExtensionView: state.sidePanelExtensionView,
-      setSidePanelExtensionView: state.setSidePanelExtensionView,
-      setAppView: state.setAppView,
-    }));
+  const {
+    sidePanelExtensionView,
+    setSidePanelExtensionView,
+    setAppView,
+    appView,
+  } = useStore((state) => ({
+    sidePanelExtensionView: state.sidePanelExtensionView,
+    setSidePanelExtensionView: state.setSidePanelExtensionView,
+    setAppView: state.setAppView,
+    appView: state.appView,
+  }));
 
   return (
     <Flex
@@ -31,9 +36,7 @@ export default function SwitchPanel() {
             setSidePanelExtensionView("memory");
             setAppView("search");
           }}
-          bg={`${
-            sidePanelExtensionView !== "memory" ? "brand.dark" : "brand.accent"
-          }`}
+          bg={`${appView === "search" ? "brand.accent" : "brand.dark"}`}
           color="white"
           _hover={{ bg: "brand.mid", color: "white" }}
         >
@@ -47,7 +50,7 @@ export default function SwitchPanel() {
             setAppView("search");
           }}
           bg={`${
-            sidePanelExtensionView !== "fileExplorer"
+            sidePanelExtensionView !== "fileExplorer" || appView !== "search"
               ? "brand.dark"
               : "brand.accent"
           }`}
@@ -63,9 +66,7 @@ export default function SwitchPanel() {
             setSidePanelExtensionView("agent");
             setAppView("agent");
           }}
-          bg={`${
-            sidePanelExtensionView !== "agent" ? "brand.dark" : "brand.accent"
-          }`}
+          bg={`${appView !== "agent" ? "brand.dark" : "brand.accent"}`}
           color="white"
           _hover={{ bg: "brand.mid", color: "white" }}
         >
@@ -77,11 +78,7 @@ export default function SwitchPanel() {
             setSidePanelExtensionView("schedule");
             setAppView("schedule");
           }}
-          bg={`${
-            sidePanelExtensionView !== "schedule"
-              ? "brand.dark"
-              : "brand.accent"
-          }`}
+          bg={`${appView !== "schedule" ? "brand.dark" : "brand.accent"}`}
           color="white"
           _hover={{ bg: "brand.mid", color: "white" }}
         >

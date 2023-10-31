@@ -13,6 +13,9 @@ export interface ActivityEntity {
   creation_time?: string;
   created_by?: string;
   progress: number;
+  activity_critical: {
+    critical_path: boolean;
+  };
 }
 
 export interface CreateNewActivity {
