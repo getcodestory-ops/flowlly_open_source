@@ -8,6 +8,7 @@ import {
   MenuList,
   MenuItem,
   Button,
+  Tooltip,
 } from "@chakra-ui/react";
 import supabase from "../utils/supabaseClient";
 import { useStore } from "@/utils/store";
@@ -43,15 +44,22 @@ const UserPanel = () => {
     <Box ml="auto" display="flex" alignItems="center">
       {user && (
         <Menu>
-          <MenuButton
-            bg="none"
-            color="teal.500"
-            display="flex"
-            justifyContent="center"
-            cursor={"pointer"}
+          <Tooltip
+            label="User Info"
+            aria-label="A tooltip"
+            bg="white"
+            color="brand.dark"
           >
-            <Avatar name={user.email} bg={"brand.mid"} color="white" />
-          </MenuButton>
+            <MenuButton
+              bg="none"
+              color="teal.500"
+              display="flex"
+              justifyContent="center"
+              cursor={"pointer"}
+            >
+              <Avatar name={user.email} bg={"brand.dark"} color="white" />
+            </MenuButton>
+          </Tooltip>
           <MenuList zIndex="50">
             <MenuItem>{user.email}</MenuItem>
             <MenuItem onClick={() => router.push("/auth/passwordChange")}>

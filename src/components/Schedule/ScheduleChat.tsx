@@ -42,7 +42,7 @@ function ScheduleChatInterface() {
       mx={16}
       justifyContent={"end"}
       direction="column"
-      bg="brand.dark"
+      bg="brand2.light"
       color="white"
       maxH={{ base: "80%", md: "100%" }}
     >
@@ -117,14 +117,15 @@ function ScheduleChatInterface() {
             <Flex justifyContent={"space-between"}>
               <Button
                 leftIcon={<Icon as={FiPlus} />}
-                color="white"
+                color="brand.dark"
                 variant="outline"
-                borderColor="white"
+                borderColor="brand.dark"
                 maxWidth="xs"
-                _hover={{ bg: "gray.600" }}
+                _hover={{ bg: "gray.600", color: "white" }}
                 onClick={onOpen}
+                fontSize="xs"
               >
-                New Activity
+                Add Activity
               </Button>
               <CSVUploader />
               <ContextSelection />

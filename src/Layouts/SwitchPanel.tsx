@@ -1,9 +1,12 @@
-import { Flex, Stack, Button, Box } from "@chakra-ui/react";
+import { Flex, Stack, Button, Box, Image, Tooltip } from "@chakra-ui/react";
 import { FaTimes, FaSearch, FaPlug, FaBrain, FaFolder } from "react-icons/fa";
+import { BiBrain, BiFolder } from "react-icons/bi";
 import UserPanel from "@/components/UserPanel";
 import { useStore } from "@/utils/store";
-import { AiFillSchedule } from "react-icons/ai";
+import { AiFillSchedule, AiOutlineSchedule } from "react-icons/ai";
 import { HiUserGroup } from "react-icons/hi";
+import { GrGroup } from "react-icons/gr";
+import { MdOutlineArrowRight } from "react-icons/md";
 
 export default function SwitchPanel() {
   const {
@@ -21,7 +24,8 @@ export default function SwitchPanel() {
   return (
     <Flex
       // width="16"
-      bg="brand.dark"
+      // bg="brand.dark"
+      bg="brand2.mid"
       direction={{ sm: "row", md: "column" }}
       alignItems="center"
       justifyContent="space-between"
@@ -29,66 +33,100 @@ export default function SwitchPanel() {
       p="6"
       // display={{ base: showMenu ? "flex" : "none", md: "flex" }}
     >
+      <Box display="flex" justifyContent="center">
+        <Image
+          src="https://qfktimnmlcnfowxuoune.supabase.co/storage/v1/object/public/logos/flowlly_identifier.svg"
+          alt="logo"
+          width="25px"
+        />
+      </Box>
       <Stack direction={{ md: "column", sm: "row" }} spacing={4}>
-        <Button
-          zIndex="1"
-          onClick={() => {
-            setSidePanelExtensionView("memory");
-            setAppView("search");
-          }}
-          bg={`${appView === "search" ? "brand.accent" : "brand.dark"}`}
-          color="white"
-          _hover={{ bg: "brand.mid", color: "white" }}
+        <Tooltip
+          label="Search Assistant"
+          aria-label="A tooltip"
+          bg="white"
+          color="brand.dark"
         >
-          {" "}
-          <FaBrain />
-        </Button>
-        <Button
-          zIndex="1"
-          onClick={() => {
-            setSidePanelExtensionView("fileExplorer");
-            setAppView("search");
-          }}
-          bg={`${
-            sidePanelExtensionView !== "fileExplorer" || appView !== "search"
-              ? "brand.dark"
-              : "brand.accent"
-          }`}
-          color="white"
-          _hover={{ bg: "brand.mid", color: "white" }}
-        >
-          {" "}
-          <FaFolder />
-        </Button>
-        <Button
+          <Button
+            zIndex="1"
+            onClick={() => {
+              setSidePanelExtensionView("memory");
+              setAppView("search");
+            }}
+            bg={`${appView === "search" ? "brand.accent" : ""}`}
+            color="brand.dark"
+            _hover={{ bg: "brand.mid", color: "white" }}
+            fontSize="xl"
+          >
+            {" "}
+            {/* <FaBrain /> */}
+            <BiBrain />
+            {/* <MdOutlineArrowRight/> */}
+          </Button>
+        </Tooltip>
+        {/* <Button
           zIndex="1"
           onClick={() => {
             setSidePanelExtensionView("agent");
             setAppView("agent");
           }}
-          bg={`${appView !== "agent" ? "brand.dark" : "brand.accent"}`}
+          bg={`${appView !== "agent" ? "brand.accent" : ""}`}
           color="white"
           _hover={{ bg: "brand.mid", color: "white" }}
         >
-          <HiUserGroup />
-        </Button>
-        <Button
-          zIndex="1"
-          onClick={() => {
-            setSidePanelExtensionView("schedule");
-            setAppView("schedule");
-          }}
-          bg={`${appView !== "schedule" ? "brand.dark" : "brand.accent"}`}
-          color="white"
-          _hover={{ bg: "brand.mid", color: "white" }}
+          <GrGroup />
+
+        </Button> */}
+        <Tooltip
+          label="Schedule Assistant"
+          aria-label="A tooltip"
+          bg="white"
+          color="brand.dark"
         >
-          <AiFillSchedule />
-        </Button>
+          <Button
+            zIndex="1"
+            onClick={() => {
+              setSidePanelExtensionView("schedule");
+              setAppView("schedule");
+            }}
+            bg={`${appView !== "schedule" ? "" : "brand.accent"}`}
+            color="brand.dark"
+            _hover={{ bg: "brand.mid", color: "white" }}
+          >
+            <AiOutlineSchedule />
+            {/* <AiFillSchedule /> */}
+          </Button>
+        </Tooltip>
       </Stack>
 
-      <Box as="nav">
+      <Stack as="nav" direction={{ md: "column", sm: "row" }} spacing={4}>
+        <Tooltip
+          label="File Upload"
+          aria-label="A tooltip"
+          bg="white"
+          color="brand.dark"
+        >
+          <Button
+            zIndex="1"
+            onClick={() => {
+              setSidePanelExtensionView("fileExplorer");
+              setAppView("search");
+            }}
+            bg={`${
+              sidePanelExtensionView !== "fileExplorer" || appView !== "search"
+                ? ""
+                : "brand.accent"
+            }`}
+            color="brand.dark"
+            _hover={{ bg: "brand.mid", color: "white" }}
+          >
+            {" "}
+            <BiFolder />
+            {/* <FaFolder /> */}
+          </Button>
+        </Tooltip>
         <UserPanel />
-      </Box>
+      </Stack>
     </Flex>
   );
 }

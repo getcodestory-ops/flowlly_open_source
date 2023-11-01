@@ -53,7 +53,7 @@ const DraggablePaneDivider: React.FC<DraggablePaneDividerProps> = ({
           cursor="ew-resize"
           width="10px"
           zIndex="10"
-          backgroundColor={isDragging ? "none" : "gray"}
+          backgroundColor={isDragging ? "none" : "gray.200"}
         />
       </Draggable>
       <Flex

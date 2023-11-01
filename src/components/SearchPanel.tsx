@@ -138,7 +138,7 @@ function SearchPanel() {
       direction="column"
       alignItems="start"
       justifyContent="end"
-      bg="brand.dark"
+      bg="brand2.light"
       maxH={{ base: "80%", md: "100%" }}
     >
       <ChatMessageDisplay />

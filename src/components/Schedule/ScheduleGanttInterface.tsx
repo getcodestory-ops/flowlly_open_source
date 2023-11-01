@@ -199,7 +199,9 @@ const ScheduleGanttInterface = () => {
         onViewModeChange={(viewMode) => setView(viewMode)}
         onViewListChange={setIsChecked}
         isChecked={isChecked}
+        View={view}
       />
+      <div>{view} View</div>
       <Gantt
         tasks={tasks}
         viewMode={view}
