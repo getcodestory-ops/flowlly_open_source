@@ -22,7 +22,7 @@ import { on } from "events";
 import FileHandler from "@/Layouts/FIleHandler2";
 import { BiConversation } from "react-icons/bi";
 
-const ScheduleProjectPanel = () => {
+const SchedulePanel = () => {
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
@@ -103,12 +103,10 @@ const ScheduleProjectPanel = () => {
       <AddNewChatEntity isOpen={isOpen} onClose={onClose} />
       <Box marginBottom="4">
         <Heading as="h2" size="md" color="white">
-          Projects Setup
+          Projects
         </Heading>
       </Box>
-      <Flex>
-        <CreateNewProjectButton />
-      </Flex>
+      <Flex>{/* <CreateNewProjectButton /> */}</Flex>
       {isLoading && <Heading color="white">Loading...</Heading>}
       {!isLoading &&
         projects &&
@@ -142,7 +140,7 @@ const ScheduleProjectPanel = () => {
               <Heading size={"md"}>{project.name}</Heading>
               {project.project_id === activeProject?.project_id && (
                 <Flex justifyContent={"end"}>
-                  <Button
+                  {/* <Button
                     bg={folderView === true ? "brand.accent" : "none"}
                     color={folderView === true ? "brand.dark" : "white"}
                     variant="ghost"
@@ -151,7 +149,7 @@ const ScheduleProjectPanel = () => {
                     onClick={onFolder}
                   >
                     <Icon as={ImFilesEmpty} />
-                  </Button>
+                  </Button> */}
                   <Button
                     bg={conversationView === true ? "brand.accent" : "none"}
                     color={conversationView === true ? "brand.dark" : "white"}
@@ -171,7 +169,7 @@ const ScheduleProjectPanel = () => {
                   >
                     <Icon as={AiOutlinePlus} />
                   </Button> */}
-                  <Button
+                  {/* <Button
                     color="white"
                     variant="ghost"
                     size={"sm"}
@@ -179,7 +177,7 @@ const ScheduleProjectPanel = () => {
                     _hover={{ bg: "gray.600" }}
                   >
                     <Icon as={FiTrash} />
-                  </Button>
+                  </Button> */}
                 </Flex>
               )}
             </Flex>
@@ -257,4 +255,4 @@ const ScheduleProjectPanel = () => {
   );
 };
 
-export default ScheduleProjectPanel;
+export default SchedulePanel;

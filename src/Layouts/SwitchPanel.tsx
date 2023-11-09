@@ -7,6 +7,7 @@ import { AiFillSchedule, AiOutlineSchedule } from "react-icons/ai";
 import { HiUserGroup } from "react-icons/hi";
 import { GrGroup } from "react-icons/gr";
 import { MdOutlineArrowRight } from "react-icons/md";
+import { GoProjectRoadmap } from "react-icons/go";
 
 export default function SwitchPanel() {
   const {
@@ -100,7 +101,7 @@ export default function SwitchPanel() {
       </Stack>
 
       <Stack as="nav" direction={{ md: "column", sm: "row" }} spacing={4}>
-        <Tooltip
+        {/* <Tooltip
           label="File Upload"
           aria-label="A tooltip"
           bg="white"
@@ -122,7 +123,27 @@ export default function SwitchPanel() {
           >
             {" "}
             <BiFolder />
-            {/* <FaFolder /> */}
+            
+          </Button>
+        </Tooltip> */}
+        <Tooltip
+          label="Project Setup"
+          aria-label="A tooltip"
+          bg="white"
+          color="brand.dark"
+        >
+          <Button
+            zIndex="1"
+            onClick={() => {
+              setSidePanelExtensionView("project");
+              setAppView("project");
+            }}
+            bg={`${appView === "project" ? "brand.accent" : ""}`}
+            color="brand.dark"
+            _hover={{ bg: "brand.mid", color: "white" }}
+          >
+            {" "}
+            <GoProjectRoadmap />
           </Button>
         </Tooltip>
         <UserPanel />

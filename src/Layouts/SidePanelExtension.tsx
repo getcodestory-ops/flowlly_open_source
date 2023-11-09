@@ -4,6 +4,7 @@ import SearchMemory from "@/Layouts/SearchMemory";
 import AgentMemoryPane from "@/components/Agent/MemoryPane";
 import { useStore } from "@/utils/store";
 import ScheduleProjectPanel from "@/components/Schedule/ScheduleProjectPane";
+import SchedulePanel from "@/components/Schedule/SchedulePane";
 
 function SidePanelExtension() {
   const { sidePanelExtensionView } = useStore((state) => ({
@@ -21,7 +22,8 @@ function SidePanelExtension() {
     >
       {sidePanelExtensionView === "fileExplorer" && <FileHandler />}
       {sidePanelExtensionView === "memory" && <SearchMemory />}
-      {sidePanelExtensionView === "schedule" && <ScheduleProjectPanel />}
+      {sidePanelExtensionView === "project" && <ScheduleProjectPanel />}
+      {sidePanelExtensionView === "schedule" && <SchedulePanel />}
       {sidePanelExtensionView === "agent" && <AgentMemoryPane />}
     </Flex>
   );

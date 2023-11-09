@@ -10,6 +10,7 @@ type SidePanelExtension =
   | "memory"
   | "agent"
   | "schedule"
+  | "project"
   | null;
 
 interface PdfViewer {
@@ -28,7 +29,7 @@ export interface Brain {
 
 type State = {
   session: Session | null;
-  appView: "schedule" | "search" | "agent";
+  appView: "schedule" | "search" | "agent" | "project";
   hasAdminRights: boolean;
   activeProject: ProjectEntity | null;
   activeChatEntity: AgentChatEntity;
@@ -46,7 +47,7 @@ type State = {
   selectedContext: Brain | null;
   pdfViewer: PdfViewer;
   setSession: (session: Session | null) => void;
-  setAppView: (appView: "schedule" | "search" | "agent") => void;
+  setAppView: (appView: "schedule" | "search" | "agent" | "project") => void;
   setActiveProject: (activeProject: ProjectEntity | null) => void;
   setActiveChatEntity: (activeChatEntity: AgentChatEntity) => void;
   setAdminRights: (hasAdminRights: boolean) => void;
@@ -88,7 +89,7 @@ export const useStore = create<State>((set) => ({
   },
   setSession: (session: Session | null) => set(() => ({ session })),
   setAdminRights: (hasAdminRights: boolean) => set(() => ({ hasAdminRights })),
-  setAppView: (appView: "schedule" | "search" | "agent") =>
+  setAppView: (appView: "schedule" | "search" | "agent" | "project") =>
     set(() => ({ appView })),
   setActiveProject: (activeProject: ProjectEntity | null) =>
     set(() => ({ activeProject })),
