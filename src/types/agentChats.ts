@@ -31,4 +31,5 @@ export interface AgentChatEntity {
   project_id: string;
   chat_name: string;
   chat_details?: string;
+  hidden?: boolean;
 }
