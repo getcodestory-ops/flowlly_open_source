@@ -19,6 +19,7 @@ pdfjsOptions.workerSrc =
   String(pdfjsVersion) +
   "/legacy/build/pdf.worker.min.js";
 
+
 const VirtualPdfLoader = () => {
   const { pdfViewer, userId, selectedFolder, setPdfViewer, selectedContext } =
     useStore((state) => ({
@@ -73,18 +74,48 @@ const VirtualPdfLoader = () => {
     <Flex>
       {selectedFolder && isPdfVisible && (
         <Box overflow={"auto"} h={"100vh"}>
-          <IconButton
-            aria-label="Close"
-            position={"absolute"}
-            icon={<AiOutlineClose />}
-            onClick={() => setPdfViewer({ isPdfVisible: false })}
-            mb={2}
-            ml={-2}
-            pl="2"
-            color="red.400"
-            bg="gray.200"
-            zIndex={"popover"}
-          />
+
+          <Flex
+            position={"sticky"}
+            top={0}
+            left={0}
+            right="16"
+            px="8"
+            py="2"
+            gap={2}
+            background="gray"
+            zIndex={"overlay"}
+          >
+            <IconButton
+              aria-label="zoomout"
+              icon={<AiOutlinePlus />}
+              onClick={() => setScale((state) => state + 0.2)}
+              size={"xs"}
+              color="white"
+              bg="green.500"
+              zIndex="overlay"
+            />
+            <IconButton
+              aria-label="zoomin"
+              icon={<AiOutlineMinus />}
+              onClick={() => setScale((state) => state - 0.2)}
+              size={"xs"}
+              color="white"
+              bg="blue.500"
+              zIndex="overlay"
+            />
+            <IconButton
+              width={4}
+              aria-label="Close"
+              size={"xs"}
+              icon={<AiOutlineClose />}
+              onClick={() => setPdfViewer({ isPdfVisible: false })}
+              color="white"
+              bg="red.400"
+              zIndex={"overlay"}
+            />
+          </Flex>
+
           <Flex
             position="absolute"
             right="16"
@@ -123,7 +154,9 @@ const VirtualPdfLoader = () => {
             <IconButton
               aria-label="move right"
               color="gray.400"
-              bg="gray.300"
+
+              bg="gray.500"
+
               icon={<AiOutlineLeft />}
               onClick={() =>
                 setPdfViewer({ pageNumber: Math.max(pageNumber - 1, 1) })
@@ -175,7 +208,9 @@ const VirtualPdfLoader = () => {
               zIndex="10"
               right="4"
               color="gray.400"
-              bg="gray.300"
+
+              bg="gray.500"
+
               aria-label="send message"
               icon={<AiOutlineRight />}
               onClick={() => {

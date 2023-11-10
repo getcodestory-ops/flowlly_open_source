@@ -6,31 +6,12 @@ import { createNewChatSession } from "@/api/chatRoutes";
 import { Chat } from "@/types/chat";
 
 const CreateNewChatButton = () => {
-  // const toast = useToast();
-  // const sessionToken = useStore((state) => state.session);
   const setChatSession = useStore((state) => state.setChatSession);
   const setChatHistory = useStore((state) => state.setChatHistory);
-  // const setChatSessions = useStore((state) => state.setChatSessions);
-  // const chatSessions = useStore((state) => state.chatSessions);
 
   const createNewChat = () => {
     setChatSession(null);
     setChatHistory([]);
-    // const newChatSession: Chat = await createNewChatSession(
-    //   sessionToken!,
-    //   "New chat"
-    // );
-
-    // setChatSession(newChatSession);
-    // toast({
-    //   title: "New chat created successfully !",
-    //   status: "success",
-    //   duration: 2000,
-    //   isClosable: true,
-    //   position: "top-right",
-    // });
-    // const updatedChats: Chat[] = [newChatSession, ...chatSessions];
-    // setChatSessions(updatedChats);
   };
 
   return (

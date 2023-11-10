@@ -2,12 +2,14 @@ import { create } from "zustand";
 import { Session } from "@supabase/supabase-js";
 import { scopeConfig } from "./projectconfig";
 import { Chat, ChatMessage, ChatHistory } from "@/types/chat";
+import { ProjectEntity } from "@/types/projects";
+import { AgentChatEntity } from "@/types/agentChats";
 
 type SidePanelExtension =
-  | "fileSystem"
-  | "integrations"
+  | "fileExplorer"
   | "memory"
-  | "assistant"
+  | "agent"
+  | "schedule"
   | null;
 
 interface PdfViewer {
@@ -26,8 +28,10 @@ export interface Brain {
 
 type State = {
   session: Session | null;
-  appView: "assistant" | "search";
+  appView: "schedule" | "search" | "agent";
   hasAdminRights: boolean;
+  activeProject: ProjectEntity | null;
+  activeChatEntity: AgentChatEntity;
   prompts: {
     scope: string;
     risks: string;
@@ -42,7 +46,9 @@ type State = {
   selectedContext: Brain | null;
   pdfViewer: PdfViewer;
   setSession: (session: Session | null) => void;
-  setAppView: (appView: "assistant" | "search") => void;
+  setAppView: (appView: "schedule" | "search" | "agent") => void;
+  setActiveProject: (activeProject: ProjectEntity | null) => void;
+  setActiveChatEntity: (activeChatEntity: AgentChatEntity) => void;
   setAdminRights: (hasAdminRights: boolean) => void;
   setSidePanelExtensionView: (
     sidePanelExtensionView: SidePanelExtension
@@ -63,10 +69,12 @@ type State = {
 
 export const useStore = create<State>((set) => ({
   session: null,
-  appView: "assistant",
+  appView: "search",
+  activeProject: null,
+  activeChatEntity: { id: "", project_id: "", chat_name: "", chat_details: "" },
   hasAdminRights: false,
   prompts: scopeConfig,
-  sidePanelExtensionView: "assistant",
+  sidePanelExtensionView: "memory",
   folderList: [],
   chatSession: null,
   chatSessions: [],
@@ -80,7 +88,12 @@ export const useStore = create<State>((set) => ({
   },
   setSession: (session: Session | null) => set(() => ({ session })),
   setAdminRights: (hasAdminRights: boolean) => set(() => ({ hasAdminRights })),
-  setAppView: (appView: "assistant" | "search") => set(() => ({ appView })),
+  setAppView: (appView: "schedule" | "search" | "agent") =>
+    set(() => ({ appView })),
+  setActiveProject: (activeProject: ProjectEntity | null) =>
+    set(() => ({ activeProject })),
+  setActiveChatEntity: (activeChatEntity: AgentChatEntity) =>
+    set(() => ({ activeChatEntity })),
   setSidePanelExtensionView: (sidePanelExtensionView: SidePanelExtension) =>
     set((state) => ({
       sidePanelExtensionView:

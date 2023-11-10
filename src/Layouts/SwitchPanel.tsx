@@ -1,16 +1,22 @@
 import { Flex, Stack, Button, Box } from "@chakra-ui/react";
 import { FaTimes, FaSearch, FaPlug, FaBrain, FaFolder } from "react-icons/fa";
-import { SiFoursquarecityguide } from "react-icons/si";
 import UserPanel from "@/components/UserPanel";
 import { useStore } from "@/utils/store";
+import { AiFillSchedule } from "react-icons/ai";
+import { HiUserGroup } from "react-icons/hi";
 
 export default function SwitchPanel() {
-  const { sidePanelExtensionView, setSidePanelExtensionView } = useStore(
-    (state) => ({
-      sidePanelExtensionView: state.sidePanelExtensionView,
-      setSidePanelExtensionView: state.setSidePanelExtensionView,
-    })
-  );
+  const {
+    sidePanelExtensionView,
+    setSidePanelExtensionView,
+    setAppView,
+    appView,
+  } = useStore((state) => ({
+    sidePanelExtensionView: state.sidePanelExtensionView,
+    setSidePanelExtensionView: state.setSidePanelExtensionView,
+    setAppView: state.setAppView,
+    appView: state.appView,
+  }));
 
   return (
     <Flex
@@ -25,45 +31,59 @@ export default function SwitchPanel() {
     >
       <Stack direction={{ md: "column", sm: "row" }} spacing={4}>
         <Button
-          // transform="translateY(-50%)"
           zIndex="1"
-          onClick={() => setSidePanelExtensionView("assistant")}
-          bg="brand.dark"
+          onClick={() => {
+            setSidePanelExtensionView("memory");
+            setAppView("search");
+          }}
+          bg={`${appView === "search" ? "brand.accent" : "brand.dark"}`}
           color="white"
           _hover={{ bg: "brand.mid", color: "white" }}
         >
-          {sidePanelExtensionView !== "assistant" ? <FaBrain /> : <FaTimes />}
+          {" "}
+          <FaBrain />
         </Button>
         <Button
-          // transform="translateY(-50%)"
           zIndex="1"
-          onClick={() => setSidePanelExtensionView("fileSystem")}
-          bg="brand.dark"
+          onClick={() => {
+            setSidePanelExtensionView("fileExplorer");
+            setAppView("search");
+          }}
+          bg={`${
+            sidePanelExtensionView !== "fileExplorer" || appView !== "search"
+              ? "brand.dark"
+              : "brand.accent"
+          }`}
           color="white"
           _hover={{ bg: "brand.mid", color: "white" }}
         >
-          {sidePanelExtensionView !== "fileSystem" ? <FaFolder /> : <FaTimes />}
-        </Button>
-        {/* <Button
-          // transform="translateY(-50%)"
-          zIndex="1"
-          onClick={() => setSidePanelExtensionView("integrations")}
-          bg="brand.dark"
-          color="white"
-          _hover={{ bg: "brand.mid", color: "white" }}
-        >
-          {sidePanelExtensionView !== "integrations" ? <FaPlug /> : <FaTimes />}
+          {" "}
+          <FaFolder />
         </Button>
         <Button
-          // transform="translateY(-50%)"
           zIndex="1"
-          onClick={() => setSidePanelExtensionView("memory")}
-          bg="brand.dark"
+          onClick={() => {
+            setSidePanelExtensionView("agent");
+            setAppView("agent");
+          }}
+          bg={`${appView !== "agent" ? "brand.dark" : "brand.accent"}`}
           color="white"
           _hover={{ bg: "brand.mid", color: "white" }}
         >
-          {sidePanelExtensionView !== "memory" ? <FaBrain /> : <FaTimes />}
-        </Button> */}
+          <HiUserGroup />
+        </Button>
+        <Button
+          zIndex="1"
+          onClick={() => {
+            setSidePanelExtensionView("schedule");
+            setAppView("schedule");
+          }}
+          bg={`${appView !== "schedule" ? "brand.dark" : "brand.accent"}`}
+          color="white"
+          _hover={{ bg: "brand.mid", color: "white" }}
+        >
+          <AiFillSchedule />
+        </Button>
       </Stack>
 
       <Box as="nav">
