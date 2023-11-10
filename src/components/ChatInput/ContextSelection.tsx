@@ -13,7 +13,7 @@ function ContextSelection() {
 
   return (
     <Flex justifyContent={"end"} alignItems="center" pl="2" fontSize="xs">
-      <Text color="brand.light" mr="4">
+      <Text color="brand.dark" mr="4">
         Search folder
       </Text>
 

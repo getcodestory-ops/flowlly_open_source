@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Task, ViewMode, Gantt } from "gantt-task-react";
 import { ViewSwitcher } from "./view-switcher";
-import { Icon, useToast } from "@chakra-ui/react";
+import { Icon, useToast, Box, Text } from "@chakra-ui/react";
 import { getStartEndDateForProject, initTasks } from "./helper";
 import "gantt-task-react/dist/index.css";
 import { Flex } from "@chakra-ui/react";
@@ -78,7 +78,10 @@ const ScheduleGanttInterface = () => {
   useEffect(() => {
     if (isSuccess && activities) {
       if (activities.length > 0) {
-        const transformedTasks = activities.map(activityEntityToTask); // Assuming the data you want is in activities.data
+        console.log("activities", activities);
+        const transformedTasks = activities
+          .map(activityEntityToTask)
+          .sort((a, b) => a.start.getTime() - b.start.getTime()); // Assuming the data you want is in activities.data
         setTasks(transformedTasks);
       } else {
         const currentDate = new Date();
@@ -168,6 +171,22 @@ const ScheduleGanttInterface = () => {
     console.log("On expander click Id:" + task.id);
   };
 
+  const tooltip = (task: Task) => {
+    return (
+      <Flex
+        bg={"white"}
+        width={"300px"}
+        p={4}
+        boxShadow={"md"}
+        borderRadius={"12px"}
+      >
+        <Text as={"b"} fontSize={"sm"}>
+          {task.name}
+        </Text>
+      </Flex>
+    );
+  };
+
   return (
     <Flex
       className="Wrapper"
@@ -199,7 +218,9 @@ const ScheduleGanttInterface = () => {
         onViewModeChange={(viewMode) => setView(viewMode)}
         onViewListChange={setIsChecked}
         isChecked={isChecked}
+        View={view}
       />
+      <div>{view} View</div>
       <Gantt
         tasks={tasks}
         viewMode={view}
@@ -214,6 +235,10 @@ const ScheduleGanttInterface = () => {
         rowHeight={fontSize * 3}
         columnWidth={columnWidth}
         fontSize={`${fontSize}px`}
+        TooltipContent={({ task, fontSize, fontFamily }) => {
+          console.log("TooltipContent", { task, fontSize, fontFamily });
+          return tooltip(task) as unknown as JSX.Element;
+        }}
       />
     </Flex>
   );

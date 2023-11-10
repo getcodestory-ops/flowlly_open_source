@@ -46,12 +46,16 @@ const CSVUploader: React.FC = () => {
   return (
     <Flex>
       <Flex
-        border="1px solid white"
+        border="1px solid"
+        borderColor={"brand.dark"}
         borderRadius={"md"}
         align={"center"}
         position={"relative"}
         px={2}
         gap={2}
+        fontSize="xs"
+        color="brand.dark"
+        _hover={{ bg: "gray.600", color: "white" }}
       >
         <Icon as={FiUpload} />
         {selectedFile !== null ? selectedFile.name : "Upload csv file"}
@@ -65,9 +69,11 @@ const CSVUploader: React.FC = () => {
           opacity={0}
           onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
         />
-        <Button onClick={handleCsvFileHeaderCheck} size="xs">
-          process
-        </Button>
+        {selectedFile !== null ? (
+          <Button onClick={handleCsvFileHeaderCheck} size="xs">
+            process
+          </Button>
+        ) : null}
       </Flex>
 
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>

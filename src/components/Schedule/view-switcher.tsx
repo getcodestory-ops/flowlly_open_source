@@ -1,25 +1,28 @@
 import React from "react";
+import { useState } from "react";
 import "gantt-task-react/dist/index.css";
 import { ViewMode } from "gantt-task-react";
 type ViewSwitcherProps = {
   isChecked: boolean;
   onViewListChange: (isChecked: boolean) => void;
   onViewModeChange: (viewMode: ViewMode) => void;
+  View: string;
 };
 export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
   onViewModeChange,
   onViewListChange,
   isChecked,
+  View,
 }) => {
   return (
     <div className="ViewContainer">
-      <button
+      {/* <button
         className="Button"
         onClick={() => onViewModeChange(ViewMode.Hour)}
       >
         Hour
-      </button>
-      <button
+      </button> */}
+      {/* <button
         className="Button"
         onClick={() => onViewModeChange(ViewMode.QuarterDay)}
       >
@@ -30,8 +33,11 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
         onClick={() => onViewModeChange(ViewMode.HalfDay)}
       >
         Half of Day
-      </button>
-      <button className="Button" onClick={() => onViewModeChange(ViewMode.Day)}>
+      </button> */}
+      <button
+        className={`Button`}
+        onClick={() => onViewModeChange(ViewMode.Day)}
+      >
         Day
       </button>
       <button
@@ -58,6 +64,7 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
       >
         Year
       </button> */}
+
       <div className="Switch">
         <label className="Switch_Toggle">
           <input
