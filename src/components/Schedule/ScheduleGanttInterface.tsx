@@ -78,7 +78,7 @@ const ScheduleGanttInterface = () => {
   useEffect(() => {
     if (isSuccess && activities) {
       if (activities.length > 0) {
-        console.log("activities", activities);
+        // console.log("activities", activities);
         const transformedTasks = activities
           .map(activityEntityToTask)
           .sort((a, b) => a.start.getTime() - b.start.getTime()); // Assuming the data you want is in activities.data
@@ -236,7 +236,7 @@ const ScheduleGanttInterface = () => {
         columnWidth={columnWidth}
         fontSize={`${fontSize}px`}
         TooltipContent={({ task, fontSize, fontFamily }) => {
-          console.log("TooltipContent", { task, fontSize, fontFamily });
+          // console.log("TooltipContent", { task, fontSize, fontFamily });
           return tooltip(task) as unknown as JSX.Element;
         }}
       />
