@@ -29,7 +29,6 @@ import { BiConversation } from "react-icons/bi";
 
 import ShareProjectModal from "./ShareProjectModal";
 
-
 const ScheduleProjectPanel = () => {
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
@@ -54,7 +53,6 @@ const ScheduleProjectPanel = () => {
 
   const shareModalOpen = () => setIsShareOpen(true);
   const shareModalClose = () => setIsShareOpen(false);
-
 
   const {
     session,
@@ -181,7 +179,7 @@ const ScheduleProjectPanel = () => {
                   >
                     <Icon as={BiConversation} />
                   </Button>
-                  {/* <Button
+                  <Button
                     color="white"
                     variant="ghost"
                     size={"sm"}
@@ -190,7 +188,7 @@ const ScheduleProjectPanel = () => {
                   >
                     <Icon as={PiShareFatLight} />
                   </Button>
-                  <Button
+                  {/* <Button
                     color="white"
                     variant="ghost"
                     size={"sm"}
