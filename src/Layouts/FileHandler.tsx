@@ -275,15 +275,17 @@ function FileHandler() {
   return (
     <Flex
       direction={"column"}
-      p="4"
-      background="brand.mid"
-      height="100vh"
+      // p="4"
+      // background="brand.mid"
+      px={2}
+      mt={4}
+      height="400px"
       width="full"
     >
       <>
         <Box marginBottom="4">
-          <Heading as="h2" size="md" color="white">
-            Explorer
+          <Heading as="h2" size="sm" color="white">
+            Project Files
           </Heading>
         </Box>
         {hasAdminRights && (

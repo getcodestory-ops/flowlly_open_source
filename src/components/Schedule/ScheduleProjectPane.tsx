@@ -19,7 +19,7 @@ import { getAgentChatEntities } from "@/api/agentRoutes";
 import { ProjectEntity } from "@/types/projects";
 import AddNewChatEntity from "./AddNewChatEntity";
 import { on } from "events";
-import FileHandler from "@/Layouts/FIleHandler2";
+import FileHandler from "@/Layouts/FileHandler";
 import { BiConversation } from "react-icons/bi";
 
 const ScheduleProjectPanel = () => {
