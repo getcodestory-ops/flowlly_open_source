@@ -11,3 +11,9 @@ export interface CreateNewProjectEntity {
   name: string;
   description?: string;
 }
+
+export interface ShareProjectEntity {
+  project_id: string;
+  email: string;
+  enroll: boolean;
+}

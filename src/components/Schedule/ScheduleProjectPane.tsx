@@ -12,21 +12,31 @@ import { useStore } from "@/utils/store";
 import CreateNewProjectButton from "@/components/Schedule/NewProjectButton";
 import { FiTrash } from "react-icons/fi";
 import { AiOutlinePlus } from "react-icons/ai";
+
 import { ImFilesEmpty } from "react-icons/im";
+
+import { PiShareFatLight } from "react-icons/pi";
+
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { getProjects, deleteProject } from "@/api/projectRoutes";
 import { getAgentChatEntities } from "@/api/agentRoutes";
 import { ProjectEntity } from "@/types/projects";
 import AddNewChatEntity from "./AddNewChatEntity";
+
 import { on } from "events";
 import FileHandler from "@/Layouts/FileHandler";
 import { BiConversation } from "react-icons/bi";
 
+import ShareProjectModal from "./ShareProjectModal";
+
+
 const ScheduleProjectPanel = () => {
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
   const onClose = () => setIsOpen(false);
   const onOpen = () => setIsOpen(true);
+
   const [folderView, setFolderView] = useState(false);
   const onFolder = () => {
     setFolderView(!folderView);
@@ -41,6 +51,10 @@ const ScheduleProjectPanel = () => {
       setFolderView(false);
     }
   };
+
+  const shareModalOpen = () => setIsShareOpen(true);
+  const shareModalClose = () => setIsShareOpen(false);
+
 
   const {
     session,
@@ -101,6 +115,11 @@ const ScheduleProjectPanel = () => {
   return (
     <Flex direction="column" height="100vh" bg="brand.mid" width="full" p="4">
       <AddNewChatEntity isOpen={isOpen} onClose={onClose} />
+      <ShareProjectModal
+        isShareOpen={isShareOpen}
+        shareModalClose={shareModalClose}
+      />
+
       <Box marginBottom="4">
         <Heading as="h2" size="md" color="white">
           Projects Setup
@@ -163,6 +182,15 @@ const ScheduleProjectPanel = () => {
                     <Icon as={BiConversation} />
                   </Button>
                   {/* <Button
+                    color="white"
+                    variant="ghost"
+                    size={"sm"}
+                    _hover={{ bg: "gray.600" }}
+                    onClick={() => setIsShareOpen(true)}
+                  >
+                    <Icon as={PiShareFatLight} />
+                  </Button>
+                  <Button
                     color="white"
                     variant="ghost"
                     size={"sm"}
