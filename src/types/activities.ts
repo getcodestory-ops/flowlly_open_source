@@ -14,6 +14,7 @@ export interface ActivityEntity {
   created_by?: string;
   progress: number;
   owner?: string;
+  history?: string;
   activity_critical: {
     critical_path: boolean;
   };

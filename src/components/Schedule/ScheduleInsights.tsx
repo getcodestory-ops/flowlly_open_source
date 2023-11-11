@@ -18,6 +18,7 @@ import { useStore } from "@/utils/store";
 import { getActivities } from "@/api/activity_routes";
 import { BiSolidCircle } from "react-icons/bi";
 import { MdHistoryToggleOff } from "react-icons/md";
+import { GrCircleAlert } from "react-icons/gr";
 
 function ScheduleInsights() {
   const toast = useToast();
@@ -27,6 +28,7 @@ function ScheduleInsights() {
     activeProject: state.activeProject,
   }));
   const [view, setView] = useState<string>("master");
+  const [openHistory, setOpenHistory] = useState<string>("");
 
   const {
     data: activities,
@@ -46,10 +48,20 @@ function ScheduleInsights() {
   });
 
   const activitiesCard = () => {
+    // console.log("activities", activities);
     if (!activities) return null;
     const sortedActivities = activities.slice().sort((a, b) => {
       return new Date(a.start).getTime() - new Date(b.start).getTime();
     });
+
+    const historyClick = (id: string) => {
+      // console.log("id", id);
+      if (openHistory === id) {
+        setOpenHistory("");
+        return;
+      }
+      setOpenHistory(id);
+    };
 
     return sortedActivities.map((activity) => (
       <Box
@@ -104,17 +116,44 @@ function ScheduleInsights() {
           </Flex>
         </Flex>
         <Flex direction={"row"} paddingLeft={6}>
-          <Tooltip
-            label="Task History"
-            aria-label="A tooltip"
-            bg={"whote"}
-            color={"brand.dark"}
-          >
-            <Box p={0} cursor={"pointer"}>
-              <Icon as={MdHistoryToggleOff} />
-            </Box>
-          </Tooltip>
+          {activity.history !== null ? (
+            <Tooltip
+              label="Task History"
+              aria-label="A tooltip"
+              bg={"whote"}
+              color={"brand.dark"}
+            >
+              <Button
+                p={0}
+                mr={2}
+                cursor={"pointer"}
+                _hover={{ bg: "brand.dark", color: "white" }}
+                onClick={() => historyClick(activity.id)}
+              >
+                <Icon as={MdHistoryToggleOff} />
+              </Button>
+            </Tooltip>
+          ) : null}
+          {activity.status === "Delayed" || activity.status === "At Risk" ? (
+            <Tooltip
+              label="Delay Impact"
+              aria-label="A tooltip"
+              bg={"whote"}
+              color={"brand.dark"}
+            >
+              <Button
+                p={0}
+                cursor={"pointer"}
+                _hover={{ bg: "brand.dark", color: "white" }}
+              >
+                <Icon as={GrCircleAlert} />
+              </Button>
+            </Tooltip>
+          ) : null}
         </Flex>
+        {openHistory === activity.id && activity.history !== null ? (
+          <Flex paddingLeft={6}>{activity.history.impact}</Flex>
+        ) : null}
       </Box>
     ));
   };
@@ -146,8 +185,18 @@ function ScheduleInsights() {
               3 Week Lookahead
             </Button>
           </Box>
-
-          {activitiesCard()}
+          <Box
+            overflowY={"scroll"}
+            overscrollBehaviorY={"contain"}
+            height={"88%"}
+            sx={{
+              "::-webkit-scrollbar": {
+                display: "none",
+              },
+            }}
+          >
+            {activitiesCard()}
+          </Box>
         </Box>
         {/* <Box>
           <Button
