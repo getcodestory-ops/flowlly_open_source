@@ -13,7 +13,11 @@ export default function Dashboard() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Box h={{ base: "98vh", md: "100vh" }} bg={"brand2.light"}>
+      <Box
+        h={{ base: "98vh", md: "100vh" }}
+        bg={"brand2.light"}
+        overscrollBehaviorY={"contain"}
+      >
         <Flex height="100vh" flexDirection={{ base: "column", md: "row" }}>
           <Flex zIndex="10">
             <SidePanel />

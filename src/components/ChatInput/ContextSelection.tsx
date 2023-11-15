@@ -18,7 +18,7 @@ function ContextSelection() {
       </Text>
 
       <Select
-        color="brand.accent"
+        color="gray.400"
         placeholder="Search within"
         value={selectedContext?.name ?? ""}
         border="none"

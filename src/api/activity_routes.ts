@@ -32,6 +32,49 @@ export const createActivity = async (
   return response.data?.activity!;
 };
 
+export const updateActivity = async (
+  session: Session,
+  activity: string,
+  activityData: {
+    name?: string;
+    project_id?: string;
+    description?: string;
+    duration?: number;
+    start?: string;
+    end?: string;
+    cost?: number;
+    dependencies?: string[];
+    resources?: string[];
+    status?: string;
+    created_by?: string;
+    owner?: string;
+    progress?: number;
+  }
+): Promise<ActivityEntity | null> => {
+  if (!session.access_token) return null;
+
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/activities/${activity}/update`;
+  console.log("activityData", activityData);
+  try {
+    const response = await axios.put(
+      url,
+      activityData, // Send the activity data as the request body
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      }
+    );
+
+    return response.data?.activity!;
+  } catch (error) {
+    // Handle any errors here
+    console.error("Error updating activity:", error);
+    return null;
+  }
+};
+
 export const deleteProject = async (session: Session, project_id: string) => {
   if (!session.access_token) return null;
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project/${project_id}`;

@@ -45,15 +45,17 @@ function ScheduleChatInterface() {
       bg="brand2.light"
       color="white"
       maxH={{ base: "80%", md: "100%" }}
+      overscrollBehaviorY={"contain"}
     >
       <VStack
         alignSelf={"center"}
         align="start"
         spacing={4}
         overflowY={"scroll"}
+        overscrollBehaviorY={"contain"}
         p="8"
         maxW="4xl"
-        maxH={"85vh"}
+        maxH={"70vh"}
       >
         {chats &&
           chats.length > 0 &&
@@ -106,7 +108,7 @@ function ScheduleChatInterface() {
             p={2}
             borderRadius="md"
           >
-            <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
+            {/* <AddNewActivityModal isOpen={isOpen} onClose={onClose} /> */}
           </Box>
           <Flex
             flexDirection={"column"}
@@ -114,8 +116,8 @@ function ScheduleChatInterface() {
             alignSelf={"center"}
             width="100%"
           >
-            <Flex justifyContent={"space-between"}>
-              <Button
+            <Flex>
+              {/* <Button
                 leftIcon={<Icon as={FiPlus} />}
                 color="brand.dark"
                 variant="outline"
@@ -127,7 +129,7 @@ function ScheduleChatInterface() {
               >
                 Add Activity
               </Button>
-              <CSVUploader />
+              <CSVUploader /> */}
               <ContextSelection />
             </Flex>
             <ScheduleAssistant

@@ -46,6 +46,9 @@ type State = {
   chatMessages: ChatMessage[];
   selectedContext: Brain | null;
   pdfViewer: PdfViewer;
+  rightPanelView: "gantt" | "task";
+  taskToView: Object | null;
+  taskDetailsView: "details" | "history" | "impact" | "gantt";
   setSession: (session: Session | null) => void;
   setAppView: (appView: "schedule" | "search" | "agent" | "project") => void;
   setActiveProject: (activeProject: ProjectEntity | null) => void;
@@ -66,6 +69,11 @@ type State = {
   setSelectedContext: (context: Brain | null) => void;
   setPdfViewer: (pdfDetails: any) => void;
   updateChatHistory: (id: string, chatHistory: ChatHistory[]) => void;
+  setRightPanelView: (view: "gantt" | "task") => void;
+  setTaskToView: (task: Object | null) => void;
+  setTaskDetailsView: (
+    view: "details" | "history" | "impact" | "gantt"
+  ) => void;
 };
 
 export const useStore = create<State>((set) => ({
@@ -87,6 +95,9 @@ export const useStore = create<State>((set) => ({
     filePath: "",
     highlightDetails: undefined,
   },
+  rightPanelView: "gantt",
+  taskToView: null,
+  taskDetailsView: "details",
   setSession: (session: Session | null) => set(() => ({ session })),
   setAdminRights: (hasAdminRights: boolean) => set(() => ({ hasAdminRights })),
   setAppView: (appView: "schedule" | "search" | "agent" | "project") =>
@@ -166,4 +177,9 @@ export const useStore = create<State>((set) => ({
 
       return { chatSessions: updatedChatSessions };
     }),
+  setRightPanelView: (view: "gantt" | "task") =>
+    set(() => ({ rightPanelView: view })),
+  setTaskToView: (task: Object | null) => set(() => ({ taskToView: task })),
+  setTaskDetailsView: (view: "details" | "history" | "impact" | "gantt") =>
+    set(() => ({ taskDetailsView: view })),
 }));

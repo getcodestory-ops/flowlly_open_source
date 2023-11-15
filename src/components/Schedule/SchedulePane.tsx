@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Flex,
@@ -57,6 +57,10 @@ const SchedulePanel = () => {
   }));
 
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    console.log("Chat entity", activeChatEntity);
+  }, [activeChatEntity]);
 
   const { data: projects, isLoading } = useQuery({
     queryKey: ["projectList", session],

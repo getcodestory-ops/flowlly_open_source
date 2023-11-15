@@ -77,7 +77,7 @@ export const useCSVUploader = () => {
         .split("\n")
         .map((row) => row.replace("\r", "").split(","));
 
-      setCsvHeaders(csvHeaders);
+      setCsvHeaders(csv_headers);
 
       Object.keys(ACTIVITY_KEYS).map((header) => {
         const matchedKey = csv_headers.find(

@@ -68,7 +68,8 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
   });
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    // <Modal isOpen={isOpen} onClose={onClose}>
+    <>
       <ModalOverlay />
       <ModalContent>
         {!activeProject && (
@@ -192,7 +193,7 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
             </ModalBody>{" "}
             <ModalFooter>
               <Button
-                colorScheme="blue"
+                bg={"brand.accent"}
                 mr={3}
                 onClick={() => {
                   mutation.mutate();
@@ -208,7 +209,8 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
           </>
         )}
       </ModalContent>
-    </Modal>
+    </>
+    // </Modal>
   );
 }
 
