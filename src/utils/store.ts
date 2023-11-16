@@ -29,7 +29,15 @@ export interface Brain {
 
 type State = {
   session: Session | null;
-  appView: "schedule" | "search" | "agent" | "project";
+  appView:
+    | "schedule"
+    | "search"
+    | "agent"
+    | "project"
+    | "meeting"
+    | "budget"
+    | "communication"
+    | "safety";
   hasAdminRights: boolean;
   activeProject: ProjectEntity | null;
   activeChatEntity: AgentChatEntity;
@@ -50,7 +58,17 @@ type State = {
   taskToView: Object | null;
   taskDetailsView: "details" | "history" | "impact" | "gantt";
   setSession: (session: Session | null) => void;
-  setAppView: (appView: "schedule" | "search" | "agent" | "project") => void;
+  setAppView: (
+    appView:
+      | "schedule"
+      | "search"
+      | "agent"
+      | "project"
+      | "meeting"
+      | "budget"
+      | "communication"
+      | "safety"
+  ) => void;
   setActiveProject: (activeProject: ProjectEntity | null) => void;
   setActiveChatEntity: (activeChatEntity: AgentChatEntity) => void;
   setAdminRights: (hasAdminRights: boolean) => void;
@@ -100,8 +118,17 @@ export const useStore = create<State>((set) => ({
   taskDetailsView: "details",
   setSession: (session: Session | null) => set(() => ({ session })),
   setAdminRights: (hasAdminRights: boolean) => set(() => ({ hasAdminRights })),
-  setAppView: (appView: "schedule" | "search" | "agent" | "project") =>
-    set(() => ({ appView })),
+  setAppView: (
+    appView:
+      | "schedule"
+      | "search"
+      | "agent"
+      | "project"
+      | "meeting"
+      | "budget"
+      | "communication"
+      | "safety"
+  ) => set(() => ({ appView })),
   setActiveProject: (activeProject: ProjectEntity | null) =>
     set(() => ({ activeProject })),
   setActiveChatEntity: (activeChatEntity: AgentChatEntity) =>

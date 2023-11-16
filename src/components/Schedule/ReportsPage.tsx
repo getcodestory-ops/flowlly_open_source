@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import { Flex, Select, Text, Button } from "@chakra-ui/react";
-import Markdown from "react-markdown";
 import { createRoot } from "react-dom/client";
 
 const ReportsPage = () => {
   const [reportSelected, setReportSelected] = useState<string>("");
+  const [selectedTimeframe, setSelectedTimeframe] = useState<string>("");
+  const [newReport, setNewReport] = useState<boolean>(false);
 
   const reports = {
-    "option 1": `John Smith
-    Date: November 15, 2023
-    Project: Oakwood Estates
-    Location: 1234 Elm Street, Anytown, USA
+    "option 1": `# John Smith
+    **Date:** November 15, 2023
+    **Project:** Oakwood Estates
+    **Location:** 1234 Elm Street, Anytown, USA
     
     **Daily Progress Report**
     
@@ -19,7 +20,7 @@ const ReportsPage = () => {
     - Weather: Partly cloudy with no precipitation
     
     **Project Overview:**
-    Today marked significant progress on the excavation phase as planned. The team continued to work diligently to achieve project milestones. 
+    Today marked significant progress on the excavation phase as planned. The team continued to work diligently to achieve project milestones.
     
     **Accomplishments:**
     - Completed excavation of the foundation area.
@@ -54,13 +55,11 @@ const ReportsPage = () => {
     - The concrete supplier will deliver the additional rebar tomorrow as per the order.
     - Soil stability will continue to be monitored to ensure worker safety during excavation.
     
-    **Signature:**
-    John Smith
-    
-    This report provides a detailed overview of today's activities, including accomplishments, challenges, resource allocation, and client communication, reflecting the real progress and challenges faced on the Oakwood Estates construction project.`,
-    "option 2": `John Smith
-    Date: November 7, 2023
-    Project: Riverside Apartments
+    **Signature:** John Smith
+    `,
+    "option 2": `John Smith </br>
+    Date: November 7, 2023</br>
+    Project: Riverside Apartments</br>
     Location: 567 River Road, Riverdale, USA
     
     **Daily Progress Report**
@@ -108,9 +107,9 @@ const ReportsPage = () => {
     **Signature:**
     John Smith
     `,
-    "option 3": `Jane Doe
-    Date: November 1, 2023
-    Project: Harborview Marina
+    "option 3": `Jane Doe</br>
+    Date: November 1, 2023</br>
+    Project: Harborview Marina</br>
     Location: 789 Dockside Drive, Seaview Harbor, USA
     
     **Daily Progress Report**
@@ -168,17 +167,42 @@ const ReportsPage = () => {
     } else if (reportSelected === "option3") {
       return reports["option 3"];
     } else {
-      return "Select a report to view";
+      return null;
     }
   };
 
+  const generateNewReport = () => {
+    return (
+      <Flex direction={"column"}>
+        <Select
+          placeholder="Select Timeframe"
+          size={"sm"}
+          onChange={(e) => setSelectedTimeframe(e.target.value)}
+          bg={"white"}
+        >
+          <option value="option1">Today</option>
+          <option value="option2">Yesterday</option>
+          <option value="option3">This Week</option>
+          <option value="option4">Last Week</option>
+          <option value="option5">This Month</option>
+        </Select>
+        <Button size={"sm"} bg={"brand.dark"} color={"white"} mt={"6"}>
+          Generate Report
+        </Button>
+      </Flex>
+    );
+  };
+
   return (
-    <Flex mt={"10"} px={"10"} direction={"column"}>
+    <Flex mt={"10"} px={"10"} direction={"column"} w={"100%"}>
       <Flex alignItems={"center"}>
         <Select
           placeholder="Open Existing Report"
           size={"sm"}
-          onChange={(e) => setReportSelected(e.target.value)}
+          onChange={(e) => {
+            setReportSelected(e.target.value), setNewReport(false);
+          }}
+          w={"280px"}
         >
           <option value="option1">November 15th, 2023</option>
           <option value="option2">November 7th, 2023</option>
@@ -187,11 +211,30 @@ const ReportsPage = () => {
         <Text ml={"5"} mr={"5"} fontSize={"sm"}>
           or
         </Text>
-        <Button size={"sm"} w={"280px"}>
+        <Button
+          size={"sm"}
+          w={"280px"}
+          onClick={() => setNewReport(!newReport)}
+          _hover={{ bg: "brand.dark", color: "white" }}
+        >
           Generate New Report
         </Button>
       </Flex>
-      <Flex>{reportDisplay()}</Flex>
+      {!newReport ? (
+        <Flex overflowY={"auto"} fontSize={"sm"} h={"88%"} mt={"4"}>
+          {reportDisplay()}
+        </Flex>
+      ) : (
+        <Flex
+          w={"100%"}
+          justifyContent={"center"}
+          mt={"32"}
+          bg={"brand2.mid"}
+          p={"10"}
+        >
+          {generateNewReport()}
+        </Flex>
+      )}
     </Flex>
   );
 };

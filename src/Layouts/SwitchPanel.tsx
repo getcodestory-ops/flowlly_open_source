@@ -6,8 +6,11 @@ import { useStore } from "@/utils/store";
 import { AiFillSchedule, AiOutlineSchedule } from "react-icons/ai";
 import { HiUserGroup } from "react-icons/hi";
 import { GrGroup } from "react-icons/gr";
-import { MdOutlineArrowRight } from "react-icons/md";
+import { MdOutlineArrowRight, MdOutlineHealthAndSafety } from "react-icons/md";
 import { GoProjectRoadmap } from "react-icons/go";
+import { HiOutlineUserGroup } from "react-icons/hi2";
+import { HiOutlineSpeakerphone } from "react-icons/hi";
+import { RiMoneyDollarCircleLine } from "react-icons/ri";
 
 export default function SwitchPanel() {
   const {
@@ -60,9 +63,7 @@ export default function SwitchPanel() {
             fontSize="xl"
           >
             {" "}
-            {/* <FaBrain /> */}
             <BiBrain />
-            {/* <MdOutlineArrowRight/> */}
           </Button>
         </Tooltip>
         {/* <Button
@@ -95,7 +96,82 @@ export default function SwitchPanel() {
             _hover={{ bg: "brand.mid", color: "white" }}
           >
             <AiOutlineSchedule />
-            {/* <AiFillSchedule /> */}
+          </Button>
+        </Tooltip>
+        <Tooltip
+          label="Budget Assistant"
+          aria-label="A tooltip"
+          bg="white"
+          color="brand.dark"
+        >
+          <Button
+            zIndex="1"
+            onClick={() => {
+              setSidePanelExtensionView("schedule");
+              setAppView("budget");
+            }}
+            bg={`${appView !== "budget" ? "" : "brand.accent"}`}
+            color="brand.dark"
+            _hover={{ bg: "brand.mid", color: "white" }}
+          >
+            <RiMoneyDollarCircleLine />
+          </Button>
+        </Tooltip>
+        <Tooltip
+          label="Safety Assistant"
+          aria-label="A tooltip"
+          bg="white"
+          color="brand.dark"
+        >
+          <Button
+            zIndex="1"
+            onClick={() => {
+              setSidePanelExtensionView("schedule");
+              setAppView("safety");
+            }}
+            bg={`${appView !== "safety" ? "" : "brand.accent"}`}
+            color="brand.dark"
+            _hover={{ bg: "brand.mid", color: "white" }}
+          >
+            <MdOutlineHealthAndSafety />
+          </Button>
+        </Tooltip>
+        <Tooltip
+          label="Meeting Assistant"
+          aria-label="A tooltip"
+          bg="white"
+          color="brand.dark"
+        >
+          <Button
+            zIndex="1"
+            onClick={() => {
+              setSidePanelExtensionView("schedule");
+              setAppView("meeting");
+            }}
+            bg={`${appView !== "meeting" ? "" : "brand.accent"}`}
+            color="brand.dark"
+            _hover={{ bg: "brand.mid", color: "white" }}
+          >
+            <HiOutlineUserGroup />
+          </Button>
+        </Tooltip>
+        <Tooltip
+          label="Communication Assistant"
+          aria-label="A tooltip"
+          bg="white"
+          color="brand.dark"
+        >
+          <Button
+            zIndex="1"
+            onClick={() => {
+              setSidePanelExtensionView("schedule");
+              setAppView("communication");
+            }}
+            bg={`${appView !== "communication" ? "" : "brand.accent"}`}
+            color="brand.dark"
+            _hover={{ bg: "brand.mid", color: "white" }}
+          >
+            <HiOutlineSpeakerphone />
           </Button>
         </Tooltip>
       </Stack>
