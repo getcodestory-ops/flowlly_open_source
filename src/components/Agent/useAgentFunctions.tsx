@@ -130,6 +130,7 @@ export function useScheduleUpdate() {
   }, [chats]);
 
   const handleChatSubmit = async () => {
+    console.log("submitted");
     if (
       !session ||
       !selectedContext ||

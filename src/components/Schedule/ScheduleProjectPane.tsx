@@ -12,22 +12,20 @@ import { useStore } from "@/utils/store";
 import CreateNewProjectButton from "@/components/Schedule/NewProjectButton";
 import { FiTrash } from "react-icons/fi";
 import { AiOutlinePlus } from "react-icons/ai";
-
 import { ImFilesEmpty } from "react-icons/im";
-
 import { PiShareFatLight } from "react-icons/pi";
-
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { getProjects, deleteProject } from "@/api/projectRoutes";
 import { getAgentChatEntities } from "@/api/agentRoutes";
 import { ProjectEntity } from "@/types/projects";
 import AddNewChatEntity from "./AddNewChatEntity";
-
 import { on } from "events";
 import FileHandler from "@/Layouts/FileHandler";
 import { BiConversation } from "react-icons/bi";
-
+import { GrSchedule } from "react-icons/gr";
+import { LuGanttChartSquare } from "react-icons/lu";
 import ShareProjectModal from "./ShareProjectModal";
+import CSVUploader from "./CSVUpload/CSVUploader";
 
 const ScheduleProjectPanel = () => {
   const toast = useToast();
@@ -42,12 +40,29 @@ const ScheduleProjectPanel = () => {
     if (conversationView) {
       setConversationView(false);
     }
+    if (scheduleView) {
+      setScheduleView(false);
+    }
   };
   const [conversationView, setConversationView] = useState(false);
   const onConversation = () => {
     setConversationView(!conversationView);
     if (folderView) {
       setFolderView(false);
+    }
+    if (scheduleView) {
+      setScheduleView(false);
+    }
+  };
+
+  const [scheduleView, setScheduleView] = useState(false);
+  const onSchedule = () => {
+    setScheduleView(!scheduleView);
+    if (folderView) {
+      setFolderView(false);
+    }
+    if (conversationView) {
+      setConversationView(false);
     }
   };
 
@@ -170,6 +185,16 @@ const ScheduleProjectPanel = () => {
                     <Icon as={ImFilesEmpty} />
                   </Button>
                   <Button
+                    bg={scheduleView === true ? "brand.accent" : "none"}
+                    color={scheduleView === true ? "brand.dark" : "white"}
+                    // variant="ghost"
+                    size={"sm"}
+                    _hover={{ bg: "gray.600" }}
+                    onClick={onSchedule}
+                  >
+                    <Icon as={LuGanttChartSquare} />
+                  </Button>
+                  <Button
                     bg={conversationView === true ? "brand.accent" : "none"}
                     color={conversationView === true ? "brand.dark" : "white"}
                     variant="ghost"
@@ -275,6 +300,12 @@ const ScheduleProjectPanel = () => {
               folderView === true && (
                 <Flex flexDir={"column"}>
                   <FileHandler />
+                </Flex>
+              )}
+            {project.project_id === activeProject?.project_id &&
+              scheduleView === true && (
+                <Flex flexDir={"column"}>
+                  <CSVUploader />
                 </Flex>
               )}
           </Flex>

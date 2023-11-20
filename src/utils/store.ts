@@ -4,6 +4,7 @@ import { scopeConfig } from "./projectconfig";
 import { Chat, ChatMessage, ChatHistory } from "@/types/chat";
 import { ProjectEntity } from "@/types/projects";
 import { AgentChatEntity } from "@/types/agentChats";
+import { ActivityEntity } from "@/types/activities";
 
 type SidePanelExtension =
   | "fileExplorer"
@@ -29,7 +30,15 @@ export interface Brain {
 
 type State = {
   session: Session | null;
-  appView: "schedule" | "search" | "agent" | "project";
+  appView:
+    | "schedule"
+    | "search"
+    | "agent"
+    | "project"
+    | "meeting"
+    | "budget"
+    | "communication"
+    | "safety";
   hasAdminRights: boolean;
   activeProject: ProjectEntity | null;
   activeChatEntity: AgentChatEntity;
@@ -46,8 +55,21 @@ type State = {
   chatMessages: ChatMessage[];
   selectedContext: Brain | null;
   pdfViewer: PdfViewer;
+  rightPanelView: "gantt" | "task";
+  taskToView: ActivityEntity;
+  taskDetailsView: "details" | "history" | "impact" | "gantt";
   setSession: (session: Session | null) => void;
-  setAppView: (appView: "schedule" | "search" | "agent" | "project") => void;
+  setAppView: (
+    appView:
+      | "schedule"
+      | "search"
+      | "agent"
+      | "project"
+      | "meeting"
+      | "budget"
+      | "communication"
+      | "safety"
+  ) => void;
   setActiveProject: (activeProject: ProjectEntity | null) => void;
   setActiveChatEntity: (activeChatEntity: AgentChatEntity) => void;
   setAdminRights: (hasAdminRights: boolean) => void;
@@ -66,6 +88,11 @@ type State = {
   setSelectedContext: (context: Brain | null) => void;
   setPdfViewer: (pdfDetails: any) => void;
   updateChatHistory: (id: string, chatHistory: ChatHistory[]) => void;
+  setRightPanelView: (view: "gantt" | "task") => void;
+  setTaskToView: (task: ActivityEntity) => void;
+  setTaskDetailsView: (
+    view: "details" | "history" | "impact" | "gantt"
+  ) => void;
 };
 
 export const useStore = create<State>((set) => ({
@@ -87,10 +114,35 @@ export const useStore = create<State>((set) => ({
     filePath: "",
     highlightDetails: undefined,
   },
+  rightPanelView: "gantt",
+  taskToView: {
+    id: "XYZ",
+    project_id: "XYZ",
+    name: "loading",
+
+    start: "01/01/23",
+    end: "01/02/23",
+
+    progress: 0,
+
+    activity_critical: {
+      critical_path: false,
+    },
+  },
+  taskDetailsView: "details",
   setSession: (session: Session | null) => set(() => ({ session })),
   setAdminRights: (hasAdminRights: boolean) => set(() => ({ hasAdminRights })),
-  setAppView: (appView: "schedule" | "search" | "agent" | "project") =>
-    set(() => ({ appView })),
+  setAppView: (
+    appView:
+      | "schedule"
+      | "search"
+      | "agent"
+      | "project"
+      | "meeting"
+      | "budget"
+      | "communication"
+      | "safety"
+  ) => set(() => ({ appView })),
   setActiveProject: (activeProject: ProjectEntity | null) =>
     set(() => ({ activeProject })),
   setActiveChatEntity: (activeChatEntity: AgentChatEntity) =>
@@ -166,4 +218,9 @@ export const useStore = create<State>((set) => ({
 
       return { chatSessions: updatedChatSessions };
     }),
+  setRightPanelView: (view: "gantt" | "task") =>
+    set(() => ({ rightPanelView: view })),
+  setTaskToView: (task: ActivityEntity) => set(() => ({ taskToView: task })),
+  setTaskDetailsView: (view: "details" | "history" | "impact" | "gantt") =>
+    set(() => ({ taskDetailsView: view })),
 }));

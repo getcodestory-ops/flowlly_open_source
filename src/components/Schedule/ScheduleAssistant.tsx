@@ -7,10 +7,10 @@ import { AgentInterfaceProps } from "@/types/agent";
 
 function ScheduleAssistant({ handleChatSubmit, setChatInput, chatInput }: any) {
   return (
-    <Box w="full" mt={8} color="white">
+    <Box w="full" color="white">
       <InputGroup size="lg">
         <Textarea
-          color="brand.light"
+          color="brand.dark"
           placeholder="Type your questions..."
           value={chatInput}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
@@ -35,7 +35,7 @@ function ScheduleAssistant({ handleChatSubmit, setChatInput, chatInput }: any) {
           minH="3rem"
           h="auto"
           resize="none"
-          overflow={"hidden"}
+          overflow={"auto"}
           height={`${chatInput.length / 20}rem`}
         />
       </InputGroup>

@@ -16,6 +16,8 @@ import {
   Select,
   Spinner,
   Icon,
+  Heading,
+  Box,
 } from "@chakra-ui/react";
 import { CreateNewActivity } from "@/types/activities";
 import { useCSVUploader } from "./useCsvUpload";
@@ -44,36 +46,50 @@ const CSVUploader: React.FC = () => {
   // }, [selectedFile]);
 
   return (
-    <Flex>
+    <Flex direction={"column"} p={2}>
+      <Flex>
+        <Heading as="h2" size="sm" color="white" mt={2} mb={4}>
+          Upload Project Schedule in CSV format
+        </Heading>
+      </Flex>
       <Flex
         border="1px solid"
-        borderColor={"brand.dark"}
+        borderColor={"brand.light"}
         borderRadius={"md"}
         align={"center"}
         position={"relative"}
-        px={2}
+        p={2}
         gap={2}
         fontSize="xs"
-        color="brand.dark"
+        color="brand.light"
         _hover={{ bg: "gray.600", color: "white" }}
+        w={"full"}
+        h={"80px"}
+        direction={"column"}
+        alignItems={"center"}
+        justifyContent={"center"}
       >
-        <Icon as={FiUpload} />
-        {selectedFile !== null ? selectedFile.name : "Upload csv file"}
-        <Input
-          left={-1}
-          type="file"
-          accept=".csv"
-          ref={fileRef}
-          py={1}
-          position="absolute"
-          opacity={0}
-          onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
-        />
-        {selectedFile !== null ? (
-          <Button onClick={handleCsvFileHeaderCheck} size="xs">
-            process
-          </Button>
-        ) : null}
+        <Flex>
+          <Icon as={FiUpload} mr={2} />
+          {selectedFile !== null ? selectedFile.name : "Upload csv file"}
+          <Input
+            left={-1}
+            type="file"
+            accept=".csv"
+            ref={fileRef}
+            py={1}
+            position="absolute"
+            opacity={0}
+            onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+          />
+        </Flex>
+        <Box>
+          {selectedFile !== null ? (
+            <Button onClick={handleCsvFileHeaderCheck} size="xs">
+              process
+            </Button>
+          ) : null}
+        </Box>
       </Flex>
 
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
