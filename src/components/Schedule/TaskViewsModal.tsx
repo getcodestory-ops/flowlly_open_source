@@ -14,13 +14,14 @@ import {
 } from "@chakra-ui/react";
 import { MdHistoryToggleOff, MdInfoOutline } from "react-icons/md";
 import { GrCircleAlert } from "react-icons/gr";
+import { ActivityEntity } from "@/types/activities";
 
 interface TaskViewsModalProps {
   isOpen: boolean;
   onClose: () => void;
   taskView: string;
   setTaskView: (taskView: string) => void;
-  task: Object;
+  task: ActivityEntity;
 }
 
 function TaskViewsModal({
@@ -96,7 +97,7 @@ function TaskViewsModal({
                 </Button>
               </Flex>
               <Flex>
-                <Text>{task.history.impact}</Text>
+                {/* <Text>{task.history && task.history.impact}</Text> */}
               </Flex>
             </ModalBody>
           </ModalContent>
