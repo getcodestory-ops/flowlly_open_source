@@ -4,6 +4,7 @@ import { scopeConfig } from "./projectconfig";
 import { Chat, ChatMessage, ChatHistory } from "@/types/chat";
 import { ProjectEntity } from "@/types/projects";
 import { AgentChatEntity } from "@/types/agentChats";
+import { ActivityEntity } from "@/types/activities";
 
 type SidePanelExtension =
   | "fileExplorer"
@@ -55,7 +56,7 @@ type State = {
   selectedContext: Brain | null;
   pdfViewer: PdfViewer;
   rightPanelView: "gantt" | "task";
-  taskToView: Object | null;
+  taskToView: ActivityEntity;
   taskDetailsView: "details" | "history" | "impact" | "gantt";
   setSession: (session: Session | null) => void;
   setAppView: (
@@ -88,7 +89,7 @@ type State = {
   setPdfViewer: (pdfDetails: any) => void;
   updateChatHistory: (id: string, chatHistory: ChatHistory[]) => void;
   setRightPanelView: (view: "gantt" | "task") => void;
-  setTaskToView: (task: Object | null) => void;
+  setTaskToView: (task: ActivityEntity) => void;
   setTaskDetailsView: (
     view: "details" | "history" | "impact" | "gantt"
   ) => void;
@@ -114,7 +115,20 @@ export const useStore = create<State>((set) => ({
     highlightDetails: undefined,
   },
   rightPanelView: "gantt",
-  taskToView: null,
+  taskToView: {
+    id: "XYZ",
+    project_id: "XYZ",
+    name: "loading",
+
+    start: "01/01/23",
+    end: "01/02/23",
+
+    progress: 0,
+
+    activity_critical: {
+      critical_path: false,
+    },
+  },
   taskDetailsView: "details",
   setSession: (session: Session | null) => set(() => ({ session })),
   setAdminRights: (hasAdminRights: boolean) => set(() => ({ hasAdminRights })),
@@ -206,7 +220,7 @@ export const useStore = create<State>((set) => ({
     }),
   setRightPanelView: (view: "gantt" | "task") =>
     set(() => ({ rightPanelView: view })),
-  setTaskToView: (task: Object | null) => set(() => ({ taskToView: task })),
+  setTaskToView: (task: ActivityEntity) => set(() => ({ taskToView: task })),
   setTaskDetailsView: (view: "details" | "history" | "impact" | "gantt") =>
     set(() => ({ taskDetailsView: view })),
 }));

@@ -360,7 +360,8 @@ function ActivitiesDetailPage() {
               Date:
             </Text>
             <Text fontSize={"sm"} as={"b"}>
-              {taskToView.creation_time.slice(0, 10)}
+              {taskToView.creation_time &&
+                taskToView.creation_time.slice(0, 10)}
             </Text>
           </Flex>
           <Flex>
@@ -373,67 +374,69 @@ function ActivitiesDetailPage() {
           </Flex>
         </Flex>
         <Flex direction={"column"}>
-          {taskToView.history
-            .sort((a, b) => {
-              // Convert created_at to Date objects for comparison
-              const dateA = new Date(a.created_at);
-              const dateB = new Date(b.created_at);
+          {taskToView.history &&
+            taskToView.history
+              .sort((a, b) => {
+                // Convert created_at to Date objects for comparison
+                const dateA = new Date(a.created_at);
+                const dateB = new Date(b.created_at);
 
-              // Sort by created_at from newer to older
-              return dateB - dateA;
-            })
-            .map((history) => (
-              <Flex
-                direction={"column"}
-                borderBottom={"2px"}
-                borderBottomColor={"brand.light"}
-                pb={"4"}
-                pt={"4"}
-                key={history.created_at}
-                pl={"10"}
-              >
-                <Flex>
-                  <Text fontSize={"sm"} as={"i"} mr={"2"}>
-                    Date:
-                  </Text>
-                  <Text fontSize={"sm"} as={"b"}>
-                    {history.created_at}
-                  </Text>
+                // Sort by created_at from newer to older
+
+                return +dateB - +dateA;
+              })
+              .map((history) => (
+                <Flex
+                  direction={"column"}
+                  borderBottom={"2px"}
+                  borderBottomColor={"brand.light"}
+                  pb={"4"}
+                  pt={"4"}
+                  key={history.created_at}
+                  pl={"10"}
+                >
+                  <Flex>
+                    <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                      Date:
+                    </Text>
+                    <Text fontSize={"sm"} as={"b"}>
+                      {history.created_at}
+                    </Text>
+                  </Flex>
+                  <Flex>
+                    <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                      Action Type:
+                    </Text>
+                    <Text fontSize={"sm"} as={"b"}>
+                      Daily Update
+                    </Text>
+                  </Flex>
+                  <Flex>
+                    <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                      Impact on Schedule:
+                    </Text>
+                    <Text fontSize={"sm"} as={"b"}>
+                      {history.severity}
+                    </Text>
+                  </Flex>
+                  <Flex>
+                    <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                      Sent By:
+                    </Text>
+                    <Text fontSize={"sm"} as={"b"}>
+                      XXXXX
+                    </Text>
+                  </Flex>
+                  <Flex direction={"column"}>
+                    <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                      Message:
+                    </Text>
+                    <Text fontSize={"sm"} as={"b"}>
+                      {history.message}
+                    </Text>
+                  </Flex>
                 </Flex>
-                <Flex>
-                  <Text fontSize={"sm"} as={"i"} mr={"2"}>
-                    Action Type:
-                  </Text>
-                  <Text fontSize={"sm"} as={"b"}>
-                    Daily Update
-                  </Text>
-                </Flex>
-                <Flex>
-                  <Text fontSize={"sm"} as={"i"} mr={"2"}>
-                    Impact on Schedule:
-                  </Text>
-                  <Text fontSize={"sm"} as={"b"}>
-                    {history.severity}
-                  </Text>
-                </Flex>
-                <Flex>
-                  <Text fontSize={"sm"} as={"i"} mr={"2"}>
-                    Sent By:
-                  </Text>
-                  <Text fontSize={"sm"} as={"b"}>
-                    XXXXX
-                  </Text>
-                </Flex>
-                <Flex direction={"column"}>
-                  <Text fontSize={"sm"} as={"i"} mr={"2"}>
-                    Message:
-                  </Text>
-                  <Text fontSize={"sm"} as={"b"}>
-                    {history.message}
-                  </Text>
-                </Flex>
-              </Flex>
-            ))}
+              ))}
         </Flex>
       </Flex>
     );
@@ -449,162 +452,163 @@ function ActivitiesDetailPage() {
         w={"full"}
         direction={"column"}
       >
-        {taskToView.history
-          .sort((a, b) => {
-            // Convert created_at to Date objects for comparison
-            const dateA = new Date(a.created_at);
-            const dateB = new Date(b.created_at);
+        {taskToView.history &&
+          taskToView.history
+            .sort((a, b) => {
+              // Convert created_at to Date objects for comparison
+              const dateA = new Date(a.created_at);
+              const dateB = new Date(b.created_at);
 
-            // First, sort by created_at from newer to older
-            if (dateA > dateB) return -1;
-            if (dateA < dateB) return 1;
+              // First, sort by created_at from newer to older
+              if (dateA > dateB) return -1;
+              if (dateA < dateB) return 1;
 
-            // Then, sort by severity (assuming 'severe' is the highest severity)
-            if (a.severity === "severe" && b.severity !== "severe") return -1;
-            if (a.severity !== "severe" && b.severity === "severe") return 1;
+              // Then, sort by severity (assuming 'severe' is the highest severity)
+              if (a.severity === "severe" && b.severity !== "severe") return -1;
+              if (a.severity !== "severe" && b.severity === "severe") return 1;
 
-            // If both are 'severe' or neither, maintain existing order
-            return 0;
-          })
-          .map((history) => (
-            <Flex
-              direction={"column"}
-              borderBottom={"2px"}
-              borderBottomColor={"brand.light"}
-              pb={"4"}
-              key={history.created_at}
-              mb={"8"}
-              pr={"10"}
-            >
-              <Flex>
-                <Text fontSize={"sm"} as={"i"} mr={"2"}>
-                  Date:
-                </Text>
-                <Text fontSize={"sm"} as={"b"}>
-                  {history.created_at.slice(0, 10)}
-                </Text>
-              </Flex>
-              <Flex mt={"2"}>
-                <Text fontSize={"sm"} as={"i"} mr={"2"}>
-                  Severity:
-                </Text>
-                <Text fontSize={"sm"} as={"b"}>
-                  {history.severity}
-                </Text>
-              </Flex>
-              <Flex direction={"column"} mt={"2"}>
-                <Text fontSize={"sm"} as={"i"} mr={"2"}>
-                  Impact on Schedule:
-                </Text>
-                <Text fontSize={"sm"} as={"b"} pt={"2"}>
-                  {history.impact}
-                </Text>
-              </Flex>
-              <Flex direction={"column"} mt={"2"}>
-                <Text fontSize={"sm"} as={"i"} mr={"2"}>
-                  Suggested Actions:
-                </Text>
-                <Flex pl={"4"} direction={"column"} pt={"2"}>
-                  <Flex mb={"2"}>
-                    <Tooltip
-                      label="Run action"
-                      aria-label="A tooltip"
-                      bg={"white"}
-                      color={"brand.dark"}
-                    >
-                      <Box mr={"2"} cursor={"pointer"}>
-                        <Icon
-                          as={MdOutlinePlayCircle}
-                          _hover={{ color: "brand.accent" }}
-                        />
-                      </Box>
-                    </Tooltip>
+              // If both are 'severe' or neither, maintain existing order
+              return 0;
+            })
+            .map((history) => (
+              <Flex
+                direction={"column"}
+                borderBottom={"2px"}
+                borderBottomColor={"brand.light"}
+                pb={"4"}
+                key={history.created_at}
+                mb={"8"}
+                pr={"10"}
+              >
+                <Flex>
+                  <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                    Date:
+                  </Text>
+                  <Text fontSize={"sm"} as={"b"}>
+                    {history.created_at.slice(0, 10)}
+                  </Text>
+                </Flex>
+                <Flex mt={"2"}>
+                  <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                    Severity:
+                  </Text>
+                  <Text fontSize={"sm"} as={"b"}>
+                    {history.severity}
+                  </Text>
+                </Flex>
+                <Flex direction={"column"} mt={"2"}>
+                  <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                    Impact on Schedule:
+                  </Text>
+                  <Text fontSize={"sm"} as={"b"} pt={"2"}>
+                    {history.impact}
+                  </Text>
+                </Flex>
+                <Flex direction={"column"} mt={"2"}>
+                  <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                    Suggested Actions:
+                  </Text>
+                  <Flex pl={"4"} direction={"column"} pt={"2"}>
+                    <Flex mb={"2"}>
+                      <Tooltip
+                        label="Run action"
+                        aria-label="A tooltip"
+                        bg={"white"}
+                        color={"brand.dark"}
+                      >
+                        <Box mr={"2"} cursor={"pointer"}>
+                          <Icon
+                            as={MdOutlinePlayCircle}
+                            _hover={{ color: "brand.accent" }}
+                          />
+                        </Box>
+                      </Tooltip>
 
-                    <Tooltip
-                      label="Eliminate action"
-                      aria-label="A tooltip"
-                      bg={"white"}
-                      color={"brand.dark"}
-                    >
-                      <Box cursor={"pointer"}>
-                        <Icon
-                          as={MdDeleteOutline}
-                          _hover={{ color: "brand.accent" }}
-                        />
-                      </Box>
-                    </Tooltip>
-                    <Text fontSize={"sm"} as={"b"} ml={"6"}>
-                      Create remediation plan
-                    </Text>
-                  </Flex>
-                  <Flex mb={"2"}>
-                    <Tooltip
-                      label="Run action"
-                      aria-label="A tooltip"
-                      bg={"white"}
-                      color={"brand.dark"}
-                    >
-                      <Box mr={"2"} cursor={"pointer"}>
-                        <Icon
-                          as={MdOutlinePlayCircle}
-                          _hover={{ color: "brand.accent" }}
-                        />
-                      </Box>
-                    </Tooltip>
+                      <Tooltip
+                        label="Eliminate action"
+                        aria-label="A tooltip"
+                        bg={"white"}
+                        color={"brand.dark"}
+                      >
+                        <Box cursor={"pointer"}>
+                          <Icon
+                            as={MdDeleteOutline}
+                            _hover={{ color: "brand.accent" }}
+                          />
+                        </Box>
+                      </Tooltip>
+                      <Text fontSize={"sm"} as={"b"} ml={"6"}>
+                        Create remediation plan
+                      </Text>
+                    </Flex>
+                    <Flex mb={"2"}>
+                      <Tooltip
+                        label="Run action"
+                        aria-label="A tooltip"
+                        bg={"white"}
+                        color={"brand.dark"}
+                      >
+                        <Box mr={"2"} cursor={"pointer"}>
+                          <Icon
+                            as={MdOutlinePlayCircle}
+                            _hover={{ color: "brand.accent" }}
+                          />
+                        </Box>
+                      </Tooltip>
 
-                    <Tooltip
-                      label="Eliminate action"
-                      aria-label="A tooltip"
-                      bg={"white"}
-                      color={"brand.dark"}
-                    >
-                      <Box cursor={"pointer"}>
-                        <Icon
-                          as={MdDeleteOutline}
-                          _hover={{ color: "brand.accent" }}
-                        />
-                      </Box>
-                    </Tooltip>
-                    <Text fontSize={"sm"} as={"b"} ml={"6"}>
-                      Inform subcontractor XXXX of delay
-                    </Text>
-                  </Flex>
-                  <Flex mb={"2"}>
-                    <Tooltip
-                      label="Run action"
-                      aria-label="A tooltip"
-                      bg={"white"}
-                      color={"brand.dark"}
-                    >
-                      <Box mr={"2"} cursor={"pointer"}>
-                        <Icon
-                          as={MdOutlinePlayCircle}
-                          _hover={{ color: "brand.accent" }}
-                        />
-                      </Box>
-                    </Tooltip>
+                      <Tooltip
+                        label="Eliminate action"
+                        aria-label="A tooltip"
+                        bg={"white"}
+                        color={"brand.dark"}
+                      >
+                        <Box cursor={"pointer"}>
+                          <Icon
+                            as={MdDeleteOutline}
+                            _hover={{ color: "brand.accent" }}
+                          />
+                        </Box>
+                      </Tooltip>
+                      <Text fontSize={"sm"} as={"b"} ml={"6"}>
+                        Inform subcontractor XXXX of delay
+                      </Text>
+                    </Flex>
+                    <Flex mb={"2"}>
+                      <Tooltip
+                        label="Run action"
+                        aria-label="A tooltip"
+                        bg={"white"}
+                        color={"brand.dark"}
+                      >
+                        <Box mr={"2"} cursor={"pointer"}>
+                          <Icon
+                            as={MdOutlinePlayCircle}
+                            _hover={{ color: "brand.accent" }}
+                          />
+                        </Box>
+                      </Tooltip>
 
-                    <Tooltip
-                      label="Eliminate action"
-                      aria-label="A tooltip"
-                      bg={"white"}
-                      color={"brand.dark"}
-                    >
-                      <Box cursor={"pointer"}>
-                        <Icon
-                          as={MdDeleteOutline}
-                          _hover={{ color: "brand.accent" }}
-                        />
-                      </Box>
-                    </Tooltip>
-                    <Text fontSize={"sm"} as={"b"} ml={"6"}>
-                      Ask Steve to renew permit with expiry date 01/14/24
-                    </Text>
+                      <Tooltip
+                        label="Eliminate action"
+                        aria-label="A tooltip"
+                        bg={"white"}
+                        color={"brand.dark"}
+                      >
+                        <Box cursor={"pointer"}>
+                          <Icon
+                            as={MdDeleteOutline}
+                            _hover={{ color: "brand.accent" }}
+                          />
+                        </Box>
+                      </Tooltip>
+                      <Text fontSize={"sm"} as={"b"} ml={"6"}>
+                        Ask Steve to renew permit with expiry date 01/14/24
+                      </Text>
+                    </Flex>
                   </Flex>
                 </Flex>
               </Flex>
-            </Flex>
-          ))}
+            ))}
       </Flex>
     );
   };
