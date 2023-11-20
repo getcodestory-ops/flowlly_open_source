@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Task, ViewMode, Gantt } from "gantt-task-react";
 import { ViewSwitcher } from "./view-switcher";
-import { Icon, useToast, Box, Text } from "@chakra-ui/react";
+import { Icon, useToast, Box, Text, Spinner } from "@chakra-ui/react";
 import { getStartEndDateForProject, initTasks } from "./helper";
 import "gantt-task-react/dist/index.css";
 import { Flex } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
-import { getActivities } from "@/api/activity_routes";
+import { getActivities, deleteActivity } from "@/api/activity_routes";
 import { getCriticalPath } from "@/api/schedule_routes";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { activityEntityToTask } from "@/utils/activityEntityToTask";
@@ -59,6 +59,22 @@ const ScheduleGanttInterface = () => {
       queryClient.invalidateQueries({ queryKey: ["activityList"] });
     },
   });
+
+  const { mutate: mutateDeleteActivity, isPending: deletePending } =
+    useMutation({
+      mutationFn: deleteActivity,
+      onSuccess: (data) => {
+        toast({
+          title: "Success",
+          description: data.message,
+          status: "success",
+          duration: 4000,
+          isClosable: true,
+          position: "bottom-right",
+        });
+        queryClient.invalidateQueries({ queryKey: ["activityList"] });
+      },
+    });
 
   const handleCriticalPath = () => {
     if (!session || !activeProject) {
@@ -142,9 +158,15 @@ const ScheduleGanttInterface = () => {
   };
 
   const handleTaskDelete = (task: Task) => {
-    const conf = window.confirm("Are you sure about " + task.name + " ?");
+    if (!activeProject || !session) return;
+
+    const conf = window.confirm("Are you sure to delete " + task.name + " ?");
     if (conf) {
-      setTasks(tasks.filter((t) => t.id !== task.id));
+      mutateDeleteActivity({
+        session,
+        projectId: activeProject.project_id,
+        activityId: task.id,
+      });
     }
     return conf;
   };
@@ -221,25 +243,32 @@ const ScheduleGanttInterface = () => {
         View={view}
       />
       <div>{view} View</div>
-      <Gantt
-        tasks={tasks}
-        viewMode={view}
-        onDateChange={handleTaskChange}
-        onDelete={handleTaskDelete}
-        onProgressChange={handleProgressChange}
-        onDoubleClick={handleDblClick}
-        onClick={handleClick}
-        onSelect={handleSelect}
-        onExpanderClick={handleExpanderClick}
-        listCellWidth={isChecked ? "150px" : ""}
-        rowHeight={fontSize * 3}
-        columnWidth={columnWidth}
-        fontSize={`${fontSize}px`}
-        TooltipContent={({ task, fontSize, fontFamily }) => {
-          console.log("TooltipContent", { task, fontSize, fontFamily });
-          return tooltip(task) as unknown as JSX.Element;
-        }}
-      />
+      {isLoading && (
+        <div>
+          <Spinner />
+        </div>
+      )}
+      {!isLoading && activities && activities.length !== 0 && (
+        <Gantt
+          tasks={tasks}
+          viewMode={view}
+          onDateChange={handleTaskChange}
+          onDelete={handleTaskDelete}
+          onProgressChange={handleProgressChange}
+          onDoubleClick={handleDblClick}
+          onClick={handleClick}
+          onSelect={handleSelect}
+          onExpanderClick={handleExpanderClick}
+          listCellWidth={isChecked ? "150px" : ""}
+          rowHeight={fontSize * 3}
+          columnWidth={columnWidth}
+          fontSize={`${fontSize}px`}
+          TooltipContent={({ task, fontSize, fontFamily }) => {
+            console.log("TooltipContent", { task, fontSize, fontFamily });
+            return tooltip(task) as unknown as JSX.Element;
+          }}
+        />
+      )}
     </Flex>
   );
 };

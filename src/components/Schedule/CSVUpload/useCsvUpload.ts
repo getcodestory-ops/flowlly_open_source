@@ -73,11 +73,12 @@ export const useCSVUploader = () => {
     reader.onload = (e) => {
       const notmatchedHeaders: string[] = [];
       const content = e.target?.result as string;
+
       const [csv_headers, ...rows] = content
         .split("\n")
         .map((row) => row.replace("\r", "").split(","));
 
-      setCsvHeaders(csvHeaders);
+      setCsvHeaders(csv_headers);
 
       Object.keys(ACTIVITY_KEYS).map((header) => {
         const matchedKey = csv_headers.find(

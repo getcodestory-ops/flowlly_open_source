@@ -18,7 +18,12 @@ function ScheduleUiView() {
   const [view, setView] = useState<string>("insights");
 
   return (
-    <Flex display="flex" direction="column" alignContent="space-between">
+    <Flex
+      display="flex"
+      direction="column"
+      alignContent="space-between"
+      height={"95vh"}
+    >
       <Flex display="flex" justify="flex-start" width="full" marginTop="5">
         <Tooltip
           label="Schedule Insights"
