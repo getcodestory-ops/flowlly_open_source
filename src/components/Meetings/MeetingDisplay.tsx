@@ -1,5 +1,7 @@
 import React from "react";
-import { Flex, Select, Text, Button } from "@chakra-ui/react";
+import { Flex, Select, Text, Button, Icon } from "@chakra-ui/react";
+import { AiOutlineSave } from "react-icons/ai";
+import { LiaEditSolid } from "react-icons/lia";
 
 function MeetingDisplay() {
   const transcript = `**John Smith (PM):** Good morning, everyone. Thank you for joining this safety meeting. Safety is our top priority on this construction project. Let's begin by reviewing our safety procedures. Mike, please start.
@@ -33,30 +35,70 @@ function MeetingDisplay() {
   **John Smith (PM):** You're welcome, Sarah. Safety is a collective effort. If there are no further questions or concerns, let's conclude this meeting. Remember, safety is non-negotiable, and it's everyone's responsibility.
   `;
 
+  const email = `Subject: Summary of Safety Meeting Discussion - November 16, 2023
+
+  Dear Team,
+  
+  I hope this email finds you well. I wanted to provide a summary of our recent safety meeting held on November 16, 2023, to ensure that everyone is on the same page regarding our construction project's safety protocols and concerns discussed during the meeting.
+  
+  Safety Procedures Review:
+  
+  We emphasized that safety is our top priority on this construction project.
+  All subcontractors and their workers must wear appropriate personal protective equipment (PPE) at all times, including hard hats, high-visibility vests, safety goggles, and steel-toed boots.
+  No confusion was reported regarding PPE requirements.
+  Site-Specific Safety Concerns:
+  
+  Mike Johnson (Subcontractor A) reported that the scaffolding has been secure.
+  However, Mike identified uneven ground near the eastern edge of the construction site, potentially posing a trip hazard.
+  Sarah Davis (Subcontractor B) acknowledged the concern and committed to ensuring the ground is leveled and properly marked for potential hazards.
+  Incident Reporting:
+  
+  We highlighted the importance of promptly reporting safety incidents, whether near misses, injuries, or potential hazards.
+  Our designated incident reporting system is in place to address these issues effectively.
+  Both subcontractors confirmed that they have been using the incident reporting system and found it helpful in addressing issues promptly.
+  Severe Weather Protocol:
+  
+  Mike inquired about the protocol for severe weather conditions, such as thunderstorms or high winds.
+  In response, we mentioned that we have designated shelter areas on-site for such situations.
+  All teams should be aware of these locations and seek shelter when necessary.
+  We will also have a weather monitoring system in place to provide timely alerts.
+  In conclusion, safety remains non-negotiable on our project, and it is the responsibility of every team member to prioritize it. If you have any additional questions or concerns regarding safety, please do not hesitate to reach out.
+  
+  Thank you for your commitment to safety, and let's continue working together to ensure a safe and successful construction project.
+  
+  Best regards,
+  
+  John Smith
+  Construction Project Manager`;
+
   const transcriptDisplay = () => {
     return (
       <Flex direction={"column"} mt={"10"} mb={"16"}>
         <Text fontSize={"lg"} as={"b"} mb={"6"}>
           Safety Meeting 21/11/23
         </Text>
-        <Flex direction={"column"}>
-          <Flex direction={"column"}>
-            <Text fontSize={"sm"} as={"b"} ml={"2"} mb={"2"}>
-              ✏️ Transcript
-            </Text>
-            <Flex bg={"brand2.mid"} p={"4"} rounded={"2xl"} h={"310px"}>
+        <Flex direction={"row"} justifyContent={"space-between"}>
+          <Flex direction={"column"} w={"48%"}>
+            <Flex alignItems={"center"} mb={"3"}>
+              <Text fontSize={"sm"} as={"b"} ml={"2"}>
+                ✏️ Transcript
+              </Text>
+            </Flex>
+            <Flex bg={"brand2.mid"} p={"4"} rounded={"2xl"} h={"57%"}>
               <Text overflowY={"auto"}>{transcript}</Text>
             </Flex>
-            <Flex direction={"column"} mb={"8"}>
-              <Flex
-                justifyContent={"space-between"}
-                w={"370px"}
-                mt={"6"}
-                alignItems={"center"}
-                mb={"2"}
-              >
-                <Text fontSize={"sm"} as={"b"} ml={"2"}>
-                  🤖 AI Assistant Action
+          </Flex>
+          <Flex direction={"column"} w={"48%"}>
+            <Flex
+              justifyContent={"space-between"}
+              // mt={"6"}
+              alignItems={"center"}
+              mb={"2"}
+              px={"2"}
+            >
+              <Flex alignItems={"center"}>
+                <Text fontSize={"sm"} as={"b"} mr={"2"}>
+                  🤖 AI Assistant Actions
                 </Text>
                 <Select size={"xs"} w={"200px"}>
                   <option value="option1">Write Email</option>
@@ -64,9 +106,22 @@ function MeetingDisplay() {
                   <option value="option2">Summarize Meeting</option>
                 </Select>
               </Flex>
-              <Flex bg={"brand2.mid"} p={"5"} rounded={"2xl"} h={"310px"}>
-                <Text overflowY={"auto"}>{transcript}</Text>
+              <Flex pr={"8"}>
+                <Icon
+                  as={AiOutlineSave}
+                  mr={"3"}
+                  cursor={"pointer"}
+                  _hover={{ color: "brand.accent" }}
+                />
+                <Icon
+                  as={LiaEditSolid}
+                  cursor={"pointer"}
+                  _hover={{ color: "brand.accent" }}
+                />
               </Flex>
+            </Flex>
+            <Flex bg={"brand2.mid"} p={"5"} rounded={"2xl"} h={"57%"}>
+              <Text overflowY={"auto"}>{email}</Text>
             </Flex>
           </Flex>
         </Flex>
@@ -101,9 +156,7 @@ function MeetingDisplay() {
           Upload Meeting Audio Recording
         </Button>
       </Flex>
-      <Flex px={"8"} overflowY={"auto"} h={"90%"}>
-        {transcriptDisplay()}
-      </Flex>
+      <Flex px={"8"}>{transcriptDisplay()}</Flex>
     </Flex>
   );
 }

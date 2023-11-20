@@ -42,14 +42,14 @@ export interface UpdateActivityTypes {
   // project_id?: string;
   // description: string;
   // duration: number;
-  // start: string;
-  // end: string;
-  // cost: number;
+  start?: string;
+  end?: string;
+  cost?: number;
   dependencies?: string[];
   resources?: string[];
   status?: string;
   // creation_time?: string;
   // created_by?: string;
-  // activity_owner?: string;
-  // progress?: number;
+  activity_owner?: string;
+  progress?: number;
 }

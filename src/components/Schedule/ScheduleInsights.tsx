@@ -65,6 +65,10 @@ function ScheduleInsights() {
     enabled: !!session?.access_token && !!activeProject?.project_id,
   });
 
+  // useEffect(() => {
+  //   console.log("activities", activities);
+  // }, [activities]);
+
   const activitiesCard = () => {
     console.log("activities", activities);
     if (!activities) return null;
