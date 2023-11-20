@@ -119,12 +119,9 @@ export const useStore = create<State>((set) => ({
     id: "XYZ",
     project_id: "XYZ",
     name: "loading",
-
     start: "01/01/23",
     end: "01/02/23",
-
     progress: 0,
-
     activity_critical: {
       critical_path: false,
     },
