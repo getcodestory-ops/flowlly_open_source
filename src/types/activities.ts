@@ -33,7 +33,7 @@ export interface CreateNewActivity {
   status: boolean;
   creation_time?: string;
   created_by?: string;
-  activity_owner?: string;
+  owner?: string;
   progress?: number;
 }
 

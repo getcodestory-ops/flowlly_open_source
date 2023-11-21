@@ -10,7 +10,7 @@ export const ACTIVITY_KEYS: CreateNewActivity = {
   dependencies: [],
   resources: [],
   status: true,
-  activity_owner: "",
+  owner: "",
   progress: 0,
 };
 
@@ -20,7 +20,7 @@ export const validateType = (key: keyof CreateNewActivity, value: string) => {
     case "description":
     case "start":
     case "end":
-    case "activity_owner":
+    case "owner":
       return typeof value === "string";
     case "duration":
     case "cost":
