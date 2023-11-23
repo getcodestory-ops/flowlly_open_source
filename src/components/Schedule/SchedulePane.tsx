@@ -58,10 +58,6 @@ const SchedulePanel = () => {
 
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    console.log("Chat entity", activeChatEntity);
-  }, [activeChatEntity]);
-
   const { data: projects, isLoading } = useQuery({
     queryKey: ["projectList", session],
     queryFn: () => getProjects(session!),

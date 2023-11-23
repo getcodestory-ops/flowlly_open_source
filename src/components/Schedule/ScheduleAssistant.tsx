@@ -33,10 +33,10 @@ function ScheduleAssistant({ handleChatSubmit, setChatInput, chatInput }: any) {
             boxShadow: "0px 0px 8px 1px rgba(255,255,255, 0.8)",
           }}
           minH="3rem"
-          h="auto"
+          // h="auto"
           resize="none"
           overflow={"auto"}
-          height={`${chatInput.length / 20}rem`}
+          // height={`${chatInput.length / 20}rem`}
         />
       </InputGroup>
     </Box>

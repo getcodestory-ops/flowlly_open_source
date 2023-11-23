@@ -89,7 +89,7 @@ export default function MainLayout() {
               w={60}
               mb={4}
             />
-            Project Knowledge Base
+            AI Project Management Assistant
           </Heading>
         </Box>
         <Box

@@ -121,116 +121,51 @@ function ActivitiesDetailPage() {
     },
   ];
 
-  const detailsView = () => {
-    return (
-      <Flex
-        ml={"6"}
-        mt={"6"}
-        direction={"column"}
-        overflowY={"auto"}
-        overscrollBehaviorY={"contain"}
-      >
-        <Flex
-          justifyContent={"space-between"}
-          alignItems={"center"}
-          minW={"500px"}
-        >
-          <Flex direction={"column"}>
-            <Text fontSize={"sm"} as={"i"} mr={"2"}>
-              Start Date:
-            </Text>
-            <Text fontSize={"sm"} fontWeight={"semibold"}>
-              {taskToView.start}
-            </Text>
-          </Flex>
-          <Flex direction={"column"}>
-            <Text fontSize={"sm"} as={"i"} mr={"2"}>
-              End Date:
-            </Text>
-            <Text fontSize={"sm"} fontWeight={"semibold"}>
-              {taskToView.end}
-            </Text>
-          </Flex>
-          <Flex direction={"column"}>
-            <Text fontSize={"sm"} as={"i"} mr={"2"}>
-              Duration:
-            </Text>
-            <Text fontSize={"sm"} fontWeight={"semibold"}>
-              {taskToView.duration} days
-            </Text>
-          </Flex>
-          <Flex direction={"column"}>
-            <Text fontSize={"sm"} as={"i"} mr={"2"}>
-              Progress:
-            </Text>
-            <Text fontSize={"sm"} fontWeight={"semibold"}>
-              {taskToView.progress}%
+  const actionsCard = () => {
+    let elements = []; // Initialize an empty array
+
+    for (let action of actions) {
+      let element = (
+        <Flex pl={"4"} direction={"column"} pt={"2"}>
+          <Flex mb={"2"}>
+            <Tooltip
+              label="Run action"
+              aria-label="A tooltip"
+              bg={"white"}
+              color={"brand.dark"}
+            >
+              <Box mr={"2"} cursor={"pointer"}>
+                <Icon
+                  as={MdOutlinePlayCircle}
+                  _hover={{ color: "brand.accent" }}
+                />
+              </Box>
+            </Tooltip>
+
+            <Tooltip
+              label="Eliminate action"
+              aria-label="A tooltip"
+              bg={"white"}
+              color={"brand.dark"}
+            >
+              <Box cursor={"pointer"}>
+                <Icon as={MdDeleteOutline} _hover={{ color: "brand.accent" }} />
+              </Box>
+            </Tooltip>
+            <Text fontSize={"sm"} as={"b"} ml={"6"}>
+              {Object.keys(action)}
             </Text>
           </Flex>
         </Flex>
-        <Flex direction={"column"} mt={"4"}>
-          <Text fontSize={"sm"} as={"i"} mr={"2"}>
-            Task Owner:
-          </Text>
-          <Text
-            fontSize={"sm"}
-            fontWeight={"semibold"}
-            color={`${!taskToView.owner ? "red" : "black"}`}
-          >
-            {taskToView.owner ? taskToView.owner : "No owner assigned"}
-          </Text>
-        </Flex>
-        <Flex direction={"column"} mt={"4"}>
-          <Text fontSize={"sm"} as={"i"} mr={"2"}>
-            Task Description:
-          </Text>
-          <Text
-            fontSize={"sm"}
-            fontWeight={"semibold"}
-            color={`${!taskToView.description ? "red" : "black"}`}
-          >
-            {taskToView && taskToView.description
-              ? taskToView.description
-              : "This task has no description"}
-          </Text>
-        </Flex>
-        <Flex direction={"column"} mt={"4"}>
-          <Text fontSize={"sm"} as={"i"} mr={"2"}>
-            Task Estimated Cost:
-          </Text>
-          <Text
-            fontSize={"sm"}
-            fontWeight={"semibold"}
-            color={`${!taskToView.cost ? "red" : "black"}`}
-          >
-            {taskToView.cost ? taskToView.cost : "No estimated cost assigned"}
-          </Text>
-        </Flex>
-        <Flex direction={"column"} mt={"4"}>
-          <Text fontSize={"sm"} as={"i"} mr={"2"}>
-            Task Resources:
-          </Text>
-          <Text
-            fontSize={"sm"}
-            fontWeight={"semibold"}
-            color={`${
-              !taskToView.resources
-                ? "red"
-                : taskToView.resources.length > 0
-                ? "red"
-                : "black"
-            }`}
-          >
-            {taskToView.resources && taskToView.resources.length > 0
-              ? taskToView.resources
-              : "No resources assigned"}
-          </Text>
-        </Flex>
-      </Flex>
-    );
+      );
+
+      elements.push(element); // Add the element to the array
+    }
+
+    return elements; // Return the array of elements
   };
 
-  const editTaskView = () => {
+  const detailsView = () => {
     return (
       <Flex
         ml={"6"}
@@ -508,7 +443,8 @@ function ActivitiesDetailPage() {
                   <Text fontSize={"sm"} as={"i"} mr={"2"}>
                     Suggested Actions:
                   </Text>
-                  <Flex pl={"4"} direction={"column"} pt={"2"}>
+                  {actionsCard()}
+                  {/* <Flex pl={"4"} direction={"column"} pt={"2"}>
                     <Flex mb={"2"}>
                       <Tooltip
                         label="Run action"
@@ -605,7 +541,7 @@ function ActivitiesDetailPage() {
                         Ask Steve to renew permit with expiry date 01/14/24
                       </Text>
                     </Flex>
-                  </Flex>
+                  </Flex> */}
                 </Flex>
               </Flex>
             ))}
@@ -617,7 +553,7 @@ function ActivitiesDetailPage() {
     <>
       {/* {console.log("taskToView", taskToView)} */}
       <Flex px={"6"} pt={"5"} direction={"column"}>
-        <Flex direction={"column"}>
+        <Flex direction={"column"} zIndex={"1"}>
           <Button
             bg={"brand.light"}
             size={"md"}
@@ -764,14 +700,12 @@ function ActivitiesDetailPage() {
             </>
           )}
         </Flex>
-        {/* {taskDetailsView === "details" && editTask ? (
-          <ActivityEditView />
-        ) : (
-          detailsView()
-        )} */}
+
         {taskDetailsView === "history" && historyView()}
         {taskDetailsView === "impact" && impactView()}
-        {taskDetailsView === "details" && detailsView()}
+        {taskDetailsView === "details" && (
+          <>{editTask ? <ActivityEditView /> : detailsView()}</>
+        )}
       </Flex>
     </>
   );
