@@ -59,7 +59,7 @@ const DraggablePaneDivider: React.FC<DraggablePaneDividerProps> = ({
       <Flex
         flex="1"
         maxWidth={window.innerWidth - paneWidth - 100}
-        zIndex={"overlay"}
+        zIndex={"20"}
       >
         <RightPanel />
       </Flex>

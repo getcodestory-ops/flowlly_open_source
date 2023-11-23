@@ -1,10 +1,12 @@
 import React from "react";
 import { Box, Flex } from "@chakra-ui/react";
 import MeetingDisplay from "@/components/Meetings/MeetingDisplay";
+import TopBar from "@/components/TopBar";
 
 function MeetingInterface() {
   return (
-    <Flex>
+    <Flex direction={"column"}>
+      <TopBar />
       <MeetingDisplay />
     </Flex>
   );

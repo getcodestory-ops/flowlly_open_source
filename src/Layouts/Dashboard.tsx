@@ -9,6 +9,8 @@ import MeetingInterface from "./MeetingInterface";
 import BudgetInterface from "./BudgetInterface";
 import CommunicationInterface from "./CommunicationInterface";
 import SafetyInterface from "./SafetyInterface";
+import ProjectDashboard from "./ProjectDashboard";
+import ProjectSetup from "./ProjectSetup";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +28,7 @@ export default function Dashboard() {
           <Flex zIndex="10">
             <SidePanel />
           </Flex>
+
           {appView === "agent" && <AgentInterface />}
           {appView === "schedule" && <ScheduleInterface />}
           {appView === "search" && <SearchInterface />}
@@ -33,6 +36,8 @@ export default function Dashboard() {
           {appView === "budget" && <BudgetInterface />}
           {appView === "communication" && <CommunicationInterface />}
           {appView === "safety" && <SafetyInterface />}
+          {appView === "dashboard" && <ProjectDashboard />}
+          {appView === "projectSettings" && <ProjectSetup />}
         </Flex>
       </Box>
     </QueryClientProvider>

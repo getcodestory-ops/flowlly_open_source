@@ -46,30 +46,31 @@ const CSVUploader: React.FC = () => {
   // }, [selectedFile]);
 
   return (
-    <Flex direction={"column"} p={2}>
-      <Flex>
-        <Heading as="h2" size="sm" color="white" mt={2} mb={4}>
+    <Flex direction={"column"} w={"full"}>
+      {/* <Flex>
+        <Heading as="h2" size="sm" color="brand.dark" mt={2} mb={4}>
           Upload Project Schedule in CSV format
         </Heading>
-      </Flex>
+      </Flex> */}
       <Flex
         border="1px solid"
         borderColor={"brand.light"}
         borderRadius={"md"}
         align={"center"}
         position={"relative"}
-        p={2}
+        p={1}
         gap={2}
-        fontSize="xs"
-        color="brand.light"
-        _hover={{ bg: "gray.600", color: "white" }}
+        fontSize="md"
+        as={"b"}
+        color="brand.dark"
+        bg={"brand.light"}
+        _hover={{ bg: "brand.dark", color: "white" }}
         w={"full"}
-        h={"80px"}
         direction={"column"}
         alignItems={"center"}
         justifyContent={"center"}
       >
-        <Flex>
+        <Flex alignItems={"center"}>
           <Icon as={FiUpload} mr={2} />
           {selectedFile !== null ? selectedFile.name : "Upload csv file"}
           <Input

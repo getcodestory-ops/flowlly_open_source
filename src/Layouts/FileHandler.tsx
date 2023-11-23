@@ -277,26 +277,26 @@ function FileHandler() {
       direction={"column"}
       // p="4"
       // background="brand.mid"
-      px={2}
-      mt={4}
+      // px={2}
+      // mt={4}
       height="400px"
       width="full"
     >
       <>
-        <Box marginBottom="4">
+        {/* <Box marginBottom="4">
           <Heading as="h2" size="sm" color="white">
             Project Files
           </Heading>
-        </Box>
+        </Box> */}
         {hasAdminRights && (
           <Stack direction="row" justify="space-between" mb={2}>
             <Stack justify="start" width="full">
               <Button
-                color="white"
+                color="brand.dark"
                 width="full"
                 variant="outline"
-                borderColor="white"
-                _hover={{ bg: "gray.600" }}
+                bg={"brand.light"}
+                _hover={{ bg: "brand.dark", color: "white" }}
                 onClick={() => setIsFolderSubMenuOpen(true)}
               >
                 <FaPlus />
@@ -320,7 +320,7 @@ function FileHandler() {
           width="100%"
           overflowY="auto"
           mt="2"
-          color="white"
+          color="brand.dark"
           sx={{
             "&::-webkit-scrollbar": {
               width: "8px",
@@ -336,23 +336,19 @@ function FileHandler() {
             <AccordionItem
               key={folder.name}
               onClick={() => setSelectedContext(folder)}
-              boxShadow={
-                folder.id === selectedContext?.id
-                  ? "0px 0px 8px 1px white"
-                  : "none"
-              }
+              boxShadow={folder.id === selectedContext?.id ? "none" : "none"}
             >
               <h2>
                 <AccordionButton>
                   <Flex flex="1" textAlign="left" align-items="center">
-                    <Icon as={FaFolder} mr={4} mt={1} color="white" />
+                    <Icon as={FaFolder} mr={4} mt={1} color="brand.dark" />
                     {folder.name}
                   </Flex>
 
                   <AccordionIcon />
                 </AccordionButton>
               </h2>
-              <AccordionPanel pb={1} color="white">
+              <AccordionPanel pb={1} color="brand.dark">
                 {pdfList
                   ?.filter((folderNames) => folderNames.name === folder.name)[0]
                   ?.fileList?.map((files) => {
@@ -436,8 +432,9 @@ function FileHandler() {
                         id="upload_button_id"
                         colorScheme="teal"
                         size="sm"
-                        bg="brand.dark"
-                        _hover={{ bg: "purple" }}
+                        bg="brand.light"
+                        color="brand.dark"
+                        _hover={{ bg: "brand.dark", color: "white" }}
                         onClick={() => handleFileUpload(folder)}
                       >
                         <FaUpload />

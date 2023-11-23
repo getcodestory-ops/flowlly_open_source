@@ -38,7 +38,9 @@ type State = {
     | "meeting"
     | "budget"
     | "communication"
-    | "safety";
+    | "safety"
+    | "dashboard"
+    | "projectSettings";
   hasAdminRights: boolean;
   activeProject: ProjectEntity | null;
   activeChatEntity: AgentChatEntity;
@@ -57,7 +59,8 @@ type State = {
   pdfViewer: PdfViewer;
   rightPanelView: "gantt" | "task";
   taskToView: ActivityEntity;
-  taskDetailsView: "details" | "history" | "impact" | "gantt";
+  taskDetailsView: "details" | "history" | "impact" | "gantt" | "edit";
+  filterView: "none" | "Delayed" | "At Risk" | "In Progress" | any;
   setSession: (session: Session | null) => void;
   setAppView: (
     appView:
@@ -69,6 +72,8 @@ type State = {
       | "budget"
       | "communication"
       | "safety"
+      | "dashboard"
+      | "projectSettings"
   ) => void;
   setActiveProject: (activeProject: ProjectEntity | null) => void;
   setActiveChatEntity: (activeChatEntity: AgentChatEntity) => void;
@@ -91,13 +96,16 @@ type State = {
   setRightPanelView: (view: "gantt" | "task") => void;
   setTaskToView: (task: ActivityEntity) => void;
   setTaskDetailsView: (
-    view: "details" | "history" | "impact" | "gantt"
+    view: "details" | "history" | "impact" | "gantt" | "edit"
+  ) => void;
+  setFilterView: (
+    view: "none" | "Delayed" | "At Risk" | "In Progress" | any
   ) => void;
 };
 
 export const useStore = create<State>((set) => ({
   session: null,
-  appView: "search",
+  appView: "dashboard",
   activeProject: null,
   activeChatEntity: { id: "", project_id: "", chat_name: "", chat_details: "" },
   hasAdminRights: false,
@@ -130,6 +138,7 @@ export const useStore = create<State>((set) => ({
     },
   },
   taskDetailsView: "details",
+  filterView: "none",
   setSession: (session: Session | null) => set(() => ({ session })),
   setAdminRights: (hasAdminRights: boolean) => set(() => ({ hasAdminRights })),
   setAppView: (
@@ -142,6 +151,8 @@ export const useStore = create<State>((set) => ({
       | "budget"
       | "communication"
       | "safety"
+      | "dashboard"
+      | "projectSettings"
   ) => set(() => ({ appView })),
   setActiveProject: (activeProject: ProjectEntity | null) =>
     set(() => ({ activeProject })),
@@ -221,6 +232,9 @@ export const useStore = create<State>((set) => ({
   setRightPanelView: (view: "gantt" | "task") =>
     set(() => ({ rightPanelView: view })),
   setTaskToView: (task: ActivityEntity) => set(() => ({ taskToView: task })),
-  setTaskDetailsView: (view: "details" | "history" | "impact" | "gantt") =>
-    set(() => ({ taskDetailsView: view })),
+  setTaskDetailsView: (
+    view: "details" | "history" | "impact" | "gantt" | "edit"
+  ) => set(() => ({ taskDetailsView: view })),
+  setFilterView: (view: "none" | "Delayed" | "At Risk" | "In Progress" | any) =>
+    set(() => ({ filterView: view })),
 }));

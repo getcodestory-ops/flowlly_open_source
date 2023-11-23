@@ -17,7 +17,7 @@ export default function SidePanel() {
   return (
     <Flex>
       <SwitchPanel />
-      <SidePanelExtension />
+      {/* <SidePanelExtension /> */}
     </Flex>
   );
 }
