@@ -10,7 +10,14 @@ import {
   useDisclosure,
   Select,
   Button,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
 } from "@chakra-ui/react";
+import DatePicker from "react-date-picker";
+import "react-date-picker/dist/DatePicker.css";
 import { getStartEndDateForProject, initTasks } from "./helper";
 import "gantt-task-react/dist/index.css";
 import { Flex } from "@chakra-ui/react";
@@ -32,6 +39,7 @@ import { updateActivity } from "@/api/activity_routes";
 import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
 import AddNewActivityModal from "./AddNewActivityModal";
 import UpdateActivityModal from "./UpdateActivityModal";
+import { get } from "http";
 
 const ScheduleGanttInterface = () => {
   const toast = useToast();
@@ -51,19 +59,32 @@ const ScheduleGanttInterface = () => {
   const [modifyTask, setModifyTask] = useState({});
   const dateToday = getCurrentDateFormatted();
   const [modalType, setModalType] = useState<string>("");
+  const [probability, setProbability] = useState<number>(0.5);
+
+  const dateAdjustment = () => {
+    let currentDate = new Date();
+    currentDate.setDate(currentDate.getDate() + 1);
+    return currentDate;
+  };
+  const [startDate, onStartChange] = useState<any>(dateAdjustment());
 
   const {
     data: activities,
     isLoading,
     isSuccess,
   } = useQuery({
-    queryKey: ["activityList", session, activeProject],
+    queryKey: ["activityList", session, activeProject, startDate, probability],
     queryFn: () => {
       if (!session || !activeProject) {
         return Promise.reject("Set session first !");
       }
-
-      return getActivities(session, activeProject.project_id);
+      const date = getCurrentDateFormatted(startDate || new Date());
+      return getActivities(
+        session,
+        activeProject.project_id,
+        date,
+        probability
+      );
     },
 
     enabled: !!session?.access_token && !!activeProject?.project_id,
@@ -239,6 +260,22 @@ const ScheduleGanttInterface = () => {
       overscrollBehaviorY={"contain"}
     >
       <Flex>
+        <DatePicker onChange={onStartChange} value={startDate} />
+        <NumberInput
+          defaultValue={probability}
+          onChange={(_, valueAsNumber) => setProbability(valueAsNumber)}
+          min={0}
+          max={1}
+          step={0.1}
+          precision={1}
+          value={probability}
+        >
+          <NumberInputField />
+          <NumberInputStepper>
+            <NumberIncrementStepper />
+            <NumberDecrementStepper />
+          </NumberInputStepper>
+        </NumberInput>
         <Icon
           as={PiMagnifyingGlassPlus}
           cursor={"pointer"}

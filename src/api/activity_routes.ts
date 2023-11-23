@@ -1,15 +1,24 @@
 import { Session } from "@supabase/supabase-js";
 import axios, { AxiosResponse } from "axios";
+import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import { ActivityEntity, CreateNewActivity } from "@/types/activities";
 
 export const getActivities = async (
   session: Session,
-  projectId: string
+  projectId: string,
+  date: string = getCurrentDateFormatted(),
+  probability: number = 0.0
 ): Promise<ActivityEntity[]> => {
+  console.log(date);
+  const query = {
+    date: date,
+    probability: probability,
+  };
+
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/activities/${projectId}`;
   const response = await axios.get(url, {
+    params: query,
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${session.access_token}`,
     },
   });
