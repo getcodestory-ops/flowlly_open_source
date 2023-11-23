@@ -28,7 +28,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { getAgentChatEntities } from "@/api/agentRoutes";
 import AddNewChatEntity from "./AddNewChatEntity";
 import { getProjects, deleteProject } from "@/api/projectRoutes";
-import ScheduleChatInterfaceTest from "./ScheduleChat_test";
+
 import { IoChevronDownOutline } from "react-icons/io5";
 
 function ScheduleUiView() {
@@ -186,7 +186,6 @@ function ScheduleUiView() {
           ""
         )}
 
-        {/* {view === "assistant" && <ScheduleChatInterface />} */}
         {view === "insights" && <ScheduleInsights />}
         {view === "reports" && <ReportsPage />}
       </Flex>

@@ -111,36 +111,62 @@ function ProjectSetup() {
             </MenuList>
           </Menu>
         </Flex>
-        <Flex
-          className="menu"
-          w={"450px"}
-          justifyContent={"space-between"}
-          mt={"6"}
-        >
-          <Button
-            bg={settingsView === "folders" ? "brand.accent" : "brand.light"}
-            _hover={{ bg: "brand.dark", color: "white" }}
-            onClick={() => setSettingsView("folders")}
-          >
-            Folders and Files
-          </Button>
-          <Button
-            bg={settingsView === "members" ? "brand.accent" : "brand.light"}
-            _hover={{ bg: "brand.dark", color: "white" }}
-            onClick={() => setSettingsView("members")}
-          >
-            Members
-          </Button>
-          <Button
-            bg={settingsView === "resources" ? "brand.accent" : "brand.light"}
-            _hover={{ bg: "brand.dark", color: "white" }}
-            onClick={() => setSettingsView("resources")}
-          >
-            Resources
-          </Button>
-        </Flex>
       </Flex>
-      {settingsView === "folders" && folderAndFIles()}
+      {activeProject ? (
+        <>
+          <Flex
+            direction={"column"}
+            // alignItems={"center"}
+            justifyContent={"space-between"}
+          >
+            <Flex
+              className="menu"
+              w={"450px"}
+              justifyContent={"space-between"}
+              mt={"6"}
+            >
+              <Button
+                bg={settingsView === "folders" ? "brand.accent" : "brand.light"}
+                _hover={{ bg: "brand.dark", color: "white" }}
+                onClick={() => setSettingsView("folders")}
+              >
+                Folders and Files
+              </Button>
+              <Button
+                bg={settingsView === "members" ? "brand.accent" : "brand.light"}
+                _hover={{ bg: "brand.dark", color: "white" }}
+                onClick={() => setSettingsView("members")}
+              >
+                Members
+              </Button>
+              <Button
+                bg={
+                  settingsView === "resources" ? "brand.accent" : "brand.light"
+                }
+                _hover={{ bg: "brand.dark", color: "white" }}
+                onClick={() => setSettingsView("resources")}
+              >
+                Resources
+              </Button>
+            </Flex>
+          </Flex>
+          {settingsView === "folders" && folderAndFIles()}
+        </>
+      ) : (
+        <>
+          <Flex
+            fontSize={"3xl"}
+            fontWeight={"black"}
+            color={"brand.mid"}
+            justifyContent={"center"}
+            alignItems={"center"}
+            h={"100%"}
+          >
+            {" "}
+            Select or create a project at the top left corner
+          </Flex>
+        </>
+      )}
     </Flex>
   );
 }

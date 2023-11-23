@@ -33,7 +33,7 @@ function ScheduleInterface() {
             h={"100%"}
           >
             {" "}
-            Select a project at the top right corner
+            Select a project at the top left corner
           </Flex>
         </>
       )}
