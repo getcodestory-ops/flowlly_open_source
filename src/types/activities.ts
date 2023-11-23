@@ -14,7 +14,7 @@ export interface ActivityEntity {
   created_by?: string;
   progress: number;
   owner?: string;
-  history?: Record<string, string>[];
+  history?: (Record<string, string> & { impact?: string })[];
   activity_critical: {
     critical_path: boolean;
   };

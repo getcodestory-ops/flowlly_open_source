@@ -22,11 +22,12 @@ import { createActivity } from "@/api/activity_routes";
 import { UpdateActivityTypes } from "@/types/activities";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import { updateActivity } from "@/api/activity_routes";
+import { ActivityEntity } from "@/types/activities";
 
 interface UpdateActivityModalProps {
   isOpen: boolean;
   onClose: () => void;
-  tasks: any;
+  tasks: ActivityEntity[];
   modifyTask: any;
 }
 

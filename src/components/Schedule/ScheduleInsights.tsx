@@ -21,6 +21,7 @@ import { GrCircleAlert } from "react-icons/gr";
 import TaskViewsModal from "./TaskViewsModal";
 import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
 import { AiOutlineAlert } from "react-icons/ai";
+import { ActivityEntity } from "@/types/activities";
 
 function ScheduleInsights() {
   const toast = useToast();
@@ -48,10 +49,23 @@ function ScheduleInsights() {
   const [openHistory, setOpenHistory] = useState<string>("");
   const { isOpen, onClose, onOpen } = useScheduleUpdate();
   const [taskView, setTaskView] = useState<string>("");
-  const [task, setTask] = useState<Object>({});
+
   const [countOfDelayed, setCountOfDelayed] = useState<number>(0);
   const [countOfAtRisk, setCountOfAtRisk] = useState<number>(0);
   // const [filteredView, setFilteredView] = useState<string>("none");
+
+  const [task, setTask] = useState<ActivityEntity>({
+    id: "XYZ",
+    project_id: "XYZ",
+    name: "loading",
+    start: "01/01/23",
+    end: "01/02/23",
+    progress: 0,
+    activity_critical: {
+      critical_path: false,
+    },
+  });
+
 
   const {
     data: activities,
