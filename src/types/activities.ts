@@ -18,6 +18,12 @@ export interface ActivityEntity {
   activity_critical: {
     critical_path: boolean;
   };
+  revision?: {
+    name?: string;
+    date?: string;
+    probability?: number;
+    created_at?: string;
+  }[];
 }
 
 export interface CreateNewActivity {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Flex,
@@ -6,9 +6,6 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
-  MenuItemOption,
-  MenuGroup,
-  MenuOptionGroup,
   MenuDivider,
   Button,
   Heading,
@@ -16,6 +13,15 @@ import {
   Text,
   Grid,
   GridItem,
+  Table,
+  Thead,
+  Tbody,
+  Tfoot,
+  Tr,
+  Th,
+  Td,
+  TableCaption,
+  TableContainer,
 } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { IoChevronDownOutline } from "react-icons/io5";
@@ -25,6 +31,11 @@ import { getAgentChatEntities } from "@/api/agentRoutes";
 import { ProjectEntity } from "@/types/projects";
 import FileHandler from "./FileHandler";
 import CSVUploader from "@/components/Schedule/CSVUpload/CSVUploader";
+import { getMembers, createNewMemberEntry } from "@/api/membersRoutes";
+import { MemberEntity } from "@/types/members";
+import { FiEdit, FiSave } from "react-icons/fi";
+import { MdOutlineDeleteOutline } from "react-icons/md";
+import { IoIosCloseCircle, IoIosCloseCircleOutline } from "react-icons/io";
 
 function ProjectSetup() {
   const {
@@ -41,6 +52,15 @@ function ProjectSetup() {
     setActiveChatEntity: state.setActiveChatEntity,
   }));
   const [settingsView, setSettingsView] = useState<string>("folders");
+  const [newMember, setNewMember] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    role: "",
+  });
+  const [addingMember, setAddingMember] = useState(false);
+  const [Members, setMembers] = useState<any>([]);
 
   const queryClient = useQueryClient();
 
@@ -49,6 +69,83 @@ function ProjectSetup() {
     queryFn: () => getProjects(session!),
     enabled: !!session?.access_token,
   });
+
+  const { data: members, isLoading: membersLoading } = useQuery({
+    queryKey: ["memberList", session, activeProject],
+    queryFn: async () => {
+      if (!session || !activeProject) {
+        return Promise.reject("No session or active project");
+      }
+      try {
+        return await getMembers(session, activeProject.project_id);
+      } catch (error) {
+        // Handle or log the error as needed
+        console.error(error);
+        return []; // Return an empty array or a suitable default value
+      }
+    },
+    enabled: !!session?.access_token,
+  });
+
+  const handleInputChange = (e: any, field: any) => {
+    setNewMember({ ...newMember, [field]: e.target.value });
+  };
+
+  const handleAddMemberClick = () => {
+    setAddingMember(!addingMember);
+  };
+
+  const handleSaveMember = async () => {
+    try {
+      // Prepare the projectDetails object, including additional fields
+      const projectDetails = {
+        ...newMember, // This includes first_name, last_name, email, phone, role
+        project_id: activeProject?.project_id, // Assuming activeProject contains project_id
+        // user_id: "", // Set the user_id if available or required
+        responsibilities: "", // Set default or get from form
+        skills: "", // Set default or get from form
+        active: true, // Set default active status
+      };
+
+      // Call the API to create the new member entry
+      const savedMember = await createNewMemberEntry(
+        session,
+        activeProject?.project_id,
+        projectDetails
+      );
+
+      // Update members list with the newly saved member
+      setMembers((prevMembers: any) => ({
+        ...prevMembers,
+        // data: [...prevMembers, newMember],
+        projectDetails,
+      }));
+
+      // Reset new member state and hide the add member row
+      setNewMember({
+        first_name: "",
+        last_name: "",
+        email: "",
+        phone: "",
+        role: "",
+      });
+      setAddingMember(false);
+    } catch (error) {
+      // Handle error (e.g., display an error message)
+      console.error("Error saving member:", error);
+    }
+  };
+
+  useEffect(() => {
+    // console.log("session", session);
+    setMembers(members?.data);
+    // console.log("members", members?.data);
+  }, [members]);
+
+  useEffect(() => {
+    console.log("newMember", newMember);
+    console.log("Members", Members);
+  }, [newMember, Members]);
 
   const folderAndFIles = () => {
     return (
@@ -73,7 +170,116 @@ function ProjectSetup() {
     );
   };
 
-  console.log("projects", projects);
+  const projectMembers = () => {
+    // Ensure members.data is a valid array
+    if (!members?.data || !Array.isArray(members.data)) {
+      return null; // or some fallback UI
+    }
+
+    return (
+      <Flex direction={"column"} mt={"10"} p={"4"}>
+        <Flex pl={"4"}>
+          <Button
+            size={"xs"}
+            bg={"brand.light"}
+            _hover={{ bg: "brand.dark", color: "white" }}
+            onClick={handleAddMemberClick}
+          >
+            Add Member
+          </Button>
+        </Flex>
+
+        <TableContainer mt={"4"}>
+          <Table variant="unstyled">
+            <Thead>
+              <Tr>
+                <Th>First Name</Th>
+                <Th>Last Name</Th>
+                <Th>Email</Th>
+                <Th>Phone Number</Th>
+                <Th>Role</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {addingMember && (
+                <Tr fontSize={"sm"}>
+                  <Td>
+                    <input
+                      type="text"
+                      placeholder="First Name"
+                      onChange={(e) => handleInputChange(e, "first_name")}
+                    />
+                  </Td>
+                  <Td>
+                    <input
+                      type="text"
+                      placeholder="Last Name"
+                      onChange={(e) => handleInputChange(e, "last_name")}
+                    />
+                  </Td>
+                  <Td>
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      onChange={(e) => handleInputChange(e, "email")}
+                    />
+                  </Td>
+                  <Td>
+                    <input
+                      type="text"
+                      placeholder="Phone Number"
+                      onChange={(e) => handleInputChange(e, "phone")}
+                    />
+                  </Td>
+                  <Td>
+                    <input
+                      type="text"
+                      placeholder="Role"
+                      onChange={(e) => handleInputChange(e, "role")}
+                    />
+                  </Td>
+                  <Td>
+                    <Icon
+                      as={FiSave}
+                      onClick={handleSaveMember}
+                      mr={"4"}
+                      cursor={"pointer"}
+                    />
+                    <Icon
+                      as={IoIosCloseCircleOutline}
+                      onClick={handleAddMemberClick}
+                      cursor={"pointer"}
+                    />
+                  </Td>
+                </Tr>
+              )}
+              {members?.data.map((member: MemberEntity) => (
+                <Tr key={member.id} fontSize={"sm"}>
+                  <Td>{member.first_name}</Td>
+                  <Td>{member.last_name}</Td>
+                  <Td>{member.email}</Td>
+                  <Td>{member.phone}</Td>
+                  <Td>{member.role}</Td>
+                  <Td>
+                    <Flex>
+                      <Flex mr={"4"} cursor={"pointer"}>
+                        <FiEdit />
+                      </Flex>
+                      <Flex cursor={"pointer"}>
+                        <MdOutlineDeleteOutline />
+                      </Flex>
+                    </Flex>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </TableContainer>
+      </Flex>
+    );
+  };
+
+  // console.log("projects", projects);
 
   return (
     <Flex direction={"column"} w={"100%"} p={"10"}>
@@ -151,6 +357,7 @@ function ProjectSetup() {
             </Flex>
           </Flex>
           {settingsView === "folders" && folderAndFIles()}
+          {settingsView === "members" && projectMembers()}
         </>
       ) : (
         <>
