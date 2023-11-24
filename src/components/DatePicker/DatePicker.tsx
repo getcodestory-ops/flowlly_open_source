@@ -34,7 +34,7 @@ function CustomDatePicker() {
   );
   const [selectedDay, setSelectedDay] = useState<number>(new Date().getDate());
   const [probability, setProbability] = useState<number>(0.5);
-  const [impactfulRevisions, setImpactfulRevisions] = useState([]);
+  const [impactfulRevisions, setImpactfulRevisions] = useState<any>([]);
 
   const dateAdjustment = () => {
     let currentDate = new Date();
@@ -242,18 +242,24 @@ function CustomDatePicker() {
   useEffect(() => {
     console.log("activities", activities);
     if (activities) {
-      const newRevisions = activities.map((activity) => ({
-        name: activity.name,
-        date: parseDate(activity.revision[0].created_at),
-        probability: activity.revision[0].probability,
-      }));
-      setImpactfulRevisions(newRevisions);
+      const newRevisions = activities
+        .map((activity) => {
+          if (!activity.revision || !activity.revision.length) return;
+
+          return {
+            name: activity.name,
+            date: parseDate(activity.revision[0].created_at ?? ""),
+            probability: activity.revision[0].probability,
+          };
+        })
+        .filter((revision) => revision);
+      if (newRevisions.length > 0) setImpactfulRevisions(newRevisions);
     }
   }, [activities]);
 
   useEffect(() => {
     const newHighlightedDates = impactfulRevisions.reduce(
-      (acc, revision) => {
+      (acc: any, revision: any) => {
         if (revision.probability !== 1) {
           const newDate = new Date(
             revision.date.year,
