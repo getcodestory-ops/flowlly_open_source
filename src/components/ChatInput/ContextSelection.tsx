@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Flex, Select, Text } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 
@@ -10,6 +10,12 @@ function ContextSelection() {
       setSelectedContext: state.setSelectedContext,
     })
   );
+
+  useEffect(() => {
+    if (folderList && folderList?.length > 0 && folderList !== null) {
+      setSelectedContext(folderList[0]);
+    }
+  }, [folderList]);
 
   return (
     <Flex justifyContent={"end"} alignItems="center" pl="2" fontSize="xs">

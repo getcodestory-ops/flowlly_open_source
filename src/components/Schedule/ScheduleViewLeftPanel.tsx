@@ -50,10 +50,6 @@ function ScheduleUiView() {
 
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    console.log("Chat entity", activeChatEntity);
-  }, [activeChatEntity]);
-
   const { data: projects, isLoading } = useQuery({
     queryKey: ["projectList", session],
     queryFn: () => getProjects(session!),
@@ -71,13 +67,19 @@ function ScheduleUiView() {
     enabled: !!session?.access_token,
   });
 
+  useEffect(() => {
+    if (chatEntitities && chatEntitities.length > 0) {
+      setActiveChatEntity(chatEntitities[0]);
+    }
+  }, [chatEntitities]);
+
   return (
     <Flex
       display="flex"
       direction="column"
       alignContent="space-between"
       w={"full"}
-      maxH={"94%"}
+      maxH={"99%"}
     >
       <AddNewChatEntity isOpen={isOpen} onClose={onClose} />
       <Flex display="flex" justify="flex-start" width="full" marginTop="1">
@@ -162,12 +164,7 @@ function ScheduleUiView() {
           </Flex>
         )}
       </Flex>
-      <Flex
-        className="ScheduleView"
-        w={"full"}
-        h={"89%"}
-        overscrollBehaviorY={"contain"}
-      >
+      <Flex className="ScheduleView" w={"full"} h={"89%"} overflow={"auto"}>
         {view === "assistant" && activeChatEntity.chat_name.length !== 0 ? (
           <ScheduleChatInterface />
         ) : view === "assistant" && activeChatEntity.chat_name.length === 0 ? (

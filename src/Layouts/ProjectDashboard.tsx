@@ -1,6 +1,12 @@
 import React from "react";
 import { Box, Flex, Icon, Text } from "@chakra-ui/react";
-import Chart from "react-apexcharts";
+import dynamic from "next/dynamic";
+const Chart = dynamic(
+  () => import("react-apexcharts").then((mod) => mod.default),
+  {
+    ssr: false,
+  }
+);
 import { BiSolidCircle } from "react-icons/bi";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import TopBar from "@/components/TopBar";

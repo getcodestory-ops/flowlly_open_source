@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use, useEffect } from "react";
 import {
   Box,
   Flex,
@@ -43,6 +43,12 @@ function TopBar() {
     enabled: !!session?.access_token,
   });
 
+  useEffect(() => {
+    if (projects && projects.length > 0 && !activeProject) {
+      setActiveProject(projects[0]);
+    }
+  }, [projects]);
+
   return (
     <Flex
       justifyContent={"flex-start"}
@@ -73,11 +79,11 @@ function TopBar() {
           {!isLoading &&
             projects &&
             projects.map((project: ProjectEntity) => (
-              <>
+              <Flex key={project.project_id}>
                 <MenuItem onClick={() => setActiveProject(project)}>
                   {project.name}
                 </MenuItem>
-              </>
+              </Flex>
             ))}
         </MenuList>
       </Menu>
