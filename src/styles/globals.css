@@ -199,3 +199,20 @@ input:checked + .Slider:before {
   -ms-transform: translateX(26px);
   transform: translateX(26px);
 }
+
+.calendar-selector {
+  border: none !important;
+}
+
+.calendar-selector:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.calendar-selector:hover {
+  border: none !important;
+}
+
+.calendar-selector:active {
+  border: none !important;
+}

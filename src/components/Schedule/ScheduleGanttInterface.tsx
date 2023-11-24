@@ -40,6 +40,7 @@ import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
 import AddNewActivityModal from "./AddNewActivityModal";
 import UpdateActivityModal from "./UpdateActivityModal";
 import { get } from "http";
+import CustomDatePicker from "../DatePicker/DatePicker";
 
 const ScheduleGanttInterface = () => {
   const toast = useToast();
@@ -248,6 +249,10 @@ const ScheduleGanttInterface = () => {
     );
   };
 
+  // useEffect(() => {
+  //   console.log("activities", activities);
+  // }, [activities]);
+
   return (
     <Flex
       className="Wrapper"
@@ -276,6 +281,7 @@ const ScheduleGanttInterface = () => {
             <NumberDecrementStepper />
           </NumberInputStepper>
         </NumberInput>
+
         <Icon
           as={PiMagnifyingGlassPlus}
           cursor={"pointer"}
