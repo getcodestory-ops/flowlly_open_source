@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { Task, ViewMode, Gantt } from "gantt-task-react";
 import { ViewSwitcher } from "./view-switcher";
 import {
@@ -16,7 +16,7 @@ import {
   NumberIncrementStepper,
   NumberDecrementStepper,
 } from "@chakra-ui/react";
-import DatePicker from "react-date-picker";
+
 import "react-date-picker/dist/DatePicker.css";
 import { getStartEndDateForProject, initTasks } from "./helper";
 import "gantt-task-react/dist/index.css";
@@ -46,14 +46,23 @@ const ScheduleGanttInterface = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [fontSize, setFontSize] = useState(12);
-  const { session, activeProject, setTaskToView, setRightPanelView } = useStore(
-    (state) => ({
-      session: state.session,
-      activeProject: state.activeProject,
-      setTaskToView: state.setTaskToView,
-      setRightPanelView: state.setRightPanelView,
-    })
-  );
+  const {
+    session,
+    activeProject,
+    setTaskToView,
+    setRightPanelView,
+    scheduleProbability,
+    setScheduleProbability,
+    scheduleDate,
+  } = useStore((state) => ({
+    session: state.session,
+    activeProject: state.activeProject,
+    setTaskToView: state.setTaskToView,
+    setRightPanelView: state.setRightPanelView,
+    scheduleProbability: state.scheduleProbability,
+    setScheduleProbability: state.setScheduleProbability,
+    scheduleDate: state.scheduleDate,
+  }));
   const { isOpen, onClose, onOpen } = useScheduleUpdate();
 
   const [tasks, setTasks] = React.useState<Task[]>(initTasks());
@@ -69,27 +78,59 @@ const ScheduleGanttInterface = () => {
   };
   const [startDate, onStartChange] = useState<any>(dateAdjustment());
 
+  // const {
+  //   data: activities,
+  //   isLoading,
+  //   isSuccess,
+  // } = useQuery({
+  //   queryKey: ["activityList", session, activeProject, startDate, probability],
+  //   queryFn: () => {
+  //     if (!session || !activeProject) {
+  //       return Promise.reject("Set session first !");
+  //     }
+  //     const date = getCurrentDateFormatted(startDate || new Date());
+  //     return getActivities(
+  //       session,
+  //       activeProject.project_id,
+  //       date,
+  //       probability
+  //     );
+  //   },
+
+  //   enabled: !!session?.access_token && !!activeProject?.project_id,
+  // });
+
   const {
     data: activities,
     isLoading,
     isSuccess,
   } = useQuery({
-    queryKey: ["activityList", session, activeProject, startDate, probability],
+    queryKey: [
+      "activityList",
+      session,
+      activeProject,
+      scheduleDate,
+      scheduleProbability,
+    ],
     queryFn: () => {
       if (!session || !activeProject) {
         return Promise.reject("Set session first !");
       }
-      const date = getCurrentDateFormatted(startDate || new Date());
+      const date = getCurrentDateFormatted(scheduleDate || new Date());
       return getActivities(
         session,
         activeProject.project_id,
         date,
-        probability
+        scheduleProbability
       );
     },
 
     enabled: !!session?.access_token && !!activeProject?.project_id,
   });
+
+  useEffect(() => {
+    console.log("activities", activities);
+  }, [activities]);
 
   const { mutate, isPending } = useMutation({
     mutationFn: getCriticalPath,
@@ -265,22 +306,22 @@ const ScheduleGanttInterface = () => {
       overscrollBehaviorY={"contain"}
     >
       <Flex>
-        <DatePicker onChange={onStartChange} value={startDate} />
+        {/* <CustomDatePicker onDateSelect={onStartChange} />
         <NumberInput
           defaultValue={probability}
-          onChange={(_, valueAsNumber) => setProbability(valueAsNumber)}
+          onChange={(_, valueAsNumber) => setScheduleProbability(valueAsNumber)}
           min={0}
           max={1}
           step={0.1}
           precision={1}
-          value={probability}
+          value={scheduleProbability}
         >
           <NumberInputField />
           <NumberInputStepper>
             <NumberIncrementStepper />
             <NumberDecrementStepper />
           </NumberInputStepper>
-        </NumberInput>
+        </NumberInput> */}
 
         <Icon
           as={PiMagnifyingGlassPlus}
