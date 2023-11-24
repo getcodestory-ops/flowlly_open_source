@@ -24,6 +24,7 @@ import { AiOutlineAlert } from "react-icons/ai";
 import { useStore } from "@/utils/store";
 import { BiSolidCircle } from "react-icons/bi";
 import ActivityEditView from "./ActivityEditView";
+import ProcessHistoryButton from "./ProcessHistory/ProcessHistoryButton";
 
 function ActivitiesDetailPage() {
   const { taskToView, setRightPanelView, taskDetailsView, setTaskDetailsView } =
@@ -290,10 +291,14 @@ function ActivitiesDetailPage() {
           borderBottomColor={"brand.light"}
           pb={"4"}
         >
+          <Flex maxW={"xl"}>
+            <ProcessHistoryButton />
+          </Flex>
           <Flex>
             <Text fontSize={"sm"} as={"i"} mr={"2"}>
               Date:
             </Text>
+
             <Text fontSize={"sm"} as={"b"}>
               {taskToView.creation_time &&
                 taskToView.creation_time.slice(0, 10)}
