@@ -97,6 +97,9 @@ function ProjectSetup() {
 
   const handleSaveMember = async () => {
     try {
+      if (!session || !activeProject) {
+        return Promise.reject("No session or active project");
+      }
       // Prepare the projectDetails object, including additional fields
       const projectDetails = {
         ...newMember, // This includes first_name, last_name, email, phone, role
