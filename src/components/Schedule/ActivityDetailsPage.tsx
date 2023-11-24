@@ -561,7 +561,7 @@ function ActivitiesDetailPage() {
   return (
     <>
       {/* {console.log("taskToView", taskToView)} */}
-      <Flex px={"6"} pt={"5"} direction={"column"}>
+      <Flex px={"6"} pt={"5"} direction={"column"} maxH="90vh">
         <Flex direction={"column"} zIndex={"1"}>
           <Button
             bg={"brand.light"}

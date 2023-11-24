@@ -47,8 +47,7 @@ function ScheduleChatInterface() {
         direction={"column"}
         w={"full"}
         alignItems={"center"}
-        overflowY={"auto"}
-        h={"99%"}
+        overflowY="scroll"
         py={"4"}
       >
         {chats &&
@@ -67,7 +66,7 @@ function ScheduleChatInterface() {
               <Text as={"b"} mb={"1"} color={"brand.accent"}>
                 {history.sender}
               </Text>
-              <Text>{history.message.content}</Text>
+              <Text whiteSpace="pre-wrap">{history.message.content}</Text>
             </Flex>
           ))}
       </Flex>

@@ -23,10 +23,10 @@ function RightPanel() {
   }));
 
   return (
-    <>
+    <Flex>
       {rightPanelView === "gantt" && <ScheduleGanttInterface />}
       <Flex>{rightPanelView === "task" && <ActivitiesDetailPage />}</Flex>
-    </>
+    </Flex>
   );
 }
 
