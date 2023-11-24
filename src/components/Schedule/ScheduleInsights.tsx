@@ -68,6 +68,9 @@ function ScheduleInsights() {
 
   const [countOfDelayed, setCountOfDelayed] = useState<number>(0);
   const [countOfAtRisk, setCountOfAtRisk] = useState<number>(0);
+  const [countOfInProgress, setCountOfInProgress] = useState<number>(0);
+  const [countOfCompleted, setCountOfCompleted] = useState<number>(0);
+  const [countOfOnSchedule, setCountOfOnSchedule] = useState<number>(0);
   // const [filteredView, setFilteredView] = useState<string>("none");
   const [sliderValue, setSliderValue] = useState(5);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -120,11 +123,44 @@ function ScheduleInsights() {
     setCountOfAtRisk(count);
   };
 
+  const countInProgressActivities = (activities: any[]) => {
+    let count = 0;
+    activities.forEach((activity) => {
+      if (activity.status === "In Progress") {
+        count++;
+      }
+    });
+    setCountOfInProgress(count);
+  };
+
+  const countCompletedActivities = (activities: any[]) => {
+    let count = 0;
+    activities.forEach((activity) => {
+      if (activity.status === "Completed") {
+        count++;
+      }
+    });
+    setCountOfCompleted(count);
+  };
+
+  const countOnScheduleActivities = (activities: any[]) => {
+    let count = 0;
+    activities.forEach((activity) => {
+      if (activity.status === "On Schedule") {
+        count++;
+      }
+    });
+    setCountOfOnSchedule(count);
+  };
+
   useEffect(() => {
     // console.log("activities", activities);
     if (isSuccess && activities) {
       countDelayedActivities(activities);
       countAtRiskActivities(activities);
+      countInProgressActivities(activities);
+      countCompletedActivities(activities);
+      countOnScheduleActivities(activities);
     }
   }, [activities, isSuccess]);
 
@@ -190,7 +226,7 @@ function ScheduleInsights() {
                   ? "#FFA841"
                   : activity.status === "In Progress"
                   ? "#5F55EE"
-                  : "brand2.mid"
+                  : "brand2.dark"
               }
             />
             <Text fontWeight={"bold"} ml={2}>
@@ -306,10 +342,11 @@ function ScheduleInsights() {
             ? "brand.accent"
             : "brand.light"
         }
-        borderRadius={"lg"}
+        rounded={"full"}
         px={"2"}
         py={"0.5"}
-        w={"90px"}
+        // minW={"120px"}
+        // maxH={"150px"}
         justifyContent={"center"}
         mr={"4"}
         cursor={"pointer"}
@@ -322,7 +359,7 @@ function ScheduleInsights() {
           }
         }}
       >
-        <Flex direction={"column"} alignItems={"center"}>
+        <Flex direction={"row"} alignItems={"center"}>
           <Flex alignItems={"center"}>
             <Icon
               as={BiSolidCircle}
@@ -333,12 +370,18 @@ function ScheduleInsights() {
                   ? "#FF4141"
                   : name === "At Risk"
                   ? "#FFA841"
+                  : name === "In Progress"
+                  ? "#5F55EE"
+                  : name === "Completed"
+                  ? "#00B87C"
+                  : name === "On Schedule"
+                  ? "#FFFFFF"
                   : "brand2.mid"
               }
             />
-            <Text fontSize={"sm"}>{name}</Text>
+            <Text fontSize={"xs"}>{name}</Text>
           </Flex>
-          <Text fontSize={"lg"} as={"b"}>
+          <Text fontSize={"md"} as={"b"} ml={2}>
             {value}
           </Text>
         </Flex>
@@ -353,7 +396,7 @@ function ScheduleInsights() {
         defaultValue={5}
         min={0}
         max={100}
-        colorScheme="pink"
+        colorScheme="blackAlpha"
         onChange={(v) => setSliderValue(v)}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
@@ -390,18 +433,23 @@ function ScheduleInsights() {
 
   return (
     <Flex>
-      <Flex p={10}>
+      <Flex pt={10} px={"10"}>
         <Flex direction={"column"}>
           <Flex
-            borderTop={"2px"}
+            // borderTop={"2px"}
             borderBottom={"2px"}
-            py={"6"}
+            pb={"6"}
             mb={"6"}
             borderColor={"gray.200"}
             minW={"500px"}
-            justifyContent={"space-between"}
+            justifyContent={"space-around"}
           >
-            <Flex direction={"column"} w={"30%"} alignItems={"center"}>
+            <Flex
+              direction={"column"}
+              w={"30%"}
+              alignItems={"center"}
+              justifyItems={"center"}
+            >
               <Text fontSize={"sm"} as={"b"}>
                 Impactful events
               </Text>
@@ -409,7 +457,12 @@ function ScheduleInsights() {
                 <CustomDatePicker />
               </Flex>
             </Flex>
-            <Flex direction={"column"} w={"60%"} alignItems={"center"}>
+            <Flex
+              direction={"column"}
+              w={"60%"}
+              alignItems={"center"}
+              justifyItems={"center"}
+            >
               <Text fontSize={"sm"} as={"b"}>
                 Impact Probability
               </Text>
@@ -420,11 +473,15 @@ function ScheduleInsights() {
           <Flex mb={"4"}>
             {quickDataViewCard("Delayed", countOfDelayed)}
             {quickDataViewCard("At Risk", countOfAtRisk)}
+            {quickDataViewCard("In Progress", countOfInProgress)}
+            {quickDataViewCard("Completed", countOfCompleted)}
+            {quickDataViewCard("On Schedule", countOfOnSchedule)}
           </Flex>
           <Flex
             overflowY={"scroll"}
             overscrollBehaviorY={"contain"}
-            minH={"98%"}
+            // minH={"98%"}
+            maxH={"100%"}
             sx={{
               "::-webkit-scrollbar": {
                 display: "none",

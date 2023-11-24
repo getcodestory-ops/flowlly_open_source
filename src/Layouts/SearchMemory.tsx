@@ -18,6 +18,7 @@ import {
 import CreateNewChatButton from "@/components/CreateNewChatButton";
 import { FiEdit, FiTrash, FiCheck, FiX } from "react-icons/fi";
 import { BsChatLeftDots } from "react-icons/bs";
+import { MdBorderColor } from "react-icons/md";
 
 const SearchMemory = () => {
   const toast = useToast();
@@ -88,16 +89,23 @@ const SearchMemory = () => {
   };
 
   return (
-    <Flex direction="column" height="100vh" bg="brand.mid" width="full" p="4">
+    <Flex
+      direction="column"
+      height="100vh"
+      width="full"
+      p="4"
+      borderRight={"2px"}
+      borderColor={"gray.200"}
+    >
       <Box marginBottom="4">
-        <Heading as="h2" size="md" color="white">
+        <Heading as="h2" size="sm" color="brand.dark">
           Conversations
         </Heading>
       </Box>
       <Flex>
         <CreateNewChatButton />
       </Flex>
-      <Box marginY="4" borderBottom={"1px solid white"}>
+      <Box marginY="4" borderBottom={"1px"} borderColor={"gray.200"}>
         {/* <Heading as="h2" size="md" color="white">
           Conversations
         </Heading> */}
@@ -107,24 +115,19 @@ const SearchMemory = () => {
           <Flex key={`chat-${chats.chat_id}-index-${index}`}>
             {editChatSessionId !== chats?.chat_id && (
               <Flex
+                alignItems={"center"}
                 key={`chat-${chats.chat_id}-index-${index}`}
-                color="white"
+                color="brand.dark"
                 justifyContent={"space-between"}
-                borderRadius="md"
-                boxShadow={
-                  chats.chat_id === chatSession?.chat_id
-                    ? "0px 0px 1px 1px white"
-                    : "none"
-                }
                 p={2}
                 m={2}
                 cursor={"pointer"}
                 onClick={() => setChatSession(chats)}
                 _hover={{
-                  boxShadow: "0px 0px 8px 1px white",
+                  bg: "brand.light",
                 }}
               >
-                <Flex justifyContent={"space-around"}>
+                <Flex justifyContent={"space-around"} alignItems={"center"}>
                   <Icon as={BsChatLeftDots}></Icon>
 
                   <Flex ml={4}>{chats.chat_name}</Flex>
@@ -133,7 +136,7 @@ const SearchMemory = () => {
                 {chats.chat_id === chatSession?.chat_id && (
                   <Flex justifyContent={"end"}>
                     <Button
-                      color="white"
+                      color="brand.dark"
                       variant="ghost"
                       size={"sm"}
                       onClick={() => {
@@ -145,7 +148,7 @@ const SearchMemory = () => {
                       <Icon as={FiEdit} />
                     </Button>
                     <Button
-                      color="white"
+                      color="brand.dark"
                       variant="ghost"
                       size={"sm"}
                       onClick={() => deleteChat(chatSession?.chat_id)}
@@ -185,7 +188,7 @@ const SearchMemory = () => {
                 {chats.chat_id === chatSession?.chat_id && (
                   <Flex justifyContent={"end"}>
                     <Button
-                      color="white"
+                      color="brand.dark"
                       variant="ghost"
                       size={"sm"}
                       onClick={() => {
@@ -196,7 +199,7 @@ const SearchMemory = () => {
                       <Icon as={FiCheck} />
                     </Button>
                     <Button
-                      color="white"
+                      color="brand.dark"
                       variant="ghost"
                       size={"sm"}
                       onClick={() => setEditChatSessionId("")}

@@ -18,19 +18,19 @@ const CreateNewChatButton = () => {
     <Box
       display="flex"
       alignItems="center"
-      bg="brand.md"
       p={2}
       width="full"
       borderRadius="md"
     >
       <Button
         leftIcon={<Icon as={FiPlus} />}
-        color="white"
+        color="brand.dark"
         width="full"
         variant="outline"
         borderColor="white"
-        _hover={{ bg: "gray.600" }}
+        _hover={{ bg: "brand.dark", color: "white" }}
         onClick={() => createNewChat()}
+        bg="brand.light"
       >
         New Conversation
       </Button>

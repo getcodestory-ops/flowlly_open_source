@@ -64,7 +64,6 @@ export default function SwitchPanel() {
             bg={`${appView === "dashboard" ? "brand.accent" : ""}`}
             color="brand.dark"
             _hover={{ bg: "brand.mid", color: "white" }}
-            fontSize="xl"
           >
             {" "}
             <AiOutlineDashboard />
@@ -85,7 +84,6 @@ export default function SwitchPanel() {
             bg={`${appView === "search" ? "brand.accent" : ""}`}
             color="brand.dark"
             _hover={{ bg: "brand.mid", color: "white" }}
-            fontSize="xl"
           >
             {" "}
             <BiBrain />

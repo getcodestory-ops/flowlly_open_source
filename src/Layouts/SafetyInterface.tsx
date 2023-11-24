@@ -1,12 +1,10 @@
 import React from "react";
 import { Box, Flex } from "@chakra-ui/react";
-import DatePicker from "@/components/DatePicker/DatePicker";
 
 function SafetyInterface() {
   return (
-    <Flex>
+    <Flex direction={"row"}>
       <Box>Safety Interface</Box>
-      <DatePicker />
     </Flex>
   );
 }

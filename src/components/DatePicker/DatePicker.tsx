@@ -193,7 +193,7 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
         rowSpan={1}
         key={i}
         w={"50px"}
-        bg={isHighlighted ? "brand.dark" : ""}
+        bg={isHighlighted ? "red" : ""}
         onClick={() => handleDateClick(i)}
         cursor={"pointer"}
       >
@@ -244,7 +244,7 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
         alignItems={"center"}
         p={"2"}
         border={"1px"}
-        borderColor={"gray.200"}
+        borderColor={"red"}
         w={"120px"}
         justifyContent={"center"}
         onClick={() => setOpenCalendar((state) => !state)}

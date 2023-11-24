@@ -43,7 +43,7 @@ const ProcessHistoryButton = () => {
   return (
     <Button
       variant="solid"
-      size={"sm"}
+      size={"xs"}
       background={"black"}
       color="white"
       onClick={() => mutate()}

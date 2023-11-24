@@ -79,7 +79,8 @@ function ScheduleUiView() {
       direction="column"
       alignContent="space-between"
       w={"full"}
-      maxH={"99%"}
+      maxH={"92%"}
+      mt={"4"}
     >
       <AddNewChatEntity isOpen={isOpen} onClose={onClose} />
       <Flex display="flex" justify="flex-start" width="full" marginTop="1">
@@ -90,6 +91,7 @@ function ScheduleUiView() {
           color="brand.dark"
         >
           <Button
+            size={"sm"}
             marginLeft="10"
             marginRight="5"
             bg={`${view === "insights" ? "brand2.accent" : "brand2.mid"}`}
@@ -106,6 +108,7 @@ function ScheduleUiView() {
           color="brand.dark"
         >
           <Button
+            size={"sm"}
             bg={`${view === "assistant" ? "brand2.accent" : "brand2.mid"}`}
             _hover={{ bg: "brand.dark", color: "white" }}
             onClick={() => setView("assistant")}
@@ -121,6 +124,7 @@ function ScheduleUiView() {
           color="brand.dark"
         >
           <Button
+            size={"sm"}
             bg={`${view === "reports" ? "brand2.accent" : "brand2.mid"}`}
             _hover={{ bg: "brand.dark", color: "white" }}
             onClick={() => setView("reports")}
@@ -164,7 +168,8 @@ function ScheduleUiView() {
           </Flex>
         )}
       </Flex>
-      <Flex className="ScheduleView" w={"full"} h={"89%"} overflow={"auto"}>
+      <Flex className="ScheduleView" w={"full"} h={"89%"}>
+        {/* <Flex className="ScheduleView" w={"full"} h={"89%"} overflow={"auto"}> */}
         {view === "assistant" && activeChatEntity.chat_name.length !== 0 ? (
           <ScheduleChatInterface />
         ) : view === "assistant" && activeChatEntity.chat_name.length === 0 ? (
