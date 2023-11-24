@@ -3,9 +3,8 @@ import { Flex, Text, Grid, GridItem, Select, Icon } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getActivities } from "@/api/activity_routes";
-import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import { IoCalendarOutline } from "react-icons/io5";
+import { getRevisions } from "@/api/activity_routes";
 
 interface ActivityRevision {
   name: string;
@@ -17,15 +16,26 @@ interface ActivityRevision {
   probability: number;
 }
 
-function CustomDatePicker() {
-  const { session, activeProject, setTaskToView, setRightPanelView } = useStore(
-    (state) => ({
-      session: state.session,
-      activeProject: state.activeProject,
-      setTaskToView: state.setTaskToView,
-      setRightPanelView: state.setRightPanelView,
-    })
-  );
+interface CustomDatePickerProps {
+  onDateSelect?: (selectedDate: string) => void;
+}
+
+function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
+  const {
+    session,
+    activeProject,
+    setTaskToView,
+    setRightPanelView,
+    scheduleDate,
+    setScheduleDate,
+  } = useStore((state) => ({
+    session: state.session,
+    activeProject: state.activeProject,
+    setTaskToView: state.setTaskToView,
+    setRightPanelView: state.setRightPanelView,
+    scheduleDate: state.scheduleDate,
+    setScheduleDate: state.setScheduleDate,
+  }));
   const [selectedMonth, setSelectedMonth] = useState<number>(
     new Date().getMonth() + 1
   );
@@ -63,33 +73,36 @@ function CustomDatePicker() {
 
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  const {
-    data: activities,
-    isLoading,
-    isSuccess,
-  } = useQuery({
-    queryKey: ["activityList", session, activeProject, startDate, probability],
-    queryFn: () => {
-      if (!session || !activeProject) {
-        return Promise.reject("Set session first !");
-      }
-      const date = getCurrentDateFormatted(startDate || new Date());
-      return getActivities(
-        session,
-        activeProject.project_id,
-        date,
-        probability
-      );
-    },
+  const queryClient = useQueryClient();
 
-    enabled: !!session?.access_token && !!activeProject?.project_id,
+  const { data: revisions, isLoading: LoadingRevisions } = useQuery({
+    queryKey: ["revisionsList", session, activeProject],
+    queryFn: () => getRevisions(session!, activeProject!.project_id),
+    enabled: !!session?.access_token,
   });
 
-  const [highlightedDates, setHighlightedDates] = useState([
-    new Date(2023, 2, 20), // March 20, 2023
-    new Date(2023, 2, 31), // March 31, 2023
-    new Date(2023, 3, 5), // April 5, 2023
-  ]);
+  useEffect(() => {
+    if (revisions) {
+      console.log("revisions", revisions);
+
+      // Reset impactfulRevisions to an empty array
+      setImpactfulRevisions([]);
+
+      for (let revision of revisions) {
+        for (let r of revision.revision) {
+          const newRevision = {
+            date: parseDate(r.created_at ?? ""),
+            probability: r.probability,
+          };
+
+          // Update the state by adding each newRevision
+          setImpactfulRevisions((state: any) => [...state, newRevision]);
+        }
+      }
+    }
+  }, [revisions]);
+
+  const [highlightedDates, setHighlightedDates] = useState<any>([]);
 
   function getDaysInMonth(month: number, year: number): number {
     return new Date(year, month, 0).getDate();
@@ -140,6 +153,14 @@ function CustomDatePicker() {
   const handleDateClick = (day: number) => {
     setSelectedDay(day);
     setOpenCalendar((state) => !state);
+    const selectedDate = `${selectedYear}-${selectedMonth}-${day}`;
+    if (onDateSelect) {
+      onDateSelect(selectedDate);
+    }
+    const formattedDate = new Date(selectedDate);
+    setScheduleDate(formattedDate);
+    console.log("formattedDate", formattedDate);
+    // return formattedDate;
   };
 
   const days = [];
@@ -156,7 +177,7 @@ function CustomDatePicker() {
 
   const isDateHighlighted = (day: number, month: number, year: number) => {
     return highlightedDates.some(
-      (date) =>
+      (date: any) =>
         date.getDate() === day &&
         date.getMonth() === month - 1 &&
         date.getFullYear() === year
@@ -240,24 +261,6 @@ function CustomDatePicker() {
   };
 
   useEffect(() => {
-    console.log("activities", activities);
-    if (activities) {
-      const newRevisions = activities
-        .map((activity) => {
-          if (!activity.revision || !activity.revision.length) return;
-
-          return {
-            name: activity.name,
-            date: parseDate(activity.revision[0].created_at ?? ""),
-            probability: activity.revision[0].probability,
-          };
-        })
-        .filter((revision) => revision);
-      if (newRevisions.length > 0) setImpactfulRevisions(newRevisions);
-    }
-  }, [activities]);
-
-  useEffect(() => {
     const newHighlightedDates = impactfulRevisions.reduce(
       (acc: any, revision: any) => {
         if (revision.probability !== 1) {
@@ -270,8 +273,8 @@ function CustomDatePicker() {
         }
         return acc;
       },
-      [...highlightedDates]
-    ); // Spread to create a new array, don't mutate the original
+      []
+    ); // Start with an empty array
 
     setHighlightedDates(newHighlightedDates);
   }, [impactfulRevisions]);
@@ -282,7 +285,7 @@ function CustomDatePicker() {
   }, [highlightedDates]);
 
   return (
-    <Flex direction={"column"}>
+    <Flex direction={"column"} position={"relative"}>
       {dateWindow(selectedMonth, selectedYear, selectedDay)}
       {openCalendar && (
         <Flex
@@ -293,6 +296,12 @@ function CustomDatePicker() {
           p={2}
           justifyContent={"center"}
           fontSize={"sm"}
+          zIndex={1000}
+          top={"45px"}
+          position={"absolute"}
+          border={"1px"}
+          borderColor={"brand.light"}
+          rounded={"md"}
           // w={"350px"}
         >
           <Flex

@@ -119,3 +119,16 @@ export const uploadCSVData = async ({
 
   return response.data;
 };
+
+export const getRevisions = async (session: Session, ProjectId: string) => {
+  if (!session.access_token) return [];
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/activities/revisions/${ProjectId}`;
+  const response = await axios.get(url, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  return response.data;
+};

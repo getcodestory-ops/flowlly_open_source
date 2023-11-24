@@ -61,6 +61,8 @@ type State = {
   taskToView: ActivityEntity;
   taskDetailsView: "details" | "history" | "impact" | "gantt" | "edit";
   filterView: "none" | "Delayed" | "At Risk" | "In Progress" | any;
+  scheduleProbability: number;
+  scheduleDate: Date;
   setSession: (session: Session | null) => void;
   setAppView: (
     appView:
@@ -101,6 +103,8 @@ type State = {
   setFilterView: (
     view: "none" | "Delayed" | "At Risk" | "In Progress" | any
   ) => void;
+  setScheduleProbability: (probability: number) => void;
+  setScheduleDate: (date: Date) => void;
 };
 
 export const useStore = create<State>((set) => ({
@@ -136,6 +140,8 @@ export const useStore = create<State>((set) => ({
   },
   taskDetailsView: "details",
   filterView: "none",
+  scheduleProbability: 0.5,
+  scheduleDate: new Date(),
   setSession: (session: Session | null) => set(() => ({ session })),
   setAdminRights: (hasAdminRights: boolean) => set(() => ({ hasAdminRights })),
   setAppView: (
@@ -234,4 +240,7 @@ export const useStore = create<State>((set) => ({
   ) => set(() => ({ taskDetailsView: view })),
   setFilterView: (view: "none" | "Delayed" | "At Risk" | "In Progress" | any) =>
     set(() => ({ filterView: view })),
+  setScheduleProbability: (probability: number) =>
+    set(() => ({ scheduleProbability: probability })),
+  setScheduleDate: (date: Date) => set(() => ({ scheduleDate: date })),
 }));

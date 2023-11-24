@@ -11,6 +11,13 @@ import {
   useToast,
   Tooltip,
   Modal,
+  Slider,
+  SliderTrack,
+  SliderFilledTrack,
+  SliderThumb,
+  SliderMark,
+  Grid,
+  GridItem,
 } from "@chakra-ui/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
@@ -18,10 +25,13 @@ import { getActivities } from "@/api/activity_routes";
 import { BiSolidCircle } from "react-icons/bi";
 import { MdHistoryToggleOff, MdInfoOutline } from "react-icons/md";
 import { GrCircleAlert } from "react-icons/gr";
-import TaskViewsModal from "./TaskViewsModal";
+
 import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
 import { AiOutlineAlert } from "react-icons/ai";
 import { ActivityEntity } from "@/types/activities";
+import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
+import CustomDatePicker from "../DatePicker/DatePicker";
+import { G } from "@react-pdf/renderer";
 
 function ScheduleInsights() {
   const toast = useToast();
@@ -35,6 +45,9 @@ function ScheduleInsights() {
     taskDetailsView,
     filterView,
     setFilterView,
+    scheduleDate,
+    scheduleProbability,
+    setScheduleProbability,
   } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
@@ -44,6 +57,9 @@ function ScheduleInsights() {
     taskDetailsView: state.taskDetailsView,
     filterView: state.filterView,
     setFilterView: state.setFilterView,
+    scheduleDate: state.scheduleDate,
+    scheduleProbability: state.scheduleProbability,
+    setScheduleProbability: state.setScheduleProbability,
   }));
   const [view, setView] = useState<string>("master");
   const [openHistory, setOpenHistory] = useState<string>("");
@@ -53,32 +69,32 @@ function ScheduleInsights() {
   const [countOfDelayed, setCountOfDelayed] = useState<number>(0);
   const [countOfAtRisk, setCountOfAtRisk] = useState<number>(0);
   // const [filteredView, setFilteredView] = useState<string>("none");
-
-  const [task, setTask] = useState<ActivityEntity>({
-    id: "XYZ",
-    project_id: "XYZ",
-    name: "loading",
-    start: "01/01/23",
-    end: "01/02/23",
-    progress: 0,
-    activity_critical: {
-      critical_path: false,
-    },
-  });
-
+  const [sliderValue, setSliderValue] = useState(5);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const {
     data: activities,
     isLoading,
     isSuccess,
   } = useQuery({
-    queryKey: ["activityList", session, activeProject],
+    queryKey: [
+      "activityList",
+      session,
+      activeProject,
+      scheduleDate,
+      scheduleProbability,
+    ],
     queryFn: () => {
       if (!session || !activeProject) {
         return Promise.reject("Set session first !");
       }
-
-      return getActivities(session, activeProject.project_id);
+      const date = getCurrentDateFormatted(scheduleDate || new Date());
+      return getActivities(
+        session,
+        activeProject.project_id,
+        date,
+        scheduleProbability
+      );
     },
 
     enabled: !!session?.access_token && !!activeProject?.project_id,
@@ -330,36 +346,77 @@ function ScheduleInsights() {
     );
   };
 
+  const probabilitySlider = () => {
+    return (
+      <Slider
+        id="slider"
+        defaultValue={5}
+        min={0}
+        max={100}
+        colorScheme="pink"
+        onChange={(v) => setSliderValue(v)}
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      >
+        <SliderMark value={25} mt="1" ml="-2.5" fontSize="sm">
+          25%
+        </SliderMark>
+        <SliderMark value={50} mt="1" ml="-2.5" fontSize="sm">
+          50%
+        </SliderMark>
+        <SliderMark value={75} mt="1" ml="-2.5" fontSize="sm">
+          75%
+        </SliderMark>
+        <SliderTrack>
+          <SliderFilledTrack />
+        </SliderTrack>
+        <Tooltip
+          hasArrow
+          bg="brand.dark"
+          color="white"
+          placement="top"
+          isOpen={showTooltip}
+          label={`${sliderValue}%`}
+        >
+          <SliderThumb />
+        </Tooltip>
+      </Slider>
+    );
+  };
+
+  useEffect(() => {
+    setScheduleProbability(sliderValue / 100);
+  }, [sliderValue]);
+
   return (
     <Flex>
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <TaskViewsModal
-          isOpen={isOpen}
-          onClose={onClose}
-          task={task}
-          taskView={taskView}
-          setTaskView={setTaskView}
-        />
-      </Modal>
       <Flex p={10}>
         <Flex direction={"column"}>
-          {/* <Box>
-            <Button
-              size={"sm"}
-              mr={4}
-              bg={`${view === "master" ? "brand2.accent" : "brand2.mid"}`}
-              _hover={{ bg: "brand.dark", color: "white" }}
-            >
-              Master Schedule
-            </Button>
-            <Button
-              size={"sm"}
-              bg={`${view === "lookahead" ? "brand2.accent" : "brand2.mid"}`}
-              _hover={{ bg: "brand.dark", color: "white" }}
-            >
-              3 Week Lookahead
-            </Button>
-          </Box> */}
+          <Flex
+            borderTop={"2px"}
+            borderBottom={"2px"}
+            py={"6"}
+            mb={"6"}
+            borderColor={"gray.200"}
+            minW={"500px"}
+            justifyContent={"space-between"}
+          >
+            <Flex direction={"column"} w={"30%"} alignItems={"center"}>
+              <Text fontSize={"sm"} as={"b"}>
+                Impactful events
+              </Text>
+              <Flex>
+                <CustomDatePicker />
+              </Flex>
+            </Flex>
+            <Flex direction={"column"} w={"60%"} alignItems={"center"}>
+              <Text fontSize={"sm"} as={"b"}>
+                Impact Probability
+              </Text>
+              <Flex w={"80%"}>{probabilitySlider()}</Flex>
+            </Flex>
+          </Flex>
+
           <Flex mb={"4"}>
             {quickDataViewCard("Delayed", countOfDelayed)}
             {quickDataViewCard("At Risk", countOfAtRisk)}
