@@ -14,6 +14,7 @@ import { FiPlus } from "react-icons/fi";
 import AddNewActivityModal from "@/components/Schedule/AddNewActivityModal";
 import CSVUploader from "./CSVUpload/CSVUploader";
 import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
+import { useStore } from "@/utils/store";
 
 function ScheduleChatInterface() {
   const lastMessageRef = useRef<HTMLDivElement>(null);
@@ -30,6 +31,10 @@ function ScheduleChatInterface() {
     onOpen,
   } = useScheduleUpdate();
 
+  const { activeChatEntity } = useStore((state) => ({
+    activeChatEntity: state.activeChatEntity,
+  }));
+
   //create a method to focus last element of chats array by auto scrolling to the bottom of the chat box
   useEffect(() => {
     if (!lastMessageRef) return;
@@ -37,107 +42,62 @@ function ScheduleChatInterface() {
   }, [chats]);
 
   return (
-    <Flex
-      flex="1"
-      mx={16}
-      justifyContent={"end"}
-      direction="column"
-      bg="brand2.light"
-      color="white"
-      maxH={{ base: "80%", md: "100%" }}
-    >
-      <VStack
-        alignSelf={"center"}
-        align="start"
-        spacing={4}
-        overflowY={"scroll"}
-        p="8"
-        maxW="4xl"
-        maxH={"85vh"}
+    <Flex direction={"column"} w={"full"}>
+      <Flex
+        direction={"column"}
+        w={"full"}
+        alignItems={"center"}
+        overflowY="scroll"
+        py={"4"}
       >
         {chats &&
           chats.length > 0 &&
           chats?.map((history, index) => (
-            <Box
+            <Flex
               key={index}
-              p={4}
-              color="white"
-              fontSize={"lg"}
-              lineHeight="1.5"
-              bg="brand.mid"
-              borderRadius="14px"
-              whiteSpace="pre-line"
-              ref={index === chats.length - 1 ? lastMessageRef : null}
+              bg={"brand.mid"}
+              color={"white"}
+              mb={"6"}
+              w={"80%"}
+              p={"6"}
+              direction={"column"}
+              rounded={"lg"}
             >
-              <Text color="brand.accent">{`${history.sender}`}</Text>
-              {history.message.content && (
-                <Box fontSize="lg" lineHeight="1.5">
-                  {history.message.content
-                    ?.split("/n")
-                    .map((line: string, i: number) => (
-                      <Box key={i} mb="2" whiteSpace="pre-line">
-                        {line}
-                      </Box>
-                    ))}
-                </Box>
-              )}
-              {history.message.function_call && (
-                <Text fontSize="lg" whiteSpace="pre-line">
-                  Function: {history.message.function_call.name} <br />
-                  Arguments: {history.message.function_call.arguments}
-                </Text>
-              )}
-            </Box>
-          ))}
-      </VStack>
-      {isPending ||
-        (taskStatus && taskStatus.status === "pending" && <Spinner />)}
-      {!activeProject && (
-        <Flex height="full" justify={"center"} align={"center"}>
-          Select a project to start
-        </Flex>
-      )}
-      {activeProject && (
-        <>
-          <Box
-            display="flex"
-            alignItems="center"
-            bg="brand.md"
-            p={2}
-            borderRadius="md"
-          >
-            <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
-          </Box>
-          <Flex
-            flexDirection={"column"}
-            p="8"
-            alignSelf={"center"}
-            width="100%"
-          >
-            <Flex justifyContent={"space-between"}>
-              <Button
-                leftIcon={<Icon as={FiPlus} />}
-                color="brand.dark"
-                variant="outline"
-                borderColor="brand.dark"
-                maxWidth="xs"
-                _hover={{ bg: "gray.600", color: "white" }}
-                onClick={onOpen}
-                fontSize="xs"
-              >
-                Add Activity
-              </Button>
-              <CSVUploader />
-              <ContextSelection />
+              <Text as={"b"} mb={"1"} color={"brand.accent"}>
+                {history.sender}
+              </Text>
+              <Text whiteSpace="pre-wrap">{history.message.content}</Text>
             </Flex>
-            <ScheduleAssistant
-              handleChatSubmit={handleChatSubmit}
-              setChatInput={setChatInput}
-              chatInput={chatInput}
-            />
-          </Flex>
-        </>
-      )}
+          ))}
+      </Flex>
+      <Flex w={"full"} h={"20%"}>
+        {activeProject && (
+          <>
+            <Box
+              display="flex"
+              alignItems="center"
+              bg="brand.md"
+              p={2}
+              borderRadius="md"
+            ></Box>
+            <Flex
+              flexDirection={"column"}
+              p="8"
+              alignSelf={"center"}
+              width="100%"
+            >
+              <Flex>
+                <ContextSelection />
+              </Flex>
+              <ScheduleAssistant
+                handleChatSubmit={handleChatSubmit}
+                setChatInput={setChatInput}
+                chatInput={chatInput}
+              />
+            </Flex>
+          </>
+        )}
+      </Flex>
     </Flex>
   );
 }

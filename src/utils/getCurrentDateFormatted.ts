@@ -1,6 +1,6 @@
-export default function getCurrentDateFormatted(): string {
-  const date = new Date();
-  let dd: number | string = date.getDate();
+export default function getCurrentDateFormatted(date = new Date()): string {
+  // const date = new Date();
+  let dd: number | string = date.getDate() + 1;
   let mm: number | string = date.getMonth() + 1; // January is 0!
   const yyyy: number = date.getFullYear();
 

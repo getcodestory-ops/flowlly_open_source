@@ -1,7 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { Task, ViewMode, Gantt } from "gantt-task-react";
 import { ViewSwitcher } from "./view-switcher";
-import { Icon, useToast, Box, Text, Spinner } from "@chakra-ui/react";
+import {
+  Icon,
+  useToast,
+  Box,
+  Text,
+  Spinner,
+  Modal,
+  useDisclosure,
+  Select,
+  Button,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+} from "@chakra-ui/react";
+
+import "react-date-picker/dist/DatePicker.css";
 import { getStartEndDateForProject, initTasks } from "./helper";
 import "gantt-task-react/dist/index.css";
 import { Flex } from "@chakra-ui/react";
@@ -15,31 +32,77 @@ import {
   PiMagnifyingGlassMinus,
   PiPathDuotone,
 } from "react-icons/pi";
+
+import { MdFormatListBulletedAdd } from "react-icons/md";
 import { from } from "form-data";
+import { UpdateActivityTypes } from "@/types/activities";
+import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
+import { updateActivity } from "@/api/activity_routes";
+import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
+import AddNewActivityModal from "./AddNewActivityModal";
+import UpdateActivityModal from "./UpdateActivityModal";
+import { get } from "http";
+import CustomDatePicker from "../DatePicker/DatePicker";
 
 const ScheduleGanttInterface = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [fontSize, setFontSize] = useState(12);
-  const { session, activeProject } = useStore((state) => ({
+  const {
+    session,
+    activeProject,
+    setTaskToView,
+    setRightPanelView,
+    scheduleProbability,
+    setScheduleProbability,
+    scheduleDate,
+  } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
+    setTaskToView: state.setTaskToView,
+    setRightPanelView: state.setRightPanelView,
+    scheduleProbability: state.scheduleProbability,
+    setScheduleProbability: state.setScheduleProbability,
+    scheduleDate: state.scheduleDate,
   }));
+  const { isOpen, onClose, onOpen } = useScheduleUpdate();
 
   const [tasks, setTasks] = React.useState<Task[]>(initTasks());
+  const [modifyTask, setModifyTask] = useState({});
+  const dateToday = getCurrentDateFormatted();
+  const [modalType, setModalType] = useState<string>("");
+  const [probability, setProbability] = useState<number>(0.5);
+
+  const dateAdjustment = () => {
+    let currentDate = new Date();
+    currentDate.setDate(currentDate.getDate() + 1);
+    return currentDate;
+  };
+  const [startDate, onStartChange] = useState<any>(dateAdjustment());
 
   const {
     data: activities,
     isLoading,
     isSuccess,
   } = useQuery({
-    queryKey: ["activityList", session, activeProject],
+    queryKey: [
+      "activityList",
+      session,
+      activeProject,
+      scheduleDate,
+      scheduleProbability,
+    ],
     queryFn: () => {
       if (!session || !activeProject) {
         return Promise.reject("Set session first !");
       }
-
-      return getActivities(session, activeProject.project_id);
+      const date = getCurrentDateFormatted(scheduleDate || new Date());
+      return getActivities(
+        session,
+        activeProject.project_id,
+        date,
+        scheduleProbability
+      );
     },
 
     enabled: !!session?.access_token && !!activeProject?.project_id,
@@ -94,7 +157,7 @@ const ScheduleGanttInterface = () => {
   useEffect(() => {
     if (isSuccess && activities) {
       if (activities.length > 0) {
-        console.log("activities", activities);
+        // console.log("activities", activities);
         const transformedTasks = activities
           .map(activityEntityToTask)
           .sort((a, b) => a.start.getTime() - b.start.getTime()); // Assuming the data you want is in activities.data
@@ -136,6 +199,14 @@ const ScheduleGanttInterface = () => {
   } else if (view === ViewMode.Week) {
     columnWidth = 250;
   }
+
+  const handelTaskSelection = (task: Task) => {
+    activities?.map((activity) => {
+      if (activity.id === task.id) {
+        setTaskToView(activity);
+      }
+    });
+  };
 
   const handleTaskChange = (task: Task) => {
     console.log("On date change Id:" + task.id);
@@ -181,7 +252,8 @@ const ScheduleGanttInterface = () => {
   };
 
   const handleClick = (task: Task) => {
-    console.log("On Click event Id:" + task.id);
+    handelTaskSelection(task);
+    // setRightPanelView("task");
   };
 
   const handleSelect = (task: Task, isSelected: boolean) => {
@@ -191,6 +263,11 @@ const ScheduleGanttInterface = () => {
   const handleExpanderClick = (task: Task) => {
     setTasks(tasks.map((t) => (t.id === task.id ? task : t)));
     console.log("On expander click Id:" + task.id);
+  };
+
+  const handleAddActivity = () => {
+    setModalType("Add");
+    onOpen();
   };
 
   const tooltip = (task: Task) => {
@@ -218,6 +295,7 @@ const ScheduleGanttInterface = () => {
       width="full"
       overflow={"auto"}
       height="100vh"
+      overscrollBehaviorY={"contain"}
     >
       <Flex>
         <Icon
@@ -235,6 +313,12 @@ const ScheduleGanttInterface = () => {
           cursor={"pointer"}
           onClick={handleCriticalPath}
         />
+
+        <Icon
+          as={MdFormatListBulletedAdd}
+          cursor={"pointer"}
+          onClick={handleAddActivity}
+        />
       </Flex>
       <ViewSwitcher
         onViewModeChange={(viewMode) => setView(viewMode)}
@@ -243,32 +327,25 @@ const ScheduleGanttInterface = () => {
         View={view}
       />
       <div>{view} View</div>
-      {isLoading && (
-        <div>
-          <Spinner />
-        </div>
-      )}
-      {!isLoading && activities && activities.length !== 0 && (
-        <Gantt
-          tasks={tasks}
-          viewMode={view}
-          onDateChange={handleTaskChange}
-          onDelete={handleTaskDelete}
-          onProgressChange={handleProgressChange}
-          onDoubleClick={handleDblClick}
-          onClick={handleClick}
-          onSelect={handleSelect}
-          onExpanderClick={handleExpanderClick}
-          listCellWidth={isChecked ? "150px" : ""}
-          rowHeight={fontSize * 3}
-          columnWidth={columnWidth}
-          fontSize={`${fontSize}px`}
-          TooltipContent={({ task, fontSize, fontFamily }) => {
-            console.log("TooltipContent", { task, fontSize, fontFamily });
-            return tooltip(task) as unknown as JSX.Element;
-          }}
-        />
-      )}
+      <Gantt
+        tasks={tasks}
+        viewMode={view}
+        onDateChange={handleTaskChange}
+        onDelete={handleTaskDelete}
+        onProgressChange={handleProgressChange}
+        onDoubleClick={handleDblClick}
+        onClick={handleClick}
+        onSelect={handleSelect}
+        onExpanderClick={handleExpanderClick}
+        listCellWidth={isChecked ? "150px" : ""}
+        rowHeight={fontSize * 3}
+        columnWidth={columnWidth}
+        fontSize={`${fontSize}px`}
+        TooltipContent={({ task, fontSize, fontFamily }) => {
+          // console.log("TooltipContent", { task, fontSize, fontFamily });
+          return tooltip(task) as unknown as JSX.Element;
+        }}
+      />
     </Flex>
   );
 };

@@ -23,12 +23,20 @@ export const activityEntityToTask = (activity: ActivityEntity): Task => {
           ? "#FF4141"
           : activity.status === "At Risk"
           ? "#FFA841"
-          : "#5F55EE"
+          : activity.status === "In Progress"
+          ? "#5F55EE"
+          : ""
       } `,
       backgroundColor: `${
         activity.activity_critical && activity.activity_critical.critical_path
           ? "#C8987E"
-          : "#656F7D"
+          : activity.status === "Delayed"
+          ? "#FF4141"
+          : activity.status === "At Risk"
+          ? "#FFA841"
+          : activity.status === "In Progress"
+          ? "#5F55EE"
+          : "#CCCCCC"
       }`,
     },
     // Below are the additional fields you might want to set as per your requirements

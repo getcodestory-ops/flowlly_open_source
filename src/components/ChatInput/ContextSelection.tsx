@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Flex, Select, Text } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 
@@ -11,6 +11,12 @@ function ContextSelection() {
     })
   );
 
+  useEffect(() => {
+    if (folderList && folderList?.length > 0 && folderList !== null) {
+      setSelectedContext(folderList[0]);
+    }
+  }, [folderList]);
+
   return (
     <Flex justifyContent={"end"} alignItems="center" pl="2" fontSize="xs">
       <Text color="brand.dark" mr="4">
@@ -18,7 +24,7 @@ function ContextSelection() {
       </Text>
 
       <Select
-        color="brand.accent"
+        color="gray.400"
         placeholder="Search within"
         value={selectedContext?.name ?? ""}
         border="none"

@@ -13,9 +13,17 @@ export interface ActivityEntity {
   creation_time?: string;
   created_by?: string;
   progress: number;
+  owner?: string;
+  history?: (Record<string, string> & { impact?: string })[];
   activity_critical: {
     critical_path: boolean;
   };
+  revision?: {
+    name?: string;
+    date?: string;
+    probability?: number;
+    created_at?: string;
+  }[];
 }
 
 export interface CreateNewActivity {
@@ -31,6 +39,23 @@ export interface CreateNewActivity {
   status: boolean;
   creation_time?: string;
   created_by?: string;
+  owner?: string;
+  progress?: number;
+}
+
+export interface UpdateActivityTypes {
+  // name: string;
+  // project_id?: string;
+  // description: string;
+  // duration: number;
+  start?: string;
+  end?: string;
+  cost?: number;
+  dependencies?: string[];
+  resources?: string[];
+  status?: string;
+  // creation_time?: string;
+  // created_by?: string;
   owner?: string;
   progress?: number;
 }

@@ -3,11 +3,18 @@ import { FaTimes, FaSearch, FaPlug, FaBrain, FaFolder } from "react-icons/fa";
 import { BiBrain, BiFolder } from "react-icons/bi";
 import UserPanel from "@/components/UserPanel";
 import { useStore } from "@/utils/store";
-import { AiFillSchedule, AiOutlineSchedule } from "react-icons/ai";
+import {
+  AiFillSchedule,
+  AiOutlineSchedule,
+  AiOutlineDashboard,
+} from "react-icons/ai";
 import { HiUserGroup } from "react-icons/hi";
 import { GrGroup } from "react-icons/gr";
-import { MdOutlineArrowRight } from "react-icons/md";
+import { MdOutlineArrowRight, MdOutlineHealthAndSafety } from "react-icons/md";
 import { GoProjectRoadmap } from "react-icons/go";
+import { HiOutlineUserGroup } from "react-icons/hi2";
+import { HiOutlineSpeakerphone } from "react-icons/hi";
+import { RiMoneyDollarCircleLine } from "react-icons/ri";
 
 export default function SwitchPanel() {
   const {
@@ -43,6 +50,26 @@ export default function SwitchPanel() {
       </Box>
       <Stack direction={{ md: "column", sm: "row" }} spacing={4}>
         <Tooltip
+          label="Dashboard"
+          aria-label="A tooltip"
+          bg="white"
+          color="brand.dark"
+        >
+          <Button
+            zIndex="1"
+            onClick={() => {
+              // setSidePanelExtensionView("project");
+              setAppView("dashboard");
+            }}
+            bg={`${appView === "dashboard" ? "brand.accent" : ""}`}
+            color="brand.dark"
+            _hover={{ bg: "brand.mid", color: "white" }}
+          >
+            {" "}
+            <AiOutlineDashboard />
+          </Button>
+        </Tooltip>
+        <Tooltip
           label="Search Assistant"
           aria-label="A tooltip"
           bg="white"
@@ -51,18 +78,15 @@ export default function SwitchPanel() {
           <Button
             zIndex="1"
             onClick={() => {
-              setSidePanelExtensionView("memory");
+              // setSidePanelExtensionView("memory");
               setAppView("search");
             }}
             bg={`${appView === "search" ? "brand.accent" : ""}`}
             color="brand.dark"
             _hover={{ bg: "brand.mid", color: "white" }}
-            fontSize="xl"
           >
             {" "}
-            {/* <FaBrain /> */}
             <BiBrain />
-            {/* <MdOutlineArrowRight/> */}
           </Button>
         </Tooltip>
         {/* <Button
@@ -87,7 +111,7 @@ export default function SwitchPanel() {
           <Button
             zIndex="1"
             onClick={() => {
-              setSidePanelExtensionView("schedule");
+              // setSidePanelExtensionView("schedule");
               setAppView("schedule");
             }}
             bg={`${appView !== "schedule" ? "" : "brand.accent"}`}
@@ -95,7 +119,82 @@ export default function SwitchPanel() {
             _hover={{ bg: "brand.mid", color: "white" }}
           >
             <AiOutlineSchedule />
-            {/* <AiFillSchedule /> */}
+          </Button>
+        </Tooltip>
+        {/* <Tooltip
+          label="Budget Assistant"
+          aria-label="A tooltip"
+          bg="white"
+          color="brand.dark"
+        >
+          <Button
+            zIndex="1"
+            onClick={() => {
+              // setSidePanelExtensionView("schedule");
+              setAppView("budget");
+            }}
+            bg={`${appView !== "budget" ? "" : "brand.accent"}`}
+            color="brand.dark"
+            _hover={{ bg: "brand.mid", color: "white" }}
+          >
+            <RiMoneyDollarCircleLine />
+          </Button>
+        </Tooltip>
+        <Tooltip
+          label="Safety Assistant"
+          aria-label="A tooltip"
+          bg="white"
+          color="brand.dark"
+        >
+          <Button
+            zIndex="1"
+            onClick={() => {
+              // setSidePanelExtensionView("schedule");
+              setAppView("safety");
+            }}
+            bg={`${appView !== "safety" ? "" : "brand.accent"}`}
+            color="brand.dark"
+            _hover={{ bg: "brand.mid", color: "white" }}
+          >
+            <MdOutlineHealthAndSafety />
+          </Button>
+        </Tooltip> */}
+        <Tooltip
+          label="Meeting Assistant"
+          aria-label="A tooltip"
+          bg="white"
+          color="brand.dark"
+        >
+          <Button
+            zIndex="1"
+            onClick={() => {
+              // setSidePanelExtensionView("schedule");
+              setAppView("meeting");
+            }}
+            bg={`${appView !== "meeting" ? "" : "brand.accent"}`}
+            color="brand.dark"
+            _hover={{ bg: "brand.mid", color: "white" }}
+          >
+            <HiOutlineUserGroup />
+          </Button>
+        </Tooltip>
+        <Tooltip
+          label="Communication Assistant"
+          aria-label="A tooltip"
+          bg="white"
+          color="brand.dark"
+        >
+          <Button
+            zIndex="1"
+            onClick={() => {
+              // setSidePanelExtensionView("schedule");
+              setAppView("communication");
+            }}
+            bg={`${appView !== "communication" ? "" : "brand.accent"}`}
+            color="brand.dark"
+            _hover={{ bg: "brand.mid", color: "white" }}
+          >
+            <HiOutlineSpeakerphone />
           </Button>
         </Tooltip>
       </Stack>
@@ -135,10 +234,10 @@ export default function SwitchPanel() {
           <Button
             zIndex="1"
             onClick={() => {
-              setSidePanelExtensionView("project");
-              setAppView("project");
+              // setSidePanelExtensionView("project");
+              setAppView("projectSettings");
             }}
-            bg={`${appView === "project" ? "brand.accent" : ""}`}
+            bg={`${appView === "projectSettings" ? "brand.accent" : ""}`}
             color="brand.dark"
             _hover={{ bg: "brand.mid", color: "white" }}
           >

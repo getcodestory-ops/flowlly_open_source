@@ -4,6 +4,7 @@ import { scopeConfig } from "./projectconfig";
 import { Chat, ChatMessage, ChatHistory } from "@/types/chat";
 import { ProjectEntity } from "@/types/projects";
 import { AgentChatEntity } from "@/types/agentChats";
+import { ActivityEntity } from "@/types/activities";
 
 type SidePanelExtension =
   | "fileExplorer"
@@ -29,7 +30,17 @@ export interface Brain {
 
 type State = {
   session: Session | null;
-  appView: "schedule" | "search" | "agent" | "project";
+  appView:
+    | "schedule"
+    | "search"
+    | "agent"
+    | "project"
+    | "meeting"
+    | "budget"
+    | "communication"
+    | "safety"
+    | "dashboard"
+    | "projectSettings";
   hasAdminRights: boolean;
   activeProject: ProjectEntity | null;
   activeChatEntity: AgentChatEntity;
@@ -46,8 +57,26 @@ type State = {
   chatMessages: ChatMessage[];
   selectedContext: Brain | null;
   pdfViewer: PdfViewer;
+  rightPanelView: "gantt" | "task";
+  taskToView: ActivityEntity;
+  taskDetailsView: "details" | "history" | "impact" | "gantt" | "edit";
+  filterView: "none" | "Delayed" | "At Risk" | "In Progress" | any;
+  scheduleProbability: number;
+  scheduleDate: Date;
   setSession: (session: Session | null) => void;
-  setAppView: (appView: "schedule" | "search" | "agent" | "project") => void;
+  setAppView: (
+    appView:
+      | "schedule"
+      | "search"
+      | "agent"
+      | "project"
+      | "meeting"
+      | "budget"
+      | "communication"
+      | "safety"
+      | "dashboard"
+      | "projectSettings"
+  ) => void;
   setActiveProject: (activeProject: ProjectEntity | null) => void;
   setActiveChatEntity: (activeChatEntity: AgentChatEntity) => void;
   setAdminRights: (hasAdminRights: boolean) => void;
@@ -66,11 +95,21 @@ type State = {
   setSelectedContext: (context: Brain | null) => void;
   setPdfViewer: (pdfDetails: any) => void;
   updateChatHistory: (id: string, chatHistory: ChatHistory[]) => void;
+  setRightPanelView: (view: "gantt" | "task") => void;
+  setTaskToView: (task: ActivityEntity) => void;
+  setTaskDetailsView: (
+    view: "details" | "history" | "impact" | "gantt" | "edit"
+  ) => void;
+  setFilterView: (
+    view: "none" | "Delayed" | "At Risk" | "In Progress" | any
+  ) => void;
+  setScheduleProbability: (probability: number) => void;
+  setScheduleDate: (date: Date) => void;
 };
 
 export const useStore = create<State>((set) => ({
   session: null,
-  appView: "search",
+  appView: "dashboard",
   activeProject: null,
   activeChatEntity: { id: "", project_id: "", chat_name: "", chat_details: "" },
   hasAdminRights: false,
@@ -87,10 +126,37 @@ export const useStore = create<State>((set) => ({
     filePath: "",
     highlightDetails: undefined,
   },
+  rightPanelView: "gantt",
+  taskToView: {
+    id: "SCHEDULE",
+    project_id: "parent",
+    name: "loading",
+    start: "01/01/23",
+    end: "01/02/23",
+    progress: 0,
+    activity_critical: {
+      critical_path: false,
+    },
+  },
+  taskDetailsView: "details",
+  filterView: "none",
+  scheduleProbability: 0.5,
+  scheduleDate: new Date(),
   setSession: (session: Session | null) => set(() => ({ session })),
   setAdminRights: (hasAdminRights: boolean) => set(() => ({ hasAdminRights })),
-  setAppView: (appView: "schedule" | "search" | "agent" | "project") =>
-    set(() => ({ appView })),
+  setAppView: (
+    appView:
+      | "schedule"
+      | "search"
+      | "agent"
+      | "project"
+      | "meeting"
+      | "budget"
+      | "communication"
+      | "safety"
+      | "dashboard"
+      | "projectSettings"
+  ) => set(() => ({ appView })),
   setActiveProject: (activeProject: ProjectEntity | null) =>
     set(() => ({ activeProject })),
   setActiveChatEntity: (activeChatEntity: AgentChatEntity) =>
@@ -166,4 +232,15 @@ export const useStore = create<State>((set) => ({
 
       return { chatSessions: updatedChatSessions };
     }),
+  setRightPanelView: (view: "gantt" | "task") =>
+    set(() => ({ rightPanelView: view })),
+  setTaskToView: (task: ActivityEntity) => set(() => ({ taskToView: task })),
+  setTaskDetailsView: (
+    view: "details" | "history" | "impact" | "gantt" | "edit"
+  ) => set(() => ({ taskDetailsView: view })),
+  setFilterView: (view: "none" | "Delayed" | "At Risk" | "In Progress" | any) =>
+    set(() => ({ filterView: view })),
+  setScheduleProbability: (probability: number) =>
+    set(() => ({ scheduleProbability: probability })),
+  setScheduleDate: (date: Date) => set(() => ({ scheduleDate: date })),
 }));
