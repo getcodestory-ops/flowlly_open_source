@@ -7,18 +7,26 @@ import {
 } from "@/types/projects";
 
 export const getProjects = async (
-  session: Session
-): Promise<ProjectEntity[]> => {
+  session: Session,
+  project_type: string = "SCHEDULE"
+) => {
   if (!session.access_token) return [];
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/projects`;
-  const response = await axios.get(url, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${session.access_token}`,
-    },
-  });
-
-  return response.data?.projects;
+  try {
+    const response = await axios.get(url, {
+      params: { project_type },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+    if (response.data?.projects) {
+      return response.data?.projects;
+    }
+    throw new Error("No projects were found!");
+  } catch (e) {
+    throw new Error("Activity does not have child activities!");
+  }
 };
 
 export const createProject = async (

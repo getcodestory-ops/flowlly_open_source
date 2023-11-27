@@ -128,8 +128,8 @@ export const useStore = create<State>((set) => ({
   },
   rightPanelView: "gantt",
   taskToView: {
-    id: "XYZ",
-    project_id: "XYZ",
+    id: "SCHEDULE",
+    project_id: "parent",
     name: "loading",
     start: "01/01/23",
     end: "01/02/23",

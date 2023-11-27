@@ -14,3 +14,17 @@ export const processMessageHistory = async (
   });
   return response.data;
 };
+
+export const createContingencyPlan = async (
+  session: Session,
+  projectAccessId: string
+) => {
+  if (!session.access_token) return null;
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/schedule/plan_contingency/${projectAccessId}`;
+  const response = await axios.get(url, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+  return response.data;
+};
