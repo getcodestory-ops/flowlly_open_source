@@ -132,3 +132,22 @@ export const getRevisions = async (session: Session, ProjectId: string) => {
 
   return response.data;
 };
+
+export const getActivityContingencyPlan = async (
+  session: Session,
+  ProjectId: string,
+  activityId?: string
+) => {
+  if (!session.access_token) return [];
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/activity/contingency_plan/${ProjectId}`;
+
+  const response = await axios.get(url, {
+    params: { activity_id: activityId },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  return response.data;
+};

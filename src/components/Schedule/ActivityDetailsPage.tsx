@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Flex,
   Text,
@@ -27,102 +27,65 @@ import ActivityEditView from "./ActivityEditView";
 import ProcessHistoryButton from "./ProcessHistory/ProcessHistoryButton";
 import AddActivityChildren from "./AddActivityChildren/AddActivityChildren";
 import CreateContingency from "./CreateContingency/CreateContingency";
+import { getActivityContingencyPlan } from "@/api/activity_routes";
+import {
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 
 function ActivitiesDetailPage() {
-  const { taskToView, setRightPanelView, taskDetailsView, setTaskDetailsView } =
-    useStore((state) => ({
-      taskToView: state.taskToView,
-      setRightPanelView: state.setRightPanelView,
-      taskDetailsView: state.taskDetailsView,
-      setTaskDetailsView: state.setTaskDetailsView,
-    }));
+  const {
+    session,
+    taskToView,
+    setRightPanelView,
+    activeProject,
+    taskDetailsView,
+    setTaskDetailsView,
+  } = useStore((state) => ({
+    session: state.session,
+    taskToView: state.taskToView,
+    setRightPanelView: state.setRightPanelView,
+    activeProject: state.activeProject,
+    taskDetailsView: state.taskDetailsView,
+    setTaskDetailsView: state.setTaskDetailsView,
+  }));
 
+  type Action = {
+    id: string;
+    created_at: string;
+    contingency_plan: string;
+  };
+
+  const queryClient = useQueryClient();
   const [editTask, setEditTask] = useState<boolean>(false);
+  const [actions, setActions] = useState<Action[]>([
+    {
+      contingency_plan: "No remediation plan created.",
+      id: "1",
+      created_at: "2021-08-10T00:00:00.000Z",
+    },
+  ]);
 
-  const actions = [
-    {
-      "Create remediation plan": {
-        start: "NULL",
-        end: "NULL",
-        duration: "NULL",
-        progress: "NULL",
-        type: "plan",
-      },
+  const { data: contingencyPlans } = useQuery({
+    queryKey: ["getProjectContingencyPlan", session, activeProject, taskToView],
+    queryFn: () => {
+      if (!activeProject) return Promise.reject("No active project");
+      return getActivityContingencyPlan(
+        session!,
+        activeProject?.project_id,
+        taskToView.id
+      );
     },
-    {
-      "Inform subcontractor XXXX of delay": {
-        start: "NULL",
-        end: "NULL",
-        duration: "NULL",
-        progress: "NULL",
-        type: "communication",
-      },
-    },
-    {
-      "Ask Steve to renew permit with expiry date 01/14/24": {
-        start: "NULL",
-        end: "NULL",
-        duration: "NULL",
-        progress: "NULL",
-        type: "communication",
-      },
-    },
-    {
-      "Add contingency task: Looking for asbestos Removal Plan Subcontractor": {
-        start: "2023-20-12",
-        end: "2023-23-12",
-        duration: 3,
-        progress: 0,
-        type: "task",
-      },
-    },
-    {
-      "Add contingency task: Asbestos removal plan approval, permits, safety protocols":
-        {
-          start: "2023-20-12",
-          end: "2023-23-12",
-          duration: 3,
-          progress: 0,
-          type: "task",
-        },
-    },
-    {
-      "Add contingency task: Asbestos removal": {
-        start: "2023-20-12",
-        end: "2023-23-12",
-        duration: 3,
-        progress: 0,
-        type: "task",
-      },
-    },
-    {
-      "Add contingency task: Post removal Inspection and clearance testing": {
-        start: "2023-20-12",
-        end: "2023-23-12",
-        duration: 3,
-        progress: 0,
-        type: "task",
-      },
-    },
-    {
-      "Add contingency task: Documentation and compliance reporting": {
-        start: "2023-20-12",
-        end: "2023-23-12",
-        duration: 3,
-        progress: 0,
-        type: "task",
-      },
-    },
-    {
-      "Add contingency task: Resume Demolition ": {
-        start: "2023-20-12",
-        end: "2023-23-12",
-        duration: 3,
-        progress: 0,
-        type: "task",
-      },
-    },
-  ];
+    enabled: !!session?.access_token,
+    placeholderData: keepPreviousData,
+  });
+
+  useEffect(() => {
+    if (contingencyPlans) {
+      setActions(contingencyPlans);
+    }
+  }, [contingencyPlans]);
 
   const actionsCard = () => {
     let elements = []; // Initialize an empty array
@@ -155,8 +118,8 @@ function ActivitiesDetailPage() {
                 <Icon as={MdDeleteOutline} _hover={{ color: "brand.accent" }} />
               </Box>
             </Tooltip>
-            <Text fontSize={"sm"} as={"b"} ml={"6"}>
-              {Object.keys(action)}
+            <Text fontSize={"sm"} as={"b"} ml={"6"} whiteSpace={"pre-wrap"}>
+              {action.contingency_plan}
             </Text>
           </Flex>
         </Flex>
@@ -296,12 +259,10 @@ function ActivitiesDetailPage() {
           borderBottomColor={"brand.light"}
           pb={"4"}
         >
-
           <Flex maxW={"xl"} display="flex" gap="2">
             <ProcessHistoryButton />
             <CreateContingency />
           </Flex>
-
 
           <Flex>
             <Text fontSize={"sm"} as={"i"} mr={"2"}>
@@ -466,10 +427,10 @@ function ActivitiesDetailPage() {
                   <Text fontSize={"sm"} as={"i"} mr={"2"}>
                     Suggested Actions:
                   </Text>
-                  {actionsCard()}
                 </Flex>
               </Flex>
             ))}
+        {actionsCard()}
       </Flex>
     );
   };
