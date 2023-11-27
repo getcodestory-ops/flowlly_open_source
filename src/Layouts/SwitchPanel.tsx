@@ -121,7 +121,7 @@ export default function SwitchPanel() {
             <AiOutlineSchedule />
           </Button>
         </Tooltip>
-        <Tooltip
+        {/* <Tooltip
           label="Budget Assistant"
           aria-label="A tooltip"
           bg="white"
@@ -158,7 +158,7 @@ export default function SwitchPanel() {
           >
             <MdOutlineHealthAndSafety />
           </Button>
-        </Tooltip>
+        </Tooltip> */}
         <Tooltip
           label="Meeting Assistant"
           aria-label="A tooltip"

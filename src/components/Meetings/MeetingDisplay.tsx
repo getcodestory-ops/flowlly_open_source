@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { Flex, Select, Text, Button, Icon } from "@chakra-ui/react";
 import { AiOutlineSave } from "react-icons/ai";
 import { LiaEditSolid } from "react-icons/lia";
+import { FaRegShareFromSquare } from "react-icons/fa6";
 
 function MeetingDisplay() {
+  const [aiAction, setAiAction] = useState<string>("");
+
   const transcript = `**John Smith (PM):** Good morning, everyone. Thank you for joining this safety meeting. Safety is our top priority on this construction project. Let's begin by reviewing our safety procedures. Mike, please start.
 
   **Mike Johnson (SA):** Absolutely, John. As a reminder, all subcontractors and their workers are required to wear appropriate personal protective equipment (PPE) at all times. This includes hard hats, high-visibility vests, safety goggles, and steel-toed boots. Is there any confusion regarding PPE requirements?
@@ -71,6 +74,39 @@ function MeetingDisplay() {
   John Smith
   Construction Project Manager`;
 
+  const summary = `The meeting, led by Project Manager John Smith, focused on reinforcing safety protocols for a construction project. The key points discussed were:
+  
+  Personal Protective Equipment (PPE): Mike Johnson emphasized the mandatory use of PPE, including hard hats, high-visibility vests, safety goggles, and steel-toed boots, and confirmed that there were no confusions regarding these requirements.
+  
+  Site-Specific Safety Concerns: Mike reported the presence of uneven ground near the eastern edge of the construction site, which could be a trip hazard. John directed Sarah Davis's team, responsible for excavation in that area, to level the ground and mark potential hazards.
+  
+  Incident Reporting: John stressed the importance of using the designated reporting system for any safety incidents, including near misses and potential hazards. Mike and Sarah acknowledged the effectiveness of the system in addressing safety issues promptly.
+  
+  Severe Weather Protocol: Mike inquired about the procedures for severe weather conditions. John clarified that there are designated shelter areas on-site and a weather monitoring system to provide alerts.
+  
+  John Smith concluded the meeting by reiterating the collective responsibility for safety, emphasizing that it is non-negotiable.`;
+
+  const tasks = `Based on the meeting, the following list of tasks can be extracted:
+
+  For All Subcontractors and Workers:
+  Continuously wear appropriate personal protective equipment (PPE) at all times on the construction site.
+  
+  For Mike Johnson's Team (Scaffolding Area):
+  Monitor the scaffolding regularly to ensure its security and stability.
+  Remain vigilant about the ground conditions near the scaffolding, especially near the eastern edge of the site.
+  
+  For Sarah Davis's Team (Excavation Area):
+  Level the uneven ground near the eastern edge of the construction site to eliminate trip hazards.
+  Properly mark any potential hazards in the excavation area for increased visibility and safety.
+  
+  For All Team Members:
+  Utilize the designated incident reporting system to promptly report any safety incidents, near misses, or potential hazards.
+  Stay informed about the locations of designated shelter areas on-site for severe weather conditions.
+  Ensure all team members are aware of and adhere to the severe weather protocol, including seeking shelter in designated areas during thunderstorms or high winds.
+  
+  General:
+  Maintain an ongoing commitment to safety as a top priority and a collective responsibility on the construction site.`;
+
   const transcriptDisplay = () => {
     return (
       <Flex direction={"column"} mt={"10"} mb={"16"}>
@@ -84,7 +120,7 @@ function MeetingDisplay() {
                 ✏️ Transcript
               </Text>
             </Flex>
-            <Flex bg={"brand2.mid"} p={"4"} rounded={"2xl"} h={"57%"}>
+            <Flex bg={"brand2.mid"} p={"4"} rounded={"2xl"} h={"38%"}>
               <Text overflowY={"auto"}>{transcript}</Text>
             </Flex>
           </Flex>
@@ -100,10 +136,14 @@ function MeetingDisplay() {
                 <Text fontSize={"sm"} as={"b"} mr={"2"}>
                   🤖 AI Assistant Actions
                 </Text>
-                <Select size={"xs"} w={"200px"}>
-                  <option value="option1">Write Email</option>
-                  <option value="option2">Extract Tasks</option>
-                  <option value="option2">Summarize Meeting</option>
+                <Select
+                  size={"xs"}
+                  w={"200px"}
+                  onChange={(e) => setAiAction(e.target.value)}
+                >
+                  <option value="email">Write Email</option>
+                  <option value="tasks">Extract Tasks</option>
+                  <option value="summary">Summarize Meeting</option>
                 </Select>
               </Flex>
               <Flex pr={"8"}>
@@ -116,12 +156,26 @@ function MeetingDisplay() {
                 <Icon
                   as={LiaEditSolid}
                   cursor={"pointer"}
+                  mr={"3"}
+                  _hover={{ color: "brand.accent" }}
+                />
+                <Icon
+                  as={FaRegShareFromSquare}
+                  cursor={"pointer"}
                   _hover={{ color: "brand.accent" }}
                 />
               </Flex>
             </Flex>
-            <Flex bg={"brand2.mid"} p={"5"} rounded={"2xl"} h={"57%"}>
-              <Text overflowY={"auto"}>{email}</Text>
+            <Flex bg={"brand2.mid"} p={"5"} rounded={"2xl"} h={"38%"}>
+              <Text overflowY={"auto"}>
+                {aiAction === "email"
+                  ? email
+                  : aiAction === "summary"
+                  ? summary
+                  : aiAction === "tasks"
+                  ? tasks
+                  : "Select an action from the dropdown menu"}
+              </Text>
             </Flex>
           </Flex>
         </Flex>
@@ -156,7 +210,9 @@ function MeetingDisplay() {
           Upload Meeting Audio Recording
         </Button>
       </Flex>
-      <Flex px={"8"}>{transcriptDisplay()}</Flex>
+      <Flex px={"8"} whiteSpace={"pre-line"}>
+        {transcriptDisplay()}
+      </Flex>
     </Flex>
   );
 }

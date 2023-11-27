@@ -376,14 +376,14 @@ function ActivitiesDetailPage() {
                       {history.message}
                     </Text>
                   </Flex>
-                  <Flex>
+                  {/* <Flex>
                     <Text fontSize={"sm"} as={"i"} mr={"2"}>
                       Analysis:
                     </Text>
                     <Text fontSize={"sm"} as={"b"}>
                       {history.impact}
                     </Text>
-                  </Flex>
+                  </Flex> */}
                 </Flex>
               ))}
         </Flex>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Icon, useToast, Heading } from "@chakra-ui/react";
+import { Flex, Button, Icon, useToast, Heading, Text } from "@chakra-ui/react";
 import { FiPlus, FiTrash } from "react-icons/fi";
 import { useStore } from "@/utils/store";
 import { createNewChatSession } from "@/api/chatRoutes";
@@ -15,7 +15,7 @@ const CreateNewChatButton = () => {
   };
 
   return (
-    <Box
+    <Flex
       display="flex"
       alignItems="center"
       p={2}
@@ -32,9 +32,14 @@ const CreateNewChatButton = () => {
         onClick={() => createNewChat()}
         bg="brand.light"
       >
-        New Conversation
+        <Text
+          noOfLines={{ base: 2, md: 1 }} // 2 lines on small screens, 1 line on medium and larger screens
+          width="full"
+        >
+          New Conversation
+        </Text>
       </Button>
-    </Box>
+    </Flex>
   );
 };
 

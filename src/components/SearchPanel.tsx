@@ -1,5 +1,5 @@
 import { Flex, Stack, Textarea, InputGroup, useToast } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useStore } from "@/utils/store";
 import ChatMessageDisplay from "@/components/ChatMessageDisplay";
 import {
@@ -47,6 +47,23 @@ function SearchPanel() {
     setFolderList: state.setFolderList,
     updateChatHistory: state.updateChatHistory,
   }));
+
+  // const refContainer = useRef();
+  // const [dimensions, setDimensions] = useState({
+  //   width: 0,
+  //   height: 0,
+  // });
+  // useEffect(() => {
+  //   if (refContainer.current) {
+  //     setDimensions({
+  //       width: refContainer.current.offsetWidth,
+  //       height: refContainer.current.offsetHeight,
+  //     });
+  //   }
+  // }, []);
+  // useEffect(() => {
+  //   console.log("dimensions", dimensions);
+  // }, [dimensions]);
 
   useEffect(() => {
     if (!folderList) return;
@@ -136,16 +153,17 @@ function SearchPanel() {
   return (
     <Flex w={"full"}>
       <Flex w={"20%"}>
+        {" "}
         <SearchMemory />
       </Flex>
       <Flex
-        w={"full"}
         flex="1"
         direction="column"
         alignItems="start"
         justifyContent="end"
         bg="brand2.light"
         maxH={{ base: "80%", md: "100%" }}
+        // ref={refContainer}
       >
         <ChatMessageDisplay />
         <Stack
