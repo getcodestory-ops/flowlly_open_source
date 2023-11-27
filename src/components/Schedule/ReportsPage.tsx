@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Flex, Select, Text, Button } from "@chakra-ui/react";
 import { createRoot } from "react-dom/client";
+import ReactMarkdown from "react-markdown";
 
 const ReportsPage = () => {
   const [reportSelected, setReportSelected] = useState<string>("");
@@ -8,7 +9,8 @@ const ReportsPage = () => {
   const [newReport, setNewReport] = useState<boolean>(false);
 
   const reports = {
-    "option 1": `# John Smith
+    "option 1": `
+    #John Smith
     **Date:** November 15, 2023
     **Project:** Oakwood Estates
     **Location:** 1234 Elm Street, Anytown, USA
@@ -57,17 +59,16 @@ const ReportsPage = () => {
     
     **Signature:** John Smith
     `,
-    "option 2": `John Smith </br>
-    Date: November 7, 2023</br>
-    Project: Riverside Apartments</br>
-    Location: 567 River Road, Riverdale, USA
-    
+    "option 2": `#John Smith 
+    **Date:** November 7, 2023
+    **Project:** Riverside Apartments
+    **Location:** 567 River Road, Riverdale, USA
     **Daily Progress Report**
-    
+
     **Weather Conditions:**
     - Temperature: 60°F
     - Weather: Sunny with occasional clouds
-    
+
     **Project Overview:**
     Today, the focus was on structural framing for the Riverside Apartments project. Substantial progress was made towards framing the first two floors.
     
@@ -75,42 +76,42 @@ const ReportsPage = () => {
     - Completed framing for the second-floor walls.
     - Commenced installation of floor joists for the third floor.
     - Conducted an inspection with city officials, receiving approval for completed framing work.
-    
+   
     **Challenges:**
     - Temporary shortage of framing nails caused a brief delay in work.
     - Coordination with subcontractors for electrical and plumbing rough-ins faced minor scheduling conflicts.
-    
+   
     **Upcoming Tasks:**
     - Continue floor joist installation for the third floor.
     - Coordinate with electrical and plumbing subcontractors for rough-ins.
     - Prepare for roofing installation next week.
-    
+   
     **Resource Allocation:**
     - Labor: 18 workers on-site, including framers, carpenters, and inspectors.
     - Equipment: Framing nail guns, scissor lifts, and safety harnesses were used.
     - Materials: 12,000 linear feet of lumber used for framing.
-    
+   
     **Safety and Compliance:**
     - All safety protocols followed, including fall protection measures.
     - Inspections ensured compliance with local building codes.
-    
+   
     **Client Communication:**
     - Provided the client with an update on framing progress via email, and they expressed satisfaction with the work.
-    
+   
     **Site Photos:**
     [Attached photos showing framing progress, floor joist installation, and inspection with city officials.]
-    
+   
     **Additional Notes:**
     - Framing nails supply issue resolved, and additional nails are in stock.
     - Coordination with subcontractors continues to ensure a smooth workflow.
-    
+   
     **Signature:**
     John Smith
     `,
-    "option 3": `Jane Doe</br>
-    Date: November 1, 2023</br>
-    Project: Harborview Marina</br>
-    Location: 789 Dockside Drive, Seaview Harbor, USA
+    "option 3": `#Jane Doe
+    **Date:** November 1, 2023
+    **Project:** Harborview Marina
+    **Location:** 789 Dockside Drive, Seaview Harbor, USA
     
     **Daily Progress Report**
     
@@ -163,8 +164,10 @@ const ReportsPage = () => {
       console.log(typeof reports["option 1"]);
       return reports["option 1"];
     } else if (reportSelected === "option2") {
+      // Use ReactMarkdown for option 2
       return reports["option 2"];
     } else if (reportSelected === "option3") {
+      // Use ReactMarkdown for option 3
       return reports["option 3"];
     } else {
       return null;

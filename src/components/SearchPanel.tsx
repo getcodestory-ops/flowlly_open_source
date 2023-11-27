@@ -1,5 +1,5 @@
 import { Flex, Stack, Textarea, InputGroup, useToast } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useStore } from "@/utils/store";
 import ChatMessageDisplay from "@/components/ChatMessageDisplay";
 import {
@@ -12,6 +12,7 @@ import { createNewChatSession, getChatHistory } from "@/api/chatRoutes";
 import { getFirstFiveWords } from "@/utils/getFirstWords";
 import { getBrains } from "@/api/brainRoutes";
 import ContextSelection from "@/components/ChatInput/ContextSelection";
+import SearchMemory from "@/Layouts/SearchMemory";
 
 function SearchPanel() {
   const toast = useToast();
@@ -46,6 +47,23 @@ function SearchPanel() {
     setFolderList: state.setFolderList,
     updateChatHistory: state.updateChatHistory,
   }));
+
+  // const refContainer = useRef();
+  // const [dimensions, setDimensions] = useState({
+  //   width: 0,
+  //   height: 0,
+  // });
+  // useEffect(() => {
+  //   if (refContainer.current) {
+  //     setDimensions({
+  //       width: refContainer.current.offsetWidth,
+  //       height: refContainer.current.offsetHeight,
+  //     });
+  //   }
+  // }, []);
+  // useEffect(() => {
+  //   console.log("dimensions", dimensions);
+  // }, [dimensions]);
 
   useEffect(() => {
     if (!folderList) return;
@@ -133,57 +151,64 @@ function SearchPanel() {
   }, [sessionToken, setFolderList]);
 
   return (
-    <Flex
-      flex="1"
-      direction="column"
-      alignItems="start"
-      justifyContent="end"
-      bg="brand2.light"
-      maxH={{ base: "80%", md: "100%" }}
-    >
-      <ChatMessageDisplay />
-      <Stack
-        spacing={4}
-        pb="4"
-        width="2xl"
-        alignSelf={"center"}
-        w={{ base: "85%", md: "60%" }}
+    <Flex w={"full"}>
+      <Flex w={"20%"}>
+        {" "}
+        <SearchMemory />
+      </Flex>
+      <Flex
+        flex="1"
+        direction="column"
+        alignItems="start"
+        justifyContent="end"
+        bg="brand2.light"
+        maxH={{ base: "80%", md: "100%" }}
+        // ref={refContainer}
       >
-        <Flex justifyContent={"end"} alignItems="center" mb="-4">
-          <ContextSelection />
-        </Flex>
-        <InputGroup size="lg">
-          <Textarea
-            color="brand.light"
-            placeholder="Type your questions..."
-            value={chatInput}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setChatInput(e.target.value)
-            }
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleChatSubmit();
+        <ChatMessageDisplay />
+        <Stack
+          spacing={4}
+          pb="4"
+          width="2xl"
+          alignSelf={"center"}
+          w={{ base: "85%", md: "60%" }}
+        >
+          <Flex justifyContent={"end"} alignItems="center" mb="-4">
+            <ContextSelection />
+          </Flex>
+          <InputGroup size="lg">
+            <Textarea
+              color="brand.dark"
+              placeholder="Type your questions..."
+              value={chatInput}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setChatInput(e.target.value)
               }
-            }}
-            boxShadow="0px 0px 8px 1px rgba(255,255,255, 0.8)"
-            border="1px solid"
-            borderColor="brand.dark"
-            borderRadius={"40px"}
-            _hover={{ boderColor: "brand.dark" }}
-            _focus={{
-              // outline: "none",
-              borderColor: "brand.dark",
-              boxShadow: "0px 0px 8px 1px rgba(255,255,255, 0.8)",
-            }}
-            minH="3rem"
-            h="auto"
-            resize="none"
-            maxH="12rem"
-            height={`${chatInput.length / 40}rem`}
-          />
-        </InputGroup>
-      </Stack>
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleChatSubmit();
+                }
+              }}
+              boxShadow="0px 0px 8px 1px rgba(255,255,255, 0.8)"
+              border="1px solid"
+              borderColor="brand.dark"
+              borderRadius={"40px"}
+              _hover={{ boderColor: "brand.dark" }}
+              _focus={{
+                // outline: "none",
+                borderColor: "brand.dark",
+                boxShadow: "0px 0px 8px 1px rgba(255,255,255, 0.8)",
+              }}
+              minH="3rem"
+              h="auto"
+              resize="none"
+              maxH="12rem"
+              height={`${chatInput.length / 40}rem`}
+            />
+          </InputGroup>
+        </Stack>
+      </Flex>
     </Flex>
   );
 }

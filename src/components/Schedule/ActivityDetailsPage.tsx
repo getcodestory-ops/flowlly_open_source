@@ -296,10 +296,12 @@ function ActivitiesDetailPage() {
           borderBottomColor={"brand.light"}
           pb={"4"}
         >
+
           <Flex maxW={"xl"} display="flex" gap="2">
             <ProcessHistoryButton />
             <CreateContingency />
           </Flex>
+
 
           <Flex>
             <Text fontSize={"sm"} as={"i"} mr={"2"}>
@@ -383,14 +385,14 @@ function ActivitiesDetailPage() {
                       {history.message}
                     </Text>
                   </Flex>
-                  <Flex>
+                  {/* <Flex>
                     <Text fontSize={"sm"} as={"i"} mr={"2"}>
                       Analysis:
                     </Text>
                     <Text fontSize={"sm"} as={"b"}>
                       {history.impact}
                     </Text>
-                  </Flex>
+                  </Flex> */}
                 </Flex>
               ))}
         </Flex>
@@ -465,104 +467,6 @@ function ActivitiesDetailPage() {
                     Suggested Actions:
                   </Text>
                   {actionsCard()}
-                  {/* <Flex pl={"4"} direction={"column"} pt={"2"}>
-                    <Flex mb={"2"}>
-                      <Tooltip
-                        label="Run action"
-                        aria-label="A tooltip"
-                        bg={"white"}
-                        color={"brand.dark"}
-                      >
-                        <Box mr={"2"} cursor={"pointer"}>
-                          <Icon
-                            as={MdOutlinePlayCircle}
-                            _hover={{ color: "brand.accent" }}
-                          />
-                        </Box>
-                      </Tooltip>
-
-                      <Tooltip
-                        label="Eliminate action"
-                        aria-label="A tooltip"
-                        bg={"white"}
-                        color={"brand.dark"}
-                      >
-                        <Box cursor={"pointer"}>
-                          <Icon
-                            as={MdDeleteOutline}
-                            _hover={{ color: "brand.accent" }}
-                          />
-                        </Box>
-                      </Tooltip>
-                      <Text fontSize={"sm"} as={"b"} ml={"6"}>
-                        Create remediation plan
-                      </Text>
-                    </Flex>
-                    <Flex mb={"2"}>
-                      <Tooltip
-                        label="Run action"
-                        aria-label="A tooltip"
-                        bg={"white"}
-                        color={"brand.dark"}
-                      >
-                        <Box mr={"2"} cursor={"pointer"}>
-                          <Icon
-                            as={MdOutlinePlayCircle}
-                            _hover={{ color: "brand.accent" }}
-                          />
-                        </Box>
-                      </Tooltip>
-
-                      <Tooltip
-                        label="Eliminate action"
-                        aria-label="A tooltip"
-                        bg={"white"}
-                        color={"brand.dark"}
-                      >
-                        <Box cursor={"pointer"}>
-                          <Icon
-                            as={MdDeleteOutline}
-                            _hover={{ color: "brand.accent" }}
-                          />
-                        </Box>
-                      </Tooltip>
-                      <Text fontSize={"sm"} as={"b"} ml={"6"}>
-                        Inform subcontractor XXXX of delay
-                      </Text>
-                    </Flex>
-                    <Flex mb={"2"}>
-                      <Tooltip
-                        label="Run action"
-                        aria-label="A tooltip"
-                        bg={"white"}
-                        color={"brand.dark"}
-                      >
-                        <Box mr={"2"} cursor={"pointer"}>
-                          <Icon
-                            as={MdOutlinePlayCircle}
-                            _hover={{ color: "brand.accent" }}
-                          />
-                        </Box>
-                      </Tooltip>
-
-                      <Tooltip
-                        label="Eliminate action"
-                        aria-label="A tooltip"
-                        bg={"white"}
-                        color={"brand.dark"}
-                      >
-                        <Box cursor={"pointer"}>
-                          <Icon
-                            as={MdDeleteOutline}
-                            _hover={{ color: "brand.accent" }}
-                          />
-                        </Box>
-                      </Tooltip>
-                      <Text fontSize={"sm"} as={"b"} ml={"6"}>
-                        Ask Steve to renew permit with expiry date 01/14/24
-                      </Text>
-                    </Flex>
-                  </Flex> */}
                 </Flex>
               </Flex>
             ))}
@@ -679,7 +583,7 @@ function ActivitiesDetailPage() {
                         ? "#FFA841"
                         : taskToView.status === "In Progress"
                         ? "#5F55EE"
-                        : "brand2.mid"
+                        : "brand2.dark"
                     }
                   />
                   <Text as={"b"} fontSize={"lg"}>
@@ -698,6 +602,7 @@ function ActivitiesDetailPage() {
                     <Text>{editTask ? "Save Changes" : "Edit Task"}</Text>
                   </Button>
                 )}
+                {taskDetailsView === "history" && <ProcessHistoryButton />}
               </Flex>
               <Flex ml={"6"}>
                 <Text as={"i"} fontSize={"sm"} mr={2}>
@@ -713,7 +618,7 @@ function ActivitiesDetailPage() {
                       ? "#FFA841"
                       : taskToView.status === "In Progress"
                       ? "#5F55EE"
-                      : "brand2.mid"
+                      : "brand2.dark"
                   }
                 >
                   {taskToView.status}

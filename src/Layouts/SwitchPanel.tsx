@@ -64,7 +64,6 @@ export default function SwitchPanel() {
             bg={`${appView === "dashboard" ? "brand.accent" : ""}`}
             color="brand.dark"
             _hover={{ bg: "brand.mid", color: "white" }}
-            fontSize="xl"
           >
             {" "}
             <AiOutlineDashboard />
@@ -85,7 +84,6 @@ export default function SwitchPanel() {
             bg={`${appView === "search" ? "brand.accent" : ""}`}
             color="brand.dark"
             _hover={{ bg: "brand.mid", color: "white" }}
-            fontSize="xl"
           >
             {" "}
             <BiBrain />
@@ -123,7 +121,7 @@ export default function SwitchPanel() {
             <AiOutlineSchedule />
           </Button>
         </Tooltip>
-        <Tooltip
+        {/* <Tooltip
           label="Budget Assistant"
           aria-label="A tooltip"
           bg="white"
@@ -160,7 +158,7 @@ export default function SwitchPanel() {
           >
             <MdOutlineHealthAndSafety />
           </Button>
-        </Tooltip>
+        </Tooltip> */}
         <Tooltip
           label="Meeting Assistant"
           aria-label="A tooltip"

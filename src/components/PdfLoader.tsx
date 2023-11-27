@@ -19,7 +19,6 @@ pdfjsOptions.workerSrc =
   String(pdfjsVersion) +
   "/legacy/build/pdf.worker.min.js";
 
-
 const VirtualPdfLoader = () => {
   const { pdfViewer, userId, selectedFolder, setPdfViewer, selectedContext } =
     useStore((state) => ({
@@ -71,10 +70,9 @@ const VirtualPdfLoader = () => {
   }, [pageNumber]);
 
   return (
-    <Flex>
+    <Flex bg={"white"}>
       {selectedFolder && isPdfVisible && (
         <Box overflow={"auto"} h={"100vh"}>
-
           <Flex
             position={"sticky"}
             top={0}
@@ -154,9 +152,7 @@ const VirtualPdfLoader = () => {
             <IconButton
               aria-label="move right"
               color="gray.400"
-
               bg="gray.500"
-
               icon={<AiOutlineLeft />}
               onClick={() =>
                 setPdfViewer({ pageNumber: Math.max(pageNumber - 1, 1) })
@@ -208,9 +204,7 @@ const VirtualPdfLoader = () => {
               zIndex="10"
               right="4"
               color="gray.400"
-
               bg="gray.500"
-
               aria-label="send message"
               icon={<AiOutlineRight />}
               onClick={() => {
