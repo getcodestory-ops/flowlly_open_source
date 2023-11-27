@@ -221,7 +221,13 @@ const ReportsPage = () => {
         </Button>
       </Flex>
       {!newReport ? (
-        <Flex overflowY={"auto"} fontSize={"sm"} h={"88%"} mt={"4"}>
+        <Flex
+          overflowY={"auto"}
+          fontSize={"sm"}
+          h={"88%"}
+          mt={"4"}
+          whiteSpace={"pre-wrap"}
+        >
           {reportDisplay()}
         </Flex>
       ) : (

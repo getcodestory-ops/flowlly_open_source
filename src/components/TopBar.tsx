@@ -1,4 +1,4 @@
-import React, { use, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Flex,
@@ -12,36 +12,70 @@ import {
   MenuDivider,
   Button,
   Heading,
+  useToast,
+  Icon,
 } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { IoChevronDownOutline } from "react-icons/io5";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import {
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { getProjects, deleteProject } from "@/api/projectRoutes";
 import { getAgentChatEntities } from "@/api/agentRoutes";
 import { ProjectEntity } from "@/types/projects";
-
+import { FaBackward } from "react-icons/fa";
 function TopBar() {
+  const toast = useToast();
   const {
     session,
     activeProject,
+    taskToView,
     setActiveProject,
     activeChatEntity,
     setActiveChatEntity,
   } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
+    taskToView: state.taskToView,
     setActiveProject: state.setActiveProject,
     activeChatEntity: state.activeChatEntity,
     setActiveChatEntity: state.setActiveChatEntity,
   }));
 
   const queryClient = useQueryClient();
+  const [projects, setProjects] = useState<ProjectEntity[]>([]);
 
-  const { data: projects, isLoading } = useQuery({
-    queryKey: ["projectList", session],
-    queryFn: () => getProjects(session!),
+  const { data: initialProjectQuery } = useQuery({
+    queryKey: ["initialProjectList", session],
+    queryFn: () => getProjects(session!, "SCHEDULE"),
     enabled: !!session?.access_token,
+    placeholderData: keepPreviousData,
   });
+
+  const { data: projectQuery, isLoading } = useQuery({
+    queryKey: ["projectList", session, taskToView],
+    queryFn: () => {
+      if (taskToView.id !== "SCHEDULE")
+        return getProjects(session!, taskToView.id);
+      return [];
+    },
+    enabled: !!session?.access_token,
+    placeholderData: keepPreviousData,
+  });
+
+  useEffect(() => {
+    if (
+      (initialProjectQuery && initialProjectQuery.length > 0) ||
+      (projectQuery && projectQuery.length > 0)
+    ) {
+      setProjects([...(initialProjectQuery ?? []), ...(projectQuery ?? [])]);
+      if (projectQuery && projectQuery.length > 0) {
+        setActiveProject(projectQuery[0]);
+      }
+    }
+  }, [projectQuery, initialProjectQuery]);
 
   useEffect(() => {
     if (projects && projects.length > 0 && !activeProject) {
@@ -57,6 +91,13 @@ function TopBar() {
       zIndex={"999"}
       pl={"6"}
     >
+      <Icon
+        as={FaBackward}
+        cursor={"pointer"}
+        onClick={() => {
+          setActiveProject(projects[0]);
+        }}
+      />
       <Menu>
         <MenuButton
           // as={Button}

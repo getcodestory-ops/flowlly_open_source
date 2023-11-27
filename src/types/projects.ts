@@ -10,6 +10,7 @@ export interface ProjectEntity {
 export interface CreateNewProjectEntity {
   name: string;
   description?: string;
+  project_type?: string;
 }
 
 export interface ShareProjectEntity {

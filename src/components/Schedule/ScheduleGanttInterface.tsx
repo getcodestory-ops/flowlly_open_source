@@ -31,6 +31,7 @@ import {
   PiMagnifyingGlassMinus,
   PiPathDuotone,
 } from "react-icons/pi";
+
 import { MdFormatListBulletedAdd } from "react-icons/md";
 import { from } from "form-data";
 import { UpdateActivityTypes } from "@/types/activities";
@@ -78,28 +79,6 @@ const ScheduleGanttInterface = () => {
   };
   const [startDate, onStartChange] = useState<any>(dateAdjustment());
 
-  // const {
-  //   data: activities,
-  //   isLoading,
-  //   isSuccess,
-  // } = useQuery({
-  //   queryKey: ["activityList", session, activeProject, startDate, probability],
-  //   queryFn: () => {
-  //     if (!session || !activeProject) {
-  //       return Promise.reject("Set session first !");
-  //     }
-  //     const date = getCurrentDateFormatted(startDate || new Date());
-  //     return getActivities(
-  //       session,
-  //       activeProject.project_id,
-  //       date,
-  //       probability
-  //     );
-  //   },
-
-  //   enabled: !!session?.access_token && !!activeProject?.project_id,
-  // });
-
   const {
     data: activities,
     isLoading,
@@ -127,10 +106,6 @@ const ScheduleGanttInterface = () => {
 
     enabled: !!session?.access_token && !!activeProject?.project_id,
   });
-
-  useEffect(() => {
-    console.log("activities", activities);
-  }, [activities]);
 
   const { mutate, isPending } = useMutation({
     mutationFn: getCriticalPath,
@@ -254,10 +229,8 @@ const ScheduleGanttInterface = () => {
   };
 
   const handleClick = (task: Task) => {
-    console.log("On Click event Id:" + task);
-    console.log("activities new", activities);
     handelTaskSelection(task);
-    setRightPanelView("task");
+    // setRightPanelView("task");
   };
 
   const handleSelect = (task: Task, isSelected: boolean) => {
@@ -290,10 +263,6 @@ const ScheduleGanttInterface = () => {
     );
   };
 
-  // useEffect(() => {
-  //   console.log("activities", activities);
-  // }, [activities]);
-
   return (
     <Flex
       className="Wrapper"
@@ -306,23 +275,6 @@ const ScheduleGanttInterface = () => {
       overscrollBehaviorY={"contain"}
     >
       <Flex>
-        {/* <CustomDatePicker onDateSelect={onStartChange} />
-        <NumberInput
-          defaultValue={probability}
-          onChange={(_, valueAsNumber) => setScheduleProbability(valueAsNumber)}
-          min={0}
-          max={1}
-          step={0.1}
-          precision={1}
-          value={scheduleProbability}
-        >
-          <NumberInputField />
-          <NumberInputStepper>
-            <NumberIncrementStepper />
-            <NumberDecrementStepper />
-          </NumberInputStepper>
-        </NumberInput> */}
-
         <Icon
           as={PiMagnifyingGlassPlus}
           cursor={"pointer"}
@@ -338,6 +290,7 @@ const ScheduleGanttInterface = () => {
           cursor={"pointer"}
           onClick={handleCriticalPath}
         />
+
         <Icon
           as={MdFormatListBulletedAdd}
           cursor={"pointer"}

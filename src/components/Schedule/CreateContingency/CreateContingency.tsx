@@ -1,9 +1,9 @@
 import { Button, useToast } from "@chakra-ui/react";
-import { processMessageHistory } from "@/api/analysis_routes";
+import { createContingencyPlan } from "@/api/analysis_routes";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 
-const ProcessHistoryButton = () => {
+const CreateContingency = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const session = useStore((state) => state.session);
@@ -13,10 +13,9 @@ const ProcessHistoryButton = () => {
   const { mutate, isPending, data } = useMutation({
     mutationFn: () => {
       if (!session || !activeProject) {
-        console.log("no session or project");
         return Promise.reject("no session or context or project");
       }
-      return processMessageHistory(session, activeProject.project_id);
+      return createContingencyPlan(session, activeProject.project_id);
     },
     onError: (error) => {
       toast({
@@ -48,9 +47,9 @@ const ProcessHistoryButton = () => {
       color="white"
       onClick={() => mutate()}
     >
-      Process History
+      Create Contingency Plan
     </Button>
   );
 };
 
-export default ProcessHistoryButton;
+export default CreateContingency;
