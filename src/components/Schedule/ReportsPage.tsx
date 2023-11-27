@@ -229,7 +229,7 @@ const ReportsPage = () => {
           fontSize={"sm"}
           h={"88%"}
           mt={"4"}
-          whiteSpace={"pre-line"}
+          whiteSpace={"pre-wrap"}
         >
           {reportDisplay()}
         </Flex>
