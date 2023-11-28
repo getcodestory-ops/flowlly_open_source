@@ -274,6 +274,7 @@ const ScheduleGanttInterface = () => {
       height="100vh"
       overscrollBehaviorY={"contain"}
     >
+      <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
       <Flex>
         <Icon
           as={PiMagnifyingGlassPlus}

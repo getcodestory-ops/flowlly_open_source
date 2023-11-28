@@ -68,8 +68,7 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
   });
 
   return (
-    // <Modal isOpen={isOpen} onClose={onClose}>
-    <>
+    <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         {!activeProject && (
@@ -209,8 +208,7 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
           </>
         )}
       </ModalContent>
-    </>
-    // </Modal>
+    </Modal>
   );
 }
 
