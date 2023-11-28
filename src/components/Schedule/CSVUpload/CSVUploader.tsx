@@ -106,7 +106,7 @@ const CSVUploader: React.FC = () => {
             <>
               <ModalBody>
                 {unmatchedHeaders.map((header, index) => (
-                  <div key={`${header}-${index}`}>
+                  <Flex key={`${header}-${index}`}>
                     <span>{header}</span>
                     <Select
                       placeholder="Select corresponding header"
@@ -122,6 +122,7 @@ const CSVUploader: React.FC = () => {
                         <option
                           key={`${key}-${index}`}
                           value={key}
+                          color="black"
                           onChange={() =>
                             setHeaderMappings((prev) => ({
                               ...prev,
@@ -133,7 +134,7 @@ const CSVUploader: React.FC = () => {
                         </option>
                       ))}
                     </Select>
-                  </div>
+                  </Flex>
                 ))}
               </ModalBody>
 

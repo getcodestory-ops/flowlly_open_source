@@ -6,6 +6,7 @@ import {
   useToast,
   Box,
   Text,
+  Spinner,
   Modal,
   useDisclosure,
   Select,
@@ -22,7 +23,7 @@ import { getStartEndDateForProject, initTasks } from "./helper";
 import "gantt-task-react/dist/index.css";
 import { Flex } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
-import { getActivities } from "@/api/activity_routes";
+import { getActivities, deleteActivity } from "@/api/activity_routes";
 import { getCriticalPath } from "@/api/schedule_routes";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { activityEntityToTask } from "@/utils/activityEntityToTask";
@@ -122,6 +123,22 @@ const ScheduleGanttInterface = () => {
     },
   });
 
+  const { mutate: mutateDeleteActivity, isPending: deletePending } =
+    useMutation({
+      mutationFn: deleteActivity,
+      onSuccess: (data) => {
+        toast({
+          title: "Success",
+          description: data.message,
+          status: "success",
+          duration: 4000,
+          isClosable: true,
+          position: "bottom-right",
+        });
+        queryClient.invalidateQueries({ queryKey: ["activityList"] });
+      },
+    });
+
   const handleCriticalPath = () => {
     if (!session || !activeProject) {
       toast({
@@ -212,9 +229,15 @@ const ScheduleGanttInterface = () => {
   };
 
   const handleTaskDelete = (task: Task) => {
-    const conf = window.confirm("Are you sure about " + task.name + " ?");
+    if (!activeProject || !session) return;
+
+    const conf = window.confirm("Are you sure to delete " + task.name + " ?");
     if (conf) {
-      setTasks(tasks.filter((t) => t.id !== task.id));
+      mutateDeleteActivity({
+        session,
+        projectId: activeProject.project_id,
+        activityId: task.id,
+      });
     }
     return conf;
   };
