@@ -244,7 +244,7 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
         alignItems={"center"}
         p={"2"}
         border={"1px"}
-        borderColor={"red"}
+        borderColor={"gray.200"}
         w={"120px"}
         justifyContent={"center"}
         onClick={() => setOpenCalendar((state) => !state)}

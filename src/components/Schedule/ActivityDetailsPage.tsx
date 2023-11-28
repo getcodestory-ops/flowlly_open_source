@@ -87,6 +87,10 @@ function ActivitiesDetailPage() {
     }
   }, [contingencyPlans]);
 
+  const dateSlice = (date: string) => {
+    return date.slice(0, 10);
+  };
+
   const actionsCard = () => {
     let elements = []; // Initialize an empty array
 
@@ -153,7 +157,7 @@ function ActivitiesDetailPage() {
               Start Date:
             </Text>
             <Text fontSize={"sm"} fontWeight={"semibold"}>
-              {taskToView.start}
+              {dateSlice(taskToView.start)}
             </Text>
           </Flex>
           <Flex direction={"column"}>
@@ -161,7 +165,7 @@ function ActivitiesDetailPage() {
               End Date:
             </Text>
             <Text fontSize={"sm"} fontWeight={"semibold"}>
-              {taskToView.end}
+              {dateSlice(taskToView.end)}
             </Text>
           </Flex>
           <Flex direction={"column"}>
@@ -259,10 +263,10 @@ function ActivitiesDetailPage() {
           borderBottomColor={"brand.light"}
           pb={"4"}
         >
-          <Flex maxW={"xl"} display="flex" gap="2">
+          {/* <Flex maxW={"xl"} display="flex" gap="2">
             <ProcessHistoryButton />
             <CreateContingency />
-          </Flex>
+          </Flex> */}
 
           <Flex>
             <Text fontSize={"sm"} as={"i"} mr={"2"}>
@@ -563,7 +567,14 @@ function ActivitiesDetailPage() {
                     <Text>{editTask ? "Save Changes" : "Edit Task"}</Text>
                   </Button>
                 )}
-                {taskDetailsView === "history" && <ProcessHistoryButton />}
+                {taskDetailsView === "history" && (
+                  <Flex>
+                    <Flex mr={"2"}>
+                      <ProcessHistoryButton />
+                    </Flex>
+                    <CreateContingency />
+                  </Flex>
+                )}
               </Flex>
               <Flex ml={"6"}>
                 <Text as={"i"} fontSize={"sm"} mr={2}>

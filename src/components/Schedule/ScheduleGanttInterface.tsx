@@ -274,7 +274,7 @@ const ScheduleGanttInterface = () => {
       height="100vh"
       overscrollBehaviorY={"contain"}
     >
-      <Flex>
+      <Flex alignItems={"center"}>
         <Icon
           as={PiMagnifyingGlassPlus}
           cursor={"pointer"}
@@ -296,6 +296,18 @@ const ScheduleGanttInterface = () => {
           cursor={"pointer"}
           onClick={handleAddActivity}
         />
+        <Button
+          ml={"6"}
+          size={"xs"}
+          bg={"brand.dark"}
+          color={"white"}
+          _hover={{ bg: "brand.accent", color: "brand.dark" }}
+          onClick={() => {
+            setRightPanelView("contingency");
+          }}
+        >
+          Delay Analysis
+        </Button>
       </Flex>
       <ViewSwitcher
         onViewModeChange={(viewMode) => setView(viewMode)}
