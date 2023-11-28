@@ -36,6 +36,7 @@ import { MemberEntity } from "@/types/members";
 import { FiEdit, FiSave } from "react-icons/fi";
 import { MdOutlineDeleteOutline } from "react-icons/md";
 import { IoIosCloseCircle, IoIosCloseCircleOutline } from "react-icons/io";
+import AddNewProjectModal from "@/components/Schedule/AddNewProjectModal";
 
 function ProjectSetup() {
   const {
@@ -52,6 +53,8 @@ function ProjectSetup() {
     setActiveChatEntity: state.setActiveChatEntity,
   }));
   const [settingsView, setSettingsView] = useState<string>("folders");
+  const [isOpen, setIsOpen] = useState(false);
+  const onClose = () => setIsOpen(false);
   const [newMember, setNewMember] = useState({
     first_name: "",
     last_name: "",
@@ -292,6 +295,7 @@ function ProjectSetup() {
         justifyContent={"space-between"}
       >
         <Flex direction={"column"}>
+          <AddNewProjectModal isOpen={isOpen} onClose={onClose} />
           <Menu>
             <MenuButton>
               <Flex alignItems={"center"} fontSize={"2xl"} fontWeight={"black"}>
@@ -302,7 +306,9 @@ function ProjectSetup() {
               </Flex>
             </MenuButton>
             <MenuList>
-              <MenuItem>+ Create new project</MenuItem>
+              <MenuItem onClick={() => setIsOpen(true)}>
+                + Create new project
+              </MenuItem>
               <MenuDivider borderColor={"gray.500"} />
               {isLoading && <Heading color="white">Loading...</Heading>}
               {!isLoading &&
