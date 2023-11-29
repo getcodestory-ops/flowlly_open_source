@@ -5,6 +5,8 @@ export interface ProjectEntity {
   description?: string; // Optional fields use the '?' syntax
   status?: boolean; // Optional fields use the '?' syntax
   last_update: string;
+  project_type?: string;
+  project: ProjectEntity[];
 }
 
 export interface CreateNewProjectEntity {

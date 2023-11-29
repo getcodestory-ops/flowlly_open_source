@@ -51,6 +51,7 @@ const ScheduleGanttInterface = () => {
   const {
     session,
     activeProject,
+    activities,
     setTaskToView,
     setRightPanelView,
     scheduleProbability,
@@ -59,6 +60,7 @@ const ScheduleGanttInterface = () => {
   } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
+    activities: state.userActivities,
     setTaskToView: state.setTaskToView,
     setRightPanelView: state.setRightPanelView,
     scheduleProbability: state.scheduleProbability,
@@ -79,34 +81,6 @@ const ScheduleGanttInterface = () => {
     return currentDate;
   };
   const [startDate, onStartChange] = useState<any>(dateAdjustment());
-
-  const {
-    data: activities,
-    isLoading,
-    isSuccess,
-  } = useQuery({
-    queryKey: [
-      "activityList",
-      session,
-      activeProject,
-      scheduleDate,
-      scheduleProbability,
-    ],
-    queryFn: () => {
-      if (!session || !activeProject) {
-        return Promise.reject("Set session first !");
-      }
-      const date = getCurrentDateFormatted(scheduleDate || new Date());
-      return getActivities(
-        session,
-        activeProject.project_id,
-        date,
-        scheduleProbability
-      );
-    },
-
-    enabled: !!session?.access_token && !!activeProject?.project_id,
-  });
 
   const { mutate, isPending } = useMutation({
     mutationFn: getCriticalPath,
@@ -155,7 +129,7 @@ const ScheduleGanttInterface = () => {
   };
 
   useEffect(() => {
-    if (isSuccess && activities) {
+    if (activities) {
       if (activities.length > 0) {
         // console.log("activities", activities);
         const transformedTasks = activities
@@ -186,7 +160,7 @@ const ScheduleGanttInterface = () => {
         ]);
       }
     }
-  }, [isSuccess, activities]);
+  }, [activities]);
 
   const [view, setView] = React.useState<ViewMode>(ViewMode.Day);
 

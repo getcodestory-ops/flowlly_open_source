@@ -5,111 +5,13 @@ import { Chat, ChatMessage, ChatHistory } from "@/types/chat";
 import { ProjectEntity } from "@/types/projects";
 import { AgentChatEntity } from "@/types/agentChats";
 import { ActivityEntity } from "@/types/activities";
-
-type SidePanelExtension =
-  | "fileExplorer"
-  | "memory"
-  | "agent"
-  | "schedule"
-  | "project"
-  | null;
-
-interface PdfViewer {
-  isPdfVisible: boolean;
-  pageNumber: number;
-  filePath: string;
-  highlightDetails: any;
-}
-
-export interface Brain {
-  name: string;
-  id?: string;
-  rights: string;
-  status: string;
-}
-
-type State = {
-  session: Session | null;
-  appView:
-    | "schedule"
-    | "search"
-    | "agent"
-    | "project"
-    | "meeting"
-    | "budget"
-    | "communication"
-    | "safety"
-    | "dashboard"
-    | "projectSettings";
-  hasAdminRights: boolean;
-  activeProject: ProjectEntity | null;
-  activeChatEntity: AgentChatEntity;
-  prompts: {
-    scope: string;
-    risks: string;
-    getScopePrompt: string;
-    generateScopePrompt: string;
-  };
-  sidePanelExtensionView: SidePanelExtension;
-  folderList: Brain[] | null;
-  chatSession: Chat | null;
-  chatSessions: Chat[];
-  chatMessages: ChatMessage[];
-  selectedContext: Brain | null;
-  pdfViewer: PdfViewer;
-  rightPanelView: "gantt" | "task";
-  taskToView: ActivityEntity;
-  taskDetailsView: "details" | "history" | "impact" | "gantt" | "edit";
-  filterView: "none" | "Delayed" | "At Risk" | "In Progress" | any;
-  scheduleProbability: number;
-  scheduleDate: Date;
-  setSession: (session: Session | null) => void;
-  setAppView: (
-    appView:
-      | "schedule"
-      | "search"
-      | "agent"
-      | "project"
-      | "meeting"
-      | "budget"
-      | "communication"
-      | "safety"
-      | "dashboard"
-      | "projectSettings"
-  ) => void;
-  setActiveProject: (activeProject: ProjectEntity | null) => void;
-  setActiveChatEntity: (activeChatEntity: AgentChatEntity) => void;
-  setAdminRights: (hasAdminRights: boolean) => void;
-  setSidePanelExtensionView: (
-    sidePanelExtensionView: SidePanelExtension
-  ) => void;
-  setFolderList: (folderList: Brain[]) => void;
-  setChatSession: (chatSession: Chat | null) => void;
-  setChatSessions: (chatSession: Chat[]) => void;
-  setChatMessages: (
-    message: any,
-    fromUser: "question" | "context" | "answer",
-    id?: number
-  ) => void;
-  setChatHistory: (chatMessages: ChatMessage[]) => void;
-  setSelectedContext: (context: Brain | null) => void;
-  setPdfViewer: (pdfDetails: any) => void;
-  updateChatHistory: (id: string, chatHistory: ChatHistory[]) => void;
-  setRightPanelView: (view: "gantt" | "task") => void;
-  setTaskToView: (task: ActivityEntity) => void;
-  setTaskDetailsView: (
-    view: "details" | "history" | "impact" | "gantt" | "edit"
-  ) => void;
-  setFilterView: (
-    view: "none" | "Delayed" | "At Risk" | "In Progress" | any
-  ) => void;
-  setScheduleProbability: (probability: number) => void;
-  setScheduleDate: (date: Date) => void;
-};
+import { State, SidePanelExtension, Brain } from "@/types/store";
 
 export const useStore = create<State>((set) => ({
   session: null,
   appView: "dashboard",
+  userProjects: [],
+  userActivities: [],
   activeProject: null,
   activeChatEntity: { id: "", project_id: "", chat_name: "", chat_details: "" },
   hasAdminRights: false,
@@ -130,7 +32,7 @@ export const useStore = create<State>((set) => ({
   taskToView: {
     id: "SCHEDULE",
     project_id: "parent",
-    name: "loading",
+    name: "Select a task",
     start: "01/01/23",
     end: "01/02/23",
     progress: 0,
@@ -157,6 +59,10 @@ export const useStore = create<State>((set) => ({
       | "dashboard"
       | "projectSettings"
   ) => set(() => ({ appView })),
+  setUserProjects: (userProjects: ProjectEntity[]) =>
+    set(() => ({ userProjects })),
+  setUserActivities: (userActivities: ActivityEntity[]) =>
+    set(() => ({ userActivities })),
   setActiveProject: (activeProject: ProjectEntity | null) =>
     set(() => ({ activeProject })),
   setActiveChatEntity: (activeChatEntity: AgentChatEntity) =>
