@@ -216,3 +216,20 @@ input:checked + .Slider:before {
 .calendar-selector:active {
   border: none !important;
 }
+
+.normal-selector {
+  border: none !important;
+}
+
+.normal-selector:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.normal-selector:hover {
+  border: none !important;
+}
+
+.normal-selector:active {
+  border: none !important;
+}

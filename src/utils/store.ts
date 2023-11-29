@@ -57,7 +57,7 @@ type State = {
   chatMessages: ChatMessage[];
   selectedContext: Brain | null;
   pdfViewer: PdfViewer;
-  rightPanelView: "gantt" | "task";
+  rightPanelView: "gantt" | "task" | "contingency";
   taskToView: ActivityEntity;
   taskDetailsView: "details" | "history" | "impact" | "gantt" | "edit";
   filterView: "none" | "Delayed" | "At Risk" | "In Progress" | any;
@@ -95,7 +95,7 @@ type State = {
   setSelectedContext: (context: Brain | null) => void;
   setPdfViewer: (pdfDetails: any) => void;
   updateChatHistory: (id: string, chatHistory: ChatHistory[]) => void;
-  setRightPanelView: (view: "gantt" | "task") => void;
+  setRightPanelView: (view: "gantt" | "task" | "contingency") => void;
   setTaskToView: (task: ActivityEntity) => void;
   setTaskDetailsView: (
     view: "details" | "history" | "impact" | "gantt" | "edit"
@@ -232,7 +232,7 @@ export const useStore = create<State>((set) => ({
 
       return { chatSessions: updatedChatSessions };
     }),
-  setRightPanelView: (view: "gantt" | "task") =>
+  setRightPanelView: (view: "gantt" | "task" | "contingency") =>
     set(() => ({ rightPanelView: view })),
   setTaskToView: (task: ActivityEntity) => set(() => ({ taskToView: task })),
   setTaskDetailsView: (

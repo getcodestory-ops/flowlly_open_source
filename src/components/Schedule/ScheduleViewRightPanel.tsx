@@ -14,6 +14,7 @@ import {
 } from "@chakra-ui/react";
 import ScheduleGanttInterface from "./ScheduleGanttInterface";
 import ActivitiesDetailPage from "./ActivityDetailsPage";
+import ContingencyPage from "./ContingencyPage";
 import { useStore } from "@/utils/store";
 
 function RightPanel() {
@@ -23,10 +24,13 @@ function RightPanel() {
   }));
 
   return (
-    <Flex overflow={"auto"}>
-      {rightPanelView === "gantt" && <ScheduleGanttInterface />}
-      <Flex>{rightPanelView === "task" && <ActivitiesDetailPage />}</Flex>
-    </Flex>
+    <>
+      <Flex overflow={"auto"}>
+        {rightPanelView === "gantt" && <ScheduleGanttInterface />}
+        <Flex>{rightPanelView === "task" && <ActivitiesDetailPage />}</Flex>
+      </Flex>
+      <Flex>{rightPanelView === "contingency" && <ContingencyPage />}</Flex>
+    </>
   );
 }
 
