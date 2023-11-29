@@ -90,7 +90,6 @@ function TopBar() {
       pt={"4"}
       zIndex={"999"}
       pl={"6"}
-      alignItems={"center"}
     >
       <Icon
         as={FaBackward}
@@ -98,7 +97,6 @@ function TopBar() {
         onClick={() => {
           setActiveProject(projects[0]);
         }}
-        mr={"2"}
       />
       <Menu>
         <MenuButton

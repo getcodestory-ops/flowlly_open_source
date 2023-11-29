@@ -22,7 +22,6 @@ import {
   Td,
   TableCaption,
   TableContainer,
-  Image,
 } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { IoChevronDownOutline } from "react-icons/io5";
@@ -286,57 +285,6 @@ function ProjectSetup() {
     );
   };
 
-  const integrationsSection = () => {
-    return (
-      <Flex mt={"8"}>
-        <Flex
-          bg={"brand.light"}
-          p={"6"}
-          rounded={"md"}
-          _hover={{ bg: "brand.accent", cursor: "pointer" }}
-          mr={"4"}
-        >
-          <Image
-            w={"100px"}
-            src={
-              "https://upthcaewktgrqjieqiya.supabase.co/storage/v1/object/public/images/procore_logo.png"
-            }
-            alt="procore logo"
-          />
-        </Flex>
-        <Flex
-          bg={"brand.light"}
-          p={"6"}
-          rounded={"md"}
-          _hover={{ bg: "brand.accent", cursor: "pointer" }}
-          mr={"4"}
-        >
-          <Image
-            w={"100px"}
-            src={
-              "https://upthcaewktgrqjieqiya.supabase.co/storage/v1/object/public/images/Primavera_logo.png"
-            }
-            alt="primavera logo"
-          />
-        </Flex>
-        <Flex
-          bg={"brand.light"}
-          p={"6"}
-          rounded={"md"}
-          _hover={{ bg: "brand.accent", cursor: "pointer" }}
-        >
-          <Image
-            w={"100px"}
-            src={
-              "https://upthcaewktgrqjieqiya.supabase.co/storage/v1/object/public/images/Outlook-Emblem.png"
-            }
-            alt="outlook logo"
-          />
-        </Flex>
-      </Flex>
-    );
-  };
-
   // console.log("projects", projects);
 
   return (
@@ -388,7 +336,7 @@ function ProjectSetup() {
           >
             <Flex
               className="menu"
-              w={"550px"}
+              w={"450px"}
               justifyContent={"space-between"}
               mt={"6"}
             >
@@ -415,22 +363,10 @@ function ProjectSetup() {
               >
                 Resources
               </Button>
-              <Button
-                bg={
-                  settingsView === "integrations"
-                    ? "brand.accent"
-                    : "brand.light"
-                }
-                _hover={{ bg: "brand.dark", color: "white" }}
-                onClick={() => setSettingsView("integrations")}
-              >
-                Integrations
-              </Button>
             </Flex>
           </Flex>
           {settingsView === "folders" && folderAndFIles()}
           {settingsView === "members" && projectMembers()}
-          {settingsView === "integrations" && integrationsSection()}
         </>
       ) : (
         <>
