@@ -6,6 +6,7 @@ import {
   useToast,
   Box,
   Text,
+  Spinner,
   Modal,
   useDisclosure,
   Select,
@@ -22,7 +23,7 @@ import { getStartEndDateForProject, initTasks } from "./helper";
 import "gantt-task-react/dist/index.css";
 import { Flex } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
-import { getActivities } from "@/api/activity_routes";
+import { getActivities, deleteActivity } from "@/api/activity_routes";
 import { getCriticalPath } from "@/api/schedule_routes";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { activityEntityToTask } from "@/utils/activityEntityToTask";
@@ -50,6 +51,7 @@ const ScheduleGanttInterface = () => {
   const {
     session,
     activeProject,
+    activities,
     setTaskToView,
     setRightPanelView,
     scheduleProbability,
@@ -58,6 +60,7 @@ const ScheduleGanttInterface = () => {
   } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
+    activities: state.userActivities,
     setTaskToView: state.setTaskToView,
     setRightPanelView: state.setRightPanelView,
     scheduleProbability: state.scheduleProbability,
@@ -79,34 +82,6 @@ const ScheduleGanttInterface = () => {
   };
   const [startDate, onStartChange] = useState<any>(dateAdjustment());
 
-  const {
-    data: activities,
-    isLoading,
-    isSuccess,
-  } = useQuery({
-    queryKey: [
-      "activityList",
-      session,
-      activeProject,
-      scheduleDate,
-      scheduleProbability,
-    ],
-    queryFn: () => {
-      if (!session || !activeProject) {
-        return Promise.reject("Set session first !");
-      }
-      const date = getCurrentDateFormatted(scheduleDate || new Date());
-      return getActivities(
-        session,
-        activeProject.project_id,
-        date,
-        scheduleProbability
-      );
-    },
-
-    enabled: !!session?.access_token && !!activeProject?.project_id,
-  });
-
   const { mutate, isPending } = useMutation({
     mutationFn: getCriticalPath,
     onSuccess: (data) => {
@@ -121,6 +96,22 @@ const ScheduleGanttInterface = () => {
       queryClient.invalidateQueries({ queryKey: ["activityList"] });
     },
   });
+
+  const { mutate: mutateDeleteActivity, isPending: deletePending } =
+    useMutation({
+      mutationFn: deleteActivity,
+      onSuccess: (data) => {
+        toast({
+          title: "Success",
+          description: data.message,
+          status: "success",
+          duration: 4000,
+          isClosable: true,
+          position: "bottom-right",
+        });
+        queryClient.invalidateQueries({ queryKey: ["activityList"] });
+      },
+    });
 
   const handleCriticalPath = () => {
     if (!session || !activeProject) {
@@ -138,7 +129,7 @@ const ScheduleGanttInterface = () => {
   };
 
   useEffect(() => {
-    if (isSuccess && activities) {
+    if (activities) {
       if (activities.length > 0) {
         // console.log("activities", activities);
         const transformedTasks = activities
@@ -169,7 +160,7 @@ const ScheduleGanttInterface = () => {
         ]);
       }
     }
-  }, [isSuccess, activities]);
+  }, [activities]);
 
   const [view, setView] = React.useState<ViewMode>(ViewMode.Day);
 
@@ -212,9 +203,15 @@ const ScheduleGanttInterface = () => {
   };
 
   const handleTaskDelete = (task: Task) => {
-    const conf = window.confirm("Are you sure about " + task.name + " ?");
+    if (!activeProject || !session) return;
+
+    const conf = window.confirm("Are you sure to delete " + task.name + " ?");
     if (conf) {
-      setTasks(tasks.filter((t) => t.id !== task.id));
+      mutateDeleteActivity({
+        session,
+        projectId: activeProject.project_id,
+        activityId: task.id,
+      });
     }
     return conf;
   };

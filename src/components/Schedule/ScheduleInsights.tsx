@@ -39,6 +39,7 @@ function ScheduleInsights() {
   const {
     session,
     activeProject,
+    activities,
     setRightPanelView,
     setTaskToView,
     setTaskDetailsView,
@@ -51,6 +52,7 @@ function ScheduleInsights() {
   } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
+    activities: state.userActivities,
     setRightPanelView: state.setRightPanelView,
     setTaskToView: state.setTaskToView,
     setTaskDetailsView: state.setTaskDetailsView,
@@ -75,33 +77,33 @@ function ScheduleInsights() {
   const [sliderValue, setSliderValue] = useState(5);
   const [showTooltip, setShowTooltip] = useState(false);
 
-  const {
-    data: activities,
-    isLoading,
-    isSuccess,
-  } = useQuery({
-    queryKey: [
-      "activityList",
-      session,
-      activeProject,
-      scheduleDate,
-      scheduleProbability,
-    ],
-    queryFn: () => {
-      if (!session || !activeProject) {
-        return Promise.reject("Set session first !");
-      }
-      const date = getCurrentDateFormatted(scheduleDate || new Date());
-      return getActivities(
-        session,
-        activeProject.project_id,
-        date,
-        scheduleProbability
-      );
-    },
+  // const {
+  //   data: activities,
+  //   isLoading,
+  //   isSuccess,
+  // } = useQuery({
+  //   queryKey: [
+  //     "activityList",
+  //     session,
+  //     activeProject,
+  //     scheduleDate,
+  //     scheduleProbability,
+  //   ],
+  //   queryFn: () => {
+  //     if (!session || !activeProject) {
+  //       return Promise.reject("Set session first !");
+  //     }
+  //     const date = getCurrentDateFormatted(scheduleDate || new Date());
+  //     return getActivities(
+  //       session,
+  //       activeProject.project_id,
+  //       date,
+  //       scheduleProbability
+  //     );
+  //   },
 
-    enabled: !!session?.access_token && !!activeProject?.project_id,
-  });
+  //   enabled: !!session?.access_token && !!activeProject?.project_id,
+  // });
 
   const countDelayedActivities = (activities: any[]) => {
     let count = 0;
@@ -155,14 +157,14 @@ function ScheduleInsights() {
 
   useEffect(() => {
     // console.log("activities", activities);
-    if (isSuccess && activities) {
+    if (activities) {
       countDelayedActivities(activities);
       countAtRiskActivities(activities);
       countInProgressActivities(activities);
       countCompletedActivities(activities);
       countOnScheduleActivities(activities);
     }
-  }, [activities, isSuccess]);
+  }, [activities]);
 
   const activitiesCard = () => {
     // console.log("activities", activities);

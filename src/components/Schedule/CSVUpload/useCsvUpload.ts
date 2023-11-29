@@ -73,6 +73,7 @@ export const useCSVUploader = () => {
     reader.onload = (e) => {
       const notmatchedHeaders: string[] = [];
       const content = e.target?.result as string;
+
       const [csv_headers, ...rows] = content
         .split("\n")
         .map((row) => row.replace("\r", "").split(","));

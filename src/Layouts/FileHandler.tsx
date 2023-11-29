@@ -19,7 +19,7 @@ import { FaUpload, FaFolder, FaPlus, FaCheck } from "react-icons/fa";
 import supabase from "../utils/supabaseClient";
 import AddFolderMenu from "@/components/AddFolderMenu";
 import { useStore } from "@/utils/store";
-import { Brain } from "@/utils/store";
+import { Brain } from "@/types/store";
 import { getBrains } from "@/api/brainRoutes";
 
 interface FileUploadStatus {

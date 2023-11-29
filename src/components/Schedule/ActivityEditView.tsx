@@ -30,7 +30,7 @@ function ActivityEditView() {
     start: "",
     end: "",
     cost: 0,
-    activity_owner: "",
+    owner: "",
     progress: 0,
     dependencies: [],
     resources: [],

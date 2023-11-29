@@ -30,7 +30,7 @@ export const validateType = (key: keyof CreateNewActivity, value: string) => {
       return value === "true" || value === "false";
     case "dependencies":
     case "resources":
-      return Array.isArray(value.split(";"));
+      return Array.isArray(value.split(","));
     default:
       return true;
   }
