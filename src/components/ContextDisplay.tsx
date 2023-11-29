@@ -3,7 +3,7 @@ import { Box, Flex, Button, Text, Tooltip } from "@chakra-ui/react";
 import PdfLoader from "@/components/PdfLoader";
 import { FaAngleDown } from "react-icons/fa";
 import { useStore } from "@/utils/store";
-import { Brain } from "@/utils/store";
+import { Brain } from "@/types/store";
 
 interface DocumentProps {
   chatFolder: Brain | null;

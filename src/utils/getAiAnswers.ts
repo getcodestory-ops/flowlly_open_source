@@ -1,5 +1,5 @@
 import { Session } from "@supabase/supabase-js";
-import { Brain } from "@/utils/store";
+import { Brain } from "@/types/store";
 import { handleStreams } from "./handleStream";
 
 export const getContext = async (
