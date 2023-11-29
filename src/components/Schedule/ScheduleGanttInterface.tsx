@@ -274,8 +274,6 @@ const ScheduleGanttInterface = () => {
       height="100vh"
       overscrollBehaviorY={"contain"}
     >
-
-      <Flex alignItems={"center"}>
       <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
       <Flex>
         <Icon
@@ -299,18 +297,6 @@ const ScheduleGanttInterface = () => {
           cursor={"pointer"}
           onClick={handleAddActivity}
         />
-        <Button
-          ml={"6"}
-          size={"xs"}
-          bg={"brand.dark"}
-          color={"white"}
-          _hover={{ bg: "brand.accent", color: "brand.dark" }}
-          onClick={() => {
-            setRightPanelView("contingency");
-          }}
-        >
-          Delay Analysis
-        </Button>
       </Flex>
       <ViewSwitcher
         onViewModeChange={(viewMode) => setView(viewMode)}

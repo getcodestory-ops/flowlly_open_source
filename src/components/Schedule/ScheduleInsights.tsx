@@ -18,7 +18,6 @@ import {
   SliderMark,
   Grid,
   GridItem,
-  Select,
 } from "@chakra-ui/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
@@ -73,7 +72,7 @@ function ScheduleInsights() {
   const [countOfCompleted, setCountOfCompleted] = useState<number>(0);
   const [countOfOnSchedule, setCountOfOnSchedule] = useState<number>(0);
   // const [filteredView, setFilteredView] = useState<string>("none");
-  const [sliderValue, setSliderValue] = useState(100);
+  const [sliderValue, setSliderValue] = useState(5);
   const [showTooltip, setShowTooltip] = useState(false);
 
   const {
@@ -103,10 +102,6 @@ function ScheduleInsights() {
 
     enabled: !!session?.access_token && !!activeProject?.project_id,
   });
-
-  const dateSlice = (date: string) => {
-    return date.slice(0, 10);
-  };
 
   const countDelayedActivities = (activities: any[]) => {
     let count = 0;
@@ -253,7 +248,7 @@ function ScheduleInsights() {
                 Start Date:
               </Text>
               <Text fontSize={"sm"} ml={1} fontWeight={"semibold"}>
-                {dateSlice(activity.start)}
+                {activity.start}
               </Text>
             </Flex>
             <Flex>
@@ -261,7 +256,7 @@ function ScheduleInsights() {
                 End Date:
               </Text>
               <Text fontSize={"sm"} ml={1} fontWeight={"semibold"}>
-                {dateSlice(activity.end)}
+                {activity.end}
               </Text>
             </Flex>
           </Flex>
@@ -398,7 +393,7 @@ function ScheduleInsights() {
     return (
       <Slider
         id="slider"
-        defaultValue={100}
+        defaultValue={5}
         min={0}
         max={100}
         colorScheme="blackAlpha"
@@ -447,9 +442,14 @@ function ScheduleInsights() {
             mb={"6"}
             borderColor={"gray.200"}
             minW={"500px"}
-            // justifyContent={"space-around"}
+            justifyContent={"space-around"}
           >
-            <Flex direction={"column"} mr={"4"} justifyItems={"center"}>
+            <Flex
+              direction={"column"}
+              w={"30%"}
+              alignItems={"center"}
+              justifyItems={"center"}
+            >
               <Text fontSize={"sm"} as={"b"}>
                 Impactful events
               </Text>
@@ -457,7 +457,7 @@ function ScheduleInsights() {
                 <CustomDatePicker />
               </Flex>
             </Flex>
-            {/* <Flex
+            <Flex
               direction={"column"}
               w={"60%"}
               alignItems={"center"}
@@ -467,31 +467,6 @@ function ScheduleInsights() {
                 Impact Probability
               </Text>
               <Flex w={"80%"}>{probabilitySlider()}</Flex>
-            </Flex> */}
-            <Flex direction={"column"}>
-              <Text fontSize={"sm"} as={"b"}>
-                Impact Scenario
-              </Text>
-              <Flex
-                border={"1px"}
-                borderColor={"gray.200"}
-                _hover={{ borderColor: "black" }}
-                rounded={"md"}
-              >
-                <Select
-                  className="normal-selector"
-                  h={"37px"}
-                  size={"sm"}
-                  rounded={"md"}
-                  onChange={(e) =>
-                    setScheduleProbability(parseInt(e.target.value))
-                  }
-                >
-                  <option value=".85">Optimistic Scenario</option>
-                  <option value="0.6">Realistic Scenario</option>
-                  <option value="0">Pessimistic Scenario</option>
-                </Select>
-              </Flex>
             </Flex>
           </Flex>
 
