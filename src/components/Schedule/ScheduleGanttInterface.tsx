@@ -274,7 +274,10 @@ const ScheduleGanttInterface = () => {
       height="100vh"
       overscrollBehaviorY={"contain"}
     >
+
       <Flex alignItems={"center"}>
+      <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
+      <Flex>
         <Icon
           as={PiMagnifyingGlassPlus}
           cursor={"pointer"}
