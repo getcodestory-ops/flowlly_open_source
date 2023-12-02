@@ -19,7 +19,20 @@ function TopBar() {
       zIndex={"999"}
       pl={"6"}
     >
-      {taskToView && <Breadcrubms taskToView={taskToView} />}
+      <Breadcrubms
+        taskToView={{
+          id: "SCHEDULE",
+          project_id: "parent",
+          name: "Select a task",
+          start: "01/01/23",
+          end: "01/02/23",
+          progress: 0,
+          activity_critical: {
+            critical_path: false,
+          },
+        }}
+        renderProjects={true}
+      />
     </Flex>
   );
 }

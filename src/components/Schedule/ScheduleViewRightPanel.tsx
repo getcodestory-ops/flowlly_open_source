@@ -23,7 +23,7 @@ function RightPanel() {
   }));
 
   return (
-    <Flex overflow={"auto"}>
+    <Flex overflow={"auto"} width="100vw">
       {rightPanelView === "gantt" && <ScheduleGanttInterface />}
       <Flex>{rightPanelView === "task" && <ActivitiesDetailPage />}</Flex>
     </Flex>

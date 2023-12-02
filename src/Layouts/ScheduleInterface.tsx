@@ -18,7 +18,6 @@ function ScheduleInterface() {
       <TopBar />
       {activeProject ? (
         <DraggablePaneDivider
-          // LeftPanel={ScheduleChatInterface}
           LeftPanel={ScheduleUIView}
           RightPanel={RightPanel}
         />
