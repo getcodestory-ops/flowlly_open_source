@@ -15,7 +15,9 @@ function ScheduleInterface() {
 
   return (
     <Flex direction={"column"} w={"full"}>
-      <TopBar />
+      <Flex w="100vw">
+        <TopBar />
+      </Flex>
       {activeProject ? (
         <DraggablePaneDivider
           LeftPanel={ScheduleUIView}

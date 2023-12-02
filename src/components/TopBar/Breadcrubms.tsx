@@ -11,13 +11,7 @@ function Breadcrubms({
   renderProjects: boolean;
 }) {
   return (
-    <Flex
-      justifyContent={"space-between"}
-      w={"98%"}
-      pt={"4"}
-      zIndex={"999"}
-      pl={"6"}
-    >
+    <Flex>
       <Flex>
         {taskToView && (
           <TopBarProjects

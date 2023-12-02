@@ -12,13 +12,7 @@ function TopBar() {
   }));
 
   return (
-    <Flex
-      justifyContent={"space-between"}
-      w={"98%"}
-      pt={"4"}
-      zIndex={"999"}
-      pl={"6"}
-    >
+    <Flex width={"full"} m="2" zIndex={"overlay"} ml="8">
       <Breadcrubms
         taskToView={{
           id: "SCHEDULE",

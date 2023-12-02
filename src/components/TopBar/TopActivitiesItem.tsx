@@ -5,6 +5,7 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  Box,
   Heading,
   useToast,
   Icon,
@@ -96,11 +97,11 @@ const TopActivitiesItems = ({
         <Flex>
           <Menu>
             <MenuButton fontSize={"xs"} fontWeight={"black"}>
-              <Flex alignItems={"center"}>
+              <Flex alignItems={"center"} ml="2">
                 {activeActivity?.name ?? ""}
-                <Flex ml={"2"}>
+                <Box ml={"2"}>
                   <IoChevronDownOutline />
-                </Flex>
+                </Box>
               </Flex>
             </MenuButton>
 

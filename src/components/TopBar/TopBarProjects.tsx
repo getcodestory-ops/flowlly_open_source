@@ -57,7 +57,7 @@ const TopBarProjects = ({
             <>
               <Menu>
                 <MenuButton fontSize={"xs"} fontWeight={"black"}>
-                  <Flex alignItems={"center"}>
+                  <Flex alignItems={"center"} ml="2">
                     {activeProjectMenu?.name ? activeProjectMenu.name : ""}
                     <Flex ml={"2"}>
                       <IoChevronDownOutline />
