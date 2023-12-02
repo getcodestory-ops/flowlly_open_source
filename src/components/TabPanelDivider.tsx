@@ -17,7 +17,7 @@ const Pane: React.FC<PaneProps> = ({ children, ...rest }) => (
   <Box {...rest}>{children}</Box>
 );
 
-const DraggablePaneDivider: React.FC<DraggablePaneDividerProps> = ({
+const TabPanelDivider: React.FC<DraggablePaneDividerProps> = ({
   LeftPanel,
   RightPanel,
 }) => {
@@ -38,34 +38,22 @@ const DraggablePaneDivider: React.FC<DraggablePaneDividerProps> = ({
 
   return (
     <Flex flexDirection={{ base: "column", md: "row" }} height="100vh">
-      <Flex width={paneWidth}>
-        <LeftPanel />
-      </Flex>
-      <Draggable
-        axis="x"
-        position={{ x: 0, y: 0 }}
-        onDrag={handleDrag}
-        nodeRef={ref}
-        onStart={() => setIsDragging(true)}
-        onStop={() => setIsDragging(false)}
-      >
-        <Flex
-          ref={ref}
-          cursor="ew-resize"
-          width="10px"
-          zIndex="10"
-          backgroundColor={isDragging ? "none" : "gray.200"}
-        />
-      </Draggable>
-      <Flex
-        flex="1"
-        maxWidth={window.innerWidth - paneWidth - 100}
-        zIndex={"20"}
-      >
-        <RightPanel />
-      </Flex>
+      <Tabs isFitted variant="enclosed" height="100vh">
+        <TabList fontSize={"xs"}>
+          <Tab>Activities Details</Tab>
+          <Tab>Gantt View</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel>
+            <LeftPanel />
+          </TabPanel>
+          <TabPanel>
+            <RightPanel />
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
     </Flex>
   );
 };
 
-export default DraggablePaneDivider;
+export default TabPanelDivider;

@@ -266,7 +266,7 @@ const ScheduleGanttInterface = () => {
       flexDir={"column"}
       backgroundColor="white"
       p={2}
-      width="full"
+      width="92vw"
       overflow={"auto"}
       height="100vh"
       overscrollBehaviorY={"contain"}
