@@ -27,36 +27,36 @@ const DraggablePaneDivider: React.FC<DraggablePaneDividerProps> = ({
 
   useEffect(() => {
     // Set the initial state here where `window` object is available.
-    setPaneWidth(window.innerWidth / 2);
+    setPaneWidth(window.innerWidth / 2 - 60);
   }, []);
 
   if (paneWidth === null) return null;
 
-  const handleDrag = (_: any, data: DraggableData) => {
-    setPaneWidth((prevWidth) => prevWidth! + data.deltaX);
-  };
+  // const handleDrag = (_: any, data: DraggableData) => {
+  //   setPaneWidth((prevWidth) => prevWidth! + data.deltaX);
+  // };
 
   return (
     <Flex flexDirection={{ base: "column", md: "row" }} height="100vh">
       <Flex width={paneWidth}>
         <LeftPanel />
       </Flex>
-      <Draggable
+      {/* <Draggable
         axis="x"
         position={{ x: 0, y: 0 }}
         onDrag={handleDrag}
         nodeRef={ref}
         onStart={() => setIsDragging(true)}
         onStop={() => setIsDragging(false)}
-      >
-        <Flex
-          ref={ref}
-          cursor="ew-resize"
-          width="10px"
-          zIndex="10"
-          backgroundColor={isDragging ? "none" : "gray.200"}
-        />
-      </Draggable>
+      > */}
+      <Flex
+        ref={ref}
+        cursor="ew-resize"
+        width="1px"
+        zIndex="10"
+        backgroundColor={"gray.200"}
+      />
+      {/* </Draggable> */}
       <Flex
         flex="1"
         maxWidth={window.innerWidth - paneWidth - 100}

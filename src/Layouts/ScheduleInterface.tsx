@@ -19,10 +19,7 @@ function ScheduleInterface() {
         <TopBar />
       </Flex>
       {activeProject ? (
-        <DraggablePaneDivider
-          LeftPanel={ScheduleUIView}
-          RightPanel={RightPanel}
-        />
+        <ScheduleUIView />
       ) : (
         <>
           <Flex
