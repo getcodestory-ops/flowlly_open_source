@@ -6,7 +6,6 @@ import TopBar from "@/components/TopBar";
 function CommunicationInterface() {
   return (
     <Flex direction={"column"}>
-      <TopBar />
       <CommunicationDisplay />
     </Flex>
   );
