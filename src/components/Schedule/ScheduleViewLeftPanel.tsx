@@ -28,8 +28,12 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { getAgentChatEntities } from "@/api/agentRoutes";
 import AddNewChatEntity from "./AddNewChatEntity";
 import { getProjects, deleteProject } from "@/api/projectRoutes";
+import DraggablePaneDivider from "@/components/DraggablePaneDivider";
+import RightPanel from "@/components/Schedule/ScheduleViewRightPanel";
+import { LuGanttChartSquare } from "react-icons/lu";
 
 import { IoChevronDownOutline } from "react-icons/io5";
+import ScheduleGanttInterface from "./ScheduleGanttInterface";
 
 function ScheduleUiView() {
   const { session, activeChatEntity, setActiveChatEntity, activeProject } =
@@ -92,13 +96,29 @@ function ScheduleUiView() {
         >
           <Button
             size={"sm"}
-            marginLeft="10"
+            marginLeft="8"
             marginRight="5"
             bg={`${view === "insights" ? "brand2.accent" : "brand2.mid"}`}
             _hover={{ bg: "brand.dark", color: "white" }}
             onClick={() => setView("insights")}
           >
             <Icon as={CgInsights} />
+          </Button>
+        </Tooltip>
+        <Tooltip
+          label="Gantt Chart"
+          aria-label="A tooltip"
+          bg="white"
+          color="brand.dark"
+        >
+          <Button
+            size={"sm"}
+            marginRight="5"
+            bg={`${view === "gantt" ? "brand2.accent" : "brand2.mid"}`}
+            _hover={{ bg: "brand.dark", color: "white" }}
+            onClick={() => setView("gantt")}
+          >
+            <Icon as={LuGanttChartSquare} />
           </Button>
         </Tooltip>
         <Tooltip
@@ -128,6 +148,7 @@ function ScheduleUiView() {
             bg={`${view === "reports" ? "brand2.accent" : "brand2.mid"}`}
             _hover={{ bg: "brand.dark", color: "white" }}
             onClick={() => setView("reports")}
+            mr="5"
           >
             <Icon as={TbReportAnalytics} />
           </Button>
@@ -188,8 +209,14 @@ function ScheduleUiView() {
           ""
         )}
 
-        {view === "insights" && <ScheduleInsights />}
+        {view === "insights" && (
+          <DraggablePaneDivider
+            LeftPanel={ScheduleInsights}
+            RightPanel={RightPanel}
+          />
+        )}
         {view === "reports" && <ReportsPage />}
+        {view === "gantt" && <ScheduleGanttInterface />}
       </Flex>
     </Flex>
   );

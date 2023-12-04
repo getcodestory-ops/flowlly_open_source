@@ -266,9 +266,9 @@ const ScheduleGanttInterface = () => {
       flexDir={"column"}
       backgroundColor="white"
       p={2}
+      m="8"
       width="92vw"
       overflow={"auto"}
-      height="100vh"
       overscrollBehaviorY={"contain"}
     >
       <AddNewActivityModal isOpen={isOpen} onClose={onClose} />

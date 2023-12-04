@@ -1,22 +1,8 @@
 import React, { useState, useEffect } from "react";
-import {
-  Flex,
-  Text,
-  Modal,
-  ModalBody,
-  ModalOverlay,
-  ModalCloseButton,
-  Box,
-  ModalContent,
-  ModalHeader,
-  Button,
-  Icon,
-  Tooltip,
-} from "@chakra-ui/react";
+import { Flex, Text, Box, Button, Icon, Tooltip } from "@chakra-ui/react";
 import {
   MdHistoryToggleOff,
   MdInfoOutline,
-  MdOutlineKeyboardBackspace,
   MdOutlinePlayCircle,
   MdDeleteOutline,
 } from "react-icons/md";
@@ -92,7 +78,7 @@ function ActivitiesDetailPage() {
 
     for (let action of actions) {
       let element = (
-        <Flex pl={"4"} direction={"column"} pt={"2"}>
+        <Flex pl={"4"} direction={"column"}>
           <Flex mb={"2"}>
             <Tooltip
               label="Run action"
@@ -135,7 +121,6 @@ function ActivitiesDetailPage() {
     return (
       <Flex
         ml={"6"}
-        mt={"6"}
         direction={"column"}
         overflowY={"auto"}
         overscrollBehaviorY={"contain"}
@@ -365,7 +350,6 @@ function ActivitiesDetailPage() {
     return (
       <Flex
         ml={"6"}
-        mt={"6"}
         overflowY={"auto"}
         overscrollBehaviorY={"contain"}
         w={"full"}
@@ -438,9 +422,9 @@ function ActivitiesDetailPage() {
   return (
     <>
       {/* {console.log("taskToView", taskToView)} */}
-      <Flex px={"6"} pt={"5"} direction={"column"} maxH="90vh">
+      <Flex px={"6"} pt={"5"} direction={"column"} maxH="95vh">
         <Flex direction={"column"} zIndex={"1"}>
-          <Button
+          {/* <Button
             bg={"brand.light"}
             size={"md"}
             // w={"12"}
@@ -452,7 +436,7 @@ function ActivitiesDetailPage() {
           >
             <Icon as={MdOutlineKeyboardBackspace} mr={"4"} />
             <Text>Back to Gantt View</Text>
-          </Button>
+          </Button> */}
 
           <Flex mt={"10"}>
             <Button
