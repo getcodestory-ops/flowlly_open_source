@@ -8,6 +8,7 @@ import {
   Heading,
   useToast,
   Icon,
+  Text,
 } from "@chakra-ui/react";
 import { IoChevronDownOutline } from "react-icons/io5";
 import { ProjectEntity } from "@/types/projects";
@@ -52,11 +53,11 @@ const TopBarProjects = ({
   return (
     <>
       {projects && projects.length > 0 && (
-        <Flex>
+        <Flex alignItems={"center"}>
           {renderProjects && (
             <>
               <Menu>
-                <MenuButton fontSize={"xs"} fontWeight={"black"}>
+                <MenuButton fontSize={"md"} fontWeight={"medium"}>
                   <Flex alignItems={"center"} ml="2">
                     {activeProjectMenu?.name ? activeProjectMenu.name : ""}
                     <Flex ml={"2"}>
@@ -80,7 +81,7 @@ const TopBarProjects = ({
                     ))}
                 </MenuList>
               </Menu>
-              /
+              <Text m={"2"}>/</Text>
             </>
           )}
 

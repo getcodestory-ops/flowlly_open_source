@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, InputGroup, Textarea, useToast } from "@chakra-ui/react";
+import { Box, InputGroup, Textarea, useToast, Flex } from "@chakra-ui/react";
 import { Session } from "@supabase/supabase-js";
 import { useStore } from "@/utils/store";
 
@@ -43,7 +43,7 @@ function ChatInput({
   };
 
   return (
-    <Box w="full" mt={8} color="white">
+    <Flex w="full" mt={8} color="white">
       <InputGroup size="lg">
         <Textarea
           color="brand.light"
@@ -75,7 +75,7 @@ function ChatInput({
           height={`${chatInput.length / 20}rem`}
         />
       </InputGroup>
-    </Box>
+    </Flex>
   );
 }
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Box, Flex, Icon, Text } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 const Chart = dynamic(
@@ -11,6 +11,8 @@ import { BiSolidCircle } from "react-icons/bi";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import TopBar from "@/components/TopBar";
 import { useStore } from "@/utils/store";
+import GraphSection from "@/components/ProjectDashboard/GraphsSection";
+import RSSsection from "@/components/ProjectDashboard/RSSsection";
 
 function ProjectDashboard() {
   const {
@@ -19,188 +21,190 @@ function ProjectDashboard() {
     setActiveProject,
     activeChatEntity,
     setActiveChatEntity,
+    userActivities,
   } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
     setActiveProject: state.setActiveProject,
     activeChatEntity: state.activeChatEntity,
     setActiveChatEntity: state.setActiveChatEntity,
+    userActivities: state.userActivities,
   }));
 
-  const options = {
-    chart: {
-      id: "apexchart-example",
-      zoom: {
-        enabled: false,
-      },
-    },
-    xaxis: {
-      categories: [
-        "J-23",
-        "F-23",
-        "M-23",
-        "A-23",
-        "M-23",
-        "J-23",
-        "J-23",
-        "A-23",
-        "S-23",
-        "O-23",
-        "N-23",
-        "D-23",
-        "J-24",
-        "F-24",
-      ],
-    },
-    forecastDataPoints: {
-      count: 7,
-    },
-    tickAmount: 6,
-  };
+  // const options = {
+  //   chart: {
+  //     id: "apexchart-example",
+  //     zoom: {
+  //       enabled: false,
+  //     },
+  //   },
+  //   xaxis: {
+  //     categories: [
+  //       "J-23",
+  //       "F-23",
+  //       "M-23",
+  //       "A-23",
+  //       "M-23",
+  //       "J-23",
+  //       "J-23",
+  //       "A-23",
+  //       "S-23",
+  //       "O-23",
+  //       "N-23",
+  //       "D-23",
+  //       "J-24",
+  //       "F-24",
+  //     ],
+  //   },
+  //   forecastDataPoints: {
+  //     count: 7,
+  //   },
+  //   tickAmount: 6,
+  // };
 
-  const series = [
-    {
-      name: "Expected",
-      data: [
-        8.3, 16.6, 24.9, 33.2, 41.5, 49.8, 58.1, 66.4, 74.7, 83, 91.3, 100,
-      ],
-    },
-    {
-      name: "Actual",
-      data: [5, 10, 24, 30, 37, 40, 55, 60, 65, 72, 85, 93, 100],
-    },
-  ];
+  // const series = [
+  //   {
+  //     name: "Expected",
+  //     data: [
+  //       8.3, 16.6, 24.9, 33.2, 41.5, 49.8, 58.1, 66.4, 74.7, 83, 91.3, 100,
+  //     ],
+  //   },
+  //   {
+  //     name: "Actual",
+  //     data: [5, 10, 24, 30, 37, 40, 55, 60, 65, 72, 85, 93, 100],
+  //   },
+  // ];
 
-  const options4 = {
-    chart: {
-      id: "apexchart-example",
-      zoom: {
-        enabled: false,
-      },
-    },
-    xaxis: {
-      categories: [
-        "J-23",
-        "F-23",
-        "M-23",
-        "A-23",
-        "M-23",
-        "J-23",
-        "J-23",
-        "A-23",
-        "S-23",
-        "O-23",
-        "N-23",
-        "D-23",
-      ],
-    },
-    forecastDataPoints: {
-      count: 7,
-    },
-  };
+  // const options4 = {
+  //   chart: {
+  //     id: "apexchart-example",
+  //     zoom: {
+  //       enabled: false,
+  //     },
+  //   },
+  //   xaxis: {
+  //     categories: [
+  //       "J-23",
+  //       "F-23",
+  //       "M-23",
+  //       "A-23",
+  //       "M-23",
+  //       "J-23",
+  //       "J-23",
+  //       "A-23",
+  //       "S-23",
+  //       "O-23",
+  //       "N-23",
+  //       "D-23",
+  //     ],
+  //   },
+  //   forecastDataPoints: {
+  //     count: 7,
+  //   },
+  // };
 
-  const series4 = [
-    {
-      name: "Original Estimation",
-      data: [300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300],
-    },
-    {
-      name: "Current Estimation",
-      data: [300, 310, 300, 290, 340, 340, 340, 340, 340, 340, 340, 340],
-    },
-  ];
-  const options2 = {
-    chart: {
-      id: "apexchart-example",
-      zoom: {
-        enabled: false,
-      },
-    },
-    xaxis: {
-      categories: [
-        "J-23",
-        "F-23",
-        "M-23",
-        "A-23",
-        "M-23",
-        "J-23",
-        "J-23",
-        "A-23",
-        "S-23",
-        "O-23",
-        "N-23",
-        "D-23",
-        "J-24",
-        "F-24",
-      ],
-    },
+  // const series4 = [
+  //   {
+  //     name: "Original Estimation",
+  //     data: [300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300],
+  //   },
+  //   {
+  //     name: "Current Estimation",
+  //     data: [300, 310, 300, 290, 340, 340, 340, 340, 340, 340, 340, 340],
+  //   },
+  // ];
+  // const options2 = {
+  //   chart: {
+  //     id: "apexchart-example",
+  //     zoom: {
+  //       enabled: false,
+  //     },
+  //   },
+  //   xaxis: {
+  //     categories: [
+  //       "J-23",
+  //       "F-23",
+  //       "M-23",
+  //       "A-23",
+  //       "M-23",
+  //       "J-23",
+  //       "J-23",
+  //       "A-23",
+  //       "S-23",
+  //       "O-23",
+  //       "N-23",
+  //       "D-23",
+  //       "J-24",
+  //       "F-24",
+  //     ],
+  //   },
 
-    tickAmount: 6,
-    yaxis: {
-      min: 0,
-      max: 100,
-    },
-    fill: {
-      type: "gradient",
-      gradient: {
-        opacityFrom: 0.6,
-        opacityTo: 0.8,
-      },
-    },
-  };
+  //   tickAmount: 6,
+  //   yaxis: {
+  //     min: 0,
+  //     max: 100,
+  //   },
+  //   fill: {
+  //     type: "gradient",
+  //     gradient: {
+  //       opacityFrom: 0.6,
+  //       opacityTo: 0.8,
+  //     },
+  //   },
+  // };
 
-  const series2 = [
-    {
-      name: "Delay Risk (%)",
-      data: [0, 0, 5, 2, 40, 35, 15, 20],
-    },
-  ];
+  // const series2 = [
+  //   {
+  //     name: "Delay Risk (%)",
+  //     data: [0, 0, 5, 2, 40, 35, 15, 20],
+  //   },
+  // ];
 
-  const options3 = {
-    chart: {
-      id: "apexchart-example",
-      zoom: {
-        enabled: false,
-      },
-    },
-    xaxis: {
-      categories: [
-        "J-23",
-        "F-23",
-        "M-23",
-        "A-23",
-        "M-23",
-        "J-23",
-        "J-23",
-        "A-23",
-        "S-23",
-        "O-23",
-        "N-23",
-        "D-23",
-      ],
-    },
-  };
+  // const options3 = {
+  //   chart: {
+  //     id: "apexchart-example",
+  //     zoom: {
+  //       enabled: false,
+  //     },
+  //   },
+  //   xaxis: {
+  //     categories: [
+  //       "J-23",
+  //       "F-23",
+  //       "M-23",
+  //       "A-23",
+  //       "M-23",
+  //       "J-23",
+  //       "J-23",
+  //       "A-23",
+  //       "S-23",
+  //       "O-23",
+  //       "N-23",
+  //       "D-23",
+  //     ],
+  //   },
+  // };
 
-  const series3 = [
-    {
-      name: "Expected",
-      data: [10, 12, 5, 24, 18, 6, 11, 8, 16, 6, 11, 15],
-    },
-    {
-      name: "Actual",
-      data: [4, 16, 5, 8, 16, 35, 15],
-    },
-  ];
+  // const series3 = [
+  //   {
+  //     name: "Expected",
+  //     data: [10, 12, 5, 24, 18, 6, 11, 8, 16, 6, 11, 15],
+  //   },
+  //   {
+  //     name: "Actual",
+  //     data: [4, 16, 5, 8, 16, 35, 15],
+  //   },
+  // ];
+
+  useEffect(() => {
+    console.log("user activities", userActivities);
+  }, [userActivities]);
 
   return (
     <Flex direction={"column"} maxWidth={"1366px"} w={"100%"}>
-      <TopBar />
       {activeProject?.name ? (
         <Flex direction={"column"} pl={"10"} pt={"2"}>
           <Flex direction={"column"} width={"full"} mb={"3"}>
-            {/* <Text fontSize={"xl"} as={"b"}>
-              {activeProject?.name && activeProject.name}
-            </Text> */}
             <Flex direction={"column"}>
               <Flex
                 direction={"row"}
@@ -215,8 +219,14 @@ function ProjectDashboard() {
               </Flex>
             </Flex>
           </Flex>
-          <Flex direction={"row"} flexWrap={"wrap"} overflowY={"auto"} mb={"4"}>
-            <Flex
+          <Flex mb={"4"} h={"63%"}>
+            <Flex w={"65%"}>
+              <GraphSection />
+            </Flex>
+            <Flex minW={"35%"}>
+              <RSSsection />
+            </Flex>
+            {/* <Flex
               borderColor={"brand.light"}
               bg={"brand.light"}
               rounded={"md"}
@@ -414,7 +424,7 @@ function ProjectDashboard() {
                   height={320}
                 />
               </Flex>
-            </Flex>
+            </Flex> */}
           </Flex>
         </Flex>
       ) : (

@@ -42,8 +42,15 @@ function ScheduleChatInterface() {
   }, [chats]);
 
   return (
-    <Flex direction={"column"}>
-      <Flex direction={"column"} alignItems={"center"} py={"4"}>
+    <Flex direction={"column"} w={"full"}>
+      <Flex
+        direction={"column"}
+        w={"full"}
+        alignItems={"center"}
+        overflowY="scroll"
+        py={"4"}
+        h={"14.5%"}
+      >
         {chats &&
           chats.length > 0 &&
           chats?.map((history, index) => (
@@ -64,7 +71,7 @@ function ScheduleChatInterface() {
             </Flex>
           ))}
       </Flex>
-      <Flex h={"20%"}>
+      <Flex w={"full"} h={"20%"}>
         {activeProject && (
           <Flex flexDirection={"column"} p="8" alignSelf={"center"} w="full">
             <Flex>

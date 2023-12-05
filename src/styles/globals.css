@@ -85,6 +85,7 @@ body {
   overflow-x: hidden;
   overflow-y: hidden;
   overscroll-behavior: contain;
+  scrollbar-width: none;
 }
 
 body {

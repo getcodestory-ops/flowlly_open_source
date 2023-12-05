@@ -11,6 +11,7 @@ import CommunicationInterface from "./CommunicationInterface";
 import SafetyInterface from "./SafetyInterface";
 import ProjectDashboard from "./ProjectDashboard";
 import ProjectSetup from "./ProjectSetup";
+import TopBar from "@/components/TopBar/index";
 
 const queryClient = new QueryClient();
 
@@ -19,20 +20,29 @@ export default function Dashboard() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Flex height="100vh">
-        <Flex zIndex="10">
-          <SidePanel />
-        </Flex>
-        <Flex height={"full"} overflow={"scroll"} w="full">
-          {appView === "agent" && <AgentInterface />}
-          {appView === "schedule" && <ScheduleInterface />}
-          {appView === "search" && <SearchInterface />}
-          {appView === "meeting" && <MeetingInterface />}
-          {appView === "budget" && <BudgetInterface />}
-          {appView === "communication" && <CommunicationInterface />}
-          {appView === "safety" && <SafetyInterface />}
-          {appView === "dashboard" && <ProjectDashboard />}
-          {appView === "projectSettings" && <ProjectSetup />}
+      <Flex
+        h={{ base: "98vh", md: "100vh" }}
+        bg={"brand2.light"}
+        overscrollBehaviorY={"contain"}
+      >
+        <Flex height="100vh" flexDirection={{ base: "column", md: "row" }}>
+          <Flex zIndex="10">
+            <SidePanel />
+          </Flex>
+          <Flex direction={"column"}>
+            <TopBar />
+            <Flex>
+              {appView === "agent" && <AgentInterface />}
+              {appView === "schedule" && <ScheduleInterface />}
+              {appView === "search" && <SearchInterface />}
+              {appView === "meeting" && <MeetingInterface />}
+              {appView === "budget" && <BudgetInterface />}
+              {appView === "communication" && <CommunicationInterface />}
+              {appView === "safety" && <SafetyInterface />}
+              {appView === "dashboard" && <ProjectDashboard />}
+              {appView === "projectSettings" && <ProjectSetup />}
+            </Flex>
+          </Flex>
         </Flex>
       </Flex>
     </QueryClientProvider>

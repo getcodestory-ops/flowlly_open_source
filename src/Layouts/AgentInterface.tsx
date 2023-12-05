@@ -17,8 +17,8 @@ const AgentInterface = () => {
       width="full"
       justifyContent={"end"}
       direction="column"
-      bg="brand.dark"
-      maxH={{ base: "80%", md: "100%" }}
+      bg="brand.accent"
+      maxH={{ base: "30%", md: "30%" }}
     >
       <VStack
         alignSelf={"center"}
@@ -31,7 +31,7 @@ const AgentInterface = () => {
       >
         {agentResponse &&
           agentResponse.agent_history?.map((history, index) => (
-            <Box
+            <Flex
               key={index}
               p={4}
               color="white"
@@ -43,15 +43,15 @@ const AgentInterface = () => {
             >
               <Text color="brand.accent">{`${history.name ?? "You"} `}</Text>
               {history.content && (
-                <Box fontSize="lg" lineHeight="1.5">
+                <Flex fontSize="lg" lineHeight="1.5">
                   {history.content
                     ?.split("/n")
                     .map((line: string, i: number) => (
-                      <Box key={i} mb="2" whiteSpace="pre-line">
+                      <Flex key={i} mb="2" whiteSpace="pre-line">
                         {line}
-                      </Box>
+                      </Flex>
                     ))}
-                </Box>
+                </Flex>
               )}
               {history.function_call && (
                 <Text fontSize="lg" whiteSpace="pre-line">
@@ -59,7 +59,7 @@ const AgentInterface = () => {
                   Arguments: {history.function_call.arguments}
                 </Text>
               )}
-            </Box>
+            </Flex>
           ))}
       </VStack>
       <Flex flexDirection={"column"} p="8" width="4xl" alignSelf={"center"}>

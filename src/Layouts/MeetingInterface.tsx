@@ -6,7 +6,6 @@ import TopBar from "@/components/TopBar";
 function MeetingInterface() {
   return (
     <Flex direction={"column"}>
-      <TopBar />
       <MeetingDisplay />
     </Flex>
   );
