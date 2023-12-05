@@ -82,8 +82,6 @@ function ScheduleUiView() {
       display="flex"
       direction="column"
       alignContent="space-between"
-      w={"full"}
-      maxH={"92%"}
       mt={"4"}
     >
       <AddNewChatEntity isOpen={isOpen} onClose={onClose} />
@@ -189,8 +187,7 @@ function ScheduleUiView() {
           </Flex>
         )}
       </Flex>
-      <Flex className="ScheduleView" w={"full"} h={"89%"}>
-        {/* <Flex className="ScheduleView" w={"full"} h={"89%"} overflow={"auto"}> */}
+      <Flex className="ScheduleView" h={"full"}>
         {view === "assistant" && activeChatEntity.chat_name.length !== 0 ? (
           <ScheduleChatInterface />
         ) : view === "assistant" && activeChatEntity.chat_name.length === 0 ? (

@@ -19,16 +19,11 @@ export default function Dashboard() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Box
-        h={{ base: "98vh", md: "100vh" }}
-        bg={"brand2.light"}
-        overscrollBehaviorY={"contain"}
-      >
-        <Flex height="100vh" flexDirection={{ base: "column", md: "row" }}>
-          <Flex zIndex="10">
-            <SidePanel />
-          </Flex>
-
+      <Flex height="100vh">
+        <Flex zIndex="10">
+          <SidePanel />
+        </Flex>
+        <Flex height={"full"} overflow={"scroll"} w="full">
           {appView === "agent" && <AgentInterface />}
           {appView === "schedule" && <ScheduleInterface />}
           {appView === "search" && <SearchInterface />}
@@ -39,7 +34,7 @@ export default function Dashboard() {
           {appView === "dashboard" && <ProjectDashboard />}
           {appView === "projectSettings" && <ProjectSetup />}
         </Flex>
-      </Box>
+      </Flex>
     </QueryClientProvider>
   );
 }

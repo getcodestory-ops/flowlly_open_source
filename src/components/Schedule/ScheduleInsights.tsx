@@ -74,7 +74,7 @@ function ScheduleInsights() {
   const [countOfCompleted, setCountOfCompleted] = useState<number>(0);
   const [countOfOnSchedule, setCountOfOnSchedule] = useState<number>(0);
   // const [filteredView, setFilteredView] = useState<string>("none");
-  const [sliderValue, setSliderValue] = useState(5);
+  const [sliderValue, setSliderValue] = useState(scheduleProbability * 100);
   const [showTooltip, setShowTooltip] = useState(false);
 
   // const {
@@ -395,7 +395,7 @@ function ScheduleInsights() {
     return (
       <Slider
         id="slider"
-        defaultValue={5}
+        defaultValue={sliderValue}
         min={0}
         max={100}
         colorScheme="blackAlpha"

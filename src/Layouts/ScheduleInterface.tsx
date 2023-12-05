@@ -14,8 +14,8 @@ function ScheduleInterface() {
   }));
 
   return (
-    <Flex direction={"column"} w={"full"}>
-      <Flex w="100vw">
+    <Flex direction={"column"}>
+      <Flex>
         <TopBar />
       </Flex>
       {activeProject ? (
@@ -30,7 +30,6 @@ function ScheduleInterface() {
             alignItems={"center"}
             h={"100%"}
           >
-            {" "}
             Select a project at the top left corner
           </Flex>
         </>

@@ -267,60 +267,68 @@ const ScheduleGanttInterface = () => {
       backgroundColor="white"
       p={2}
       m="8"
-      width="92vw"
-      overflow={"auto"}
-      overscrollBehaviorY={"contain"}
+      width="full"
     >
-      <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
-      <Flex>
-        <Icon
-          as={PiMagnifyingGlassPlus}
-          cursor={"pointer"}
-          onClick={() => setFontSize((state) => state + 1)}
-        />
-        <Icon
-          as={PiMagnifyingGlassMinus}
-          cursor={"pointer"}
-          onClick={() => setFontSize((state) => state - 1)}
-        />
-        <Icon
-          as={PiPathDuotone}
-          cursor={"pointer"}
-          onClick={handleCriticalPath}
-        />
+      <Flex
+        gap="2"
+        backgroundColor={"white"}
+        zIndex={"overlay"}
+        w="full"
+        pl="2"
+        border={"1px solid #E2E8F0"}
+      >
+        <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
+        <Flex alignItems={"center"} position={"sticky"} gap="2">
+          <Icon
+            as={PiMagnifyingGlassPlus}
+            cursor={"pointer"}
+            onClick={() => setFontSize((state) => state + 1)}
+          />
+          <Icon
+            as={PiMagnifyingGlassMinus}
+            cursor={"pointer"}
+            onClick={() => setFontSize((state) => state - 1)}
+          />
+          <Icon
+            as={PiPathDuotone}
+            cursor={"pointer"}
+            onClick={handleCriticalPath}
+          />
 
-        <Icon
-          as={MdFormatListBulletedAdd}
-          cursor={"pointer"}
-          onClick={handleAddActivity}
+          <Icon
+            as={MdFormatListBulletedAdd}
+            cursor={"pointer"}
+            onClick={handleAddActivity}
+          />
+        </Flex>
+        <ViewSwitcher
+          onViewModeChange={(viewMode) => setView(viewMode)}
+          onViewListChange={setIsChecked}
+          isChecked={isChecked}
+          View={view}
         />
       </Flex>
-      <ViewSwitcher
-        onViewModeChange={(viewMode) => setView(viewMode)}
-        onViewListChange={setIsChecked}
-        isChecked={isChecked}
-        View={view}
-      />
-      <div>{view} View</div>
-      <Gantt
-        tasks={tasks}
-        viewMode={view}
-        onDateChange={handleTaskChange}
-        onDelete={handleTaskDelete}
-        onProgressChange={handleProgressChange}
-        onDoubleClick={handleDblClick}
-        onClick={handleClick}
-        onSelect={handleSelect}
-        onExpanderClick={handleExpanderClick}
-        listCellWidth={isChecked ? "150px" : ""}
-        rowHeight={fontSize * 3}
-        columnWidth={columnWidth}
-        fontSize={`${fontSize}px`}
-        TooltipContent={({ task, fontSize, fontFamily }) => {
-          // console.log("TooltipContent", { task, fontSize, fontFamily });
-          return tooltip(task) as unknown as JSX.Element;
-        }}
-      />
+      <Flex overflow={"scroll"} w="94vw" h="90vh">
+        <Gantt
+          tasks={tasks}
+          viewMode={view}
+          onDateChange={handleTaskChange}
+          onDelete={handleTaskDelete}
+          onProgressChange={handleProgressChange}
+          onDoubleClick={handleDblClick}
+          onClick={handleClick}
+          onSelect={handleSelect}
+          onExpanderClick={handleExpanderClick}
+          listCellWidth={isChecked ? "150px" : ""}
+          rowHeight={fontSize * 3}
+          columnWidth={columnWidth}
+          fontSize={`${fontSize}px`}
+          TooltipContent={({ task, fontSize, fontFamily }) => {
+            // console.log("TooltipContent", { task, fontSize, fontFamily });
+            return tooltip(task) as unknown as JSX.Element;
+          }}
+        />
+      </Flex>
     </Flex>
   );
 };

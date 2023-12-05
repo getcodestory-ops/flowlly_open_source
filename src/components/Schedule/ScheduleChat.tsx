@@ -42,14 +42,8 @@ function ScheduleChatInterface() {
   }, [chats]);
 
   return (
-    <Flex direction={"column"} w={"full"}>
-      <Flex
-        direction={"column"}
-        w={"full"}
-        alignItems={"center"}
-        overflowY="scroll"
-        py={"4"}
-      >
+    <Flex direction={"column"}>
+      <Flex direction={"column"} alignItems={"center"} py={"4"}>
         {chats &&
           chats.length > 0 &&
           chats?.map((history, index) => (
@@ -70,32 +64,20 @@ function ScheduleChatInterface() {
             </Flex>
           ))}
       </Flex>
-      <Flex w={"full"} h={"20%"}>
+      <Flex h={"20%"}>
         {activeProject && (
-          <>
-            <Box
-              display="flex"
-              alignItems="center"
-              bg="brand.md"
-              p={2}
-              borderRadius="md"
-            ></Box>
-            <Flex
-              flexDirection={"column"}
-              p="8"
-              alignSelf={"center"}
-              width="100%"
-            >
-              <Flex>
-                <ContextSelection />
-              </Flex>
+          <Flex flexDirection={"column"} p="8" alignSelf={"center"} w="full">
+            <Flex>
+              <ContextSelection />
+            </Flex>
+            <Flex>
               <ScheduleAssistant
                 handleChatSubmit={handleChatSubmit}
                 setChatInput={setChatInput}
                 chatInput={chatInput}
               />
             </Flex>
-          </>
+          </Flex>
         )}
       </Flex>
     </Flex>
