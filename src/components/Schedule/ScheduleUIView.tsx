@@ -14,7 +14,7 @@ import { PiRobot } from "react-icons/pi";
 import ScheduleChatInterface from "./ScheduleChat";
 import ScheduleInsights from "./ScheduleInsights";
 
-function ScheduleUiView() {
+function ScheduleUiViewOLD() {
   const [view, setView] = useState<string>("insights");
 
   return (
@@ -24,7 +24,7 @@ function ScheduleUiView() {
       alignContent="space-between"
       height={"95vh"}
     >
-      <Flex display="flex" justify="flex-start" width="full" marginTop="5">
+      {/* <Flex display="flex" justify="flex-start" width="full" marginTop="5">
         <Tooltip
           label="Schedule Insights"
           aria-label="A tooltip"
@@ -55,7 +55,7 @@ function ScheduleUiView() {
             <Icon as={PiRobot} />
           </Button>
         </Tooltip>
-      </Flex>
+      </Flex> */}
       <Flex className="ScheduleView" height="full">
         {view === "assistant" && <ScheduleChatInterface />}
         {view === "insights" && <ScheduleInsights />}
@@ -64,4 +64,4 @@ function ScheduleUiView() {
   );
 }
 
-export default ScheduleUiView;
+export default ScheduleUiViewOLD;
