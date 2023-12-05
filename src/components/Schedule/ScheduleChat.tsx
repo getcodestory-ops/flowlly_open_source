@@ -71,32 +71,20 @@ function ScheduleChatInterface() {
             </Flex>
           ))}
       </Flex>
-      <Flex w={"full"}>
+      <Flex w={"full"} h={"20%"}>
         {activeProject && (
-          <>
-            <Box
-              display="flex"
-              alignItems="center"
-              bg="brand.md"
-              p={2}
-              borderRadius="md"
-            ></Box>
-            <Flex
-              flexDirection={"column"}
-              p="8"
-              alignSelf={"center"}
-              width="100%"
-            >
-              <Flex>
-                <ContextSelection />
-              </Flex>
+          <Flex flexDirection={"column"} p="8" alignSelf={"center"} w="full">
+            <Flex>
+              <ContextSelection />
+            </Flex>
+            <Flex>
               <ScheduleAssistant
                 handleChatSubmit={handleChatSubmit}
                 setChatInput={setChatInput}
                 chatInput={chatInput}
               />
             </Flex>
-          </>
+          </Flex>
         )}
       </Flex>
     </Flex>

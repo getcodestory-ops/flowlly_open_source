@@ -20,7 +20,6 @@ const CreateNewProjectButton = () => {
     >
       <Button
         leftIcon={<Icon as={FiPlus} />}
-        color="white"
         width="full"
         variant="outline"
         borderColor="white"

@@ -37,6 +37,9 @@ import { FiEdit, FiSave } from "react-icons/fi";
 import { MdOutlineDeleteOutline } from "react-icons/md";
 import { IoIosCloseCircle, IoIosCloseCircleOutline } from "react-icons/io";
 import AddNewProjectModal from "@/components/Schedule/AddNewProjectModal";
+import CreateNewProjectButton from "@/components/Schedule/NewProjectButton";
+import TopBar from "@/components/TopBar";
+import ProjectChats from "@/components/ProjectChats/ProjectChats";
 
 function ProjectSetup() {
   const {
@@ -65,27 +68,14 @@ function ProjectSetup() {
   const [addingMember, setAddingMember] = useState(false);
   const [Members, setMembers] = useState<any>([]);
 
-  const queryClient = useQueryClient();
-
-  const { data: projects, isLoading } = useQuery({
-    queryKey: ["projectList", session],
-    queryFn: () => getProjects(session!),
-    enabled: !!session?.access_token,
-  });
-
   const { data: members, isLoading: membersLoading } = useQuery({
     queryKey: ["memberList", session, activeProject],
     queryFn: async () => {
       if (!session || !activeProject) {
         return Promise.reject("No session or active project");
       }
-      try {
-        return await getMembers(session, activeProject.project_id);
-      } catch (error) {
-        // Handle or log the error as needed
-        console.error(error);
-        return []; // Return an empty array or a suitable default value
-      }
+
+      return getMembers(session, activeProject.project_id);
     },
     enabled: !!session?.access_token,
   });
@@ -141,17 +131,6 @@ function ProjectSetup() {
       console.error("Error saving member:", error);
     }
   };
-
-  useEffect(() => {
-    // console.log("session", session);
-    setMembers(members?.data);
-    // console.log("members", members?.data);
-  }, [members]);
-
-  useEffect(() => {
-    console.log("newMember", newMember);
-    console.log("Members", Members);
-  }, [newMember, Members]);
 
   const folderAndFIles = () => {
     return (
@@ -289,44 +268,8 @@ function ProjectSetup() {
 
   return (
     <Flex direction={"column"} w={"100%"} p={"10"}>
-      <Flex
-        direction={"column"}
-        // alignItems={"center"}
-        justifyContent={"space-between"}
-      >
-        <Flex direction={"column"}>
-          <AddNewProjectModal isOpen={isOpen} onClose={onClose} />
-          <Menu>
-            <MenuButton>
-              <Flex alignItems={"center"} fontSize={"2xl"} fontWeight={"black"}>
-                <Text mr={"2"}>
-                  {activeProject?.name ? activeProject.name : "Select Project"}
-                </Text>
-                <Icon as={IoChevronDownOutline} />
-              </Flex>
-            </MenuButton>
-            <MenuList>
-              <MenuItem onClick={() => setIsOpen(true)}>
-                + Create new project
-              </MenuItem>
-              <MenuDivider borderColor={"gray.500"} />
-              {isLoading && <Heading color="white">Loading...</Heading>}
-              {!isLoading &&
-                projects &&
-                projects.map((project: ProjectEntity) => (
-                  <>
-                    <MenuItem
-                      onClick={() => setActiveProject(project)}
-                      as={"b"}
-                    >
-                      {project.name}
-                    </MenuItem>
-                  </>
-                ))}
-            </MenuList>
-          </Menu>
-        </Flex>
-      </Flex>
+      <TopBar />
+      <CreateNewProjectButton />
       {activeProject ? (
         <>
           <Flex
@@ -334,12 +277,7 @@ function ProjectSetup() {
             // alignItems={"center"}
             justifyContent={"space-between"}
           >
-            <Flex
-              className="menu"
-              w={"450px"}
-              justifyContent={"space-between"}
-              mt={"6"}
-            >
+            <Flex className="menu" gap="8" mt={"6"}>
               <Button
                 bg={settingsView === "folders" ? "brand.accent" : "brand.light"}
                 _hover={{ bg: "brand.dark", color: "white" }}
@@ -363,10 +301,18 @@ function ProjectSetup() {
               >
                 Resources
               </Button>
+              <Button
+                bg={settingsView === "chats" ? "brand.accent" : "brand.light"}
+                _hover={{ bg: "brand.dark", color: "white" }}
+                onClick={() => setSettingsView("chats")}
+              >
+                Chats
+              </Button>
             </Flex>
           </Flex>
           {settingsView === "folders" && folderAndFIles()}
           {settingsView === "members" && projectMembers()}
+          {settingsView === "chats" && <ProjectChats />}
         </>
       ) : (
         <>

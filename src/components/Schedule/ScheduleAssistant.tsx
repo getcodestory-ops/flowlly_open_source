@@ -1,17 +1,13 @@
-import React, { useState } from "react";
-import { Box, InputGroup, Textarea, useToast } from "@chakra-ui/react";
-import { useStore } from "@/utils/store";
-import { scheduleAgent } from "@/api/schedule_routes";
-import { useMutation } from "@tanstack/react-query";
-import { AgentInterfaceProps } from "@/types/agent";
+import React from "react";
+import { Box, InputGroup, Textarea } from "@chakra-ui/react";
 
 function ScheduleAssistant({ handleChatSubmit, setChatInput, chatInput }: any) {
   return (
-    <Box w="full" color="white">
+    <Box color="white" w="full">
       <InputGroup size="lg">
         <Textarea
           color="brand.dark"
-          placeholder="Type your questions..."
+          placeholder="Conversations..."
           value={chatInput}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
             setChatInput(e.target.value)

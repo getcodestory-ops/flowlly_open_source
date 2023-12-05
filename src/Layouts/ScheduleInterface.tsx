@@ -30,7 +30,6 @@ function ScheduleInterface() {
             alignItems={"center"}
             h={"100%"}
           >
-            {" "}
             Select a project at the top left corner
           </Flex>
         </>

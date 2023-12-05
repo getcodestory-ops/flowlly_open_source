@@ -6,6 +6,7 @@ import { ProjectEntity } from "@/types/projects";
 import { AgentChatEntity } from "@/types/agentChats";
 import { ActivityEntity } from "@/types/activities";
 import { State, SidePanelExtension, Brain } from "@/types/store";
+import { persist } from "zustand/middleware";
 
 export const useStore = create<State>((set) => ({
   session: null,
@@ -42,7 +43,7 @@ export const useStore = create<State>((set) => ({
   },
   taskDetailsView: "details",
   filterView: "none",
-  scheduleProbability: 0.5,
+  scheduleProbability: 1.0,
   scheduleDate: new Date(),
   setSession: (session: Session | null) => set(() => ({ session })),
   setAdminRights: (hasAdminRights: boolean) => set(() => ({ hasAdminRights })),
