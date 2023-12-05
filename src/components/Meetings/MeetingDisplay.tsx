@@ -5,7 +5,7 @@ import { LiaEditSolid } from "react-icons/lia";
 import { FaRegShareFromSquare } from "react-icons/fa6";
 
 function MeetingDisplay() {
-  const [aiAction, setAiAction] = useState<string>("");
+  const [aiAction, setAiAction] = useState<string>("email");
 
   const transcript = `**John Smith (PM):** Good morning, everyone. Thank you for joining this safety meeting. Safety is our top priority on this construction project. Let's begin by reviewing our safety procedures. Mike, please start.
 

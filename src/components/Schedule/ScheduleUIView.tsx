@@ -1,31 +1,30 @@
-// import React, { useState } from "react";
-// import {
-//   Flex,
-//   Button,
-//   Box,
-//   Icon,
-//   VStack,
-//   Text,
-//   Spinner,
-//   Tooltip,
-// } from "@chakra-ui/react";
-// import { CgInsights } from "react-icons/cg";
-// import { PiRobot } from "react-icons/pi";
-// import ScheduleChatInterface from "./ScheduleChat";
-// import ScheduleInsights from "./ScheduleInsights";
+import React, { useState } from "react";
+import {
+  Flex,
+  Button,
+  Box,
+  Icon,
+  VStack,
+  Text,
+  Spinner,
+  Tooltip,
+} from "@chakra-ui/react";
+import { CgInsights } from "react-icons/cg";
+import { PiRobot } from "react-icons/pi";
+import ScheduleChatInterface from "./ScheduleChat";
+import ScheduleInsights from "./ScheduleInsights";
 
-// function ScheduleUiView() {
-//   const [view, setView] = useState<string>("insights");
+function ScheduleUiViewOLD() {
+  const [view, setView] = useState<string>("insights");
 
-//   return (
-//     <Flex
-//       display="flex"
-//       direction="column"
-//       alignContent="space-between"
-//       height={"95vh"}
-//     >
-{
-  /* <Flex display="flex" justify="flex-start" width="full" marginTop="5">
+  return (
+    <Flex
+      display="flex"
+      direction="column"
+      alignContent="space-between"
+      height={"95vh"}
+    >
+      {/* <Flex display="flex" justify="flex-start" width="full" marginTop="5">
         <Tooltip
           label="Schedule Insights"
           aria-label="A tooltip"
@@ -56,14 +55,13 @@
             <Icon as={PiRobot} />
           </Button>
         </Tooltip>
-      </Flex> */
+      </Flex> */}
+      <Flex className="ScheduleView" height="full">
+        {view === "assistant" && <ScheduleChatInterface />}
+        {view === "insights" && <ScheduleInsights />}
+      </Flex>
+    </Flex>
+  );
 }
-//       <Flex className="ScheduleView" height="full">
-//         {view === "assistant" && <ScheduleChatInterface />}
-//         {view === "insights" && <ScheduleInsights />}
-//       </Flex>
-//     </Flex>
-//   );
-// }
 
-// export default ScheduleUiView;
+export default ScheduleUiViewOLD;
