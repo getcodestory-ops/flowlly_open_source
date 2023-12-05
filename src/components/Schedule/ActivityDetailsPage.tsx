@@ -10,9 +10,9 @@ import { AiOutlineAlert } from "react-icons/ai";
 import { useStore } from "@/utils/store";
 import { BiSolidCircle } from "react-icons/bi";
 import ActivityEditView from "./ActivityEditView";
-import ProcessHistoryButton from "./ProcessHistory/ProcessHistoryButton";
+
 import AddActivityChildren from "./AddActivityChildren/AddActivityChildren";
-import CreateContingency from "./CreateContingency/CreateContingency";
+
 import { getActivityContingencyPlan } from "@/api/activity_routes";
 import {
   useQuery,
@@ -125,9 +125,7 @@ function ActivitiesDetailPage() {
         overflowY={"auto"}
         overscrollBehaviorY={"contain"}
       >
-        <Flex maxW="xl" mb="2">
-          <AddActivityChildren />
-        </Flex>
+        <Flex maxW="xl" mb="2"></Flex>
         <Flex
           justifyContent={"space-between"}
           alignItems={"center"}
@@ -244,10 +242,7 @@ function ActivitiesDetailPage() {
           borderBottomColor={"brand.light"}
           pb={"4"}
         >
-          <Flex maxW={"xl"} display="flex" gap="2">
-            <ProcessHistoryButton />
-            <CreateContingency />
-          </Flex>
+          <Flex maxW={"xl"} display="flex" gap="2"></Flex>
 
           <Flex>
             <Text fontSize={"sm"} as={"i"} mr={"2"}>
@@ -455,7 +450,6 @@ function ActivitiesDetailPage() {
                 //   taskView === "details" ? "brand.accent" : "brand.light"
                 // }`}
                 alignItems={"center"}
-                pb={"1"}
               >
                 <Icon as={MdInfoOutline} mr={"2"} />
                 <Text>Task Details</Text>
@@ -477,7 +471,7 @@ function ActivitiesDetailPage() {
                   // borderBottomColor={`${
                   //   taskView === "history" ? "brand.accent" : "brand.light"
                   // }`}
-                  pb={"1"}
+
                   alignItems={"center"}
                 >
                   <Icon as={MdHistoryToggleOff} mr={"2"} />
@@ -537,17 +531,19 @@ function ActivitiesDetailPage() {
                 </Flex>
 
                 {taskDetailsView === "details" && (
-                  <Button
-                    size={"xs"}
-                    bg={"brand.dark"}
-                    color={"white"}
-                    _hover={{ bg: "brand.light", color: "brand.dark" }}
-                    onClick={() => setEditTask(!editTask)}
-                  >
-                    <Text>{editTask ? "Save Changes" : "Edit Task"}</Text>
-                  </Button>
+                  <>
+                    <Button
+                      size={"xs"}
+                      bg={"brand.dark"}
+                      color={"white"}
+                      _hover={{ bg: "brand.light", color: "brand.dark" }}
+                      onClick={() => setEditTask(!editTask)}
+                    >
+                      <Text>{editTask ? "Save Changes" : "Edit Task"}</Text>
+                    </Button>
+                    <AddActivityChildren />
+                  </>
                 )}
-                {taskDetailsView === "history" && <ProcessHistoryButton />}
               </Flex>
               <Flex ml={"6"}>
                 <Text as={"i"} fontSize={"sm"} mr={2}>

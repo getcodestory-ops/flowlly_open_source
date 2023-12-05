@@ -261,24 +261,10 @@ const ScheduleGanttInterface = () => {
   };
 
   return (
-    <Flex
-      className="Wrapper"
-      flexDir={"column"}
-      backgroundColor="white"
-      p={2}
-      m="8"
-      width="full"
-    >
-      <Flex
-        gap="2"
-        backgroundColor={"white"}
-        // zIndex={"overlay"}
-        w="full"
-        pl="2"
-        border={"1px solid #E2E8F0"}
-      >
+    <Flex direction={"column"} mt={"4"}>
+      <Flex direction={"column"} ml={"8"}>
         <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
-        <Flex alignItems={"center"} position={"sticky"} gap="2">
+        <Flex>
           <Icon
             as={PiMagnifyingGlassPlus}
             cursor={"pointer"}
@@ -307,8 +293,20 @@ const ScheduleGanttInterface = () => {
           isChecked={isChecked}
           View={view}
         />
+        <Text fontSize={"md"} fontWeight={"bold"} mt={"2"}>
+          {view} View
+        </Text>
       </Flex>
-      <Flex overflow={"auto"} w="90vw" h="90vh">
+      <Flex
+        className="Wrapper"
+        flexDir={"column"}
+        backgroundColor="white"
+        ml={"8"}
+        width="92vw"
+        overflow={"auto"}
+        overscrollBehaviorY={"contain"}
+        height={"70vh"}
+      >
         <Gantt
           tasks={tasks}
           viewMode={view}

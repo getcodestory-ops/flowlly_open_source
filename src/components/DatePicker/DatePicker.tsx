@@ -241,10 +241,11 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
   const dateWindow = (month: number, year: number, day: number) => {
     return (
       <Flex
+        fontSize={"xs"}
         alignItems={"center"}
-        p={"2"}
-        border={"1px"}
-        borderColor={"red"}
+        p={"1"}
+        // border={"1px"}
+        // borderColor={"red"}
         w={"120px"}
         justifyContent={"center"}
         onClick={() => setOpenCalendar((state) => !state)}
@@ -252,9 +253,9 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
         _hover={{ borderColor: "brand.dark" }}
         rounded={"md"}
       >
-        <Text fontSize={"sm"}>{month}/</Text>
-        <Text fontSize={"sm"}>{day}/</Text>
-        <Text fontSize={"sm"}>{year}</Text>
+        <Text>{month}/</Text>
+        <Text>{day}/</Text>
+        <Text>{year}</Text>
         <Icon as={IoCalendarOutline} w={4} h={4} ml={2} />
       </Flex>
     );
@@ -285,55 +286,61 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
   }, [highlightedDates]);
 
   return (
-    <Flex direction={"column"} position={"relative"}>
-      {dateWindow(selectedMonth, selectedYear, selectedDay)}
-      {openCalendar && (
-        <Flex
-          direction={"column"}
-          bg={"white"}
-          shadow={"lg"}
-          h={"250px"}
-          p={2}
-          justifyContent={"center"}
-          fontSize={"sm"}
-          zIndex={1000}
-          top={"45px"}
-          position={"absolute"}
-          border={"1px"}
-          borderColor={"brand.light"}
-          rounded={"md"}
-          // w={"350px"}
-        >
+    <Flex alignItems={"center"}>
+      <Flex mr={"1"}>
+        <Text fontSize={"xs"} fontWeight={"bold"}>
+          Impactful Events:
+        </Text>
+      </Flex>
+      <Flex direction={"column"} position={"relative"} fontSize={"xs"}>
+        {dateWindow(selectedMonth, selectedYear, selectedDay)}
+        {openCalendar && (
           <Flex
-            direction={"row"}
-            alignItems={"center"}
-            justifyContent={"space-between"}
-            px={6}
-            mb={"4"}
+            direction={"column"}
+            bg={"white"}
+            shadow={"lg"}
+            h={"250px"}
+            p={2}
+            justifyContent={"center"}
+            zIndex={1000}
+            top={"45px"}
+            position={"absolute"}
+            border={"1px"}
+            borderColor={"brand.light"}
+            rounded={"md"}
+            // w={"350px"}
           >
-            <IoChevronBack onClick={handleBackwardClick} />
-            <Flex>
-              {monthSelector(months)}
-              {yearSelector(currentYear)}
+            <Flex
+              direction={"row"}
+              alignItems={"center"}
+              justifyContent={"space-between"}
+              px={6}
+              mb={"4"}
+            >
+              <IoChevronBack onClick={handleBackwardClick} />
+              <Flex>
+                {monthSelector(months)}
+                {yearSelector(currentYear)}
+              </Flex>
+              <IoChevronForward onClick={handleForwardClick} />
             </Flex>
-            <IoChevronForward onClick={handleForwardClick} />
+            <Grid
+              templateColumns="repeat(7, 1fr)"
+              templateRows="repeat(6, 1fr)"
+              maxH={"300px"}
+            >
+              {weekDays.map((day, index) => (
+                <GridItem key={index} colSpan={1} rowSpan={1} w={"50px"}>
+                  <Flex justifyContent={"center"} alignItems={"center"}>
+                    <Text fontWeight={"bold"}>{day}</Text>
+                  </Flex>
+                </GridItem>
+              ))}
+              {days}
+            </Grid>
           </Flex>
-          <Grid
-            templateColumns="repeat(7, 1fr)"
-            templateRows="repeat(6, 1fr)"
-            maxH={"300px"}
-          >
-            {weekDays.map((day, index) => (
-              <GridItem key={index} colSpan={1} rowSpan={1} w={"50px"}>
-                <Flex justifyContent={"center"} alignItems={"center"}>
-                  <Text fontWeight={"bold"}>{day}</Text>
-                </Flex>
-              </GridItem>
-            ))}
-            {days}
-          </Grid>
-        </Flex>
-      )}
+        )}
+      </Flex>
     </Flex>
   );
 }

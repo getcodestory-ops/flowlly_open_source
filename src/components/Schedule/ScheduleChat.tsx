@@ -42,14 +42,14 @@ function ScheduleChatInterface() {
   }, [chats]);
 
   return (
-    <Flex direction={"column"} w={"full"}>
+    <Flex direction={"column"} w={"full"} h={"80vh"}>
       <Flex
         direction={"column"}
         w={"full"}
         alignItems={"center"}
         overflowY="scroll"
         py={"4"}
-        h={"14.5%"}
+        h={"80%"}
       >
         {chats &&
           chats.length > 0 &&

@@ -32,6 +32,7 @@ import { ActivityEntity } from "@/types/activities";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import CustomDatePicker from "../DatePicker/DatePicker";
 import { G } from "@react-pdf/renderer";
+import ProbabilitySelector from "../ProbabilitySelector";
 
 function ScheduleInsights() {
   const toast = useToast();
@@ -76,34 +77,6 @@ function ScheduleInsights() {
   // const [filteredView, setFilteredView] = useState<string>("none");
   const [sliderValue, setSliderValue] = useState(scheduleProbability * 100);
   const [showTooltip, setShowTooltip] = useState(false);
-
-  // const {
-  //   data: activities,
-  //   isLoading,
-  //   isSuccess,
-  // } = useQuery({
-  //   queryKey: [
-  //     "activityList",
-  //     session,
-  //     activeProject,
-  //     scheduleDate,
-  //     scheduleProbability,
-  //   ],
-  //   queryFn: () => {
-  //     if (!session || !activeProject) {
-  //       return Promise.reject("Set session first !");
-  //     }
-  //     const date = getCurrentDateFormatted(scheduleDate || new Date());
-  //     return getActivities(
-  //       session,
-  //       activeProject.project_id,
-  //       date,
-  //       scheduleProbability
-  //     );
-  //   },
-
-  //   enabled: !!session?.access_token && !!activeProject?.project_id,
-  // });
 
   const countDelayedActivities = (activities: any[]) => {
     let count = 0;
@@ -391,87 +364,10 @@ function ScheduleInsights() {
     );
   };
 
-  const probabilitySlider = () => {
-    return (
-      <Slider
-        id="slider"
-        defaultValue={sliderValue}
-        min={0}
-        max={100}
-        colorScheme="blackAlpha"
-        onChange={(v) => setSliderValue(v)}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-      >
-        <SliderMark value={25} mt="1" ml="-2.5" fontSize="sm">
-          25%
-        </SliderMark>
-        <SliderMark value={50} mt="1" ml="-2.5" fontSize="sm">
-          50%
-        </SliderMark>
-        <SliderMark value={75} mt="1" ml="-2.5" fontSize="sm">
-          75%
-        </SliderMark>
-        <SliderTrack>
-          <SliderFilledTrack />
-        </SliderTrack>
-        <Tooltip
-          hasArrow
-          bg="brand.dark"
-          color="white"
-          placement="top"
-          isOpen={showTooltip}
-          label={`${sliderValue}%`}
-        >
-          <SliderThumb />
-        </Tooltip>
-      </Slider>
-    );
-  };
-
-  useEffect(() => {
-    setScheduleProbability(sliderValue / 100);
-  }, [sliderValue]);
-
   return (
     <Flex>
       <Flex pt={10} px={"10"}>
         <Flex direction={"column"}>
-          <Flex
-            // borderTop={"2px"}
-            borderBottom={"2px"}
-            pb={"6"}
-            mb={"6"}
-            borderColor={"gray.200"}
-            minW={"500px"}
-            justifyContent={"space-around"}
-          >
-            <Flex
-              direction={"column"}
-              w={"30%"}
-              alignItems={"center"}
-              justifyItems={"center"}
-            >
-              <Text fontSize={"sm"} as={"b"}>
-                Impactful events
-              </Text>
-              <Flex>
-                <CustomDatePicker />
-              </Flex>
-            </Flex>
-            <Flex
-              direction={"column"}
-              w={"60%"}
-              alignItems={"center"}
-              justifyItems={"center"}
-            >
-              <Text fontSize={"sm"} as={"b"}>
-                Impact Probability
-              </Text>
-              <Flex w={"80%"}>{probabilitySlider()}</Flex>
-            </Flex>
-          </Flex>
-
           <Flex mb={"4"}>
             {quickDataViewCard("Delayed", countOfDelayed)}
             {quickDataViewCard("At Risk", countOfAtRisk)}
@@ -483,7 +379,7 @@ function ScheduleInsights() {
             overflowY={"scroll"}
             overscrollBehaviorY={"contain"}
             // minH={"98%"}
-            maxH={"100%"}
+            maxH={"80%"}
             sx={{
               "::-webkit-scrollbar": {
                 display: "none",

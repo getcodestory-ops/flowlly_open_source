@@ -31,9 +31,12 @@ import { getProjects, deleteProject } from "@/api/projectRoutes";
 import DraggablePaneDivider from "@/components/DraggablePaneDivider";
 import RightPanel from "@/components/Schedule/ScheduleViewRightPanel";
 import { LuGanttChartSquare } from "react-icons/lu";
-
 import { IoChevronDownOutline } from "react-icons/io5";
 import ScheduleGanttInterface from "./ScheduleGanttInterface";
+import CustomDatePicker from "../DatePicker/DatePicker";
+import ProbabilitySelector from "../ProbabilitySelector";
+import CreateContingency from "./CreateContingency/CreateContingency";
+import ProcessHistoryButton from "./ProcessHistory/ProcessHistoryButton";
 
 function ScheduleUiView() {
   const { session, activeChatEntity, setActiveChatEntity, activeProject } =
@@ -85,72 +88,92 @@ function ScheduleUiView() {
       mt={"4"}
     >
       <AddNewChatEntity isOpen={isOpen} onClose={onClose} />
-      <Flex display="flex" justify="flex-start" width="full" marginTop="1">
-        <Tooltip
-          label="Schedule Insights"
-          aria-label="A tooltip"
-          bg="white"
-          color="brand.dark"
+      <Flex>
+        <Flex
+          display="flex"
+          justify="flex-start"
+          marginTop="1"
+          borderRight={"2px"}
+          borderColor={"brand2.mid"}
         >
-          <Button
-            size={"sm"}
-            marginLeft="8"
-            marginRight="5"
-            bg={`${view === "insights" ? "brand2.accent" : "brand2.mid"}`}
-            _hover={{ bg: "brand.dark", color: "white" }}
-            onClick={() => setView("insights")}
+          <Tooltip
+            label="Schedule Insights"
+            aria-label="A tooltip"
+            bg="white"
+            color="brand.dark"
           >
-            <Icon as={CgInsights} />
-          </Button>
-        </Tooltip>
-        <Tooltip
-          label="Gantt Chart"
-          aria-label="A tooltip"
-          bg="white"
-          color="brand.dark"
-        >
-          <Button
-            size={"sm"}
-            marginRight="5"
-            bg={`${view === "gantt" ? "brand2.accent" : "brand2.mid"}`}
-            _hover={{ bg: "brand.dark", color: "white" }}
-            onClick={() => setView("gantt")}
+            <Button
+              size={"sm"}
+              marginLeft="8"
+              marginRight="5"
+              bg={`${view === "insights" ? "brand2.accent" : "brand2.mid"}`}
+              _hover={{ bg: "brand.dark", color: "white" }}
+              onClick={() => setView("insights")}
+            >
+              <Icon as={CgInsights} />
+            </Button>
+          </Tooltip>
+          <Tooltip
+            label="Gantt Chart"
+            aria-label="A tooltip"
+            bg="white"
+            color="brand.dark"
           >
-            <Icon as={LuGanttChartSquare} />
-          </Button>
-        </Tooltip>
-        <Tooltip
-          label="Schedule Assistant"
-          aria-label="A tooltip"
-          bg="white"
-          color="brand.dark"
-        >
-          <Button
-            size={"sm"}
-            bg={`${view === "assistant" ? "brand2.accent" : "brand2.mid"}`}
-            _hover={{ bg: "brand.dark", color: "white" }}
-            onClick={() => setView("assistant")}
-            marginRight="5"
+            <Button
+              size={"sm"}
+              marginRight="5"
+              bg={`${view === "gantt" ? "brand2.accent" : "brand2.mid"}`}
+              _hover={{ bg: "brand.dark", color: "white" }}
+              onClick={() => setView("gantt")}
+            >
+              <Icon as={LuGanttChartSquare} />
+            </Button>
+          </Tooltip>
+          <Tooltip
+            label="Schedule Assistant"
+            aria-label="A tooltip"
+            bg="white"
+            color="brand.dark"
           >
-            <Icon as={PiRobot} />
-          </Button>
-        </Tooltip>
-        <Tooltip
-          label="Reports"
-          aria-label="A tooltip"
-          bg="white"
-          color="brand.dark"
-        >
-          <Button
-            size={"sm"}
-            bg={`${view === "reports" ? "brand2.accent" : "brand2.mid"}`}
-            _hover={{ bg: "brand.dark", color: "white" }}
-            onClick={() => setView("reports")}
-            mr="5"
+            <Button
+              size={"sm"}
+              bg={`${view === "assistant" ? "brand2.accent" : "brand2.mid"}`}
+              _hover={{ bg: "brand.dark", color: "white" }}
+              onClick={() => setView("assistant")}
+              marginRight="5"
+            >
+              <Icon as={PiRobot} />
+            </Button>
+          </Tooltip>
+          <Tooltip
+            label="Reports"
+            aria-label="A tooltip"
+            bg="white"
+            color="brand.dark"
           >
-            <Icon as={TbReportAnalytics} />
-          </Button>
-        </Tooltip>
+            <Button
+              size={"sm"}
+              bg={`${view === "reports" ? "brand2.accent" : "brand2.mid"}`}
+              _hover={{ bg: "brand.dark", color: "white" }}
+              onClick={() => setView("reports")}
+              mr="5"
+            >
+              <Icon as={TbReportAnalytics} />
+            </Button>
+          </Tooltip>
+        </Flex>
+        <Flex pl={"5"} pr={"2"} borderRight={"2px"} borderColor={"brand2.mid"}>
+          <CustomDatePicker />
+          <Flex>
+            <ProbabilitySelector />
+          </Flex>
+        </Flex>
+        <Flex pl={"5"} alignItems={"center"}>
+          <ProcessHistoryButton />
+          <Flex ml={"5"}>
+            <CreateContingency />
+          </Flex>
+        </Flex>
       </Flex>
       <Flex>
         {view === "assistant" && (
