@@ -272,7 +272,7 @@ const ScheduleGanttInterface = () => {
       <Flex
         gap="2"
         backgroundColor={"white"}
-        zIndex={"overlay"}
+        // zIndex={"overlay"}
         w="full"
         pl="2"
         border={"1px solid #E2E8F0"}
@@ -308,7 +308,7 @@ const ScheduleGanttInterface = () => {
           View={view}
         />
       </Flex>
-      <Flex overflow={"scroll"} w="94vw" h="90vh">
+      <Flex overflow={"auto"} w="90vw" h="90vh">
         <Gantt
           tasks={tasks}
           viewMode={view}

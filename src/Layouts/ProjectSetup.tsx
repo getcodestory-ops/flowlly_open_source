@@ -38,7 +38,7 @@ import { MdOutlineDeleteOutline } from "react-icons/md";
 import { IoIosCloseCircle, IoIosCloseCircleOutline } from "react-icons/io";
 import AddNewProjectModal from "@/components/Schedule/AddNewProjectModal";
 import CreateNewProjectButton from "@/components/Schedule/NewProjectButton";
-import TopBar from "@/components/TopBar";
+
 import ProjectChats from "@/components/ProjectChats/ProjectChats";
 
 function ProjectSetup() {
@@ -268,7 +268,6 @@ function ProjectSetup() {
 
   return (
     <Flex direction={"column"} w={"100%"} p={"10"}>
-      <TopBar />
       <CreateNewProjectButton />
       {activeProject ? (
         <>
