@@ -170,63 +170,6 @@ const SearchMemory = () => {
                   </Flex>
                 )}
               </Stack>
-
-              // <Flex
-              //   rounded={chatSession?.chat_id === chats.chat_id ? "md" : ""}
-              //   bg={chatSession?.chat_id === chats.chat_id ? "brand.dark" : ""}
-              //   alignItems={"center"}
-              //   key={`chat-${chats.chat_id}-index-${index}`}
-              //   color={
-              //     chatSession?.chat_id === chats.chat_id
-              //       ? "white"
-              //       : "brand.dark"
-              //   }
-              //   justifyContent={"space-between"}
-              //   p={2}
-              //   m={2}
-              //   cursor={"pointer"}
-              //   onClick={() => setChatSession(chats)}
-              //   _hover={{
-              //     bg: "brand.light",
-              //   }}
-              // >
-              //   <Flex justifyContent={"space-around"} alignItems={"center"}>
-              //     <Icon as={BsChatLeftDots}></Icon>
-
-              //     {/* <Flex ml={4}>{chats.chat_name}</Flex> */}
-              //     <Flex ml={4}>
-              //       {chatSession?.chat_id === chats.chat_id
-              //         ? `${chats.chat_name.substring(0, 8) + "..."}`
-              //         : chats.chat_name}
-              //     </Flex>
-              //   </Flex>
-
-              //   {chats.chat_id === chatSession?.chat_id && (
-              //     <Flex justifyContent={"end"}>
-              //       <Button
-              //         color="white"
-              //         variant="ghost"
-              //         size={"sm"}
-              //         onClick={() => {
-              //           setNewChatSessionName(chatSession?.chat_name);
-              //           setEditChatSessionId(chatSession?.chat_id);
-              //         }}
-              //         _hover={{ bg: "gray.600" }}
-              //       >
-              //         <Icon as={FiEdit} />
-              //       </Button>
-              //       <Button
-              //         color="white"
-              //         variant="ghost"
-              //         size={"sm"}
-              //         onClick={() => deleteChat(chatSession?.chat_id)}
-              //         _hover={{ bg: "gray.600" }}
-              //       >
-              //         <Icon as={FiTrash} />
-              //       </Button>
-              //     </Flex>
-              //   )}
-              // </Flex>
             )}
             {editChatSessionId === chats?.chat_id && (
               <Flex

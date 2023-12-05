@@ -160,7 +160,7 @@ function SearchPanel() {
         flex="1"
         direction="column"
         alignItems="start"
-        justifyContent="end"
+        // justifyContent="end"
         bg="brand2.light"
         maxH={{ base: "80%", md: "100%" }}
         // ref={refContainer}

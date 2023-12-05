@@ -11,6 +11,7 @@ import CommunicationInterface from "./CommunicationInterface";
 import SafetyInterface from "./SafetyInterface";
 import ProjectDashboard from "./ProjectDashboard";
 import ProjectSetup from "./ProjectSetup";
+import TopBar from "@/components/TopBar/index";
 
 const queryClient = new QueryClient();
 
@@ -19,7 +20,7 @@ export default function Dashboard() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Box
+      <Flex
         h={{ base: "98vh", md: "100vh" }}
         bg={"brand2.light"}
         overscrollBehaviorY={"contain"}
@@ -28,18 +29,22 @@ export default function Dashboard() {
           <Flex zIndex="10">
             <SidePanel />
           </Flex>
-
-          {appView === "agent" && <AgentInterface />}
-          {appView === "schedule" && <ScheduleInterface />}
-          {appView === "search" && <SearchInterface />}
-          {appView === "meeting" && <MeetingInterface />}
-          {appView === "budget" && <BudgetInterface />}
-          {appView === "communication" && <CommunicationInterface />}
-          {appView === "safety" && <SafetyInterface />}
-          {appView === "dashboard" && <ProjectDashboard />}
-          {appView === "projectSettings" && <ProjectSetup />}
+          <Flex direction={"column"}>
+            <TopBar />
+            <Flex>
+              {appView === "agent" && <AgentInterface />}
+              {appView === "schedule" && <ScheduleInterface />}
+              {appView === "search" && <SearchInterface />}
+              {appView === "meeting" && <MeetingInterface />}
+              {appView === "budget" && <BudgetInterface />}
+              {appView === "communication" && <CommunicationInterface />}
+              {appView === "safety" && <SafetyInterface />}
+              {appView === "dashboard" && <ProjectDashboard />}
+              {appView === "projectSettings" && <ProjectSetup />}
+            </Flex>
+          </Flex>
         </Flex>
-      </Box>
+      </Flex>
     </QueryClientProvider>
   );
 }

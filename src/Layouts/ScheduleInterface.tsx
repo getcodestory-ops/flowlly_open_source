@@ -15,9 +15,9 @@ function ScheduleInterface() {
 
   return (
     <Flex direction={"column"} w={"full"}>
-      <Flex w="100vw">
+      {/* <Flex w="100vw">
         <TopBar />
-      </Flex>
+      </Flex> */}
       {activeProject ? (
         <ScheduleUIView />
       ) : (

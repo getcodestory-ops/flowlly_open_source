@@ -49,6 +49,7 @@ function ScheduleChatInterface() {
         alignItems={"center"}
         overflowY="scroll"
         py={"4"}
+        h={"14.5%"}
       >
         {chats &&
           chats.length > 0 &&
@@ -70,7 +71,7 @@ function ScheduleChatInterface() {
             </Flex>
           ))}
       </Flex>
-      <Flex w={"full"} h={"20%"}>
+      <Flex w={"full"}>
         {activeProject && (
           <>
             <Box

@@ -9,6 +9,7 @@ import {
   Heading,
   useToast,
   Icon,
+  Text,
 } from "@chakra-ui/react";
 import { IoChevronDownOutline } from "react-icons/io5";
 import { ProjectEntity } from "@/types/projects";
@@ -94,9 +95,9 @@ const TopActivitiesItems = ({
   return (
     <>
       {activities && activities.length > 0 && (
-        <Flex>
+        <Flex alignItems={"center"}>
           <Menu>
-            <MenuButton fontSize={"xs"} fontWeight={"black"}>
+            <MenuButton fontSize={"md"} fontWeight={"medium"}>
               <Flex alignItems={"center"} ml="2">
                 {activeActivity?.name ?? ""}
                 <Box ml={"2"}>
@@ -120,7 +121,7 @@ const TopActivitiesItems = ({
               ))}
             </MenuList>
           </Menu>
-          /
+          <Text m={"2"}>/</Text>
           {activeActivity && (
             <Breadcrubms
               taskToView={activeActivity}
