@@ -24,12 +24,13 @@ function RSSsection() {
     }
 
     significantEvents.sort(
-      (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      (a: any, b: any) =>
+        (new Date(b.created_at) as any) - (new Date(a.created_at) as any)
     );
 
     const latestEvent = new Date(significantEvents[0].created_at);
     const now = new Date();
-    const timeDiff = now - latestEvent; // Difference in milliseconds
+    const timeDiff = (now as any) - (latestEvent as any); // Difference in milliseconds
 
     const hours = timeDiff / 1000 / 60 / 60;
     const days = hours / 24;
@@ -59,20 +60,25 @@ function RSSsection() {
       h={"82%"}
       overflowY={"auto"}
     >
-      {userActivities &&
-        userActivities
-          .filter(
-            (activity) =>
-              activity.status === "Delayed" || activity.status === "At Risk"
-          )
-          .map((activity, index) => (
-            <RSSCard
-              title={activity.name}
-              date={timeSinceLatestSignificantEvent(activity)}
-              status={activity.status}
-              key={index}
-            />
-          ))}
+      <Text fontSize={"sm"} fontWeight={"bold"} mb={"3"}>
+        Activity Updates
+      </Text>
+      <Flex direction={"column"}>
+        {userActivities &&
+          userActivities
+            .filter(
+              (activity) =>
+                activity.status === "Delayed" || activity.status === "At Risk"
+            )
+            .map((activity, index) => (
+              <RSSCard
+                title={activity.name}
+                date={timeSinceLatestSignificantEvent(activity)}
+                status={activity.status}
+                key={index}
+              />
+            ))}
+      </Flex>
     </Flex>
   );
 }

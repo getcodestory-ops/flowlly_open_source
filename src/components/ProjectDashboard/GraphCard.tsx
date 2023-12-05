@@ -17,10 +17,10 @@ interface GraphCardProps {
   series: any;
   type: any;
   title: string;
-  actualValue: string;
-  valueChange: string;
-  changeType: string;
-  changeImpact: string;
+  actualValue?: string;
+  valueChange?: string;
+  changeType?: string;
+  changeImpact?: string;
 }
 
 function GraphCard({
@@ -48,49 +48,51 @@ function GraphCard({
           {title}
         </Text>
         <Flex>
-          <Flex direction={"column"} mr={"5"} p={"2"}>
-            <Text as={"i"} fontSize={"2xs"}>
-              Actual
-            </Text>
-            <Flex alignItems={"center"}>
-              <Text as={"b"} fontSize={"lg"}>
-                {actualValue}
+          {actualValue && (
+            <Flex direction={"column"} mr={"5"} p={"2"}>
+              <Text as={"i"} fontSize={"2xs"}>
+                Actual
               </Text>
-              <Flex
-                ml={"3"}
-                color={"red.400"}
-                alignItems={"center"}
-                fontSize={"sm"}
-              >
-                {changeType === "down" && (
-                  <Flex
-                    bg={changeImpact === "negative" ? "red.200" : "green.200"}
-                    p={"1"}
-                    rounded={"full"}
-                    mr={"1"}
-                  >
-                    <Icon as={FaArrowDown} size={"md"} />
-                  </Flex>
-                )}
-                {changeType === "up" && (
-                  <Flex
-                    bg={changeImpact === "negative" ? "red.200" : "green.200"}
-                    p={"1"}
-                    rounded={"full"}
-                    mr={"1"}
-                  >
-                    <Icon as={FaArrowUp} size={"md"} />
-                  </Flex>
-                )}
-                <Text as={"b"} mr={"1"}>
-                  {valueChange}
+              <Flex alignItems={"center"}>
+                <Text as={"b"} fontSize={"lg"}>
+                  {actualValue}
                 </Text>
-                <Text color={"brand.mid"} fontSize={"2xs"}>
-                  compared to expected
-                </Text>
+                <Flex
+                  ml={"3"}
+                  color={"red.400"}
+                  alignItems={"center"}
+                  fontSize={"sm"}
+                >
+                  {changeType === "down" && (
+                    <Flex
+                      bg={changeImpact === "negative" ? "red.200" : "green.200"}
+                      p={"1"}
+                      rounded={"full"}
+                      mr={"1"}
+                    >
+                      <Icon as={FaArrowDown} size={"md"} />
+                    </Flex>
+                  )}
+                  {changeType === "up" && (
+                    <Flex
+                      bg={changeImpact === "negative" ? "red.200" : "green.200"}
+                      p={"1"}
+                      rounded={"full"}
+                      mr={"1"}
+                    >
+                      <Icon as={FaArrowUp} size={"md"} />
+                    </Flex>
+                  )}
+                  <Text as={"b"} mr={"1"}>
+                    {valueChange}
+                  </Text>
+                  <Text color={"brand.mid"} fontSize={"2xs"}>
+                    compared to expected
+                  </Text>
+                </Flex>
               </Flex>
             </Flex>
-          </Flex>
+          )}
         </Flex>
         <Flex justifyContent={"center"}>
           <Chart

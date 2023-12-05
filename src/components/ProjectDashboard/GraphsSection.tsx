@@ -111,7 +111,7 @@ function GraphSection() {
       ],
     },
     forecastDataPoints: {
-      count: 7,
+      count: 5,
     },
     colors: ["#FF0000", "#FFA500"],
   };
@@ -119,11 +119,47 @@ function GraphSection() {
   const activitiesSeries = [
     {
       name: "Delayed Tasks",
-      data: [0, 0, 0, 0, 0, 3, 0, 10, 0, 0, 0, 0],
+      data: [0, 0, 0, 3, 0, 10, 0, 0, 0, 0, 0, 0],
     },
     {
       name: "At Risk Tasks",
-      data: [0, 0, 0, 0, 2, 5, 0, 8, 0, 0, 0, 0],
+      data: [0, 0, 0, 8, 2, 5, 0, 0, 0, 0, 0, 0],
+    },
+  ];
+
+  const safetyReports = {
+    chart: {
+      id: "apexchart-example",
+      zoom: {
+        enabled: false,
+      },
+    },
+    xaxis: {
+      categories: [
+        "J-23",
+        "F-23",
+        "M-23",
+        "A-23",
+        "M-23",
+        "J-23",
+        "J-23",
+        "A-23",
+        "S-23",
+        "O-23",
+        "N-23",
+        "D-23",
+      ],
+    },
+    forecastDataPoints: {
+      count: 5,
+    },
+    colors: ["#FF0000"],
+  };
+
+  const safetyReportsSeries = [
+    {
+      name: "Safety Incidents",
+      data: [0, 10, 0, 5, 7, 13, 0, 0, 0, 0, 0, 0],
     },
   ];
 
@@ -171,10 +207,20 @@ function GraphSection() {
         series={activitiesSeries}
         type={"line"}
         title="Delay and At Risk Tasks"
-        // actualValue="340 days"
-        // valueChange="40 days"
-        // changeType="up"
-        // changeImpact="negative"
+        // actualValue={null}
+        // valueChange={null}
+        // changeType={null}
+        // changeImpact={null}
+      />
+      <GraphCard
+        options={safetyReports}
+        series={safetyReportsSeries}
+        type={"line"}
+        title="Safety Incidents"
+        actualValue="13 incidents"
+        valueChange="6 incidents"
+        changeType="up"
+        changeImpact="negative"
       />
     </Flex>
   );
