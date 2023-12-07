@@ -37,8 +37,9 @@ import CustomDatePicker from "../DatePicker/DatePicker";
 import ProbabilitySelector from "../ProbabilitySelector";
 import CreateContingency from "./CreateContingency/CreateContingency";
 import ProcessHistoryButton from "./ProcessHistory/ProcessHistoryButton";
+import ActivitiesDetailPage from "./ActivityDetailsPage";
 
-function ScheduleUiView() {
+function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   const { session, activeChatEntity, setActiveChatEntity, activeProject } =
     useStore((state) => ({
       session: state.session,
@@ -63,6 +64,12 @@ function ScheduleUiView() {
     enabled: !!session?.access_token,
   });
 
+  useEffect(() => {
+    if (uiView === "assistant" || uiView === "reports" || uiView === "gantt") {
+      setView(uiView);
+    }
+  }, [uiView]);
+
   const { data: chatEntitities, isLoading: chatsLoading } = useQuery({
     queryKey: ["chatEntityList", session, activeProject],
     queryFn: () => {
@@ -81,14 +88,9 @@ function ScheduleUiView() {
   }, [chatEntitities]);
 
   return (
-    <Flex
-      display="flex"
-      direction="column"
-      alignContent="space-between"
-      mt={"4"}
-    >
+    <Flex display="flex" direction="column" alignContent="space-between">
       <AddNewChatEntity isOpen={isOpen} onClose={onClose} />
-      <Flex>
+      <Flex h="5vh" alignItems={"center"}>
         <Flex
           display="flex"
           justify="flex-start"
@@ -175,68 +177,81 @@ function ScheduleUiView() {
           </Flex>
         </Flex>
       </Flex>
-      <Flex>
-        {view === "assistant" && (
-          <Flex alignItems={"center"} mt={"4"} ml={"10"}>
-            <Text mr={"2"} fontSize={"sm"} fontWeight={"semibold"}>
-              Chat:
-            </Text>
-            <Menu>
-              <MenuButton
-                onClick={onConversation}
-                as={Button}
-                rightIcon={<IoChevronDownOutline />}
-                size={"xs"}
-                bg={"brand2.mid"}
-                _hover={{ bg: "brand2.dark", color: "white" }}
-              >
-                {activeChatEntity ? activeChatEntity.chat_name : "No Chat"}
-              </MenuButton>
-              <MenuList>
-                <MenuItem onClick={onOpen}>+ Create New Chat</MenuItem>
-                <MenuDivider borderColor={"gray.400"} />
-                {chatEntitities &&
-                  chatEntitities.map((chatEntity) => (
-                    <MenuItem
-                      key={chatEntity.id}
-                      as={"b"}
-                      onClick={() => setActiveChatEntity(chatEntity)}
-                    >
-                      {chatEntity.chat_name}
-                    </MenuItem>
-                  ))}
-              </MenuList>
-            </Menu>
-          </Flex>
-        )}
-      </Flex>
-      <Flex className="ScheduleView" h={"full"}>
-        {view === "assistant" && activeChatEntity.chat_name.length !== 0 ? (
-          <ScheduleChatInterface />
-        ) : view === "assistant" && activeChatEntity.chat_name.length === 0 ? (
-          <>
+      <Flex h="90vh">
+        <Flex className="ScheduleView" w="full">
+          {view === "assistant" && (
             <Flex
-              w={"full"}
-              justifyContent={"center"}
-              alignItems={"center"}
-              fontSize={"2xl"}
-              fontWeight={"black"}
+              mt={"4"}
+              ml={"10"}
+              direction="column"
+              justifyContent={"space-between"}
             >
-              Select or Create Chat at the top
+              <Flex>
+                <Text mr={"2"} fontSize={"sm"} fontWeight={"semibold"}>
+                  Chat:
+                </Text>
+                <Menu>
+                  <MenuButton
+                    onClick={onConversation}
+                    as={Button}
+                    rightIcon={<IoChevronDownOutline />}
+                    size={"xs"}
+                    bg={"brand2.mid"}
+                    _hover={{ bg: "brand2.dark", color: "white" }}
+                  >
+                    {activeChatEntity ? activeChatEntity.chat_name : "No Chat"}
+                  </MenuButton>
+                  <MenuList>
+                    <MenuItem onClick={onOpen}>+ Create New Chat</MenuItem>
+                    <MenuDivider borderColor={"gray.400"} />
+                    {chatEntitities &&
+                      chatEntitities.map((chatEntity) => (
+                        <MenuItem
+                          key={chatEntity.id}
+                          as={"b"}
+                          onClick={() => setActiveChatEntity(chatEntity)}
+                        >
+                          {chatEntity.chat_name}
+                        </MenuItem>
+                      ))}
+                  </MenuList>
+                </Menu>
+              </Flex>
+              {activeChatEntity.chat_name.length !== 0 ? (
+                <ScheduleChatInterface />
+              ) : view === "assistant" &&
+                activeChatEntity.chat_name.length === 0 ? (
+                <>
+                  <Flex
+                    w={"full"}
+                    justifyContent={"center"}
+                    alignItems={"center"}
+                    fontSize={"2xl"}
+                    fontWeight={"black"}
+                  >
+                    Select or Create Chat at the top
+                  </Flex>
+                </>
+              ) : (
+                ""
+              )}
             </Flex>
-          </>
-        ) : (
-          ""
-        )}
+          )}
 
-        {view === "insights" && (
-          <DraggablePaneDivider
-            LeftPanel={ScheduleInsights}
-            RightPanel={RightPanel}
-          />
-        )}
-        {view === "reports" && <ReportsPage />}
-        {view === "gantt" && <ScheduleGanttInterface />}
+          {view === "insights" && (
+            <Flex h="full" w="full" gap="16">
+              <Flex flex={1}>
+                <ScheduleInsights />
+              </Flex>
+              <Box width="2px" h="full" bg="gray.200"></Box>
+              <Flex flex={1}>
+                <ActivitiesDetailPage />
+              </Flex>
+            </Flex>
+          )}
+          {view === "reports" && <ReportsPage />}
+          {view === "gantt" && <ScheduleGanttInterface />}
+        </Flex>
       </Flex>
     </Flex>
   );

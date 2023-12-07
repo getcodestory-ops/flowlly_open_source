@@ -152,10 +152,10 @@ function ChatMessageDisplay() {
     context.current = selectedContext;
   }, [selectedContext]);
 
-  useEffect(() => {
-    if (!lastMessageRef) return;
-    lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages]);
+  // useEffect(() => {
+  //   if (!lastMessageRef) return;
+  //   lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+  // }, [chatMessages]);
 
   useEffect(() => {
     const chatHistory = chatSessions.filter(
@@ -165,13 +165,7 @@ function ChatMessageDisplay() {
   }, [chatSession, chatSessions]);
 
   return (
-    <Box
-      overflowY="auto"
-      width="full"
-      ref={chatBoxRef}
-      mb="8"
-      h={{ base: "500px", md: "35%" }}
-    >
+    <Box overflowY="auto" width="full" ref={chatBoxRef} mb="8">
       {activeChatMessages &&
         activeChatMessages.length > 0 &&
         activeChatMessages.map((message, index) => (

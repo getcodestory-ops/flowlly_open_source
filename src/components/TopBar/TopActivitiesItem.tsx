@@ -98,7 +98,7 @@ const TopActivitiesItems = ({
         <Flex alignItems={"center"}>
           <Menu>
             <MenuButton fontSize={"md"} fontWeight={"medium"}>
-              <Flex alignItems={"center"} ml="2">
+              <Flex alignItems={"center"} ml="2" fontSize="xs">
                 {activeActivity?.name ?? ""}
                 <Box ml={"2"}>
                   <IoChevronDownOutline />

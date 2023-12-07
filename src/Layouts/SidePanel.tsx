@@ -14,10 +14,5 @@ interface SidePanel {
 }
 
 export default function SidePanel() {
-  return (
-    <Flex>
-      <SwitchPanel />
-      {/* <SidePanelExtension /> */}
-    </Flex>
-  );
+  return <SwitchPanel />;
 }

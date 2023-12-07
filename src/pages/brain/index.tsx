@@ -1,6 +1,6 @@
 import Head from "next/head";
 import NavBars from "@/Layouts/NavBars";
-import ProjectSetup from "@/Layouts/ProjectSetup";
+import SearchInterface from "@/Layouts/SearchInterface";
 export default function DashboardPage() {
-  return <ProjectSetup />;
+  return <SearchInterface />;
 }

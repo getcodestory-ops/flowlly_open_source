@@ -15,8 +15,10 @@ import { GoProjectRoadmap } from "react-icons/go";
 import { HiOutlineUserGroup } from "react-icons/hi2";
 import { HiOutlineSpeakerphone } from "react-icons/hi";
 import { RiMoneyDollarCircleLine } from "react-icons/ri";
+import { useRouter } from "next/navigation";
 
 export default function SwitchPanel() {
+  const router = useRouter();
   const {
     sidePanelExtensionView,
     setSidePanelExtensionView,
@@ -31,15 +33,13 @@ export default function SwitchPanel() {
 
   return (
     <Flex
-      // width="16"
-      // bg="brand.dark"
       bg="brand2.mid"
       direction={{ sm: "row", md: "column" }}
+      h="full"
       alignItems="center"
       justifyContent="space-between"
-      // shadow="base"
       p="6"
-      // display={{ base: showMenu ? "flex" : "none", md: "flex" }}
+      w="full"
     >
       <Box display="flex" justifyContent="center">
         <Image
@@ -59,13 +59,13 @@ export default function SwitchPanel() {
             zIndex="1"
             onClick={() => {
               // setSidePanelExtensionView("project");
+              router.push("/dashboard");
               setAppView("dashboard");
             }}
             bg={`${appView === "dashboard" ? "brand.accent" : ""}`}
             color="brand.dark"
             _hover={{ bg: "brand.mid", color: "white" }}
           >
-            {" "}
             <AiOutlineDashboard />
           </Button>
         </Tooltip>
@@ -79,6 +79,7 @@ export default function SwitchPanel() {
             zIndex="1"
             onClick={() => {
               // setSidePanelExtensionView("memory");
+              router.push("/brain");
               setAppView("search");
             }}
             bg={`${appView === "search" ? "brand.accent" : ""}`}
@@ -89,19 +90,7 @@ export default function SwitchPanel() {
             <BiBrain />
           </Button>
         </Tooltip>
-        {/* <Button
-          zIndex="1"
-          onClick={() => {
-            setSidePanelExtensionView("agent");
-            setAppView("agent");
-          }}
-          bg={`${appView !== "agent" ? "brand.accent" : ""}`}
-          color="white"
-          _hover={{ bg: "brand.mid", color: "white" }}
-        >
-          <GrGroup />
 
-        </Button> */}
         <Tooltip
           label="Schedule Assistant"
           aria-label="A tooltip"
@@ -112,6 +101,7 @@ export default function SwitchPanel() {
             zIndex="1"
             onClick={() => {
               // setSidePanelExtensionView("schedule");
+              router.push("/schedule");
               setAppView("schedule");
             }}
             bg={`${appView !== "schedule" ? "" : "brand.accent"}`}
@@ -121,44 +111,7 @@ export default function SwitchPanel() {
             <AiOutlineSchedule />
           </Button>
         </Tooltip>
-        {/* <Tooltip
-          label="Budget Assistant"
-          aria-label="A tooltip"
-          bg="white"
-          color="brand.dark"
-        >
-          <Button
-            zIndex="1"
-            onClick={() => {
-              // setSidePanelExtensionView("schedule");
-              setAppView("budget");
-            }}
-            bg={`${appView !== "budget" ? "" : "brand.accent"}`}
-            color="brand.dark"
-            _hover={{ bg: "brand.mid", color: "white" }}
-          >
-            <RiMoneyDollarCircleLine />
-          </Button>
-        </Tooltip>
-        <Tooltip
-          label="Safety Assistant"
-          aria-label="A tooltip"
-          bg="white"
-          color="brand.dark"
-        >
-          <Button
-            zIndex="1"
-            onClick={() => {
-              // setSidePanelExtensionView("schedule");
-              setAppView("safety");
-            }}
-            bg={`${appView !== "safety" ? "" : "brand.accent"}`}
-            color="brand.dark"
-            _hover={{ bg: "brand.mid", color: "white" }}
-          >
-            <MdOutlineHealthAndSafety />
-          </Button>
-        </Tooltip> */}
+
         <Tooltip
           label="Meeting Assistant"
           aria-label="A tooltip"
@@ -169,6 +122,7 @@ export default function SwitchPanel() {
             zIndex="1"
             onClick={() => {
               // setSidePanelExtensionView("schedule");
+              router.push("/meeting");
               setAppView("meeting");
             }}
             bg={`${appView !== "meeting" ? "" : "brand.accent"}`}
@@ -200,31 +154,6 @@ export default function SwitchPanel() {
       </Stack>
 
       <Stack as="nav" direction={{ md: "column", sm: "row" }} spacing={4}>
-        {/* <Tooltip
-          label="File Upload"
-          aria-label="A tooltip"
-          bg="white"
-          color="brand.dark"
-        >
-          <Button
-            zIndex="1"
-            onClick={() => {
-              setSidePanelExtensionView("fileExplorer");
-              setAppView("search");
-            }}
-            bg={`${
-              sidePanelExtensionView !== "fileExplorer" || appView !== "search"
-                ? ""
-                : "brand.accent"
-            }`}
-            color="brand.dark"
-            _hover={{ bg: "brand.mid", color: "white" }}
-          >
-            {" "}
-            <BiFolder />
-            
-          </Button>
-        </Tooltip> */}
         <Tooltip
           label="Project Setup"
           aria-label="A tooltip"
@@ -235,13 +164,13 @@ export default function SwitchPanel() {
             zIndex="1"
             onClick={() => {
               // setSidePanelExtensionView("project");
+              router.push("/projects");
               setAppView("projectSettings");
             }}
             bg={`${appView === "projectSettings" ? "brand.accent" : ""}`}
             color="brand.dark"
             _hover={{ bg: "brand.mid", color: "white" }}
           >
-            {" "}
             <GoProjectRoadmap />
           </Button>
         </Tooltip>

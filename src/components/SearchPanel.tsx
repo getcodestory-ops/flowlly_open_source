@@ -152,30 +152,30 @@ function SearchPanel() {
 
   return (
     <Flex w={"full"}>
-      <Flex w={"20%"}>
-        {" "}
+      <Flex
+        w={{ lg: 96 }}
+        position={{ base: "absolute", lg: "relative" }}
+        zIndex={"10"}
+        bg="white"
+      >
         <SearchMemory />
       </Flex>
       <Flex
         flex="1"
         direction="column"
-        alignItems="start"
-        // justifyContent="end"
+        alignItems="end"
         bg="brand2.light"
-        maxH={{ base: "80%", md: "100%" }}
-        // ref={refContainer}
+        borderLeft={{ lg: "2px solid #E2E8F0" }}
+        w="full"
+        gap="4"
+        justifyContent="end"
       >
         <ChatMessageDisplay />
-        <Stack
-          spacing={4}
-          pb="4"
-          width="2xl"
-          alignSelf={"center"}
-          w={{ base: "85%", md: "60%" }}
-        >
-          <Flex justifyContent={"end"} alignItems="center" mb="-4">
-            <ContextSelection />
-          </Flex>
+
+        <Flex justifyContent={"end"} alignItems="center">
+          <ContextSelection />
+        </Flex>
+        <Flex w="full" px="8" py={4}>
           <InputGroup size="lg">
             <Textarea
               color="brand.dark"
@@ -207,7 +207,7 @@ function SearchPanel() {
               height={`${chatInput.length / 40}rem`}
             />
           </InputGroup>
-        </Stack>
+        </Flex>
       </Flex>
     </Flex>
   );

@@ -21,6 +21,7 @@ function RSSCard({ title, date, status }: RSSCardProps) {
       rounded={"md"}
       mb={"3"}
       fontSize={"sm"}
+      cursor={"pointer"}
     >
       <Flex alignItems={"center"}>
         <Icon

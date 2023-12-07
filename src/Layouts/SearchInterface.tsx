@@ -10,7 +10,7 @@ function SearchInterface() {
   const { isPdfVisible } = pdfViewer;
 
   return (
-    <Flex w={"1200px"}>
+    <Flex w="full">
       {!isPdfVisible && <SearchPanel />}
       {isPdfVisible && (
         <DraggablePaneDivider LeftPanel={SearchPanel} RightPanel={PdfLoader} />
