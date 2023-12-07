@@ -12,7 +12,7 @@ import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { useStore } from "@/utils/store";
 import { type } from "os";
 
-interface GraphCardProps {
+export interface GraphCardProps {
   options: any;
   series: any;
   type: any;
@@ -34,7 +34,7 @@ function GraphCard({
   changeImpact,
 }: GraphCardProps) {
   return (
-    <Flex direction={"row"} flexWrap={"wrap"} mb={"4"}>
+    <Flex direction={"row"} h="100%" w="100%">
       <Flex
         borderColor={"brand.light"}
         bg={"brand.light"}
@@ -99,8 +99,7 @@ function GraphCard({
             options={options}
             series={series}
             type={type}
-            width={360}
-            height={300}
+            width={"360px"}
           />
         </Flex>
       </Flex>

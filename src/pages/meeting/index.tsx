@@ -1,6 +1,6 @@
 import Head from "next/head";
 import NavBars from "@/Layouts/NavBars";
-import ProjectSetup from "@/Layouts/ProjectSetup";
+import MeetingInterface from "@/Layouts/MeetingInterface";
 export default function DashboardPage() {
-  return <ProjectSetup />;
+  return <MeetingInterface />;
 }

@@ -1,7 +1,7 @@
 import React from "react";
-import { Box, Flex, Icon, Text } from "@chakra-ui/react";
+import { Box, Flex, Icon, Text, Grid, GridItem } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
-import GraphCard from "./GraphCard";
+import GraphCard, { GraphCardProps } from "./GraphCard";
 
 function GraphSection() {
   const options = {
@@ -163,66 +163,55 @@ function GraphSection() {
     },
   ];
 
+  const data: GraphCardProps[] = [
+    {
+      options: options,
+      series: series,
+      type: "line",
+      title: "Project Progress",
+      actualValue: "40%",
+      valueChange: "10%",
+      changeType: "down",
+      changeImpact: "negative",
+    },
+    {
+      options: duration,
+      series: duratiionSeries,
+      type: "line",
+      title: "Duration",
+      actualValue: "340 days",
+      valueChange: "40 days",
+      changeType: "up",
+      changeImpact: "negative",
+    },
+    {
+      options: activities,
+      series: activitiesSeries,
+      type: "line",
+      title: "Delay and At Risk Tasks",
+      changeType: "up",
+      changeImpact: "negative",
+    },
+    {
+      options: safetyReports,
+      series: safetyReportsSeries,
+      type: "line",
+      title: "Safety Incidents",
+      actualValue: "13 incidents",
+      valueChange: "6 incidents",
+      changeType: "up",
+      changeImpact: "negative",
+    },
+  ];
+
   return (
-    <Flex
-      direction={"row"}
-      flexWrap={"wrap"}
-      overflowY={"scroll"}
-      sx={{
-        "&::-webkit-scrollbar": {
-          width: "0px",
-          borderRadius: "8px",
-          backgroundColor: `rgba(0, 0, 0, 0.05)`,
-        },
-        "&::-webkit-scrollbar-thumb": {
-          backgroundColor: `rgba(0, 0, 0, 0.05)`,
-        },
-      }}
-      // overflowY={"auto"}
-      // mb={"4"}
-      // h={"63%"}
-    >
-      <GraphCard
-        options={options}
-        series={series}
-        type={"line"}
-        title="Project Progress"
-        actualValue="40%"
-        valueChange="10%"
-        changeType="down"
-        changeImpact="negative"
-      />
-      <GraphCard
-        options={duration}
-        series={duratiionSeries}
-        type={"line"}
-        title="Duration"
-        actualValue="340 days"
-        valueChange="40 days"
-        changeType="up"
-        changeImpact="negative"
-      />
-      <GraphCard
-        options={activities}
-        series={activitiesSeries}
-        type={"line"}
-        title="Delay and At Risk Tasks"
-        // actualValue={null}
-        // valueChange={null}
-        // changeType={null}
-        // changeImpact={null}
-      />
-      <GraphCard
-        options={safetyReports}
-        series={safetyReportsSeries}
-        type={"line"}
-        title="Safety Incidents"
-        actualValue="13 incidents"
-        valueChange="6 incidents"
-        changeType="up"
-        changeImpact="negative"
-      />
-    </Flex>
+    <Grid templateColumns={{ md: "repeat(2, 1fr)" }}>
+      {data.map((item) => (
+        <GridItem key={item.title}>
+          <GraphCard {...item} />
+        </GridItem>
+      ))}
+    </Grid>
   );
 }
 

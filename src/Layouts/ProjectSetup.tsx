@@ -323,7 +323,6 @@ function ProjectSetup() {
             alignItems={"center"}
             h={"100%"}
           >
-            {" "}
             Select or create a project at the top left corner
           </Flex>
         </>

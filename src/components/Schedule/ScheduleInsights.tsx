@@ -4,39 +4,18 @@ import {
   Button,
   Box,
   Icon,
-  VStack,
   Text,
-  Spinner,
-  Toast,
   useToast,
   Tooltip,
-  Modal,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
-  SliderMark,
-  Grid,
-  GridItem,
 } from "@chakra-ui/react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
-import { getActivities } from "@/api/activity_routes";
 import { BiSolidCircle } from "react-icons/bi";
 import { MdHistoryToggleOff, MdInfoOutline } from "react-icons/md";
-import { GrCircleAlert } from "react-icons/gr";
-
 import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
 import { AiOutlineAlert } from "react-icons/ai";
-import { ActivityEntity } from "@/types/activities";
-import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
-import CustomDatePicker from "../DatePicker/DatePicker";
-import { G } from "@react-pdf/renderer";
-import ProbabilitySelector from "../ProbabilitySelector";
 
 function ScheduleInsights() {
-  const toast = useToast();
-  const queryClient = useQueryClient();
   const {
     session,
     activeProject,
@@ -365,30 +344,26 @@ function ScheduleInsights() {
   };
 
   return (
-    <Flex>
-      <Flex pt={10} px={"10"}>
-        <Flex direction={"column"}>
-          <Flex mb={"4"}>
-            {quickDataViewCard("Delayed", countOfDelayed)}
-            {quickDataViewCard("At Risk", countOfAtRisk)}
-            {quickDataViewCard("In Progress", countOfInProgress)}
-            {quickDataViewCard("Completed", countOfCompleted)}
-            {quickDataViewCard("On Schedule", countOfOnSchedule)}
-          </Flex>
-          <Flex
-            overflowY={"scroll"}
-            overscrollBehaviorY={"contain"}
-            // minH={"98%"}
-            maxH={"80%"}
-            sx={{
-              "::-webkit-scrollbar": {
-                display: "none",
-              },
-            }}
-            direction={"column"}
-          >
-            {activitiesCard()}
-          </Flex>
+    <Flex p={"10"}>
+      <Flex direction={"column"}>
+        <Flex mb={"4"}>
+          {quickDataViewCard("Delayed", countOfDelayed)}
+          {quickDataViewCard("At Risk", countOfAtRisk)}
+          {quickDataViewCard("In Progress", countOfInProgress)}
+          {quickDataViewCard("Completed", countOfCompleted)}
+          {quickDataViewCard("On Schedule", countOfOnSchedule)}
+        </Flex>
+        <Flex
+          overflowY={"scroll"}
+          overscrollBehaviorY={"contain"}
+          sx={{
+            "::-webkit-scrollbar": {
+              display: "none",
+            },
+          }}
+          direction={"column"}
+        >
+          {activitiesCard()}
         </Flex>
       </Flex>
     </Flex>
