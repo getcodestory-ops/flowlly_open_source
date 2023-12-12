@@ -26,7 +26,7 @@ export interface Brain {
   status: string;
 }
 
-type AppView =
+export type AppView =
   | "schedule"
   | "search"
   | "agent"
