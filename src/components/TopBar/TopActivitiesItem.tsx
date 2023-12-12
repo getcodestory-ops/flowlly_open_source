@@ -19,7 +19,7 @@ import { useStore } from "@/utils/store";
 import { getActivities } from "@/api/activity_routes";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
-
+import { useRouter } from "next/router";
 interface TopActivitiesItemProps {
   activeProjectMenu: ProjectEntity;
   renderProjects: boolean;
@@ -32,6 +32,8 @@ const TopActivitiesItems = ({
   activeProjectMenu,
   renderProjects,
 }: TopActivitiesItemProps) => {
+  const router = useRouter();
+  const { projectId } = router.query;
   const [activeActivity, setActiveActivity] = useState<ActivityEntity | null>(
     null
   );
@@ -99,7 +101,7 @@ const TopActivitiesItems = ({
               </Flex>
             </MenuButton>
 
-            <MenuList>
+            <MenuList style={{ maxHeight: "300px", overflowY: "auto" }}>
               {activities.map((activity: ActivityEntity) => (
                 <Flex
                   key={activity.id}

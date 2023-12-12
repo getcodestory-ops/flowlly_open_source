@@ -5,8 +5,11 @@ import { LuFileText } from "react-icons/lu";
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 function DocumentList() {
+  const router = useRouter();
+  const { projectId } = router.query;
   const { session, activeProject, taskToView } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
@@ -51,8 +54,12 @@ function DocumentList() {
         documents.map((document) => (
           <Link
             href={{
-              pathname: "/documents/editor",
-              query: { id: document.id, title: document.title }, // Pass the query parameters
+              pathname: `${router.pathname}/editor`,
+              query: {
+                id: document.id,
+                title: document.title,
+                projectId: projectId,
+              }, // Pass the query parameters
             }}
             key={document.id}
           >

@@ -13,6 +13,7 @@ import { useEffect } from "react";
 
 export default function SwitchPanel() {
   const router = useRouter();
+  const { projectId } = router.query;
 
   const {
     sidePanelExtensionView,
@@ -65,7 +66,9 @@ export default function SwitchPanel() {
         />
       </Box>
       <Stack direction={{ md: "column", sm: "row" }} spacing={4}>
-        <Link href="/dashboard">
+        <Link
+          href={{ pathname: "/dashboard", query: { projectId: projectId } }}
+        >
           <Tooltip
             label="Dashboard"
             aria-label="A tooltip"
@@ -85,7 +88,7 @@ export default function SwitchPanel() {
             </Button>
           </Tooltip>
         </Link>
-        <Link href="/brain">
+        <Link href={{ pathname: "/brain", query: { projectId: projectId } }}>
           <Tooltip
             label="Search Assistant"
             aria-label="A tooltip"
@@ -106,7 +109,7 @@ export default function SwitchPanel() {
             </Button>
           </Tooltip>
         </Link>
-        <Link href="/schedule">
+        <Link href={{ pathname: "/schedule", query: { projectId: projectId } }}>
           <Tooltip
             label="Schedule Assistant"
             aria-label="A tooltip"
@@ -126,7 +129,7 @@ export default function SwitchPanel() {
             </Button>
           </Tooltip>
         </Link>
-        <Link href="/meeting">
+        <Link href={{ pathname: "/meeting", query: { projectId: projectId } }}>
           <Tooltip
             label="Meeting Assistant"
             aria-label="A tooltip"
@@ -146,7 +149,9 @@ export default function SwitchPanel() {
             </Button>
           </Tooltip>
         </Link>
-        <Link href="/documents">
+        <Link
+          href={{ pathname: "/documents", query: { projectId: projectId } }}
+        >
           <Tooltip
             label="Document Editor"
             aria-label="A tooltip"
@@ -166,7 +171,9 @@ export default function SwitchPanel() {
             </Button>
           </Tooltip>
         </Link>
-        <Link href="/communication">
+        <Link
+          href={{ pathname: "/communication", query: { projectId: projectId } }}
+        >
           <Tooltip
             label="Communication Assistant"
             aria-label="A tooltip"
@@ -189,7 +196,7 @@ export default function SwitchPanel() {
       </Stack>
 
       <Stack as="nav" direction={{ md: "column", sm: "row" }} spacing={4}>
-        <Link href="/projects">
+        <Link href={{ pathname: "/projects", query: { projectId: projectId } }}>
           <Tooltip
             label="Project Setup"
             aria-label="A tooltip"
