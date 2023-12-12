@@ -26,19 +26,22 @@ export interface Brain {
   status: string;
 }
 
+export type AppView =
+  | "schedule"
+  | "search"
+  | "agent"
+  | "project"
+  | "meeting"
+  | "budget"
+  | "communication"
+  | "safety"
+  | "dashboard"
+  | "projectSettings"
+  | "documentEditor";
+
 export type State = {
   session: Session | null;
-  appView:
-    | "schedule"
-    | "search"
-    | "agent"
-    | "project"
-    | "meeting"
-    | "budget"
-    | "communication"
-    | "safety"
-    | "dashboard"
-    | "projectSettings";
+  appView: AppView;
   hasAdminRights: boolean;
   userProjects: ProjectEntity[];
   activeProject: ProjectEntity | null;
@@ -64,19 +67,7 @@ export type State = {
   scheduleProbability: number;
   scheduleDate: Date;
   setSession: (session: Session | null) => void;
-  setAppView: (
-    appView:
-      | "schedule"
-      | "search"
-      | "agent"
-      | "project"
-      | "meeting"
-      | "budget"
-      | "communication"
-      | "safety"
-      | "dashboard"
-      | "projectSettings"
-  ) => void;
+  setAppView: (appView: AppView) => void;
   setUserProjects: (userProjects: ProjectEntity[]) => void;
   setUserActivities: (userActivities: ActivityEntity[]) => void;
   setActiveProject: (activeProject: ProjectEntity | null) => void;

@@ -17,6 +17,7 @@ import { getProjects } from "@/api/projectRoutes";
 import { useStore } from "@/utils/store";
 import { ActivityEntity } from "@/types/activities";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useRouter } from "next/router";
 
 interface TopBarMenuItemsProps {
   taskToView: ActivityEntity;
@@ -27,6 +28,8 @@ const TopBarProjects = ({
   taskToView,
   renderProjects,
 }: TopBarMenuItemsProps) => {
+  const router = useRouter();
+  const { projectId } = router.query;
   const [activeProjectMenu, setActiveProjectMenu] =
     useState<ProjectEntity | null>(null);
 
@@ -45,10 +48,33 @@ const TopBarProjects = ({
 
   useEffect(() => {
     if (projects && projects.length > 0) {
-      setActiveProjectMenu(projects[0]);
-      setActiveProject(projects[0]);
+      if (projectId) {
+        const project = projects.filter(
+          (project: ProjectEntity) => project.project_id === projectId
+        );
+        if (project.length > 0) {
+          setActiveProjectMenu(project[0]);
+          setActiveProject(project[0]);
+        } else {
+          // Handle the case where the project with the given projectId is not found
+          // For example, you might want to redirect to a default route or show an error
+        }
+      } else {
+        // Use router.push with an object argument to navigate
+        router.push({
+          pathname: router.pathname,
+          query: { projectId: projects[0].project_id },
+        });
+      }
     }
-  }, [projects]);
+  }, [projects, projectId, router]);
+
+  const changeProject = (project: ProjectEntity) => {
+    router.push({
+      pathname: router.pathname,
+      query: { projectId: project.project_id },
+    });
+  };
 
   return (
     <>
@@ -71,8 +97,7 @@ const TopBarProjects = ({
                       <Flex key={project.project_id}>
                         <MenuItem
                           onClick={() => {
-                            setActiveProject(project);
-                            setActiveProjectMenu(project);
+                            changeProject(project);
                           }}
                         >
                           {project.name}

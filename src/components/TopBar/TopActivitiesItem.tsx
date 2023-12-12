@@ -19,7 +19,7 @@ import { useStore } from "@/utils/store";
 import { getActivities } from "@/api/activity_routes";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
-
+import { useRouter } from "next/router";
 interface TopActivitiesItemProps {
   activeProjectMenu: ProjectEntity;
   renderProjects: boolean;
@@ -32,6 +32,8 @@ const TopActivitiesItems = ({
   activeProjectMenu,
   renderProjects,
 }: TopActivitiesItemProps) => {
+  const router = useRouter();
+  const { projectId } = router.query;
   const [activeActivity, setActiveActivity] = useState<ActivityEntity | null>(
     null
   );
@@ -45,17 +47,10 @@ const TopActivitiesItems = ({
     scheduleProbability,
   } = useStore((state) => ({
     session: state.session,
-    userProjects: state.userProjects,
-    setUserProjects: state.setUserProjects,
-    userActivities: state.userActivities,
     setUserActivities: state.setUserActivities,
     activeProject: state.activeProject,
     setRightPanelView: state.setRightPanelView,
     setTaskToView: state.setTaskToView,
-    setTaskDetailsView: state.setTaskDetailsView,
-    setActiveProject: state.setActiveProject,
-    activeChatEntity: state.activeChatEntity,
-    setActiveChatEntity: state.setActiveChatEntity,
     scheduleDate: state.scheduleDate,
     scheduleProbability: state.scheduleProbability,
   }));
@@ -106,7 +101,7 @@ const TopActivitiesItems = ({
               </Flex>
             </MenuButton>
 
-            <MenuList>
+            <MenuList style={{ maxHeight: "300px", overflowY: "auto" }}>
               {activities.map((activity: ActivityEntity) => (
                 <Flex
                   key={activity.id}

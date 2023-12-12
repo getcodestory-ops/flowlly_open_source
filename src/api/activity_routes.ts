@@ -1,4 +1,4 @@
-import { Session } from "@supabase/supabase-js";
+import { type Session } from "@supabase/supabase-js";
 import axios, { AxiosResponse } from "axios";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import { ActivityEntity, CreateNewActivity } from "@/types/activities";

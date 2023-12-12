@@ -5,7 +5,7 @@ import { Chat, ChatMessage, ChatHistory } from "@/types/chat";
 import { ProjectEntity } from "@/types/projects";
 import { AgentChatEntity } from "@/types/agentChats";
 import { ActivityEntity } from "@/types/activities";
-import { State, SidePanelExtension, Brain } from "@/types/store";
+import { State, SidePanelExtension, Brain, AppView } from "@/types/store";
 import { persist } from "zustand/middleware";
 
 export const useStore = create<State>((set) => ({
@@ -47,19 +47,7 @@ export const useStore = create<State>((set) => ({
   scheduleDate: new Date(),
   setSession: (session: Session | null) => set(() => ({ session })),
   setAdminRights: (hasAdminRights: boolean) => set(() => ({ hasAdminRights })),
-  setAppView: (
-    appView:
-      | "schedule"
-      | "search"
-      | "agent"
-      | "project"
-      | "meeting"
-      | "budget"
-      | "communication"
-      | "safety"
-      | "dashboard"
-      | "projectSettings"
-  ) => set(() => ({ appView })),
+  setAppView: (appView: AppView) => set(() => ({ appView })),
   setUserProjects: (userProjects: ProjectEntity[]) =>
     set(() => ({ userProjects })),
   setUserActivities: (userActivities: ActivityEntity[]) =>
