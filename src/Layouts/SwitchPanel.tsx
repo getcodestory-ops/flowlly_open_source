@@ -1,24 +1,19 @@
 import { Flex, Stack, Button, Box, Image, Tooltip } from "@chakra-ui/react";
-import { FaTimes, FaSearch, FaPlug, FaBrain, FaFolder } from "react-icons/fa";
 import { BiBrain, BiFolder } from "react-icons/bi";
 import UserPanel from "@/components/UserPanel";
 import { useStore } from "@/utils/store";
-import {
-  AiFillSchedule,
-  AiOutlineSchedule,
-  AiOutlineDashboard,
-} from "react-icons/ai";
-import { HiUserGroup } from "react-icons/hi";
-import { GrGroup } from "react-icons/gr";
-import { MdOutlineArrowRight, MdOutlineHealthAndSafety } from "react-icons/md";
+import { AiOutlineSchedule, AiOutlineDashboard } from "react-icons/ai";
 import { GoProjectRoadmap } from "react-icons/go";
 import { HiOutlineUserGroup } from "react-icons/hi2";
 import { HiOutlineSpeakerphone } from "react-icons/hi";
-import { RiMoneyDollarCircleLine } from "react-icons/ri";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import { IoDocumentTextOutline } from "react-icons/io5";
+import { useEffect } from "react";
 
 export default function SwitchPanel() {
   const router = useRouter();
+
   const {
     sidePanelExtensionView,
     setSidePanelExtensionView,
@@ -30,6 +25,27 @@ export default function SwitchPanel() {
     setAppView: state.setAppView,
     appView: state.appView,
   }));
+
+  useEffect(() => {
+    if (router.pathname === "/dashboard") {
+      setAppView("dashboard");
+    }
+    if (router.pathname === "/brain") {
+      setAppView("search");
+    }
+    if (router.pathname === "/schedule") {
+      setAppView("schedule");
+    }
+    if (router.pathname === "/meeting") {
+      setAppView("meeting");
+    }
+    if (router.pathname === "/documents") {
+      setAppView("documentEditor");
+    }
+    if (router.pathname === "/projects") {
+      setAppView("projectSettings");
+    }
+  }, [router.pathname]);
 
   return (
     <Flex
@@ -49,131 +65,150 @@ export default function SwitchPanel() {
         />
       </Box>
       <Stack direction={{ md: "column", sm: "row" }} spacing={4}>
-        <Tooltip
-          label="Dashboard"
-          aria-label="A tooltip"
-          bg="white"
-          color="brand.dark"
-        >
-          <Button
-            zIndex="1"
-            onClick={() => {
-              // setSidePanelExtensionView("project");
-              router.push("/dashboard");
-              setAppView("dashboard");
-            }}
-            bg={`${appView === "dashboard" ? "brand.accent" : ""}`}
+        <Link href="/dashboard">
+          <Tooltip
+            label="Dashboard"
+            aria-label="A tooltip"
+            bg="white"
             color="brand.dark"
-            _hover={{ bg: "brand.mid", color: "white" }}
           >
-            <AiOutlineDashboard />
-          </Button>
-        </Tooltip>
-        <Tooltip
-          label="Search Assistant"
-          aria-label="A tooltip"
-          bg="white"
-          color="brand.dark"
-        >
-          <Button
-            zIndex="1"
-            onClick={() => {
-              // setSidePanelExtensionView("memory");
-              router.push("/brain");
-              setAppView("search");
-            }}
-            bg={`${appView === "search" ? "brand.accent" : ""}`}
+            <Button
+              zIndex="1"
+              bg={`${appView === "dashboard" ? "brand.accent" : ""}`}
+              color="brand.dark"
+              onClick={() => {
+                setAppView("dashboard");
+              }}
+              _hover={{ bg: "brand.mid", color: "white" }}
+            >
+              <AiOutlineDashboard />
+            </Button>
+          </Tooltip>
+        </Link>
+        <Link href="/brain">
+          <Tooltip
+            label="Search Assistant"
+            aria-label="A tooltip"
+            bg="white"
             color="brand.dark"
-            _hover={{ bg: "brand.mid", color: "white" }}
           >
-            {" "}
-            <BiBrain />
-          </Button>
-        </Tooltip>
-
-        <Tooltip
-          label="Schedule Assistant"
-          aria-label="A tooltip"
-          bg="white"
-          color="brand.dark"
-        >
-          <Button
-            zIndex="1"
-            onClick={() => {
-              // setSidePanelExtensionView("schedule");
-              router.push("/schedule");
-              setAppView("schedule");
-            }}
-            bg={`${appView !== "schedule" ? "" : "brand.accent"}`}
+            <Button
+              zIndex="1"
+              onClick={() => {
+                setAppView("search");
+              }}
+              bg={`${appView === "search" ? "brand.accent" : ""}`}
+              color="brand.dark"
+              _hover={{ bg: "brand.mid", color: "white" }}
+            >
+              {" "}
+              <BiBrain />
+            </Button>
+          </Tooltip>
+        </Link>
+        <Link href="/schedule">
+          <Tooltip
+            label="Schedule Assistant"
+            aria-label="A tooltip"
+            bg="white"
             color="brand.dark"
-            _hover={{ bg: "brand.mid", color: "white" }}
           >
-            <AiOutlineSchedule />
-          </Button>
-        </Tooltip>
-
-        <Tooltip
-          label="Meeting Assistant"
-          aria-label="A tooltip"
-          bg="white"
-          color="brand.dark"
-        >
-          <Button
-            zIndex="1"
-            onClick={() => {
-              // setSidePanelExtensionView("schedule");
-              router.push("/meeting");
-              setAppView("meeting");
-            }}
-            bg={`${appView !== "meeting" ? "" : "brand.accent"}`}
+            <Button
+              zIndex="1"
+              onClick={() => {
+                setAppView("schedule");
+              }}
+              bg={`${appView !== "schedule" ? "" : "brand.accent"}`}
+              color="brand.dark"
+              _hover={{ bg: "brand.mid", color: "white" }}
+            >
+              <AiOutlineSchedule />
+            </Button>
+          </Tooltip>
+        </Link>
+        <Link href="/meeting">
+          <Tooltip
+            label="Meeting Assistant"
+            aria-label="A tooltip"
+            bg="white"
             color="brand.dark"
-            _hover={{ bg: "brand.mid", color: "white" }}
           >
-            <HiOutlineUserGroup />
-          </Button>
-        </Tooltip>
-        <Tooltip
-          label="Communication Assistant"
-          aria-label="A tooltip"
-          bg="white"
-          color="brand.dark"
-        >
-          <Button
-            zIndex="1"
-            onClick={() => {
-              // setSidePanelExtensionView("schedule");
-              setAppView("communication");
-            }}
-            bg={`${appView !== "communication" ? "" : "brand.accent"}`}
+            <Button
+              zIndex="1"
+              onClick={() => {
+                setAppView("meeting");
+              }}
+              bg={`${appView !== "meeting" ? "" : "brand.accent"}`}
+              color="brand.dark"
+              _hover={{ bg: "brand.mid", color: "white" }}
+            >
+              <HiOutlineUserGroup />
+            </Button>
+          </Tooltip>
+        </Link>
+        <Link href="/documents">
+          <Tooltip
+            label="Document Editor"
+            aria-label="A tooltip"
+            bg="white"
             color="brand.dark"
-            _hover={{ bg: "brand.mid", color: "white" }}
           >
-            <HiOutlineSpeakerphone />
-          </Button>
-        </Tooltip>
+            <Button
+              zIndex="1"
+              onClick={() => {
+                setAppView("documentEditor");
+              }}
+              bg={`${appView !== "documentEditor" ? "" : "brand.accent"}`}
+              color="brand.dark"
+              _hover={{ bg: "brand.mid", color: "white" }}
+            >
+              <IoDocumentTextOutline />
+            </Button>
+          </Tooltip>
+        </Link>
+        <Link href="/communication">
+          <Tooltip
+            label="Communication Assistant"
+            aria-label="A tooltip"
+            bg="white"
+            color="brand.dark"
+          >
+            <Button
+              zIndex="1"
+              onClick={() => {
+                setAppView("communication");
+              }}
+              bg={`${appView !== "communication" ? "" : "brand.accent"}`}
+              color="brand.dark"
+              _hover={{ bg: "brand.mid", color: "white" }}
+            >
+              <HiOutlineSpeakerphone />
+            </Button>
+          </Tooltip>
+        </Link>
       </Stack>
 
       <Stack as="nav" direction={{ md: "column", sm: "row" }} spacing={4}>
-        <Tooltip
-          label="Project Setup"
-          aria-label="A tooltip"
-          bg="white"
-          color="brand.dark"
-        >
-          <Button
-            zIndex="1"
-            onClick={() => {
-              // setSidePanelExtensionView("project");
-              router.push("/projects");
-              setAppView("projectSettings");
-            }}
-            bg={`${appView === "projectSettings" ? "brand.accent" : ""}`}
+        <Link href="/projects">
+          <Tooltip
+            label="Project Setup"
+            aria-label="A tooltip"
+            bg="white"
             color="brand.dark"
-            _hover={{ bg: "brand.mid", color: "white" }}
           >
-            <GoProjectRoadmap />
-          </Button>
-        </Tooltip>
+            <Button
+              zIndex="1"
+              onClick={() => {
+                setAppView("projectSettings");
+              }}
+              bg={`${appView === "projectSettings" ? "brand.accent" : ""}`}
+              color="brand.dark"
+              _hover={{ bg: "brand.mid", color: "white" }}
+            >
+              <GoProjectRoadmap />
+            </Button>
+          </Tooltip>
+        </Link>
         <UserPanel />
       </Stack>
     </Flex>

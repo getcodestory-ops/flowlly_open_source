@@ -62,3 +62,26 @@ export const getCriticalPath = async ({
   });
   return response.data;
 };
+
+export const processDocumentContent = async (
+  session: Session,
+  projectId: string,
+  documentId: string
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/schedule/process_document/${projectId}`;
+
+  const response = await axios.get(
+    url,
+
+    {
+      params: {
+        document_id: documentId,
+      },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    }
+  );
+  return response.data;
+};

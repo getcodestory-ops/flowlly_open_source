@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import TopBar from "@/components/TopBar/index";
 import Head from "next/head";
 import { useRouter } from "next/router";
+
 import supabase from "@/utils/supabaseClient";
 
 const queryClient = new QueryClient();
@@ -14,13 +15,9 @@ const queryClient = new QueryClient();
 export default function NavBars({ children }: { children: React.ReactNode }) {
   const appView = useStore((state) => state.appView);
   const router = useRouter();
-  const { setSessionToken, sessionToken, setAdminRights, hasAdminRights } =
-    useStore((state) => ({
-      setSessionToken: state.setSession,
-      sessionToken: state.session,
-      setAdminRights: state.setAdminRights,
-      hasAdminRights: state.hasAdminRights,
-    }));
+  const { setSessionToken } = useStore((state) => ({
+    setSessionToken: state.setSession,
+  }));
 
   useEffect(() => {
     async function loginCheck() {

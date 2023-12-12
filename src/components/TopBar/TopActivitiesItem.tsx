@@ -45,17 +45,10 @@ const TopActivitiesItems = ({
     scheduleProbability,
   } = useStore((state) => ({
     session: state.session,
-    userProjects: state.userProjects,
-    setUserProjects: state.setUserProjects,
-    userActivities: state.userActivities,
     setUserActivities: state.setUserActivities,
     activeProject: state.activeProject,
     setRightPanelView: state.setRightPanelView,
     setTaskToView: state.setTaskToView,
-    setTaskDetailsView: state.setTaskDetailsView,
-    setActiveProject: state.setActiveProject,
-    activeChatEntity: state.activeChatEntity,
-    setActiveChatEntity: state.setActiveChatEntity,
     scheduleDate: state.scheduleDate,
     scheduleProbability: state.scheduleProbability,
   }));
