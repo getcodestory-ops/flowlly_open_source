@@ -84,8 +84,8 @@ const TopActivitiesItems = ({
   });
 
   useEffect(() => {
+    setUserActivities(activities ?? []);
     if (activities && activities.length > 0) {
-      setUserActivities(activities);
       setActiveActivity(activities[0]);
       if (taskToViewId) {
         const activity = activities?.filter(
