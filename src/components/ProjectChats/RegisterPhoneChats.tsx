@@ -100,7 +100,7 @@ function RegisterPhoneChats({ isOpen, onClose }: AddNewRegistrationModal) {
         <ModalBody>
           <Box mb={4}>
             <Input
-              placeholder="Phone Number ex. 4164567898"
+              placeholder="Phone Number ex. +14164567898"
               value={phoneNumber}
               onChange={(e) => {
                 setPhoneNumber(e.target.value);

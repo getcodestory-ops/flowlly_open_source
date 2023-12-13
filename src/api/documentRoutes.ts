@@ -50,11 +50,15 @@ export const getDocuments = async (
 
 export const getDocumentContent = async (
   session: Session,
-  documentId: string
+  documentId: string,
+  projectId: string
 ) => {
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/document/content/${documentId}`;
 
   const response = await axios.get(url, {
+    params: {
+      project_access_id: projectId,
+    },
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${session.access_token}`,
@@ -82,3 +86,26 @@ export const updateDocumentContent = async (
   );
   return response.data;
 };
+
+export async function uploadMP3File(
+  session: Session,
+  documentId: string,
+  projectId: string,
+  file: File
+) {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/document/content/mp3/${documentId}`;
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("documentId", documentId);
+  formData.append("projectId", projectId);
+
+  const response = await axios.post(url, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  return response.data;
+}

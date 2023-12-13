@@ -1,6 +1,7 @@
 import React, { memo, useEffect, useRef, useState, useCallback } from "react";
 import { IoIosSave } from "react-icons/io";
 import { FcProcess } from "react-icons/fc";
+import UploadVoiceModal from "@/components/VoiceComponent/UploadVoiceModal";
 import { Flex, Button, Tooltip, Icon } from "@chakra-ui/react";
 import { useContentSave } from "./useContentSave";
 
@@ -60,6 +61,9 @@ const EditorBlock = ({ id }: { id?: string | string[] }) => {
       flexDirection={"column"}
       alignItems={"flex-end"}
     >
+      <Flex position="absolute" transform={"translateX(-400%)"} top="32">
+        <UploadVoiceModal />
+      </Flex>
       <Tooltip label="Save the document">
         <Button
           onClick={() => onSubmit()}

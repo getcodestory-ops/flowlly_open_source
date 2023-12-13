@@ -1,7 +1,11 @@
 import { type Session } from "@supabase/supabase-js";
 import axios, { AxiosResponse } from "axios";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
-import { ActivityEntity, CreateNewActivity } from "@/types/activities";
+import type {
+  ActivityEntity,
+  CreateNewActivity,
+  UpdateActivityTypes,
+} from "@/types/activities";
 
 export const getActivities = async (
   session: Session,
@@ -43,38 +47,20 @@ export const createActivity = async (
 
 export const updateActivity = async (
   session: Session,
-  activity: string,
-  activityData: {
-    name?: string;
-    project_id?: string;
-    description?: string;
-    duration?: number;
-    start?: string;
-    end?: string;
-    cost?: number;
-    dependencies?: string[];
-    resources?: string[];
-    status?: string;
-    created_by?: string;
-    owner?: string;
-    progress?: number;
-  }
-): Promise<ActivityEntity | null> => {
+  projectId: string,
+  activity: UpdateActivityTypes
+) => {
   if (!session.access_token) return null;
 
-  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/activities/${activity}/update`;
-  console.log("activityData", activityData);
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project/${projectId}/update_activity`;
+
   try {
-    const response = await axios.put(
-      url,
-      activityData, // Send the activity data as the request body
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      }
-    );
+    const response = await axios.put(url, activity, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
 
     return response.data?.activity!;
   } catch (error) {

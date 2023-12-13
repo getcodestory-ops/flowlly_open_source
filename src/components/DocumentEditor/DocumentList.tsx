@@ -37,7 +37,7 @@ function DocumentList() {
   });
 
   return (
-    <Grid templateColumns="repeat(4, 1fr)" gap={6} p={5}>
+    <Grid templateColumns="repeat(4, 1fr)" gap={6} p={5} w="full">
       <GridItem
         py="4"
         fontSize="xl"
@@ -54,7 +54,7 @@ function DocumentList() {
         documents.map((document) => (
           <Link
             href={{
-              pathname: `${router.pathname}/editor`,
+              pathname: `documents/editor`,
               query: {
                 id: document.id,
                 title: document.title,
