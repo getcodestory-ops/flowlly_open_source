@@ -50,11 +50,13 @@ export const getDocuments = async (
 
 export const getDocumentContent = async (
   session: Session,
-  documentId: string
+  documentId: string,
+  projectId?: string
 ) => {
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/document/content/${documentId}`;
 
   const response = await axios.get(url, {
+    params: { project_access_id: projectId },
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${session.access_token}`,

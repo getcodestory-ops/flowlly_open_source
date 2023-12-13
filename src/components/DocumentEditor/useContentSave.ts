@@ -24,12 +24,12 @@ export const useContentSave = (id?: string | string[]) => {
     isLoading,
     isSuccess,
   } = useQuery({
-    queryKey: ["documentContent", session, id],
+    queryKey: ["documentContent", session, id, activeProject],
     queryFn: () => {
       if (!session || typeof id !== "string") {
         return Promise.reject("Either session or document id is not valid !");
       }
-      return getDocumentContent(session, id);
+      return getDocumentContent(session, id, activeProject?.project_id);
     },
 
     enabled: !!session?.access_token && !!id,

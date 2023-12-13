@@ -8,7 +8,7 @@ function Breadcrubms({
   renderProjects,
 }: {
   taskToView: ActivityEntity;
-  renderProjects: boolean;
+  renderProjects: number;
 }) {
   return (
     <Flex>
