@@ -21,7 +21,7 @@ import { useRouter } from "next/router";
 
 interface TopBarMenuItemsProps {
   taskToView: ActivityEntity;
-  renderProjects: boolean;
+  renderProjects: number;
 }
 
 const TopBarProjects = ({
@@ -70,10 +70,14 @@ const TopBarProjects = ({
   }, [projects, projectId, router]);
 
   const changeProject = (project: ProjectEntity) => {
-    router.push({
-      pathname: router.pathname,
-      query: { projectId: project.project_id },
-    });
+    if (renderProjects === 1) {
+      router.push({
+        query: { ...router.query, projectId: project.project_id },
+      });
+    } else {
+      setActiveProjectMenu(project);
+      setActiveProject(project);
+    }
   };
 
   return (
@@ -113,7 +117,7 @@ const TopBarProjects = ({
           {activeProjectMenu && (
             <TopActivitiesItems
               activeProjectMenu={activeProjectMenu}
-              renderProjects={false}
+              renderProjects={renderProjects}
             />
           )}
         </Flex>
