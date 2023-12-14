@@ -97,8 +97,8 @@ export async function uploadMP3File(
 
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("documentId", documentId);
-  formData.append("projectId", projectId);
+  formData.append("document_id", documentId);
+  formData.append("project_access_id", projectId);
 
   const response = await axios.post(url, formData, {
     headers: {

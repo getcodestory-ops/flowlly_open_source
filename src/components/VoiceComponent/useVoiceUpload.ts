@@ -41,14 +41,14 @@ export function useVoiceUpload() {
     },
   });
 
-  const handleSubmit = (file?: File) => {
+  const handleSubmit = (documentId: string, file?: File) => {
     if (!file) {
       alert("Please select a file");
       return;
     }
-    //uploadMP3File(file);
+    mutate({ documentId, file });
     onClose();
   };
 
-  return { isOpen, onClose, onOpen, handleSubmit };
+  return { isOpen, onClose, onOpen, handleSubmit, mutate };
 }

@@ -62,7 +62,7 @@ const EditorBlock = ({ id }: { id?: string | string[] }) => {
       alignItems={"flex-end"}
     >
       <Flex position="absolute" transform={"translateX(-400%)"} top="32">
-        <UploadVoiceModal />
+        <UploadVoiceModal documentId={id} />
       </Flex>
       <Tooltip label="Save the document">
         <Button
