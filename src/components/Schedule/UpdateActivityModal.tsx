@@ -127,7 +127,7 @@ function UpdateActivityModal({
                   <Input
                     placeholder="Activity Name"
                     required
-                    value={activity.name}
+                    value={activity.name.replace("(on schedule)", "")}
                     onChange={(e) => {
                       setActivity((state) => ({
                         ...state!,

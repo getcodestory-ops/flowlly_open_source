@@ -39,10 +39,12 @@ const EditorBlock = ({ id }: { id?: string | string[] }) => {
     };
     if (isMounted) {
       init();
-      return () => {
-        ref.current?.destroy();
-        ref.current = undefined;
-      };
+      if (ref.current) {
+        return () => {
+          ref.current?.destroy();
+          ref.current = undefined;
+        };
+      }
     }
   }, [isMounted, initializeEditor]);
 

@@ -41,6 +41,7 @@ function AddNewProjectModal({ isOpen, onClose }: AddNewProjectModalProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projectList"] });
+      queryClient.invalidateQueries({ queryKey: ["initialProjectList"] });
     },
   });
 

@@ -84,7 +84,11 @@ const TopActivitiesItems = ({
   });
 
   useEffect(() => {
-    activities && activities.length > 0 && setUserActivities(activities);
+    if (activities && activities.length > 0) {
+      setUserActivities(activities);
+    } else {
+      setUserActivities([]);
+    }
   }, [activities]);
 
   return (
