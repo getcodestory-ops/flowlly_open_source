@@ -44,12 +44,13 @@ export interface CreateNewActivity {
 }
 
 export interface UpdateActivityTypes {
-  // name: string;
-  // project_id?: string;
-  // description: string;
-  // duration: number;
-  start?: string;
-  end?: string;
+  id: string;
+  name: string;
+  project_id?: string;
+  description: string;
+  duration: number;
+  start: string;
+  end: string;
   cost?: number;
   dependencies?: string[];
   resources?: string[];

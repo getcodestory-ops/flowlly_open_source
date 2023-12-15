@@ -20,15 +20,18 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { createActivity } from "@/api/activity_routes";
 import { UpdateActivityTypes } from "@/types/activities";
-import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
+import getCurrentDateFormatted, {
+  dateDiffInDays,
+} from "@/utils/getCurrentDateFormatted";
 import { updateActivity } from "@/api/activity_routes";
 import { ActivityEntity } from "@/types/activities";
+import type { Task } from "gantt-task-react";
 
 interface UpdateActivityModalProps {
   isOpen: boolean;
   onClose: () => void;
   tasks: ActivityEntity[];
-  modifyTask: any;
+  modifyTask: Task;
 }
 
 function UpdateActivityModal({
@@ -44,41 +47,64 @@ function UpdateActivityModal({
     activeProject: state.activeProject,
   }));
 
-  const [activity, setActivity] = useState<UpdateActivityTypes>({
-    dependencies: [],
-    resources: [],
-    status: "",
-  });
+  const [activity, setActivity] = useState<UpdateActivityTypes>();
 
   //check activity updates
   useEffect(() => {
-    console.log("activity", activity);
-  }, [activity]);
+    setActivity({
+      id: modifyTask.id,
+      name: modifyTask.name,
+      description: "",
+      duration: dateDiffInDays(modifyTask.start, modifyTask.end),
+      start: getCurrentDateFormatted(modifyTask.start),
+      project_id: activeProject?.project_id,
+      end: getCurrentDateFormatted(modifyTask.end),
+      dependencies: [],
+      resources: [],
+      status: "",
+    });
+  }, [modifyTask]);
 
-  // const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-  // const mutation = useMutation({
-  //   mutationFn: () => {
-  //     if (!activity) return Promise.reject("No activity");
-  //     return createActivity(session!, activity);
-  //   },
-  //   onError: (error) => {
-  //     console.log(error);
-  //   },
+  const { mutate } = useMutation({
+    mutationFn: (activity: UpdateActivityTypes) => {
+      if (!activity || !activeProject) return Promise.reject("No activity");
+      return updateActivity(session!, activeProject.project_id, activity);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast({
+        title: "Error updating activity",
+        description: error.message,
+        status: "error",
+        duration: 4000,
 
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries({ queryKey: ["activityList"] });
-  //   },
-  // });
+        isClosable: true,
+      });
+    },
+
+    onSuccess: () => {
+      toast({
+        title: "Activity updated",
+        description: "Activity has been updated",
+        status: "success",
+        duration: 4000,
+
+        isClosable: true,
+      });
+      queryClient.invalidateQueries({ queryKey: ["activityList"] });
+    },
+  });
 
   const updateTask = () => {
-    updateActivity(session!, modifyTask.id, activity);
+    if (!activity) return;
+    mutate(activity);
     onClose();
   };
 
   return (
-    // <Modal isOpen={isOpen} onClose={onClose}>
-    <>
+    <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         {!activeProject && (
@@ -91,13 +117,106 @@ function UpdateActivityModal({
             </ModalFooter>
           </>
         )}
-        {activeProject && (
+        {activeProject && activity && (
           <>
             <ModalCloseButton />
-            <ModalHeader>Update Activity: {modifyTask.name}</ModalHeader>
+            <ModalHeader>Update Activity</ModalHeader>
             <ModalBody pb={"6"}>
               <Flex direction={"column"} mb={"2"}>
+                <Flex mb={4} gap={2} flexDirection={"column"}>
+                  <Input
+                    placeholder="Activity Name"
+                    required
+                    value={activity.name.replace("(on schedule)", "")}
+                    onChange={(e) => {
+                      setActivity((state) => ({
+                        ...state!,
+                        name: e.target.value,
+                      }));
+                    }}
+                  />
+                  <Input
+                    placeholder="Activity Duration (Days)"
+                    value={activity.duration === 0 ? "" : activity.duration}
+                    type="number"
+                    step={0.01}
+                    onChange={(e) => {
+                      if (!e.target.value) e.target.value = "0";
+                      setActivity((state) => ({
+                        ...state!,
+                        duration: parseFloat(e.target.value) ?? 0,
+                      }));
+                    }}
+                  />
+                  <Input
+                    placeholder="Start Date"
+                    type="date"
+                    value={activity.start}
+                    onChange={(e) => {
+                      if (e.target.value > activity.end) {
+                        return toast({
+                          title: "Invalid date range",
+                          description: "Start date cannot be after end date",
+                          status: "error",
+                          duration: 9000,
+
+                          isClosable: true,
+                        });
+                      }
+
+                      setActivity((state) => ({
+                        ...state!,
+                        start: e.target.value,
+                      }));
+                    }}
+                  />
+                  <Input
+                    placeholder="End Date"
+                    type="date"
+                    value={activity ? activity.end : ""}
+                    onChange={(e) => {
+                      if (e.target.value < activity.start) {
+                        return toast({
+                          title: "Invalid date range",
+                          description: "Start date cannot be after end date",
+                          status: "error",
+                          duration: 9000,
+
+                          isClosable: true,
+                        });
+                      }
+
+                      setActivity((state) => ({
+                        ...state!,
+                        end: e.target.value,
+                      }));
+                    }}
+                  />
+                  {/* <Input
+                    placeholder="Cost"
+                    value={activity.cost === 0 ? "" : activity.cost}
+                    type={activity.cost ? "number" : "text"}
+                    onChange={(e) => {
+                      if (!e.target.value) e.target.value = "0";
+                      setActivity((state) => ({
+                        ...state!,
+                        cost: parseFloat(e.target.value),
+                      }));
+                    }}
+                  /> */}
+                </Flex>
+                {/* <Textarea
+                  placeholder="Project Description"
+                  value={activity.description}
+                  onChange={(e) =>
+                    setActivity((state) => ({
+                      ...state!,
+                      description: e.target.value,
+                    }))
+                  }
+                /> */}
                 <Text as={"b"}>Select task dependency</Text>
+
                 <Select
                   id="dependencies"
                   placeholder="Select dependency"
@@ -149,7 +268,7 @@ function UpdateActivityModal({
           </>
         )}
       </ModalContent>
-    </>
+    </Modal>
   );
 }
 

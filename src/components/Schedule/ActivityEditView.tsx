@@ -27,6 +27,10 @@ function ActivityEditView() {
     activeProject: state.activeProject,
   }));
   const [activity, setActivity] = useState<UpdateActivityTypes>({
+    id: "",
+    name: "",
+    description: "",
+    duration: 0,
     start: "",
     end: "",
     cost: 0,

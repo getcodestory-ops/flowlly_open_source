@@ -37,7 +37,7 @@ function DocumentList() {
   });
 
   return (
-    <Grid templateColumns="repeat(4, 1fr)" gap={6} p={5}>
+    <Grid templateColumns="repeat(4, 1fr)" gap={6} p={5} w="full">
       <GridItem
         py="4"
         fontSize="xl"
@@ -52,46 +52,36 @@ function DocumentList() {
       {documents &&
         documents.length > 0 &&
         documents.map((document) => (
-          // <Link
-          //   href={{
-          //     pathname: `${router.pathname}/editor`,
-          //     query: {
-          //       id: document.id,
-          //       title: document.title,
-          //       projectId: projectId,
-          //     }, // Pass the query parameters
-          //   }}
-          //   key={document.id}
-          // >
-          <GridItem
-            py="4"
-            fontSize="xl"
-            key={document.id}
-            background={"brand.dark"}
-            cursor={"pointer"}
-            minH="36"
-            display="flex"
-            flexDirection="column"
-            justifyContent={"flex-end"}
-            borderRadius={"md"}
-            color={"white"}
-            onClick={() => {
-              router.push({
-                pathname: `${router.pathname}/editor`,
-                query: {
-                  ...router.query,
-                  id: document.id,
-                  title: document.title,
-                },
-              });
+          <Link
+            href={{
+              pathname: `documents/editor`,
+              query: {
+                id: document.id,
+                title: document.title,
+                projectId: projectId,
+              }, // Pass the query parameters
             }}
+            key={document.id}
           >
-            <Flex w="full" justifyContent={"center"}></Flex>
-            <Flex w="full" justifyContent={"center"}>
-              {document.title}
-            </Flex>
-          </GridItem>
-          // </Link>
+            <GridItem
+              py="4"
+              fontSize="xl"
+              key={document.id}
+              background={"brand.dark"}
+              cursor={"pointer"}
+              minH="36"
+              display="flex"
+              flexDirection="column"
+              justifyContent={"flex-end"}
+              borderRadius={"md"}
+              color={"white"}
+            >
+              <Flex w="full" justifyContent={"center"}></Flex>
+              <Flex w="full" justifyContent={"center"}>
+                {document.title}
+              </Flex>
+            </GridItem>
+          </Link>
         ))}
     </Grid>
   );

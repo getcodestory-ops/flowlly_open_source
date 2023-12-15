@@ -31,6 +31,7 @@ import { getProjects, deleteProject } from "@/api/projectRoutes";
 import DraggablePaneDivider from "@/components/DraggablePaneDivider";
 import RightPanel from "@/components/Schedule/ScheduleViewRightPanel";
 import { LuGanttChartSquare } from "react-icons/lu";
+import { IoDocumentTextOutline } from "react-icons/io5";
 import { IoChevronDownOutline } from "react-icons/io5";
 import ScheduleGanttInterface from "./ScheduleGanttInterface";
 import CustomDatePicker from "../DatePicker/DatePicker";
@@ -38,6 +39,7 @@ import ProbabilitySelector from "../ProbabilitySelector";
 import CreateContingency from "./CreateContingency/CreateContingency";
 import ProcessHistoryButton from "./ProcessHistory/ProcessHistoryButton";
 import ActivitiesDetailPage from "./ActivityDetailsPage";
+import DocumentList from "../DocumentEditor/DocumentList";
 
 function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   const { session, activeChatEntity, setActiveChatEntity, activeProject } =
@@ -163,6 +165,22 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
               <Icon as={TbReportAnalytics} />
             </Button>
           </Tooltip>
+          <Tooltip
+            label="Reports"
+            aria-label="A tooltip"
+            bg="white"
+            color="brand.dark"
+          >
+            <Button
+              size={"sm"}
+              bg={`${view === "documents" ? "brand2.accent" : "brand2.mid"}`}
+              _hover={{ bg: "brand.dark", color: "white" }}
+              onClick={() => setView("documents")}
+              mr="5"
+            >
+              <Icon as={IoDocumentTextOutline} />
+            </Button>
+          </Tooltip>
         </Flex>
         <Flex pl={"5"} pr={"2"} borderRight={"2px"} borderColor={"brand2.mid"}>
           <CustomDatePicker />
@@ -251,6 +269,16 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
           )}
           {view === "reports" && <ReportsPage />}
           {view === "gantt" && <ScheduleGanttInterface />}
+
+          {view === "documents" && (
+            <Flex
+              h="full"
+              w={{ base: "full", "2xl": "7xl" }}
+              direction="column"
+            >
+              <DocumentList />
+            </Flex>
+          )}
         </Flex>
       </Flex>
     </Flex>

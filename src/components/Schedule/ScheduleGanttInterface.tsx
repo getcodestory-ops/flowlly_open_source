@@ -70,7 +70,8 @@ const ScheduleGanttInterface = () => {
   const { isOpen, onClose, onOpen } = useScheduleUpdate();
 
   const [tasks, setTasks] = React.useState<Task[]>(initTasks());
-  const [modifyTask, setModifyTask] = useState({});
+  const [editOpen, setEditOpen] = useState<boolean>(false);
+  const [modifyTask, setModifyTask] = useState<Task>();
   const dateToday = getCurrentDateFormatted();
   const [modalType, setModalType] = useState<string>("");
   const [probability, setProbability] = useState<number>(0.5);
@@ -222,7 +223,9 @@ const ScheduleGanttInterface = () => {
   };
 
   const handleDblClick = (task: Task) => {
-    alert("On Double Click event Id:" + task.id);
+    setModifyTask(task);
+    console.log("On double click Id:" + modifyTask?.id);
+    setEditOpen(true);
   };
 
   const handleClick = (task: Task) => {
@@ -264,6 +267,15 @@ const ScheduleGanttInterface = () => {
     <Flex direction={"column"} mt={"4"}>
       <Flex direction={"column"} ml={"8"}>
         <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
+        {modifyTask && (
+          <UpdateActivityModal
+            isOpen={editOpen}
+            onClose={() => setEditOpen(false)}
+            tasks={activities}
+            modifyTask={modifyTask}
+          />
+        )}
+
         <Flex>
           <Icon
             as={PiMagnifyingGlassPlus}

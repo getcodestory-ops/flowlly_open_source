@@ -28,6 +28,7 @@ function ActivitiesDetailPage() {
     activeProject,
     taskDetailsView,
     setTaskDetailsView,
+    userActivities,
   } = useStore((state) => ({
     session: state.session,
     taskToView: state.taskToView,
@@ -35,6 +36,7 @@ function ActivitiesDetailPage() {
     activeProject: state.activeProject,
     taskDetailsView: state.taskDetailsView,
     setTaskDetailsView: state.setTaskDetailsView,
+    userActivities: state.userActivities,
   }));
 
   type Action = {
@@ -423,150 +425,158 @@ function ActivitiesDetailPage() {
   };
 
   return (
-    <Flex direction={"column"} p="10">
-      <Flex direction={"column"} zIndex={"1"}>
-        <Flex>
-          <Button
-            bg={`${
-              taskDetailsView === "details" ? "brand.accent" : "brand.light"
-            }`}
-            size={"sm"}
-            _hover={{ bg: "brand.dark", color: "white" }}
-            alignContent={"center"}
-            mr={"6"}
-            onClick={() => setTaskDetailsView("details")}
-          >
-            <Flex
-              // borderBottom={`${taskView === "details" ? "4px" : "2px"}`}
-              // borderBottomColor={`${
-              //   taskView === "details" ? "brand.accent" : "brand.light"
-              // }`}
-              alignItems={"center"}
-            >
-              <Icon as={MdInfoOutline} mr={"2"} />
-              <Text>Task Details</Text>
-            </Flex>
-          </Button>
-          {taskToView.history && (
-            <Button
-              bg={`${
-                taskDetailsView === "history" ? "brand.accent" : "brand.light"
-              }`}
-              size={"sm"}
-              _hover={{ bg: "brand.dark", color: "white" }}
-              alignContent={"center"}
-              onClick={() => setTaskDetailsView("history")}
-              mr={"6"}
-            >
-              <Flex
-                // borderBottom={`${taskView === "history" ? "4px" : "2px"}`}
-                // borderBottomColor={`${
-                //   taskView === "history" ? "brand.accent" : "brand.light"
-                // }`}
-
-                alignItems={"center"}
+    <>
+      {userActivities && userActivities.length > 0 && (
+        <Flex direction={"column"} p="10">
+          <Flex direction={"column"} zIndex={"1"}>
+            <Flex>
+              <Button
+                bg={`${
+                  taskDetailsView === "details" ? "brand.accent" : "brand.light"
+                }`}
+                size={"sm"}
+                _hover={{ bg: "brand.dark", color: "white" }}
+                alignContent={"center"}
+                mr={"6"}
+                onClick={() => setTaskDetailsView("details")}
               >
-                <Icon as={MdHistoryToggleOff} mr={"2"} />
-                <Text>Task History</Text>
-              </Flex>
-            </Button>
-          )}
-          {taskToView.status === "Delayed" ||
-          taskToView.status === "At Risk" ? (
-            <Button
-              bg={`${
-                taskDetailsView === "impact" ? "brand.accent" : "brand.light"
-              }`}
-              size={"sm"}
-              _hover={{ bg: "brand.dark", color: "white" }}
-              onClick={() => setTaskDetailsView("impact")}
-              mr={"6"}
-            >
-              <Flex
-                // borderBottom={`${taskView === "impact" ? "4px" : "2px"}`}
-                // borderBottomColor={`${
-                //   taskView === "impact" ? "brand.accent" : "brand.light"
-                // }`}
-                pb={"1"}
-                alignItems={"center"}
-              >
-                <Icon as={AiOutlineAlert} mr={"2"} />
-                <Text>Delay Impact</Text>
-              </Flex>
-            </Button>
-          ) : null}
-        </Flex>
-        {taskToView && (
-          <>
-            <Flex
-              direction={"row"}
-              alignItems={"baseline"}
-              justifyContent={"space-between"}
-            >
-              <Flex direction={"row"} pt={"8"} alignItems={"center"}>
-                <Icon
-                  as={BiSolidCircle}
-                  mr={"2"}
-                  color={
-                    taskToView.status === "Delayed"
-                      ? "#FF4141"
-                      : taskToView.status === "At Risk"
-                      ? "#FFA841"
-                      : taskToView.status === "In Progress"
-                      ? "#5F55EE"
-                      : "brand2.dark"
-                  }
-                />
-                <Text as={"b"} fontSize={"lg"}>
-                  {taskToView.name}
-                </Text>
-              </Flex>
+                <Flex
+                  // borderBottom={`${taskView === "details" ? "4px" : "2px"}`}
+                  // borderBottomColor={`${
+                  //   taskView === "details" ? "brand.accent" : "brand.light"
+                  // }`}
+                  alignItems={"center"}
+                >
+                  <Icon as={MdInfoOutline} mr={"2"} />
+                  <Text>Task Details</Text>
+                </Flex>
+              </Button>
+              {taskToView.history && (
+                <Button
+                  bg={`${
+                    taskDetailsView === "history"
+                      ? "brand.accent"
+                      : "brand.light"
+                  }`}
+                  size={"sm"}
+                  _hover={{ bg: "brand.dark", color: "white" }}
+                  alignContent={"center"}
+                  onClick={() => setTaskDetailsView("history")}
+                  mr={"6"}
+                >
+                  <Flex
+                    // borderBottom={`${taskView === "history" ? "4px" : "2px"}`}
+                    // borderBottomColor={`${
+                    //   taskView === "history" ? "brand.accent" : "brand.light"
+                    // }`}
 
-              {taskDetailsView === "details" && (
-                <>
-                  <Button
-                    size={"xs"}
-                    bg={"brand.dark"}
-                    color={"white"}
-                    _hover={{ bg: "brand.light", color: "brand.dark" }}
-                    onClick={() => setEditTask(!editTask)}
+                    alignItems={"center"}
                   >
-                    <Text>{editTask ? "Save Changes" : "Edit Task"}</Text>
-                  </Button>
-                  <AddActivityChildren />
-                </>
+                    <Icon as={MdHistoryToggleOff} mr={"2"} />
+                    <Text>Task History</Text>
+                  </Flex>
+                </Button>
               )}
+              {taskToView.status === "Delayed" ||
+              taskToView.status === "At Risk" ? (
+                <Button
+                  bg={`${
+                    taskDetailsView === "impact"
+                      ? "brand.accent"
+                      : "brand.light"
+                  }`}
+                  size={"sm"}
+                  _hover={{ bg: "brand.dark", color: "white" }}
+                  onClick={() => setTaskDetailsView("impact")}
+                  mr={"6"}
+                >
+                  <Flex
+                    // borderBottom={`${taskView === "impact" ? "4px" : "2px"}`}
+                    // borderBottomColor={`${
+                    //   taskView === "impact" ? "brand.accent" : "brand.light"
+                    // }`}
+                    pb={"1"}
+                    alignItems={"center"}
+                  >
+                    <Icon as={AiOutlineAlert} mr={"2"} />
+                    <Text>Delay Impact</Text>
+                  </Flex>
+                </Button>
+              ) : null}
             </Flex>
-            <Flex ml={"6"}>
-              <Text as={"i"} fontSize={"sm"} mr={2}>
-                Status:
-              </Text>
-              <Text
-                as={"b"}
-                fontSize={"sm"}
-                color={
-                  taskToView.status === "Delayed"
-                    ? "#FF4141"
-                    : taskToView.status === "At Risk"
-                    ? "#FFA841"
-                    : taskToView.status === "In Progress"
-                    ? "#5F55EE"
-                    : "brand2.dark"
-                }
-              >
-                {taskToView.status}
-              </Text>
-            </Flex>
-          </>
-        )}
-      </Flex>
+            {taskToView && (
+              <>
+                <Flex
+                  direction={"row"}
+                  alignItems={"baseline"}
+                  justifyContent={"space-between"}
+                >
+                  <Flex direction={"row"} pt={"8"} alignItems={"center"}>
+                    <Icon
+                      as={BiSolidCircle}
+                      mr={"2"}
+                      color={
+                        taskToView.status === "Delayed"
+                          ? "#FF4141"
+                          : taskToView.status === "At Risk"
+                          ? "#FFA841"
+                          : taskToView.status === "In Progress"
+                          ? "#5F55EE"
+                          : "brand2.dark"
+                      }
+                    />
+                    <Text as={"b"} fontSize={"lg"}>
+                      {taskToView.name}
+                    </Text>
+                  </Flex>
 
-      {taskDetailsView === "history" && historyView()}
-      {taskDetailsView === "impact" && impactView()}
-      {taskDetailsView === "details" && (
-        <>{editTask ? <ActivityEditView /> : detailsView()}</>
+                  {taskDetailsView === "details" && (
+                    <>
+                      <Button
+                        size={"xs"}
+                        bg={"brand.dark"}
+                        color={"white"}
+                        _hover={{ bg: "brand.light", color: "brand.dark" }}
+                        onClick={() => setEditTask(!editTask)}
+                      >
+                        <Text>{editTask ? "Save Changes" : "Edit Task"}</Text>
+                      </Button>
+                      <AddActivityChildren />
+                    </>
+                  )}
+                </Flex>
+                <Flex ml={"6"}>
+                  <Text as={"i"} fontSize={"sm"} mr={2}>
+                    Status:
+                  </Text>
+                  <Text
+                    as={"b"}
+                    fontSize={"sm"}
+                    color={
+                      taskToView.status === "Delayed"
+                        ? "#FF4141"
+                        : taskToView.status === "At Risk"
+                        ? "#FFA841"
+                        : taskToView.status === "In Progress"
+                        ? "#5F55EE"
+                        : "brand2.dark"
+                    }
+                  >
+                    {taskToView.status}
+                  </Text>
+                </Flex>
+              </>
+            )}
+          </Flex>
+
+          {taskDetailsView === "history" && historyView()}
+          {taskDetailsView === "impact" && impactView()}
+          {taskDetailsView === "details" && (
+            <>{editTask ? <ActivityEditView /> : detailsView()}</>
+          )}
+        </Flex>
       )}
-    </Flex>
+    </>
   );
 }
 
