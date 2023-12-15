@@ -25,7 +25,7 @@ export const useContentSave = (id?: string | string[]) => {
     isSuccess,
     error,
   } = useQuery({
-    queryKey: ["documentContent", session, id],
+    queryKey: ["documentContent", session, id, activeProject],
     queryFn: () => {
       if (!session || typeof id !== "string" || !activeProject) {
         return Promise.reject("Either session or document id is not valid !");

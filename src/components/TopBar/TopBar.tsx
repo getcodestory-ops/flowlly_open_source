@@ -25,7 +25,7 @@ function TopBar() {
             critical_path: false,
           },
         }}
-        renderProjects={true}
+        renderProjects={1}
       />
     </Flex>
   );

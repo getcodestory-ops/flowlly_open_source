@@ -22,7 +22,7 @@ import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import { useRouter } from "next/router";
 interface TopActivitiesItemProps {
   activeProjectMenu: ProjectEntity;
-  renderProjects: boolean;
+  renderProjects: number;
   // setTaskToView: (project: ActivityEntity) => void;
   // setRightPanelView: (view: "task" | "gantt") => void;
   // activities: ActivityEntity[];
@@ -33,7 +33,7 @@ const TopActivitiesItems = ({
   renderProjects,
 }: TopActivitiesItemProps) => {
   const router = useRouter();
-  const { projectId } = router.query;
+  const { projectId, taskToViewId } = router.query;
   const [activeActivity, setActiveActivity] = useState<ActivityEntity | null>(
     null
   );
@@ -113,6 +113,14 @@ const TopActivitiesItems = ({
                     setTaskToView(activity);
                     setRightPanelView("task");
                     setActiveActivity(activity);
+                    if (renderProjects === 1) {
+                      router.push({
+                        query: {
+                          ...router.query,
+                          taskToViewId: activity.id,
+                        },
+                      });
+                    }
                   }}
                 >
                   <MenuItem>{activity.name}</MenuItem>
@@ -124,7 +132,7 @@ const TopActivitiesItems = ({
           {activeActivity && (
             <Breadcrubms
               taskToView={activeActivity}
-              renderProjects={renderProjects}
+              renderProjects={renderProjects + 1}
             />
           )}
         </Flex>
