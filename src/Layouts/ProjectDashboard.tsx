@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Box, Flex, Icon, Text } from "@chakra-ui/react";
+import { Box, Flex, Icon, Text, Grid, GridItem } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 const Chart = dynamic(
   () => import("react-apexcharts").then((mod) => mod.default),
@@ -36,21 +36,36 @@ function ProjectDashboard() {
   }, [userActivities]);
 
   return (
-    <Flex pl={"10"} w="full">
-      {activeProject?.name ? (
+    <Flex w="full" h={"full"}>
+      <Grid templateColumns="repeat(5, 1fr)" gap={4} w={"full"}>
+        <GridItem
+          colSpan={2}
+          overflowX={"auto"}
+          sx={{
+            "&::-webkit-scrollbar": {
+              width: "0px",
+              borderRadius: "8px",
+              // backgroundColor: `rgba(0, 0, 0, 0.05)`,
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: `rgba(0, 0, 0, 0.05)`,
+            },
+          }}
+        >
+          <GraphSection />
+        </GridItem>
+        <GridItem colSpan={1}>
+          <RSSsection />
+        </GridItem>
+        <GridItem colSpan={1}>
+          <RSSsection />
+        </GridItem>
+        <GridItem colSpan={1}>
+          <RSSsection />
+        </GridItem>
+      </Grid>
+      {/* {activeProject?.name ? (
         <Flex direction={{ base: "column" }} gap="4" w="full">
-          <Flex direction={"column"}>
-            <Flex
-              direction={"row"}
-              fontSize={"md"}
-              gap="2"
-              alignItems={"center"}
-              color={"#FFA840"}
-            >
-              <Icon as={BiSolidCircle} />
-              <Text as={"b"}>At Risk</Text>
-            </Flex>
-          </Flex>
           <Flex w="full" direction={{ base: "column-reverse", md: "row" }}>
             <Flex>
               <GraphSection />
@@ -71,7 +86,7 @@ function ProjectDashboard() {
         >
           Select a project at the top left corner
         </Flex>
-      )}
+      )} */}
     </Flex>
   );
 }

@@ -280,10 +280,10 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
     setHighlightedDates(newHighlightedDates);
   }, [impactfulRevisions]);
 
-  useEffect(() => {
-    console.log("impactfulRevisions", impactfulRevisions);
-    console.log("highlightedDates", highlightedDates);
-  }, [highlightedDates]);
+  // useEffect(() => {
+  //   console.log("impactfulRevisions", impactfulRevisions);
+  //   console.log("highlightedDates", highlightedDates);
+  // }, [highlightedDates]);
 
   return (
     <Flex alignItems={"center"}>

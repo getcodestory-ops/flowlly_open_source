@@ -52,7 +52,7 @@ function RSSsection() {
   }
 
   return (
-    <Flex w={"full"} mt={"6"} pr={"4"} direction={"column"} overflowY={"auto"}>
+    <Flex w={"full"} pr={"4"} direction={"column"} overflowY={"auto"}>
       <Text fontSize={"sm"} fontWeight={"bold"} mb={"3"}>
         Activity Updates
       </Text>

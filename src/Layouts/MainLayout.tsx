@@ -60,12 +60,11 @@ export default function MainLayout() {
   }, [router]);
 
   return (
-    <Flex>
+    <Flex w={"100vw"}>
       <Center
         p="2"
         width="full"
         height="100vh"
-        // bgGradient="radial(gray.100 0%, gray.300 100%)"
         bg="brand.dark"
         display="flex"
         alignItems="center"
@@ -131,44 +130,6 @@ export default function MainLayout() {
           </FormControl>
         </Box>
       </Center>
-      {/* <Flex
-        height="100vh"
-        alignItems="center"
-        justifyContent="center"
-        backgroundColor="brand.mid"
-        width="2xl"
-      >
-        <Box p={8} backgroundColor="brand.light" borderRadius="md" width="xl" m="8">
-          <FormControl id="email" mb="4">
-            <FormLabel>Email address</FormLabel>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </FormControl>
-          <FormControl id="password" mb="4">
-            <FormLabel>Password</FormLabel>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  handleLogin(email, password);
-                }
-              }}
-            />
-            <Button
-              colorScheme="gray"
-              onClick={() => handleLogin(email, password)}
-              mt={2}
-            >
-              Login with Email
-            </Button>
-          </FormControl>
-        </Box>
-      </Flex> */}
     </Flex>
   );
 }

@@ -37,7 +37,14 @@ export type AppView =
   | "safety"
   | "dashboard"
   | "projectSettings"
-  | "documentEditor";
+  | "documentEditor"
+  | "newLayout"
+  | "notes"
+  | "risks"
+  | "updates"
+  | "reports"
+  | "scenarios"
+  | "login";
 
 export type State = {
   session: Session | null;

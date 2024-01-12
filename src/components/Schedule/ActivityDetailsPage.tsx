@@ -122,10 +122,11 @@ function ActivitiesDetailPage() {
   const detailsView = () => {
     return (
       <Flex
-        ml={"6"}
+        // ml={"6"}
         direction={"column"}
         overflowY={"auto"}
         overscrollBehaviorY={"contain"}
+        fontSize={"12px"}
       >
         <Flex maxW="xl" mb="2"></Flex>
         <Flex
@@ -134,44 +135,35 @@ function ActivitiesDetailPage() {
           minW={"500px"}
         >
           <Flex direction={"column"}>
-            <Text fontSize={"sm"} as={"i"} mr={"2"}>
+            <Text as={"i"} mr={"2"}>
               Start Date:
             </Text>
-            <Text fontSize={"sm"} fontWeight={"semibold"}>
-              {taskToView.start}
-            </Text>
+            <Text fontWeight={"semibold"}>{taskToView.start}</Text>
           </Flex>
           <Flex direction={"column"}>
-            <Text fontSize={"sm"} as={"i"} mr={"2"}>
+            <Text as={"i"} mr={"2"}>
               End Date:
             </Text>
-            <Text fontSize={"sm"} fontWeight={"semibold"}>
-              {taskToView.end}
-            </Text>
+            <Text fontWeight={"semibold"}>{taskToView.end}</Text>
           </Flex>
           <Flex direction={"column"}>
-            <Text fontSize={"sm"} as={"i"} mr={"2"}>
+            <Text as={"i"} mr={"2"}>
               Duration:
             </Text>
-            <Text fontSize={"sm"} fontWeight={"semibold"}>
-              {taskToView.duration} days
-            </Text>
+            <Text fontWeight={"semibold"}>{taskToView.duration} days</Text>
           </Flex>
           <Flex direction={"column"}>
-            <Text fontSize={"sm"} as={"i"} mr={"2"}>
+            <Text as={"i"} mr={"2"}>
               Progress:
             </Text>
-            <Text fontSize={"sm"} fontWeight={"semibold"}>
-              {taskToView.progress}%
-            </Text>
+            <Text fontWeight={"semibold"}>{taskToView.progress}%</Text>
           </Flex>
         </Flex>
         <Flex direction={"column"} mt={"4"}>
-          <Text fontSize={"sm"} as={"i"} mr={"2"}>
+          <Text as={"i"} mr={"2"}>
             Task Owner:
           </Text>
           <Text
-            fontSize={"sm"}
             fontWeight={"semibold"}
             color={`${!taskToView.owner ? "red" : "black"}`}
           >
@@ -179,11 +171,10 @@ function ActivitiesDetailPage() {
           </Text>
         </Flex>
         <Flex direction={"column"} mt={"4"}>
-          <Text fontSize={"sm"} as={"i"} mr={"2"}>
+          <Text as={"i"} mr={"2"}>
             Task Description:
           </Text>
           <Text
-            fontSize={"sm"}
             fontWeight={"semibold"}
             color={`${!taskToView.description ? "red" : "black"}`}
           >
@@ -193,11 +184,10 @@ function ActivitiesDetailPage() {
           </Text>
         </Flex>
         <Flex direction={"column"} mt={"4"}>
-          <Text fontSize={"sm"} as={"i"} mr={"2"}>
+          <Text as={"i"} mr={"2"}>
             Task Estimated Cost:
           </Text>
           <Text
-            fontSize={"sm"}
             fontWeight={"semibold"}
             color={`${!taskToView.cost ? "red" : "black"}`}
           >
@@ -205,11 +195,10 @@ function ActivitiesDetailPage() {
           </Text>
         </Flex>
         <Flex direction={"column"} mt={"4"}>
-          <Text fontSize={"sm"} as={"i"} mr={"2"}>
+          <Text as={"i"} mr={"2"}>
             Task Resources:
           </Text>
           <Text
-            fontSize={"sm"}
             fontWeight={"semibold"}
             color={`${
               !taskToView.resources
@@ -241,6 +230,7 @@ function ActivitiesDetailPage() {
             display: "none",
           },
         }}
+        fontSize={"12px"}
       >
         <Flex
           direction={"column"}
@@ -251,22 +241,20 @@ function ActivitiesDetailPage() {
           <Flex maxW={"xl"} display="flex" gap="2"></Flex>
 
           <Flex>
-            <Text fontSize={"sm"} as={"i"} mr={"2"}>
+            <Text as={"i"} mr={"2"}>
               Date:
             </Text>
 
-            <Text fontSize={"sm"} as={"b"}>
+            <Text as={"b"}>
               {taskToView.creation_time &&
                 taskToView.creation_time.slice(0, 10)}
             </Text>
           </Flex>
           <Flex>
-            <Text fontSize={"sm"} as={"i"} mr={"2"}>
+            <Text as={"i"} mr={"2"}>
               Action Type:
             </Text>
-            <Text fontSize={"sm"} as={"b"}>
-              Task Created
-            </Text>
+            <Text as={"b"}>Task Created</Text>
           </Flex>
         </Flex>
         <Flex direction={"column"}>
@@ -292,45 +280,35 @@ function ActivitiesDetailPage() {
                   pl={"10"}
                 >
                   <Flex>
-                    <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                    <Text as={"i"} mr={"2"}>
                       Date:
                     </Text>
-                    <Text fontSize={"sm"} as={"b"}>
-                      {history.created_at}
-                    </Text>
+                    <Text as={"b"}>{history.created_at}</Text>
                   </Flex>
                   <Flex>
-                    <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                    <Text as={"i"} mr={"2"}>
                       Action Type:
                     </Text>
-                    <Text fontSize={"sm"} as={"b"}>
-                      Daily Update
-                    </Text>
+                    <Text as={"b"}>Daily Update</Text>
                   </Flex>
                   <Flex>
-                    <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                    <Text as={"i"} mr={"2"}>
                       Impact on Schedule:
                     </Text>
-                    <Text fontSize={"sm"} as={"b"}>
-                      {history.severity}
-                    </Text>
+                    <Text as={"b"}>{history.severity}</Text>
                   </Flex>
 
                   <Flex>
-                    <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                    <Text as={"i"} mr={"2"}>
                       Sent By:
                     </Text>
-                    <Text fontSize={"sm"} as={"b"}>
-                      XXXXX
-                    </Text>
+                    <Text as={"b"}>XXXXX</Text>
                   </Flex>
                   <Flex direction={"column"}>
-                    <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                    <Text as={"i"} mr={"2"}>
                       Message:
                     </Text>
-                    <Text fontSize={"sm"} as={"b"}>
-                      {history.message}
-                    </Text>
+                    <Text as={"b"}>{history.message}</Text>
                   </Flex>
                   {/* <Flex>
                     <Text fontSize={"sm"} as={"i"} mr={"2"}>
@@ -358,6 +336,7 @@ function ActivitiesDetailPage() {
           },
         }}
         direction={"column"}
+        fontSize={"12px"}
       >
         {taskToView.history &&
           taskToView.history
@@ -389,31 +368,27 @@ function ActivitiesDetailPage() {
                 pr={"10"}
               >
                 <Flex>
-                  <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                  <Text as={"i"} mr={"2"}>
                     Date:
                   </Text>
-                  <Text fontSize={"sm"} as={"b"}>
-                    {history.created_at.slice(0, 10)}
-                  </Text>
+                  <Text as={"b"}>{history.created_at.slice(0, 10)}</Text>
                 </Flex>
                 <Flex mt={"2"}>
-                  <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                  <Text as={"i"} mr={"2"}>
                     Severity:
                   </Text>
-                  <Text fontSize={"sm"} as={"b"}>
-                    {history.severity}
-                  </Text>
+                  <Text as={"b"}>{history.severity}</Text>
                 </Flex>
                 <Flex direction={"column"} mt={"2"}>
-                  <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                  <Text as={"i"} mr={"2"}>
                     Impact on Schedule:
                   </Text>
-                  <Text fontSize={"sm"} as={"b"} pt={"2"}>
+                  <Text as={"b"} pt={"2"}>
                     {history.impact}
                   </Text>
                 </Flex>
                 <Flex direction={"column"} mt={"2"}>
-                  <Text fontSize={"sm"} as={"i"} mr={"2"}>
+                  <Text as={"i"} mr={"2"}>
                     Suggested Actions:
                   </Text>
                 </Flex>
@@ -427,14 +402,21 @@ function ActivitiesDetailPage() {
   return (
     <>
       {userActivities && userActivities.length > 0 && (
-        <Flex direction={"column"} p="10">
+        <Flex
+          direction={"column"}
+          justifyContent={"center"}
+          w={"full"}
+          px={"8"}
+          // bg={"brand.gray"}
+          // rounded={"lg"}
+        >
           <Flex direction={"column"} zIndex={"1"}>
             <Flex>
               <Button
                 bg={`${
                   taskDetailsView === "details" ? "brand.accent" : "brand.light"
                 }`}
-                size={"sm"}
+                size={"xs"}
                 _hover={{ bg: "brand.dark", color: "white" }}
                 alignContent={"center"}
                 mr={"6"}
@@ -458,7 +440,7 @@ function ActivitiesDetailPage() {
                       ? "brand.accent"
                       : "brand.light"
                   }`}
-                  size={"sm"}
+                  size={"xs"}
                   _hover={{ bg: "brand.dark", color: "white" }}
                   alignContent={"center"}
                   onClick={() => setTaskDetailsView("history")}
@@ -485,7 +467,7 @@ function ActivitiesDetailPage() {
                       ? "brand.accent"
                       : "brand.light"
                   }`}
-                  size={"sm"}
+                  size={"xs"}
                   _hover={{ bg: "brand.dark", color: "white" }}
                   onClick={() => setTaskDetailsView("impact")}
                   mr={"6"}
@@ -524,8 +506,9 @@ function ActivitiesDetailPage() {
                           ? "#5F55EE"
                           : "brand2.dark"
                       }
+                      boxSize={"3"}
                     />
-                    <Text as={"b"} fontSize={"lg"}>
+                    <Text as={"b"} fontSize={"14px"}>
                       {taskToView.name}
                     </Text>
                   </Flex>
@@ -545,13 +528,12 @@ function ActivitiesDetailPage() {
                     </>
                   )}
                 </Flex>
-                <Flex ml={"6"}>
-                  <Text as={"i"} fontSize={"sm"} mr={2}>
+                <Flex ml={"6"} fontSize={"12px"}>
+                  <Text as={"i"} mr={2}>
                     Status:
                   </Text>
                   <Text
                     as={"b"}
-                    fontSize={"sm"}
                     color={
                       taskToView.status === "Delayed"
                         ? "#FF4141"

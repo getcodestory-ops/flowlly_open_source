@@ -22,6 +22,7 @@ function RSSCard({ title, date, status }: RSSCardProps) {
       mb={"3"}
       fontSize={"sm"}
       cursor={"pointer"}
+      direction={"column"}
     >
       <Flex alignItems={"center"}>
         <Icon
@@ -34,7 +35,7 @@ function RSSCard({ title, date, status }: RSSCardProps) {
         </Text>
       </Flex>
 
-      <Flex fontStyle={"italic"} color={"gray.500"}>
+      <Flex fontStyle={"italic"} fontSize={"10px"} color={"gray.500"}>
         <Text>{date}</Text>
       </Flex>
     </Flex>

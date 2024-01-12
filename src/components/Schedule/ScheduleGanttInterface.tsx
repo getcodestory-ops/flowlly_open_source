@@ -264,8 +264,8 @@ const ScheduleGanttInterface = () => {
   };
 
   return (
-    <Flex direction={"column"} mt={"4"}>
-      <Flex direction={"column"} ml={"8"}>
+    <Flex direction={"column"}>
+      <Flex direction={"column"}>
         <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
         {modifyTask && (
           <UpdateActivityModal
@@ -313,11 +313,9 @@ const ScheduleGanttInterface = () => {
         className="Wrapper"
         flexDir={"column"}
         backgroundColor="white"
-        ml={"8"}
-        width="92vw"
-        overflow={"auto"}
-        overscrollBehaviorY={"contain"}
-        height={"70vh"}
+        // overflow={"auto"}
+        // overscrollBehaviorY={"contain"}
+        // w={"50%"}
       >
         <Gantt
           tasks={tasks}

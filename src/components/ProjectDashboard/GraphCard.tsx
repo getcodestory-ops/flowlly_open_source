@@ -34,20 +34,11 @@ function GraphCard({
   changeImpact,
 }: GraphCardProps) {
   return (
-    <Flex direction={"row"} h="100%" w="100%">
-      <Flex
-        borderColor={"brand.light"}
-        bg={"brand.light"}
-        rounded={"md"}
-        p={"4"}
-        direction={"column"}
-        mt={"6"}
-        mr={"6"}
-      >
-        <Text fontSize={"sm"} as={"b"} mb={"2"}>
-          {title}
-        </Text>
-        <Flex>
+    <Flex bg={"brand.gray"} rounded={"md"} p={"3"} direction={"column"}>
+      <Text fontSize={"sm"} as={"b"} mb={"1"}>
+        {title}
+      </Text>
+      {/* <Flex>
           {actualValue && (
             <Flex direction={"column"} mr={"5"} p={"2"}>
               <Text as={"i"} fontSize={"2xs"}>
@@ -93,15 +84,15 @@ function GraphCard({
               </Flex>
             </Flex>
           )}
-        </Flex>
-        <Flex justifyContent={"center"}>
-          <Chart
-            options={options}
-            series={series}
-            type={type}
-            width={"360px"}
-          />
-        </Flex>
+        </Flex> */}
+      <Flex justifyContent={"center"}>
+        <Chart
+          options={options}
+          series={series}
+          type={type}
+          // width={"320px"}
+          width={"100%"}
+        />
       </Flex>
     </Flex>
   );

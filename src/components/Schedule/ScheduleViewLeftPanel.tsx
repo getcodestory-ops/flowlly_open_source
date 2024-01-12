@@ -16,6 +16,8 @@ import {
   MenuGroup,
   MenuOptionGroup,
   MenuDivider,
+  Grid,
+  GridItem,
 } from "@chakra-ui/react";
 import { CgInsights } from "react-icons/cg";
 import { PiRobot } from "react-icons/pi";
@@ -30,7 +32,9 @@ import AddNewChatEntity from "./AddNewChatEntity";
 import { getProjects, deleteProject } from "@/api/projectRoutes";
 import DraggablePaneDivider from "@/components/DraggablePaneDivider";
 import RightPanel from "@/components/Schedule/ScheduleViewRightPanel";
-import { LuGanttChartSquare } from "react-icons/lu";
+import { PiKanban } from "react-icons/pi";
+import { LuGanttChart } from "react-icons/lu";
+import { FaTasks } from "react-icons/fa";
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { IoChevronDownOutline } from "react-icons/io5";
 import ScheduleGanttInterface from "./ScheduleGanttInterface";
@@ -40,16 +44,23 @@ import CreateContingency from "./CreateContingency/CreateContingency";
 import ProcessHistoryButton from "./ProcessHistory/ProcessHistoryButton";
 import ActivitiesDetailPage from "./ActivityDetailsPage";
 import DocumentList from "../DocumentEditor/DocumentList";
+import KanbanBoard from "../kanban/KanbanBoard";
 
 function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
-  const { session, activeChatEntity, setActiveChatEntity, activeProject } =
-    useStore((state) => ({
-      session: state.session,
-      activeChatEntity: state.activeChatEntity,
-      setActiveChatEntity: state.setActiveChatEntity,
-      activeProject: state.activeProject,
-    }));
-  const [view, setView] = useState<string>("insights");
+  const {
+    session,
+    activeChatEntity,
+    setActiveChatEntity,
+    activeProject,
+    userActivities,
+  } = useStore((state) => ({
+    session: state.session,
+    activeChatEntity: state.activeChatEntity,
+    setActiveChatEntity: state.setActiveChatEntity,
+    activeProject: state.activeProject,
+    userActivities: state.userActivities,
+  }));
+  const [view, setView] = useState<string>("gantt");
   const [conversationView, setConversationView] = useState(false);
   const onConversation = () => {
     setConversationView(!conversationView);
@@ -90,198 +101,292 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   }, [chatEntitities]);
 
   return (
-    <Flex display="flex" direction="column" alignContent="space-between">
-      <AddNewChatEntity isOpen={isOpen} onClose={onClose} />
-      <Flex h="5vh" alignItems={"center"}>
-        <Flex
-          display="flex"
-          justify="flex-start"
-          marginTop="1"
-          borderRight={"2px"}
-          borderColor={"brand2.mid"}
-        >
-          <Tooltip
-            label="Schedule Insights"
-            aria-label="A tooltip"
-            bg="white"
-            color="brand.dark"
-          >
+    <Grid
+      h={"full"}
+      templateRows="repeat(10, 1fr)"
+      templateColumns="repeat(2, 1fr)"
+      gap={4}
+    >
+      <GridItem rowSpan={1} colSpan={1}>
+        <Flex borderColor={"brand2.mid"}>
+          <Flex alignItems={"center"} mr={"4"}>
             <Button
               size={"sm"}
-              marginLeft="8"
-              marginRight="5"
-              bg={`${view === "insights" ? "brand2.accent" : "brand2.mid"}`}
-              _hover={{ bg: "brand.dark", color: "white" }}
-              onClick={() => setView("insights")}
-            >
-              <Icon as={CgInsights} />
-            </Button>
-          </Tooltip>
-          <Tooltip
-            label="Gantt Chart"
-            aria-label="A tooltip"
-            bg="white"
-            color="brand.dark"
-          >
-            <Button
-              size={"sm"}
-              marginRight="5"
-              bg={`${view === "gantt" ? "brand2.accent" : "brand2.mid"}`}
+              bg={`${view === "gantt" ? "brand2.accent" : "white"}`}
               _hover={{ bg: "brand.dark", color: "white" }}
               onClick={() => setView("gantt")}
+              p={"0.5"}
+              border={"2px"}
+              rounded={"lg"}
+              mr={"0.5"}
             >
-              <Icon as={LuGanttChartSquare} />
+              <Icon as={LuGanttChart} boxSize={"5"} />
             </Button>
-          </Tooltip>
-          <Tooltip
-            label="Schedule Assistant"
-            aria-label="A tooltip"
-            bg="white"
-            color="brand.dark"
-          >
+            <Text fontSize={"xs"} fontWeight={"bold"}>
+              Gantt
+            </Text>
+          </Flex>
+          <Flex alignItems={"center"} mr={"4"}>
             <Button
+              p={"0.5"}
               size={"sm"}
-              bg={`${view === "assistant" ? "brand2.accent" : "brand2.mid"}`}
+              border={"2px"}
+              rounded={"lg"}
+              mr={"0.5"}
+              bg={`${view === "kanban" ? "brand2.accent" : "white"}`}
               _hover={{ bg: "brand.dark", color: "white" }}
-              onClick={() => setView("assistant")}
-              marginRight="5"
+              onClick={() => setView("kanban")}
             >
-              <Icon as={PiRobot} />
+              <Icon as={PiKanban} boxSize={"5"} />
             </Button>
-          </Tooltip>
-          <Tooltip
-            label="Reports"
-            aria-label="A tooltip"
-            bg="white"
-            color="brand.dark"
-          >
+            <Text fontSize={"xs"} fontWeight={"bold"}>
+              Kanban
+            </Text>
+          </Flex>
+          <Flex alignItems={"center"} mr={"4"}>
             <Button
+              p={"0.5"}
               size={"sm"}
-              bg={`${view === "reports" ? "brand2.accent" : "brand2.mid"}`}
+              border={"2px"}
+              rounded={"lg"}
+              mr={"0.5"}
+              bg={`${view === "tasks" ? "brand2.accent" : "white"}`}
               _hover={{ bg: "brand.dark", color: "white" }}
-              onClick={() => setView("reports")}
-              mr="5"
+              onClick={() => setView("tasks")}
             >
-              <Icon as={TbReportAnalytics} />
+              <Icon as={FaTasks} />
             </Button>
-          </Tooltip>
-          <Tooltip
-            label="Reports"
-            aria-label="A tooltip"
-            bg="white"
-            color="brand.dark"
-          >
-            <Button
-              size={"sm"}
-              bg={`${view === "documents" ? "brand2.accent" : "brand2.mid"}`}
-              _hover={{ bg: "brand.dark", color: "white" }}
-              onClick={() => setView("documents")}
-              mr="5"
-            >
-              <Icon as={IoDocumentTextOutline} />
-            </Button>
-          </Tooltip>
+            <Text fontSize={"xs"} fontWeight={"bold"}>
+              Tasks
+            </Text>
+          </Flex>
         </Flex>
-        <Flex pl={"5"} pr={"2"} borderRight={"2px"} borderColor={"brand2.mid"}>
+      </GridItem>
+      <GridItem rowSpan={1} colSpan={1}>
+        <Flex>
           <CustomDatePicker />
           <Flex>
             <ProbabilitySelector />
           </Flex>
         </Flex>
-        <Flex pl={"5"} alignItems={"center"}>
-          <ProcessHistoryButton />
-          <Flex ml={"5"}>
-            <CreateContingency />
-          </Flex>
-        </Flex>
-      </Flex>
-      <Flex h="90vh">
-        <Flex className="ScheduleView" w="full">
-          {view === "assistant" && (
-            <Flex
-              mt={"4"}
-              ml={"10"}
-              direction="column"
-              justifyContent={"space-between"}
+      </GridItem>
+      <GridItem rowSpan={9} colSpan={2}>
+        {view === "gantt" && (
+          <Grid h="full" templateColumns="repeat(1, 1fr)" gap={4}>
+            <GridItem
+              colSpan={1}
+              overflow={"auto"}
+              className="custom-scrollbar"
             >
-              <Flex>
-                <Text mr={"2"} fontSize={"sm"} fontWeight={"semibold"}>
-                  Chat:
-                </Text>
-                <Menu>
-                  <MenuButton
-                    onClick={onConversation}
-                    as={Button}
-                    rightIcon={<IoChevronDownOutline />}
-                    size={"xs"}
-                    bg={"brand2.mid"}
-                    _hover={{ bg: "brand2.dark", color: "white" }}
-                  >
-                    {activeChatEntity ? activeChatEntity.chat_name : "No Chat"}
-                  </MenuButton>
-                  <MenuList>
-                    <MenuItem onClick={onOpen}>+ Create New Chat</MenuItem>
-                    <MenuDivider borderColor={"gray.400"} />
-                    {chatEntitities &&
-                      chatEntitities.map((chatEntity) => (
-                        <MenuItem
-                          key={chatEntity.id}
-                          as={"b"}
-                          onClick={() => setActiveChatEntity(chatEntity)}
-                        >
-                          {chatEntity.chat_name}
-                        </MenuItem>
-                      ))}
-                  </MenuList>
-                </Menu>
+              <Flex w={"full"}>
+                <ScheduleGanttInterface />
               </Flex>
-              {activeChatEntity.chat_name.length !== 0 ? (
-                <ScheduleChatInterface />
-              ) : view === "assistant" &&
-                activeChatEntity.chat_name.length === 0 ? (
-                <>
-                  <Flex
-                    w={"full"}
-                    justifyContent={"center"}
-                    alignItems={"center"}
-                    fontSize={"2xl"}
-                    fontWeight={"black"}
-                  >
-                    Select or Create Chat at the top
-                  </Flex>
-                </>
-              ) : (
-                ""
-              )}
-            </Flex>
-          )}
+            </GridItem>
+          </Grid>
+        )}
+        {userActivities && userActivities.length > 0 && view === "kanban" && (
+          <Grid h="full" templateColumns="repeat(1, 1fr)" gap={4}>
+            <GridItem
+              colSpan={1}
+              overflow={"auto"}
+              className="custom-scrollbar"
+            >
+              <Flex w={"full"}>
+                <KanbanBoard />
+              </Flex>
+            </GridItem>
+          </Grid>
+        )}
 
-          {view === "insights" && (
-            <Flex h="full" w="full" gap="16">
-              <Flex flex={1}>
+        {view === "tasks" && (
+          <Grid h="full" templateColumns="repeat(3, 1fr)" gap={4}>
+            <GridItem
+              colSpan={1}
+              overflowY={"auto"}
+              className="custom-scrollbar"
+            >
+              <Flex w={"full"}>
                 <ScheduleInsights />
               </Flex>
-              <Box width="2px" h="full" bg="gray.200"></Box>
-              <Flex flex={1}>
+            </GridItem>
+            <GridItem
+              colSpan={2}
+              overflowY={"auto"}
+              className="custom-scrollbar"
+            >
+              <Flex w={"full"}>
                 <ActivitiesDetailPage />
               </Flex>
-            </Flex>
-          )}
-          {view === "reports" && <ReportsPage />}
-          {view === "gantt" && <ScheduleGanttInterface />}
+            </GridItem>
+          </Grid>
+          // <Flex h="full" w="full" gap="16">
+          //   <Flex flex={1}>
+          //     <ScheduleInsights />
+          //   </Flex>
+          //   <Box width="2px" h="full" bg="gray.200"></Box>
+          //   <Flex flex={1}>
+          //     <ActivitiesDetailPage />
+          //   </Flex>
+          // </Flex>
+        )}
+      </GridItem>
+    </Grid>
+    // <Flex display="flex" direction="column">
+    //   <AddNewChatEntity isOpen={isOpen} onClose={onClose} />
+    //   <Flex h="5vh" alignItems={"center"}>
+    //     <Flex borderColor={"brand2.mid"}>
+    //       <Flex alignItems={"center"} mr={"4"}>
+    //         <Button
+    //           size={"sm"}
+    //           bg={`${view === "gantt" ? "brand2.accent" : "white"}`}
+    //           _hover={{ bg: "brand.dark", color: "white" }}
+    //           onClick={() => setView("gantt")}
+    //           p={"0.5"}
+    //           border={"2px"}
+    //           rounded={"lg"}
+    //           mr={"0.5"}
+    //         >
+    //           <Icon as={LuGanttChart} boxSize={"5"} />
+    //         </Button>
+    //         <Text fontSize={"xs"} fontWeight={"bold"}>
+    //           Gantt
+    //         </Text>
+    //       </Flex>
+    //       <Flex alignItems={"center"} mr={"4"}>
+    //         <Button
+    //           p={"0.5"}
+    //           size={"sm"}
+    //           border={"2px"}
+    //           rounded={"lg"}
+    //           mr={"0.5"}
+    //           bg={`${view === "kanban" ? "brand2.accent" : "white"}`}
+    //           _hover={{ bg: "brand.dark", color: "white" }}
+    //           onClick={() => setView("kanban")}
+    //         >
+    //           <Icon as={PiKanban} boxSize={"5"} />
+    //         </Button>
+    //         <Text fontSize={"xs"} fontWeight={"bold"}>
+    //           Kanban
+    //         </Text>
+    //       </Flex>
+    //       <Flex alignItems={"center"} mr={"4"}>
+    //         <Button
+    //           p={"0.5"}
+    //           size={"sm"}
+    //           border={"2px"}
+    //           rounded={"lg"}
+    //           mr={"0.5"}
+    //           bg={`${view === "tasks" ? "brand2.accent" : "white"}`}
+    //           _hover={{ bg: "brand.dark", color: "white" }}
+    //           onClick={() => setView("tasks")}
+    //         >
+    //           <Icon as={FaTasks} />
+    //         </Button>
+    //         <Text fontSize={"xs"} fontWeight={"bold"}>
+    //           Tasks
+    //         </Text>
+    //       </Flex>
+    //     </Flex>
+    //     <Flex pl={"5"} pr={"2"}>
+    //       <CustomDatePicker />
+    //       <Flex>
+    //         <ProbabilitySelector />
+    //       </Flex>
+    //     </Flex>
+    //     {/* <Flex pl={"5"} alignItems={"center"}>
+    //       <ProcessHistoryButton />
+    //       <Flex ml={"5"}>
+    //         <CreateContingency />
+    //       </Flex>
+    //     </Flex> */}
+    //   </Flex>
+    //   <Flex h="90vh">
+    //     <Flex className="ScheduleView">
+    //       {/* {view === "assistant" && (
+    //         <Flex
+    //           mt={"4"}
+    //           ml={"10"}
+    //           direction="column"
+    //           justifyContent={"space-between"}
+    //         >
+    //           <Flex>
+    //             <Text mr={"2"} fontSize={"sm"} fontWeight={"semibold"}>
+    //               Chat:
+    //             </Text>
+    //             <Menu>
+    //               <MenuButton
+    //                 onClick={onConversation}
+    //                 as={Button}
+    //                 rightIcon={<IoChevronDownOutline />}
+    //                 size={"xs"}
+    //                 bg={"brand2.mid"}
+    //                 _hover={{ bg: "brand2.dark", color: "white" }}
+    //               >
+    //                 {activeChatEntity ? activeChatEntity.chat_name : "No Chat"}
+    //               </MenuButton>
+    //               <MenuList>
+    //                 <MenuItem onClick={onOpen}>+ Create New Chat</MenuItem>
+    //                 <MenuDivider borderColor={"gray.400"} />
+    //                 {chatEntitities &&
+    //                   chatEntitities.map((chatEntity) => (
+    //                     <MenuItem
+    //                       key={chatEntity.id}
+    //                       as={"b"}
+    //                       onClick={() => setActiveChatEntity(chatEntity)}
+    //                     >
+    //                       {chatEntity.chat_name}
+    //                     </MenuItem>
+    //                   ))}
+    //               </MenuList>
+    //             </Menu>
+    //           </Flex>
+    //           {activeChatEntity.chat_name.length !== 0 ? (
+    //             <ScheduleChatInterface />
+    //           ) : view === "assistant" &&
+    //             activeChatEntity.chat_name.length === 0 ? (
+    //             <>
+    //               <Flex
+    //                 w={"full"}
+    //                 justifyContent={"center"}
+    //                 alignItems={"center"}
+    //                 fontSize={"2xl"}
+    //                 fontWeight={"black"}
+    //               >
+    //                 Select or Create Chat at the top
+    //               </Flex>
+    //             </>
+    //           ) : (
+    //             ""
+    //           )}
+    //         </Flex>
+    //       )} */}
 
-          {view === "documents" && (
-            <Flex
-              h="full"
-              w={{ base: "full", "2xl": "7xl" }}
-              direction="column"
-            >
-              <DocumentList />
-            </Flex>
-          )}
-        </Flex>
-      </Flex>
-    </Flex>
+    //       {view === "insights" && (
+    //         <Flex h="full" w="full" gap="16">
+    //           <Flex flex={1}>
+    //             <ScheduleInsights />
+    //           </Flex>
+    //           <Box width="2px" h="full" bg="gray.200"></Box>
+    //           <Flex flex={1}>
+    //             <ActivitiesDetailPage />
+    //           </Flex>
+    //         </Flex>
+    //       )}
+    //       {/* {view === "reports" && <ReportsPage />} */}
+    //       {view === "gantt" && <ScheduleGanttInterface />}
+
+    //       {/* {view === "documents" && (
+    //         <Flex
+    //           h="full"
+    //           w={{ base: "full", "2xl": "7xl" }}
+    //           direction="column"
+    //         >
+    //           <DocumentList />
+    //         </Flex>
+    //       )} */}
+    //     </Flex>
+    //   </Flex>
+    // </Flex>
   );
 }
 

@@ -4,6 +4,7 @@ const colors = {
     mid: "#393E46",
     light: "#EEEEEE",
     accent: "#FFD369",
+    gray: "#F1F2F4",
   },
   brand2: {
     dark: "#222831",
@@ -11,10 +12,10 @@ const colors = {
     light: "#FFFFFF",
     accent: "#FFD369",
   },
-
-  shadows: {
-    test: "10px 10px 136px 0px rgba(255,221,0,1)",
-  },
 };
 
 export default colors;
+
+const shadows = {
+  test: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+};
