@@ -73,7 +73,7 @@ export default function Signup() {
               w={60}
               mb={4}
             />
-            AI Project Management Assistant 2
+            AI Project Management Assistant
           </Heading>
         </Box>
         <FormControl>

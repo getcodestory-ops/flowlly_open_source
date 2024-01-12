@@ -33,17 +33,6 @@ function ProjectInfoDisplay() {
     })
   );
 
-  // const changeProject = (project: ProjectEntity) => {
-  //   if (renderProjects === 1) {
-  //     router.push({
-  //       query: { ...router.query, projectId: project.project_id },
-  //     });
-  //   } else {
-  //     setActiveProjectMenu(project);
-  //     setActiveProject(project);
-  //   }
-  // };
-
   return (
     <Flex h="100%">
       <Grid w={"full"} templateRows="repeat(3, 1fr)" gap={0}>
