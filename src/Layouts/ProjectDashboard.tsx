@@ -13,6 +13,9 @@ import TopBar from "@/components/TopBar";
 import { useStore } from "@/utils/store";
 import GraphSection from "@/components/ProjectDashboard/GraphsSection";
 import RSSsection from "@/components/ProjectDashboard/RSSsection";
+import RisksRSSsection from "@/components/ProjectDashboard/RiskRSS";
+import UpdatesRSSsection from "@/components/ProjectDashboard/UpdatesRSS";
+import ActionsRSSsection from "@/components/ProjectDashboard/ActionsRSS";
 
 function ProjectDashboard() {
   const {
@@ -54,14 +57,14 @@ function ProjectDashboard() {
         >
           <GraphSection />
         </GridItem>
-        <GridItem colSpan={1}>
-          <RSSsection />
+        <GridItem colSpan={1} overflowY={"auto"} className="custom-scrollbar">
+          <RisksRSSsection />
         </GridItem>
-        <GridItem colSpan={1}>
-          <RSSsection />
+        <GridItem colSpan={1} overflowY={"auto"} className="custom-scrollbar">
+          <UpdatesRSSsection />
         </GridItem>
-        <GridItem colSpan={1}>
-          <RSSsection />
+        <GridItem colSpan={1} overflowY={"auto"} className="custom-scrollbar">
+          <ActionsRSSsection />
         </GridItem>
       </Grid>
       {/* {activeProject?.name ? (

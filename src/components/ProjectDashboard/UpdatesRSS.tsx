@@ -2,7 +2,7 @@ import React from "react";
 import { Flex, Icon, Text } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import RSSCard from "./RSSCard";
-// import { convertDateToTimeText } from "../../utils/timeSinceLastSignificantEvent";
+import { convertDateToTimeText } from "../../utils/timeSinceLatestSignificantEvent";
 
 function UpdatesRSSsection() {
   const updateActivities = [
@@ -42,10 +42,10 @@ function UpdatesRSSsection() {
 
   return (
     <Flex w={"full"} direction={"column"} overflowY={"auto"}>
-      <Text fontSize={"lg"} fontWeight={"bold"} mb={"2"}>
+      <Text fontSize={"14px"} fontWeight={"bold"} mb={"2"}>
         Updates
       </Text>
-      {/* <Flex direction={"column"}>
+      <Flex direction={"column"}>
         {updateActivities &&
           updateActivities.map((activity, index) => (
             <RSSCard
@@ -57,7 +57,7 @@ function UpdatesRSSsection() {
               source="update"
             />
           ))}
-      </Flex> */}
+      </Flex>
     </Flex>
   );
 }

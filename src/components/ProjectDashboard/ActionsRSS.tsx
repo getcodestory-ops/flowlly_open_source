@@ -2,7 +2,7 @@ import React from "react";
 import { Flex, Icon, Text } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import RSSCard from "./RSSCard";
-// import { convertDateToTimeText } from "../../utils/timeSinceLastSignificantEvent";
+import { convertDateToTimeText } from "../../utils/timeSinceLatestSignificantEvent";
 
 function ActionsRSSsection() {
   interface ContingencyPlan {
@@ -55,11 +55,11 @@ function ActionsRSSsection() {
 
   return (
     <Flex w={"full"} direction={"column"} overflowY={"auto"}>
-      <Text fontSize={"lg"} fontWeight={"bold"} mb={"2"}>
+      <Text fontSize={"14px"} fontWeight={"bold"} mb={"2"}>
         Sugested Actions
       </Text>
       <Flex direction={"column"}>
-        {/* {contingencyPlans &&
+        {contingencyPlans &&
           contingencyPlans.map((action: any, index: any) => (
             <RSSCard
               title={action.title}
@@ -68,7 +68,7 @@ function ActionsRSSsection() {
               key={index}
               source="action"
             />
-          ))} */}
+          ))}
       </Flex>
     </Flex>
   );

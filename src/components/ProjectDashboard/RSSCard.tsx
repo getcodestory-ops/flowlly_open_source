@@ -82,7 +82,7 @@ function RSSCard({
       _hover={{ bg: "brand.dark", color: "white" }}
     >
       {!isExplanationVisible && (
-        <Flex w={"full"} justifyContent={"space-between"}>
+        <Flex w={"full"} justifyContent={"space-between"} direction={"column"}>
           <Flex alignItems={"center"}>
             {status && (
               <Icon

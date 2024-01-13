@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Flex, Icon, Text } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import RSSCard from "./RSSCard";
-// import timeSinceLatestSignificantEvent from "../../utils/timeSinceLastSignificantEvent";
+import timeSinceLatestSignificantEvent from "../../utils/timeSinceLatestSignificantEvent";
 
 function RisksRSSsection() {
   const { userActivities } = useStore((state) => ({
@@ -15,11 +15,11 @@ function RisksRSSsection() {
 
   return (
     <Flex w={"full"} direction={"column"}>
-      <Text fontSize={"lg"} fontWeight={"bold"} mb={"2"}>
+      <Text fontSize={"14px"} fontWeight={"bold"} mb={"2"}>
         Identified Risks
       </Text>
       <Flex direction={"column"}>
-        {/* {userActivities &&
+        {userActivities &&
           userActivities
             // First, filter out the activities that are either "Delayed" or "At Risk"
             .filter(
@@ -50,7 +50,7 @@ function RisksRSSsection() {
                 }
                 source="risk"
               />
-            ))} */}
+            ))}
       </Flex>
     </Flex>
   );

@@ -13,7 +13,6 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import DocumentList from "@/components/DocumentEditor/DocumentList";
 import supabase from "@/utils/supabaseClient";
-import { GiD10 } from "react-icons/gi";
 
 const queryClient = new QueryClient();
 
