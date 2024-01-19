@@ -10,7 +10,7 @@ import { persist } from "zustand/middleware";
 
 export const useStore = create<State>((set) => ({
   session: null,
-  appView: "dashboard",
+  appView: "schedule",
   userProjects: [],
   userActivities: [],
   activeProject: null,
@@ -45,6 +45,7 @@ export const useStore = create<State>((set) => ({
   filterView: "none",
   scheduleProbability: 1.0,
   scheduleDate: new Date(),
+  documentId: "",
   setSession: (session: Session | null) => set(() => ({ session })),
   setAdminRights: (hasAdminRights: boolean) => set(() => ({ hasAdminRights })),
   setAppView: (appView: AppView) => set(() => ({ appView })),
@@ -138,4 +139,5 @@ export const useStore = create<State>((set) => ({
   setScheduleProbability: (probability: number) =>
     set(() => ({ scheduleProbability: probability })),
   setScheduleDate: (date: Date) => set(() => ({ scheduleDate: date })),
+  setDocumentId: (id: string) => set(() => ({ documentId: id })),
 }));

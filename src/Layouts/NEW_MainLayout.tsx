@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Box, Flex, Grid, GridItem } from "@chakra-ui/react";
 import SidePanel from "@/Layouts/SidePanel";
 import { useStore } from "@/utils/store";
@@ -13,6 +13,9 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import DocumentList from "@/components/DocumentEditor/DocumentList";
 import supabase from "@/utils/supabaseClient";
+import NewNotesPage from "@/components/newUIComponents/NEW_NotesPage";
+import NEW_ReportsPage from "@/components/newUIComponents/NEW_ReportsPage";
+import NEW_UpdatesPage from "@/components/newUIComponents/NEW_UpdatesPage";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +30,22 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
     })
   );
 
+  const gridItemRef = useRef(null);
+
+  const checkScrolling = (element: HTMLElement) => {
+    const vertical = element.scrollHeight > element.clientHeight;
+    const horizontal = element.scrollWidth > element.clientWidth;
+    console.log(`Vertical scrolling needed: ${vertical}`);
+    console.log(`Horizontal scrolling needed: ${horizontal}`);
+  };
+
+  useEffect(() => {
+    // Check if the GridItem needs scrolling after the component mounts
+    if (gridItemRef.current) {
+      checkScrolling(gridItemRef.current);
+    }
+  }, []);
+
   useEffect(() => {
     async function loginCheck() {
       const { data } = await supabase.auth.getSession();
@@ -35,7 +54,7 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
         router.replace("/");
       } else {
         setSessionToken(data?.session);
-        setAppView("dashboard");
+        setAppView("schedule");
       }
     }
     loginCheck();
@@ -63,6 +82,7 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
             h="100vh"
             // direction={{ base: "column", md: "row" }}
             overflow="auto"
+            bg={"brand.background"}
           >
             {appView === "login" && <Flex>{children}</Flex>}
             {appView !== "login" && (
@@ -79,26 +99,40 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
                 <GridItem colSpan={10} rowSpan={15}>
                   <Grid
                     h="100%"
-                    templateRows="repeat(4, 1fr)"
+                    templateRows="repeat(5, 1fr)"
                     templateColumns="repeat(5, 1fr)"
-                    gap={4}
+                    gap={0}
+                    bg={"white"}
+                    rounded={"2xl"}
+                    boxShadow={"lg"}
                   >
                     <GridItem rowSpan={1} colSpan={5}>
                       <ProjectInfoDisplay />
                     </GridItem>
                     {appView === "dashboard" && (
-                      <GridItem rowSpan={4} colSpan={5}>
+                      <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
                         {<ProjectDashboard />}
                       </GridItem>
                     )}
                     {appView === "schedule" && (
-                      <GridItem rowSpan={4} colSpan={5}>
+                      <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
                         <ScheduleUiView />
                       </GridItem>
                     )}
                     {appView === "notes" && (
-                      <GridItem rowSpan={4} colSpan={5}>
-                        <DocumentList />
+                      <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
+                        {/* <DocumentList /> */}
+                        {<NewNotesPage />}
+                      </GridItem>
+                    )}
+                    {appView === "reports" && (
+                      <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
+                        {<NEW_ReportsPage />}
+                      </GridItem>
+                    )}
+                    {appView === "updates" && (
+                      <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
+                        <NEW_UpdatesPage />
                       </GridItem>
                     )}
                   </Grid>

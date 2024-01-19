@@ -9,6 +9,8 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  Tooltip,
+  Button,
 } from "@chakra-ui/react";
 import NEW_Menu from "./NEW_Menu";
 import { MdOutlineSettings } from "react-icons/md";
@@ -17,6 +19,7 @@ import { useStore } from "@/utils/store";
 import { ProjectEntity } from "@/types/projects";
 import { useRouter } from "next/router";
 import { ActivityEntity } from "@/types/activities";
+import { IoShareSocialOutline, IoAddCircleOutline } from "react-icons/io5";
 
 interface TopBarMenuItemsProps {
   taskToView: ActivityEntity;
@@ -35,16 +38,16 @@ function ProjectInfoDisplay() {
 
   return (
     <Flex h="100%">
-      <Grid w={"full"} templateRows="repeat(3, 1fr)" gap={0}>
+      <Grid w={"full"} templateRows="repeat(2, 1fr)" gap={0}>
         <GridItem
-          rowSpan={2}
+          rowSpan={1}
           bgGradient="linear(brand.gray , white )"
           px={"4"}
           py={"4"}
           rounded={"2xl"}
         >
-          <Flex justifyContent={"space-between"} h={"full"}>
-            <Flex alignItems={"flex-end"}>
+          <Flex justifyContent={"space-between"}>
+            <Flex>
               <Flex mr={"12"}>
                 {/* <Flex fontSize={"xs"}>PROJECT</Flex> */}
                 {userProjects && userProjects.length > 0 && (
@@ -72,42 +75,73 @@ function ProjectInfoDisplay() {
                   </Menu>
                 )}
               </Flex>
-              <Flex direction={"column"} fontSize={"sm"} pb={"1"}>
-                <Text>STATUS</Text>
+              <Flex fontSize={"sm"} alignItems={"center"}>
+                <Text mr={"2"}>Status:</Text>
                 <Text fontWeight={"bold"}>At Risk</Text>
               </Flex>
             </Flex>
-            <Flex direction={"column"} justifyContent={"space-between"}>
-              <Flex justifyContent="flex-end">
-                <Flex bg={"white"} p={"1"} rounded={"full"}>
-                  <Icon as={MdOutlineSettings} boxSize={"5"} />
-                </Flex>
-              </Flex>
+            <Flex justifyContent={"space-between"}>
               <Flex color={"black"} fontSize={"sm"}>
-                <Flex
-                  mr={"4"}
-                  px={"2"}
-                  py={"1"}
-                  bg={"white"}
-                  rounded={"md"}
-                  className="custom-shadow"
+                <Tooltip
+                  label="Add File"
+                  aria-label="A tooltip"
+                  bg="white"
+                  color="brand.dark"
                 >
-                  Add Files
-                </Flex>
-                <Flex
-                  px={"2"}
-                  py={"1"}
-                  bg={"white"}
-                  className="custom-shadow"
-                  rounded={"md"}
+                  <Button
+                    p={"1"}
+                    size={"sm"}
+                    bg={"white"}
+                    rounded={"full"}
+                    className="custom-shadow"
+                    _hover={{ bg: "brand.dark", color: "white" }}
+                    cursor={"pointer"}
+                  >
+                    <Icon as={IoAddCircleOutline} boxSize={"5"} />
+                  </Button>
+                </Tooltip>
+                <Tooltip
+                  label="Share Project"
+                  aria-label="A tooltip"
+                  bg="white"
+                  color="brand.dark"
                 >
-                  Share Project
-                </Flex>
+                  <Button
+                    p={"1"}
+                    mx={"2"}
+                    bg={"white"}
+                    size={"sm"}
+                    className="custom-shadow"
+                    rounded={"full"}
+                    _hover={{ bg: "brand.dark", color: "white" }}
+                    cursor={"pointer"}
+                  >
+                    <Icon as={IoShareSocialOutline} boxSize={"5"} />
+                  </Button>
+                </Tooltip>
+                <Tooltip
+                  label="Project Settings"
+                  aria-label="A tooltip"
+                  bg="white"
+                  color="brand.dark"
+                >
+                  <Button
+                    bg={"white"}
+                    p={"1"}
+                    size={"sm"}
+                    rounded={"full"}
+                    cursor={"pointer"}
+                    _hover={{ bg: "brand.dark", color: "white" }}
+                    className="custom-shadow"
+                  >
+                    <Icon as={MdOutlineSettings} boxSize={"5"} />
+                  </Button>
+                </Tooltip>
               </Flex>
             </Flex>
           </Flex>
         </GridItem>
-        <GridItem colSpan={1} py={"2"}>
+        <GridItem colSpan={1}>
           <NEW_Menu />
         </GridItem>
       </Grid>

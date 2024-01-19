@@ -1,40 +1,39 @@
 import React from "react";
-import { VStack, Text, Flex } from "@chakra-ui/react";
-import KanbanCard from "./KanbanCard";
-import { Droppable } from "react-beautiful-dnd";
-import { ActivityEntity } from "@/types/activities";
+import { Flex, Text } from "@chakra-ui/react";
+import TaskCard from "./KanbanCard";
+import { useDrop } from "react-dnd";
 
-interface LaneProps {
-  title: string;
-  tasks: ActivityEntity[];
-}
+const KanbanLane = ({ status, tasks, onDrop }) => {
+  const [, dropRef] = useDrop(() => ({
+    accept: "task",
+    drop: (item, monitor) => onDrop(item, status),
+  }));
 
-const KanbanLane: React.FC<LaneProps> = ({ title, tasks }) => (
-  <Droppable droppableId={title}>
-    {(provided) => (
-      <>
-        <Flex direction={"column"}>
-          <Flex mb={"4"}>
-            <Text fontSize="14px" fontWeight="bold">
-              {title}
-            </Text>
-          </Flex>
-          <VStack
-            {...provided.droppableProps}
-            ref={provided.innerRef}
-            width="250px"
-            // maxHeight="350px" // Set a fixed maximum height
-            // overflowY="auto" // Enable vertical scrolling
-          >
-            {tasks.map((task, index) => (
-              <KanbanCard key={task.id} task={task} />
-            ))}
-            {provided.placeholder}
-          </VStack>
-        </Flex>
-      </>
-    )}
-  </Droppable>
-);
+  return (
+    <Flex
+      ref={dropRef}
+      w="200px"
+      p="2"
+      bg={`${
+        status === "Delayed"
+          ? "red.100"
+          : status === "At Risk"
+          ? "orange.100"
+          : "brand.background"
+      }`}
+      rounded={"lg"}
+      m="2"
+      direction={"column"}
+      cursor={"grab"}
+    >
+      <Text fontSize="14px" fontWeight={"bold"}>
+        {status}
+      </Text>
+      {tasks.map((task) => (
+        <TaskCard key={task.id} task={task} />
+      ))}
+    </Flex>
+  );
+};
 
 export default KanbanLane;

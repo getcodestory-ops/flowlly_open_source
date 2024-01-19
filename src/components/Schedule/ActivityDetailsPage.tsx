@@ -404,23 +404,28 @@ function ActivitiesDetailPage() {
       {userActivities && userActivities.length > 0 && (
         <Flex
           direction={"column"}
-          justifyContent={"center"}
+          // justifyContent={"center"}
           w={"full"}
           px={"8"}
+          py={"2"}
           // bg={"brand.gray"}
-          // rounded={"lg"}
+          rounded={"lg"}
+          bg={"brand.background"}
         >
           <Flex direction={"column"} zIndex={"1"}>
             <Flex>
               <Button
                 bg={`${
-                  taskDetailsView === "details" ? "brand.accent" : "brand.light"
+                  taskDetailsView === "details" ? "brand.accent" : "white"
                 }`}
+                color={"brand.dark"}
                 size={"xs"}
                 _hover={{ bg: "brand.dark", color: "white" }}
                 alignContent={"center"}
                 mr={"6"}
                 onClick={() => setTaskDetailsView("details")}
+                border={"1px"}
+                borderColor={"brand.dark"}
               >
                 <Flex
                   // borderBottom={`${taskView === "details" ? "4px" : "2px"}`}
@@ -436,15 +441,15 @@ function ActivitiesDetailPage() {
               {taskToView.history && (
                 <Button
                   bg={`${
-                    taskDetailsView === "history"
-                      ? "brand.accent"
-                      : "brand.light"
+                    taskDetailsView === "history" ? "brand.accent" : "white"
                   }`}
                   size={"xs"}
                   _hover={{ bg: "brand.dark", color: "white" }}
                   alignContent={"center"}
                   onClick={() => setTaskDetailsView("history")}
                   mr={"6"}
+                  border={"1px"}
+                  borderColor={"brand.dark"}
                 >
                   <Flex
                     // borderBottom={`${taskView === "history" ? "4px" : "2px"}`}
@@ -463,21 +468,21 @@ function ActivitiesDetailPage() {
               taskToView.status === "At Risk" ? (
                 <Button
                   bg={`${
-                    taskDetailsView === "impact"
-                      ? "brand.accent"
-                      : "brand.light"
+                    taskDetailsView === "impact" ? "brand.accent" : "white"
                   }`}
                   size={"xs"}
                   _hover={{ bg: "brand.dark", color: "white" }}
                   onClick={() => setTaskDetailsView("impact")}
                   mr={"6"}
+                  border={"1px"}
+                  borderColor={"brand.dark"}
                 >
                   <Flex
                     // borderBottom={`${taskView === "impact" ? "4px" : "2px"}`}
                     // borderBottomColor={`${
                     //   taskView === "impact" ? "brand.accent" : "brand.light"
                     // }`}
-                    pb={"1"}
+
                     alignItems={"center"}
                   >
                     <Icon as={AiOutlineAlert} mr={"2"} />

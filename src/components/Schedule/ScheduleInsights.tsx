@@ -308,10 +308,8 @@ function ScheduleInsights() {
   const quickDataViewCard = () => {
     return (
       <Select
-        size={"sm"}
+        size={"xs"}
         className="custom-selector"
-        bg={"brand.gray"}
-        rounded={"lg"}
         onChange={(e: any) => setFilterView(e.target.value)}
       >
         <option value="All">All Tasks {countOfActivities}</option>
@@ -327,8 +325,11 @@ function ScheduleInsights() {
   return (
     <Flex>
       <Flex direction={"column"}>
-        <Flex mb={"4"} direction={"column"}>
-          {quickDataViewCard()}
+        <Flex alignItems={"center"}>
+          <Flex fontSize={"12px"} fontWeight={"bold"}>
+            Filter:
+          </Flex>
+          <Flex direction={"column"}>{quickDataViewCard()}</Flex>
         </Flex>
         <Flex
           // overflowY={"scroll"}

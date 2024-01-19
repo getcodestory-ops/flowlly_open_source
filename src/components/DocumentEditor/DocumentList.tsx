@@ -10,11 +10,14 @@ import { useRouter } from "next/router";
 function DocumentList() {
   const router = useRouter();
   const { projectId } = router.query;
-  const { session, activeProject, taskToView } = useStore((state) => ({
-    session: state.session,
-    activeProject: state.activeProject,
-    taskToView: state.taskToView,
-  }));
+  const { session, activeProject, taskToView, setDocumentId, documentId } =
+    useStore((state) => ({
+      session: state.session,
+      activeProject: state.activeProject,
+      taskToView: state.taskToView,
+      setDocumentId: state.setDocumentId,
+      documentId: state.documentId,
+    }));
 
   const {
     data: documents,
@@ -36,54 +39,71 @@ function DocumentList() {
     enabled: !!session?.access_token && !!activeProject?.project_id,
   });
 
+  const afterClick = (id: any) => {
+    setDocumentId(id);
+  };
+
+  useEffect(() => {
+    console.log("documents", documents);
+  }, [documents]);
+
   return (
-    <Grid templateColumns="repeat(4, 1fr)" gap={6} p={5} w="full">
-      <GridItem
-        py="4"
-        fontSize="xl"
+    <Flex
+      w="full"
+      overflowY={"scroll"}
+      overscrollBehaviorY={"contain"}
+      direction={"column"}
+    >
+      {/* <GridItem
+        fontSize="14px"
         fontWeight="bold"
         borderBottom={"2px solid"}
         borderColor="brand.light"
         key="document-container"
-        colSpan={4}
+        rowSpan={1}
       >
-        My documents
-      </GridItem>
+        My Notes
+      </GridItem> */}
       {documents &&
         documents.length > 0 &&
         documents.map((document) => (
-          <Link
-            href={{
-              pathname: `documents/editor`,
-              query: {
-                id: document.id,
-                title: document.title,
-                projectId: projectId,
-              }, // Pass the query parameters
-            }}
+          // <Link
+          //   href={{
+          //     pathname: `documents/editor`,
+          //     query: {
+          //       id: document.id,
+          //       title: document.title,
+          //       projectId: projectId,
+          //     }, // Pass the query parameters
+          //   }}
+          //   key={document.id}
+          // >
+          <Flex
+            w="full"
+            mb={"2"}
+            py={"4"}
+            fontSize="14px"
             key={document.id}
+            background={"brand.gray"}
+            cursor={"pointer"}
+            display="flex"
+            flexDirection="column"
+            borderRadius={"md"}
+            onClick={() => afterClick(document.id)}
+            _hover={{ bg: "brand.dark", color: "white" }}
           >
-            <GridItem
-              py="4"
-              fontSize="xl"
-              key={document.id}
-              background={"brand.dark"}
-              cursor={"pointer"}
-              minH="36"
-              display="flex"
-              flexDirection="column"
-              justifyContent={"flex-end"}
-              borderRadius={"md"}
-              color={"white"}
+            <Flex
+              w="full"
+              justifyContent={"center"}
+              h={"full"}
+              alignItems={"center"}
             >
-              <Flex w="full" justifyContent={"center"}></Flex>
-              <Flex w="full" justifyContent={"center"}>
-                {document.title}
-              </Flex>
-            </GridItem>
-          </Link>
+              {document.title}
+            </Flex>
+          </Flex>
+          // </Link>
         ))}
-    </Grid>
+    </Flex>
   );
 }
 

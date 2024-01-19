@@ -5,6 +5,7 @@ const colors = {
     light: "#EEEEEE",
     accent: "#FFD369",
     gray: "#F1F2F4",
+    background: "#F9F9F9",
   },
   brand2: {
     dark: "#222831",

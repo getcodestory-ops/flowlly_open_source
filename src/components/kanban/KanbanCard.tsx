@@ -1,42 +1,34 @@
 import React from "react";
 import { Flex, Text } from "@chakra-ui/react";
-import { ActivityEntity } from "@/types/activities";
+import { useDrag } from "react-dnd";
 
-interface KanbanCardProps {
-  task: ActivityEntity;
-}
+const TaskCard = ({ task }) => {
+  const [{ isDragging }, dragRef] = useDrag(() => ({
+    type: "task",
+    item: { id: task.id },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
 
-const KanbanCard: React.FC<KanbanCardProps> = ({ task }) => (
-  <Flex
-    p={4}
-    bg="brand.gray"
-    borderRadius="md"
-    // boxShadow="md"
-    w="full"
-    direction={"column"}
-  >
-    <Text fontSize={"12px"} fontWeight={"bold"}>
-      {task.name}
-    </Text>
-    <Flex mt={"2"} direction={"column"}>
-      <Flex>
-        <Text fontSize={"10px"} mr={"1"}>
-          Start Date:
-        </Text>
-        <Text fontSize={"10px"} fontWeight={"semibold"}>
-          {task.start}
-        </Text>
-      </Flex>
-      <Flex>
-        <Text fontSize={"10px"} mr={"1"}>
-          End Date:
-        </Text>
-        <Text fontSize={"10px"} fontWeight={"semibold"}>
-          {task.end}
-        </Text>
-      </Flex>
+  const draggingStyle = isDragging
+    ? { cursor: "grabbing" }
+    : { cursor: "grab" };
+
+  return (
+    <Flex
+      ref={dragRef}
+      p="4"
+      bg="white"
+      m="2"
+      shadow="md"
+      opacity={isDragging ? 0.5 : 1}
+      rounded={"lg"}
+      style={draggingStyle}
+    >
+      <Text fontSize={"12px"}>{task.name}</Text>
     </Flex>
-  </Flex>
-);
+  );
+};
 
-export default KanbanCard;
+export default TaskCard;

@@ -45,6 +45,8 @@ import ProcessHistoryButton from "./ProcessHistory/ProcessHistoryButton";
 import ActivitiesDetailPage from "./ActivityDetailsPage";
 import DocumentList from "../DocumentEditor/DocumentList";
 import KanbanBoard from "../kanban/KanbanBoard";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   const {
@@ -163,11 +165,16 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
         </Flex>
       </GridItem>
       <GridItem rowSpan={1} colSpan={1}>
-        <Flex>
-          <CustomDatePicker />
+        <Flex justifyContent={"space-between"}>
           <Flex>
-            <ProbabilitySelector />
+            <CustomDatePicker />
+            <Flex ml={"4"}>
+              <ProbabilitySelector />
+            </Flex>
           </Flex>
+          <Button size={"xs"} bg={"brand.dark"} color={"white"}>
+            + Add Task
+          </Button>
         </Flex>
       </GridItem>
       <GridItem rowSpan={9} colSpan={2}>
@@ -192,7 +199,9 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
               className="custom-scrollbar"
             >
               <Flex w={"full"}>
-                <KanbanBoard />
+                <DndProvider backend={HTML5Backend}>
+                  <KanbanBoard />
+                </DndProvider>
               </Flex>
             </GridItem>
           </Grid>
@@ -214,26 +223,16 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
               overflowY={"auto"}
               className="custom-scrollbar"
             >
-              <Flex w={"full"}>
+              <Flex w={"full"} h={"full"}>
                 <ActivitiesDetailPage />
               </Flex>
             </GridItem>
           </Grid>
-          // <Flex h="full" w="full" gap="16">
-          //   <Flex flex={1}>
-          //     <ScheduleInsights />
-          //   </Flex>
-          //   <Box width="2px" h="full" bg="gray.200"></Box>
-          //   <Flex flex={1}>
-          //     <ActivitiesDetailPage />
-          //   </Flex>
-          // </Flex>
         )}
       </GridItem>
     </Grid>
-    // <Flex display="flex" direction="column">
-    //   <AddNewChatEntity isOpen={isOpen} onClose={onClose} />
-    //   <Flex h="5vh" alignItems={"center"}>
+    // <Flex h={"full"}>
+    //   <Flex>
     //     <Flex borderColor={"brand2.mid"}>
     //       <Flex alignItems={"center"} mr={"4"}>
     //         <Button
@@ -287,104 +286,56 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
     //         </Text>
     //       </Flex>
     //     </Flex>
-    //     <Flex pl={"5"} pr={"2"}>
-    //       <CustomDatePicker />
-    //       <Flex>
-    //         <ProbabilitySelector />
-    //       </Flex>
-    //     </Flex>
-    //     {/* <Flex pl={"5"} alignItems={"center"}>
-    //       <ProcessHistoryButton />
-    //       <Flex ml={"5"}>
-    //         <CreateContingency />
-    //       </Flex>
-    //     </Flex> */}
     //   </Flex>
-    //   <Flex h="90vh">
-    //     <Flex className="ScheduleView">
-    //       {/* {view === "assistant" && (
-    //         <Flex
-    //           mt={"4"}
-    //           ml={"10"}
-    //           direction="column"
-    //           justifyContent={"space-between"}
-    //         >
-    //           <Flex>
-    //             <Text mr={"2"} fontSize={"sm"} fontWeight={"semibold"}>
-    //               Chat:
-    //             </Text>
-    //             <Menu>
-    //               <MenuButton
-    //                 onClick={onConversation}
-    //                 as={Button}
-    //                 rightIcon={<IoChevronDownOutline />}
-    //                 size={"xs"}
-    //                 bg={"brand2.mid"}
-    //                 _hover={{ bg: "brand2.dark", color: "white" }}
-    //               >
-    //                 {activeChatEntity ? activeChatEntity.chat_name : "No Chat"}
-    //               </MenuButton>
-    //               <MenuList>
-    //                 <MenuItem onClick={onOpen}>+ Create New Chat</MenuItem>
-    //                 <MenuDivider borderColor={"gray.400"} />
-    //                 {chatEntitities &&
-    //                   chatEntitities.map((chatEntity) => (
-    //                     <MenuItem
-    //                       key={chatEntity.id}
-    //                       as={"b"}
-    //                       onClick={() => setActiveChatEntity(chatEntity)}
-    //                     >
-    //                       {chatEntity.chat_name}
-    //                     </MenuItem>
-    //                   ))}
-    //               </MenuList>
-    //             </Menu>
-    //           </Flex>
-    //           {activeChatEntity.chat_name.length !== 0 ? (
-    //             <ScheduleChatInterface />
-    //           ) : view === "assistant" &&
-    //             activeChatEntity.chat_name.length === 0 ? (
-    //             <>
-    //               <Flex
-    //                 w={"full"}
-    //                 justifyContent={"center"}
-    //                 alignItems={"center"}
-    //                 fontSize={"2xl"}
-    //                 fontWeight={"black"}
-    //               >
-    //                 Select or Create Chat at the top
-    //               </Flex>
-    //             </>
-    //           ) : (
-    //             ""
-    //           )}
+    //   <Flex>
+    //     <Flex justifyContent={"space-between"}>
+    //       <Flex>
+    //         <CustomDatePicker />
+    //         <Flex ml={"4"}>
+    //           <ProbabilitySelector />
     //         </Flex>
-    //       )} */}
+    //       </Flex>
+    //       <Button size={"xs"} bg={"brand.dark"} color={"white"}>
+    //         + Add Task
+    //       </Button>
+    //     </Flex>
+    //   </Flex>
+    //   <Flex>
+    //     {view === "gantt" && (
+    //       <Flex h="full">
+    //         <Flex overflow={"auto"} className="custom-scrollbar">
+    //           <Flex w={"full"}>
+    //             <ScheduleGanttInterface />
+    //           </Flex>
+    //         </Flex>
+    //       </Flex>
+    //     )}
+    //     {userActivities && userActivities.length > 0 && view === "kanban" && (
+    //       <Flex h="full">
+    //         <Flex overflow={"auto"} className="custom-scrollbar">
+    //           <Flex w={"full"}>
+    //             <DndProvider backend={HTML5Backend}>
+    //               <KanbanBoard />
+    //             </DndProvider>
+    //           </Flex>
+    //         </Flex>
+    //       </Flex>
+    //     )}
 
-    //       {view === "insights" && (
-    //         <Flex h="full" w="full" gap="16">
-    //           <Flex flex={1}>
+    //     {view === "tasks" && (
+    //       <Flex h="full">
+    //         <Flex overflowY={"auto"} className="custom-scrollbar">
+    //           <Flex w={"full"}>
     //             <ScheduleInsights />
     //           </Flex>
-    //           <Box width="2px" h="full" bg="gray.200"></Box>
-    //           <Flex flex={1}>
+    //         </Flex>
+    //         <Flex overflowY={"auto"} className="custom-scrollbar">
+    //           <Flex w={"full"} h={"full"}>
     //             <ActivitiesDetailPage />
     //           </Flex>
     //         </Flex>
-    //       )}
-    //       {/* {view === "reports" && <ReportsPage />} */}
-    //       {view === "gantt" && <ScheduleGanttInterface />}
-
-    //       {/* {view === "documents" && (
-    //         <Flex
-    //           h="full"
-    //           w={{ base: "full", "2xl": "7xl" }}
-    //           direction="column"
-    //         >
-    //           <DocumentList />
-    //         </Flex>
-    //       )} */}
-    //     </Flex>
+    //       </Flex>
+    //     )}
     //   </Flex>
     // </Flex>
   );

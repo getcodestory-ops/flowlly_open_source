@@ -1,7 +1,12 @@
 import React, { use, useEffect } from "react";
-import { Flex, Button, Link } from "@chakra-ui/react";
+import { Flex, Button, Link, Icon } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { useRouter } from "next/router";
+import { FaTasks } from "react-icons/fa";
+import { CgNotes } from "react-icons/cg";
+import { TbReportAnalytics } from "react-icons/tb";
+import { GoDependabot } from "react-icons/go";
+import { BsStars } from "react-icons/bs";
 
 function NEW_Menu() {
   const { setAppView, appView } = useStore((state) => ({
@@ -38,18 +43,19 @@ function NEW_Menu() {
   }, [appView]);
 
   return (
-    <Flex
-      justifyContent={"space-between"}
-      px={"4"}
-      bg={"white"}
-      py={"1"}
-      w={"70%"}
-      rounded={"lg"}
-      fontWeight={"semibold"}
-      fontSize={"14px"}
-      className="custom-shadow"
-    >
-      <Button
+    <Flex px={"2"}>
+      <Flex
+        justifyContent={"space-between"}
+        px={"4"}
+        bg={"white"}
+        py={"1"}
+        rounded={"lg"}
+        fontWeight={"semibold"}
+        fontSize={"14px"}
+        className="custom-shadow"
+        w={"45%"}
+      >
+        {/* <Button
         size={"sm"}
         bg={"white"}
         onClick={() => {
@@ -57,18 +63,31 @@ function NEW_Menu() {
         }}
       >
         Dashboard
-      </Button>
-      <Button
-        size={"sm"}
-        bg={"white"}
-        onClick={() => {
-          setAppView("schedule");
-        }}
-      >
-        Timeline
-      </Button>
-      {/* <Flex>Budget</Flex> */}
-      <Button
+      </Button> */}
+        <Button
+          size={"sm"}
+          bg={"white"}
+          onClick={() => {
+            setAppView("updates");
+          }}
+          _hover={{ bg: "brand.dark", color: "white" }}
+        >
+          <Icon as={BsStars} mr={"2"}></Icon>
+          Updates
+        </Button>
+        <Button
+          size={"sm"}
+          bg={"white"}
+          onClick={() => {
+            setAppView("schedule");
+          }}
+          _hover={{ bg: "brand.dark", color: "white" }}
+        >
+          <Icon as={FaTasks} mr={"2"}></Icon>
+          Tasks
+        </Button>
+        {/* <Flex>Budget</Flex> */}
+        {/* <Button
         size={"sm"}
         bg={"white"}
         onClick={() => {
@@ -76,8 +95,8 @@ function NEW_Menu() {
         }}
       >
         Risks
-      </Button>
-      <Button
+      </Button> */}
+        {/* <Button
         size={"sm"}
         bg={"white"}
         onClick={() => {
@@ -85,26 +104,31 @@ function NEW_Menu() {
         }}
       >
         Updates
-      </Button>
-      <Button
-        size={"sm"}
-        bg={"white"}
-        onClick={() => {
-          setAppView("reports");
-        }}
-      >
-        Reports
-      </Button>
-      <Button
-        size={"sm"}
-        bg={"white"}
-        onClick={() => {
-          setAppView("notes");
-        }}
-      >
-        Notes
-      </Button>
-      <Button
+      </Button> */}
+        <Button
+          size={"sm"}
+          bg={"white"}
+          onClick={() => {
+            setAppView("notes");
+          }}
+          _hover={{ bg: "brand.dark", color: "white" }}
+        >
+          <Icon as={CgNotes} mr={"2"}></Icon>
+          Notes
+        </Button>
+        <Button
+          size={"sm"}
+          bg={"white"}
+          onClick={() => {
+            setAppView("reports");
+          }}
+          _hover={{ bg: "brand.dark", color: "white" }}
+        >
+          <Icon as={TbReportAnalytics} mr={"2"}></Icon>
+          Reports
+        </Button>
+
+        {/* <Button
         size={"sm"}
         bg={"white"}
         onClick={() => {
@@ -112,7 +136,8 @@ function NEW_Menu() {
         }}
       >
         Scenarios
-      </Button>
+      </Button> */}
+      </Flex>
     </Flex>
   );
 }

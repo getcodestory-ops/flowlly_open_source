@@ -87,11 +87,13 @@ function NewTopBar() {
   return (
     <Flex
       px={4}
+      py={"3"}
       alignItems={"center"}
-      // bg={"brand.gray"}
+      bg={"brand.gray"}
       h={"full"}
       justifyContent={"space-between"}
-      rounded={"md"}
+      rounded={"xl"}
+      className="custom-shadow"
     >
       <Image
         src="https://upthcaewktgrqjieqiya.supabase.co/storage/v1/object/public/images/logo_full.svg"
@@ -103,10 +105,13 @@ function NewTopBar() {
         <Flex mr={"4"}>
           <Flex
             fontSize={"sm"}
-            bg={"brand.gray"}
+            bg={"brand.dark"}
+            color={"white"}
             py={"1"}
             px={"2"}
             rounded={"lg"}
+            cursor={"pointer"}
+            _hover={{ bg: "brand.accent", color: "brand.dark" }}
           >
             New Project
           </Flex>

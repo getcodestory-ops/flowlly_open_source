@@ -44,7 +44,8 @@ export type AppView =
   | "updates"
   | "reports"
   | "scenarios"
-  | "login";
+  | "login"
+  | "analysis";
 
 export type State = {
   session: Session | null;
@@ -73,6 +74,7 @@ export type State = {
   filterView: "none" | "Delayed" | "At Risk" | "In Progress" | any;
   scheduleProbability: number;
   scheduleDate: Date;
+  documentId: string;
   setSession: (session: Session | null) => void;
   setAppView: (appView: AppView) => void;
   setUserProjects: (userProjects: ProjectEntity[]) => void;
@@ -105,4 +107,5 @@ export type State = {
   ) => void;
   setScheduleProbability: (probability: number) => void;
   setScheduleDate: (date: Date) => void;
+  setDocumentId: (id: string) => void;
 };
