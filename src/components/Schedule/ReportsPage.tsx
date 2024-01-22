@@ -161,7 +161,7 @@ const ReportsPage = () => {
 
   const reportDisplay = () => {
     if (reportSelected === "option1") {
-      console.log(typeof reports["option 1"]);
+      // console.log(typeof reports["option 1"]);
       return reports["option 1"];
     } else if (reportSelected === "option2") {
       // Use ReactMarkdown for option 2

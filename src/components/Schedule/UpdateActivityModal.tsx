@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   Box,
   Flex,
@@ -32,6 +32,7 @@ interface UpdateActivityModalProps {
   onClose: () => void;
   tasks: ActivityEntity[];
   modifyTask: Task;
+  updateSource?: string;
 }
 
 function UpdateActivityModal({
@@ -39,6 +40,7 @@ function UpdateActivityModal({
   onClose,
   tasks,
   modifyTask,
+  updateSource,
 }: UpdateActivityModalProps) {
   const toast = useToast();
   const dateToday = getCurrentDateFormatted();
@@ -49,21 +51,24 @@ function UpdateActivityModal({
 
   const [activity, setActivity] = useState<UpdateActivityTypes>();
 
-  //check activity updates
   useEffect(() => {
-    setActivity({
-      id: modifyTask.id,
-      name: modifyTask.name,
-      description: "",
-      duration: dateDiffInDays(modifyTask.start, modifyTask.end),
-      start: getCurrentDateFormatted(modifyTask.start),
-      project_id: activeProject?.project_id,
-      end: getCurrentDateFormatted(modifyTask.end),
-      dependencies: [],
-      resources: [],
-      status: "",
+    tasks.forEach((task) => {
+      if (task.id === modifyTask.id) {
+        setActivity({
+          id: modifyTask.id,
+          name: modifyTask.name,
+          description: "",
+          duration: dateDiffInDays(modifyTask.start, modifyTask.end),
+          start: getCurrentDateFormatted(modifyTask.start),
+          project_id: activeProject?.project_id,
+          end: getCurrentDateFormatted(modifyTask.end),
+          dependencies: [],
+          resources: [],
+          status: task.status,
+        });
+      }
     });
-  }, [modifyTask]);
+  }, [activity]);
 
   const queryClient = useQueryClient();
 
@@ -120,78 +125,99 @@ function UpdateActivityModal({
         {activeProject && activity && (
           <>
             <ModalCloseButton />
-            <ModalHeader>Update Activity</ModalHeader>
+            <ModalHeader>Update Task</ModalHeader>
             <ModalBody pb={"6"}>
               <Flex direction={"column"} mb={"2"}>
                 <Flex mb={4} gap={2} flexDirection={"column"}>
-                  <Input
-                    placeholder="Activity Name"
-                    required
-                    value={activity.name.replace("(on schedule)", "")}
-                    onChange={(e) => {
-                      setActivity((state) => ({
-                        ...state!,
-                        name: e.target.value,
-                      }));
-                    }}
-                  />
-                  <Input
-                    placeholder="Activity Duration (Days)"
-                    value={activity.duration === 0 ? "" : activity.duration}
-                    type="number"
-                    step={0.01}
-                    onChange={(e) => {
-                      if (!e.target.value) e.target.value = "0";
-                      setActivity((state) => ({
-                        ...state!,
-                        duration: parseFloat(e.target.value) ?? 0,
-                      }));
-                    }}
-                  />
-                  <Input
-                    placeholder="Start Date"
-                    type="date"
-                    value={activity.start}
-                    onChange={(e) => {
-                      if (e.target.value > activity.end) {
-                        return toast({
-                          title: "Invalid date range",
-                          description: "Start date cannot be after end date",
-                          status: "error",
-                          duration: 9000,
+                  <Flex direction={"column"}>
+                    <Text as={"b"} fontSize={"12px"}>
+                      Task Name
+                    </Text>
+                    <Input
+                      placeholder="Activity Name"
+                      required
+                      value={activity.name.replace("(on schedule)", "")}
+                      onChange={(e) => {
+                        setActivity((state) => ({
+                          ...state!,
+                          name: e.target.value,
+                        }));
+                      }}
+                    />
+                  </Flex>
+                  <Flex direction={"column"}>
+                    <Text as={"b"} fontSize={"12px"}>
+                      Task Duration
+                    </Text>
+                    <Input
+                      placeholder="Activity Duration (Days)"
+                      value={activity.duration === 0 ? "" : activity.duration}
+                      type="number"
+                      step={0.01}
+                      onChange={(e) => {
+                        if (!e.target.value) e.target.value = "0";
+                        setActivity((state) => ({
+                          ...state!,
+                          duration: parseFloat(e.target.value) ?? 0,
+                        }));
+                      }}
+                    />
+                  </Flex>
+                  <Flex direction={"column"}>
+                    <Text as={"b"} fontSize={"12px"}>
+                      Task Start Date
+                    </Text>
+                    <Input
+                      placeholder="Start Date"
+                      type="date"
+                      value={activity.start}
+                      onChange={(e) => {
+                        if (e.target.value > activity.end) {
+                          return toast({
+                            title: "Invalid date range",
+                            description: "Start date cannot be after end date",
+                            status: "error",
+                            duration: 9000,
 
-                          isClosable: true,
-                        });
-                      }
+                            isClosable: true,
+                          });
+                        }
 
-                      setActivity((state) => ({
-                        ...state!,
-                        start: e.target.value,
-                      }));
-                    }}
-                  />
-                  <Input
-                    placeholder="End Date"
-                    type="date"
-                    value={activity ? activity.end : ""}
-                    onChange={(e) => {
-                      if (e.target.value < activity.start) {
-                        return toast({
-                          title: "Invalid date range",
-                          description: "Start date cannot be after end date",
-                          status: "error",
-                          duration: 9000,
+                        setActivity((state) => ({
+                          ...state!,
+                          start: e.target.value,
+                        }));
+                      }}
+                    />
+                  </Flex>
+                  <Flex direction={"column"}>
+                    <Text as={"b"} fontSize={"12px"}>
+                      Task End Date
+                    </Text>
+                    <Input
+                      placeholder="End Date"
+                      type="date"
+                      value={activity.end}
+                      onChange={(e) => {
+                        if (e.target.value < activity.start) {
+                          return toast({
+                            title: "Invalid date range",
+                            description: "Start date cannot be after end date",
+                            status: "error",
+                            duration: 9000,
 
-                          isClosable: true,
-                        });
-                      }
+                            isClosable: true,
+                          });
+                        }
 
-                      setActivity((state) => ({
-                        ...state!,
-                        end: e.target.value,
-                      }));
-                    }}
-                  />
+                        setActivity((state) => ({
+                          ...state!,
+                          end: e.target.value,
+                        }));
+                      }}
+                    />
+                  </Flex>
+
                   {/* <Input
                     placeholder="Cost"
                     value={activity.cost === 0 ? "" : activity.cost}
@@ -204,8 +230,8 @@ function UpdateActivityModal({
                       }));
                     }}
                   /> */}
-                </Flex>
-                {/* <Textarea
+
+                  {/* <Textarea
                   placeholder="Project Description"
                   value={activity.description}
                   onChange={(e) =>
@@ -215,44 +241,65 @@ function UpdateActivityModal({
                     }))
                   }
                 /> */}
-                <Text as={"b"}>Select task dependency</Text>
+                  <Text as={"b"} fontSize={"12px"}>
+                    Select task dependency
+                  </Text>
 
-                <Select
-                  id="dependencies"
-                  placeholder="Select dependency"
-                  size={"md"}
-                  onChange={(e) => {
-                    setActivity((state) => ({
-                      ...state!,
-                      dependencies: [e.target.value],
-                    }));
-                  }}
-                >
-                  {tasks.map((task) => (
-                    <option key={task.id} value={task.id}>
-                      {task.name}
-                    </option>
-                  ))}
-                </Select>
-              </Flex>
-              <Flex direction={"column"}>
-                <Text as={"b"}>Select task status</Text>
-                <Select
-                  id="status"
-                  placeholder="Select status"
-                  size={"md"}
-                  onChange={(e) => {
-                    setActivity((state) => ({
-                      ...state!,
-                      status: e.target.value,
-                    }));
-                  }}
-                >
-                  <option value={"Pending"}>Pending</option>
-                  <option value={"In Progress"}>In Progress</option>
-                  <option value={"At Risk"}>At Risk</option>
-                  <option value={"Delayed"}>Delayed</option>
-                </Select>
+                  <Select
+                    id="dependencies"
+                    placeholder="Select dependency"
+                    size={"md"}
+                    onChange={(e) => {
+                      setActivity((state) => ({
+                        ...state!,
+                        dependencies: [e.target.value],
+                      }));
+                    }}
+                  >
+                    {tasks.map((task) => (
+                      <option key={task.id} value={task.id}>
+                        {task.name}
+                      </option>
+                    ))}
+                  </Select>
+                </Flex>
+                <Flex direction={"column"}>
+                  <Text as={"b"} fontSize={"12px"}>
+                    Select task status
+                  </Text>
+                  <Select
+                    id="status"
+                    placeholder={`${activity.status}`}
+                    size={"md"}
+                    onChange={(e) => {
+                      setActivity((state) => ({
+                        ...state!,
+                        status: e.target.value,
+                      }));
+                    }}
+                  >
+                    <option value={"Pending"}>Pending</option>
+                    <option value={"In Progress"}>In Progress</option>
+                    <option value={"At Risk"}>At Risk</option>
+                    <option value={"Delayed"}>Delayed</option>
+                  </Select>
+                  <Flex direction={"column"} mt={"2"}>
+                    <Text as={"b"} fontSize={"12px"}>
+                      Reason for update
+                    </Text>
+                    <Input
+                      placeholder="Activity Name"
+                      required
+                      value={activity.name.replace("(on schedule)", "")}
+                      onChange={(e) => {
+                        setActivity((state) => ({
+                          ...state!,
+                          name: e.target.value,
+                        }));
+                      }}
+                    />
+                  </Flex>
+                </Flex>
               </Flex>
             </ModalBody>
             <ModalFooter>

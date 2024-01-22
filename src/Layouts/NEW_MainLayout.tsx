@@ -42,7 +42,7 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
   }));
 
   useEffect(() => {
-    console.log("userActivities", userActivities);
+    // console.log("userActivities", userActivities);
     setProjectStatus(checkProjectStatus(userActivities));
   }, [userActivities]);
 
@@ -51,8 +51,8 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
   const checkScrolling = (element: HTMLElement) => {
     const vertical = element.scrollHeight > element.clientHeight;
     const horizontal = element.scrollWidth > element.clientWidth;
-    console.log(`Vertical scrolling needed: ${vertical}`);
-    console.log(`Horizontal scrolling needed: ${horizontal}`);
+    // console.log(`Vertical scrolling needed: ${vertical}`);
+    // console.log(`Horizontal scrolling needed: ${horizontal}`);
   };
 
   useEffect(() => {
@@ -76,9 +76,9 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
     loginCheck();
   }, [router]);
 
-  useEffect(() => {
-    console.log("userProjects", userProjects);
-  }, [userProjects]);
+  // useEffect(() => {
+  //   console.log("userProjects", userProjects);
+  // }, [userProjects]);
 
   return (
     <>
@@ -147,7 +147,6 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
                         )}
                         {appView === "notes" && (
                           <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
-                            {/* <DocumentList /> */}
                             {<NewNotesPage />}
                           </GridItem>
                         )}

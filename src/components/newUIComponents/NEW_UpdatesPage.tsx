@@ -38,7 +38,7 @@ const NEW_UpdatesPage = () => {
   const [objectView, setObjectView] = useState<string>("content");
 
   useEffect(() => {
-    console.log("objectId", objectId);
+    // console.log("objectId", objectId);
   }, [objectId]);
 
   const updatesObject = {

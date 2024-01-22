@@ -43,9 +43,9 @@ function DocumentList() {
     setDocumentId(id);
   };
 
-  useEffect(() => {
-    console.log("documents", documents);
-  }, [documents]);
+  // useEffect(() => {
+  //   console.log("documents", documents);
+  // }, [documents]);
 
   return (
     <Flex

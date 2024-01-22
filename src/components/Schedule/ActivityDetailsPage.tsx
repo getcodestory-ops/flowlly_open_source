@@ -10,15 +10,16 @@ import { AiOutlineAlert } from "react-icons/ai";
 import { useStore } from "@/utils/store";
 import { BiSolidCircle } from "react-icons/bi";
 import ActivityEditView from "./ActivityEditView";
-
+import { Task } from "gantt-task-react";
 import AddActivityChildren from "./AddActivityChildren/AddActivityChildren";
-
+import { activityEntityToTask } from "@/utils/activityEntityToTask";
 import { getActivityContingencyPlan } from "@/api/activity_routes";
 import {
   useQuery,
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
+import UpdateActivityModal from "./UpdateActivityModal";
 
 function ActivitiesDetailPage() {
   const {
@@ -46,7 +47,10 @@ function ActivitiesDetailPage() {
   };
 
   const queryClient = useQueryClient();
+  const [editOpen, setEditOpen] = useState<boolean>(false);
+  const [modifyTask, setModifyTask] = useState<Task>();
   const [editTask, setEditTask] = useState<boolean>(false);
+  const [tasks, setTasks] = useState<any[]>(userActivities);
   const [actions, setActions] = useState<Action[]>([
     {
       contingency_plan: "No remediation plan created.",
@@ -76,8 +80,46 @@ function ActivitiesDetailPage() {
   }, [contingencyPlans]);
 
   useEffect(() => {
-    console.log("taskToView", taskToView);
-  }, [taskToView]);
+    if (userActivities) {
+      if (userActivities.length > 0) {
+        // console.log("activities", activities);
+        const transformedTasks = userActivities
+          .map(activityEntityToTask)
+          .sort((a, b) => a.start.getTime() - b.start.getTime()); // Assuming the data you want is in activities.data
+        setTasks(transformedTasks);
+      } else {
+        const currentDate = new Date();
+        setTasks([
+          {
+            start: new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth(),
+              currentDate.getDate()
+            ),
+            end: new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth(),
+              currentDate.getDate()
+            ),
+            name: "No data available",
+            id: "ProjectSample",
+            progress: 0,
+            type: "project",
+            hideChildren: false,
+            displayOrder: 1,
+          },
+        ]);
+      }
+    }
+  }, [userActivities]);
+
+  useEffect(() => {
+    tasks.forEach((task) => {
+      if (task.id === taskToView.id) {
+        setModifyTask(task);
+      }
+    });
+  }, [tasks, taskToView]);
 
   const actionsCard = () => {
     let elements = []; // Initialize an empty array
@@ -416,6 +458,14 @@ function ActivitiesDetailPage() {
           rounded={"lg"}
           bg={"brand.background"}
         >
+          {modifyTask && editOpen && (
+            <UpdateActivityModal
+              isOpen={editOpen}
+              onClose={() => setEditOpen(false)}
+              tasks={userActivities}
+              modifyTask={modifyTask}
+            />
+          )}
           <Flex direction={"column"} zIndex={"1"}>
             <Flex>
               <Button
@@ -529,7 +579,8 @@ function ActivitiesDetailPage() {
                         bg={"brand.dark"}
                         color={"white"}
                         _hover={{ bg: "brand.light", color: "brand.dark" }}
-                        onClick={() => setEditTask(!editTask)}
+                        // onClick={() => setEditTask(!editTask)}
+                        onClick={() => setEditOpen(true)}
                       >
                         <Text>{editTask ? "Save Changes" : "Edit Task"}</Text>
                       </Button>

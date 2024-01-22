@@ -67,7 +67,7 @@ function ProjectDashboard() {
         break;
     }
 
-    console.log(`${elementName} - Vertical scrolling needed: ${vertical}`);
+    // console.log(`${elementName} - Vertical scrolling needed: ${vertical}`);
   };
 
   useEffect(() => {
@@ -86,13 +86,13 @@ function ProjectDashboard() {
     }
   }, []);
 
-  useEffect(() => {
-    console.log("user activities", userActivities);
-  }, [userActivities]);
+  // useEffect(() => {
+  //   console.log("user activities", userActivities);
+  // }, [userActivities]);
 
-  useEffect(() => {
-    console.log("graphSectionNeedsScrolling", graphSectionNeedsScrolling);
-  }, [graphSectionNeedsScrolling]);
+  // useEffect(() => {
+  //   console.log("graphSectionNeedsScrolling", graphSectionNeedsScrolling);
+  // }, [graphSectionNeedsScrolling]);
 
   return (
     <Flex w="full" h={"full"}>
