@@ -32,6 +32,7 @@ function SearchPanel() {
     setChatHistory,
     setFolderList,
     updateChatHistory,
+    activeProject,
   } = useStore((state) => ({
     sessionToken: state.session,
     folderList: state.folderList,
@@ -46,6 +47,7 @@ function SearchPanel() {
     setChatHistory: state.setChatHistory,
     setFolderList: state.setFolderList,
     updateChatHistory: state.updateChatHistory,
+    activeProject: state.activeProject,
   }));
 
   // const refContainer = useRef();
@@ -142,13 +144,13 @@ function SearchPanel() {
 
   useEffect(() => {
     const fetchFolderLists = async () => {
-      if (!sessionToken) return;
-      const brains = await getBrains(sessionToken);
+      if (!sessionToken || !activeProject?.project_id) return;
+      const brains = await getBrains(sessionToken, activeProject.project_id);
       setFolderList(brains || null);
     };
 
     fetchFolderLists();
-  }, [sessionToken, setFolderList]);
+  }, [sessionToken, setFolderList, activeProject]);
 
   return (
     <Flex w={"full"}>
