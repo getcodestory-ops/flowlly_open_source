@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Flex,
   Grid,
@@ -21,7 +21,7 @@ import { useRouter } from "next/router";
 import { ActivityEntity } from "@/types/activities";
 import { IoShareSocialOutline, IoAddCircleOutline } from "react-icons/io5";
 import checkProjectStatus from "@/utils/checkProjectStatus";
-
+import ShareProjectModal from "../Schedule/ShareProjectModal";
 interface TopBarMenuItemsProps {
   taskToView: ActivityEntity;
   renderProjects: number;
@@ -29,6 +29,7 @@ interface TopBarMenuItemsProps {
 
 function ProjectInfoDisplay() {
   const router = useRouter();
+  const [isShareOpen, setShareModal] = useState<boolean>(false);
   const {
     userProjects,
     activeProject,
@@ -54,6 +55,12 @@ function ProjectInfoDisplay() {
 
   return (
     <Flex h="100%">
+      <ShareProjectModal
+        isShareOpen={isShareOpen}
+        shareModalClose={() => {
+          setShareModal(false);
+        }}
+      />
       <Grid w={"full"} templateRows="repeat(2, 1fr)" gap={0}>
         <GridItem
           rowSpan={1}
@@ -147,6 +154,7 @@ function ProjectInfoDisplay() {
                     rounded={"full"}
                     _hover={{ bg: "brand.dark", color: "white" }}
                     cursor={"pointer"}
+                    onClick={() => setShareModal(true)}
                   >
                     <Icon as={IoShareSocialOutline} boxSize={"5"} />
                   </Button>
