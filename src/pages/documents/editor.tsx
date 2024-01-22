@@ -11,15 +11,15 @@ function Editor() {
     documentId: state.documentId,
     setDocumentId: state.setDocumentId,
   }));
-  const router = useRouter();
+  // const router = useRouter();
 
-  const { id, title } = router.query;
+  // const { id, title } = router.query;
 
-  const newId = "0bd66501-0f12-408f-a532-6e4f0f3305d3";
+  // const newId = "0bd66501-0f12-408f-a532-6e4f0f3305d3";
 
   return (
     <Flex>
-      <Flex
+      {/* <Flex
         py="4"
         fontSize="xl"
         fontWeight="bold"
@@ -27,9 +27,8 @@ function Editor() {
         borderColor="brand.light"
       >
         {title}
-      </Flex>
-
-      <EditorBlock id={id} />
+      </Flex> */}
+      <EditorBlock id={documentId} />
     </Flex>
   );
 }
