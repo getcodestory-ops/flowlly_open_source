@@ -29,7 +29,7 @@ function UploadVoiceModal() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    console.log("documentId", typeof documentId);
+    console.log("documentId", documentId);
   }, [documentId]);
 
   return (

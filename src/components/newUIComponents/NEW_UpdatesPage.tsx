@@ -25,6 +25,8 @@ import { IoDocumentTextOutline, IoPlayCircleOutline } from "react-icons/io5";
 import { AiOutlineAlert } from "react-icons/ai";
 import { convertDateToTimeText } from "@/utils/timeSinceLatestSignificantEvent";
 
+import ProcessHistoryButton from "../Schedule/ProcessHistory/ProcessHistoryButton";
+
 const NEW_UpdatesPage = () => {
   const { documentId, setDocumentId } = useStore((state) => ({
     documentId: state.documentId,
@@ -492,9 +494,12 @@ const NEW_UpdatesPage = () => {
         overflowY={"auto"}
         className="custom-scrollbar"
       >
-        <Text fontSize={"14px"} fontWeight={"bold"}>
-          Updates
-        </Text>
+        <Flex alignItems={"center"} mb={"2"} justifyContent={"space-between"}>
+          <Text fontSize={"14px"} fontWeight={"bold"}>
+            Updates
+          </Text>
+          <ProcessHistoryButton />
+        </Flex>
         <Flex alignItems={"center"} mb={"2"}>
           <Text fontSize={"12px"} fontWeight={"bold"}>
             Filter:
@@ -545,18 +550,26 @@ const NEW_UpdatesPage = () => {
 
         // className="custom-shadow"
       >
-        {/* <Grid
-          templateRows="repeat(10, 1fr)"
-          gap={1}
-          py={"2"}
-          px={"4"}
-          h="full"
-          bg={"brand.background"}
-          rounded={"lg"}
-        > */}
-
-        {/* <GridItem rowSpan={10} w={"full"} h={"full"}> */}
         <Flex h={"full"}>
+          {!objectId && (
+            <Flex
+              w={"full"}
+              h={"full"}
+              py={"2"}
+              px={"4"}
+              bg={"brand.background"}
+              rounded={"lg"}
+              overflowY={"auto"}
+              className="custom-scrollbar"
+              direction={"column"}
+              justifyContent={"center"}
+              alignItems={"center"}
+            >
+              <Text fontSize={"36px"} color={"gray.300"} fontWeight={"black"}>
+                Select Update from the list
+              </Text>
+            </Flex>
+          )}
           {objectId && objectView === "content" && (
             <Flex
               w={"full"}
@@ -624,10 +637,16 @@ const NEW_UpdatesPage = () => {
               ) : (
                 updatesObject[objectId].risk.map((risk: any, index: any) => (
                   <Flex mb={"2"} direction={"column"} key={index}>
-                    <Text fontSize={"14px"} fontWeight={"semibold"}>
+                    <Text
+                      fontSize={"14px"}
+                      fontStyle={"italic"}
+                      fontWeight={"semibold"}
+                    >
                       {risk.title}
                     </Text>
-                    <Text fontSize={"14px"}>{risk.description}</Text>
+                    <Text fontSize={"14px"} pl={"2"}>
+                      {risk.description}
+                    </Text>
                   </Flex>
                 ))
               )}
@@ -640,10 +659,16 @@ const NEW_UpdatesPage = () => {
                 updatesObject[objectId].actions.map(
                   (action: any, index: any) => (
                     <Flex mb={"2"} direction={"column"} key={index}>
-                      <Text fontSize={"14px"} fontWeight={"semibold"}>
+                      <Text
+                        fontSize={"14px"}
+                        fontStyle={"italic"}
+                        fontWeight={"semibold"}
+                      >
                         {action.title}
                       </Text>
-                      <Text fontSize={"14px"}>{action.description}</Text>
+                      <Text fontSize={"14px"} pl={"2"}>
+                        {action.description}
+                      </Text>
                     </Flex>
                   )
                 )
@@ -651,8 +676,6 @@ const NEW_UpdatesPage = () => {
             </Flex>
           )}
         </Flex>
-        {/* </GridItem> */}
-        {/* </Grid> */}
       </GridItem>
     </Grid>
   );

@@ -75,6 +75,8 @@ export type State = {
   scheduleProbability: number;
   scheduleDate: Date;
   documentId: string;
+  AiActionsView: "open" | "close" | "extend" | any;
+  projectStatus: string;
   setSession: (session: Session | null) => void;
   setAppView: (appView: AppView) => void;
   setUserProjects: (userProjects: ProjectEntity[]) => void;
@@ -108,4 +110,6 @@ export type State = {
   setScheduleProbability: (probability: number) => void;
   setScheduleDate: (date: Date) => void;
   setDocumentId: (id: string) => void;
+  setAiActionsView: (view: "open" | "close" | "expand" | any) => void;
+  setProjectStatus: (status: string) => void;
 };

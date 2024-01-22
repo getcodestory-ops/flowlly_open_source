@@ -75,6 +75,10 @@ function ActivitiesDetailPage() {
     }
   }, [contingencyPlans]);
 
+  useEffect(() => {
+    console.log("taskToView", taskToView);
+  }, [taskToView]);
+
   const actionsCard = () => {
     let elements = []; // Initialize an empty array
 

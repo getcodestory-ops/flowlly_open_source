@@ -60,7 +60,7 @@ const CSVUploader: React.FC = () => {
         position={"relative"}
         p={1}
         gap={2}
-        fontSize="md"
+        fontSize="14px"
         as={"b"}
         color="brand.dark"
         bg={"brand.light"}

@@ -11,6 +11,7 @@ import {
 import { getProjects, deleteProject } from "@/api/projectRoutes";
 import { getActivities, deleteActivity } from "@/api/activity_routes";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
+import CreateNewProjectButton from "../Schedule/NewProjectButton";
 
 function NewTopBar() {
   const {
@@ -102,20 +103,7 @@ function NewTopBar() {
       />
 
       <Flex alignItems={"center"}>
-        <Flex mr={"4"}>
-          <Flex
-            fontSize={"sm"}
-            bg={"brand.dark"}
-            color={"white"}
-            py={"1"}
-            px={"2"}
-            rounded={"lg"}
-            cursor={"pointer"}
-            _hover={{ bg: "brand.accent", color: "brand.dark" }}
-          >
-            New Project
-          </Flex>
-        </Flex>
+        <CreateNewProjectButton />
         <UserPanel />
       </Flex>
     </Flex>

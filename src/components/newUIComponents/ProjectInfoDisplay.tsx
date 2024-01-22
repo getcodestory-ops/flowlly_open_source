@@ -20,6 +20,7 @@ import { ProjectEntity } from "@/types/projects";
 import { useRouter } from "next/router";
 import { ActivityEntity } from "@/types/activities";
 import { IoShareSocialOutline, IoAddCircleOutline } from "react-icons/io5";
+import checkProjectStatus from "@/utils/checkProjectStatus";
 
 interface TopBarMenuItemsProps {
   taskToView: ActivityEntity;
@@ -28,13 +29,28 @@ interface TopBarMenuItemsProps {
 
 function ProjectInfoDisplay() {
   const router = useRouter();
-  const { userProjects, activeProject, setActiveProject } = useStore(
-    (state) => ({
-      userProjects: state.userProjects,
-      activeProject: state.activeProject,
-      setActiveProject: state.setActiveProject,
-    })
-  );
+  const {
+    userProjects,
+    activeProject,
+    setActiveProject,
+    setAppView,
+    appView,
+    userActivities,
+    projectStatus,
+  } = useStore((state) => ({
+    userProjects: state.userProjects,
+    activeProject: state.activeProject,
+    setActiveProject: state.setActiveProject,
+    setAppView: state.setAppView,
+    appView: state.appView,
+    userActivities: state.userActivities,
+    projectStatus: state.projectStatus,
+  }));
+
+  // useEffect(() => {
+  //   console.log("activeProject", activeProject);
+  //   console.log("userProjects", userProjects);
+  // }, [activeProject]);
 
   return (
     <Flex h="100%">
@@ -75,14 +91,29 @@ function ProjectInfoDisplay() {
                   </Menu>
                 )}
               </Flex>
-              <Flex fontSize={"sm"} alignItems={"center"}>
+              <Flex fontSize={"sm"} alignItems={"flex-end"}>
                 <Text mr={"2"}>Status:</Text>
-                <Text fontWeight={"bold"}>At Risk</Text>
+                {userActivities && userActivities.length > 0 ? (
+                  <Text
+                    fontWeight={"bold"}
+                    color={
+                      projectStatus === "Delayed"
+                        ? "red.400"
+                        : projectStatus === "At Risk"
+                        ? "orange.200"
+                        : "brand.dark"
+                    }
+                  >
+                    {projectStatus}
+                  </Text>
+                ) : (
+                  <Text fontWeight={"bold"}>No Tasks</Text>
+                )}
               </Flex>
             </Flex>
             <Flex justifyContent={"space-between"}>
               <Flex color={"black"} fontSize={"sm"}>
-                <Tooltip
+                {/* <Tooltip
                   label="Add File"
                   aria-label="A tooltip"
                   bg="white"
@@ -99,7 +130,8 @@ function ProjectInfoDisplay() {
                   >
                     <Icon as={IoAddCircleOutline} boxSize={"5"} />
                   </Button>
-                </Tooltip>
+                </Tooltip> */}
+
                 <Tooltip
                   label="Share Project"
                   aria-label="A tooltip"
@@ -122,17 +154,20 @@ function ProjectInfoDisplay() {
                 <Tooltip
                   label="Project Settings"
                   aria-label="A tooltip"
-                  bg="white"
+                  bg={"white"}
                   color="brand.dark"
                 >
                   <Button
-                    bg={"white"}
+                    bg={
+                      appView === "projectSettings" ? "brand.accent" : "white"
+                    }
                     p={"1"}
                     size={"sm"}
                     rounded={"full"}
                     cursor={"pointer"}
                     _hover={{ bg: "brand.dark", color: "white" }}
                     className="custom-shadow"
+                    onClick={() => setAppView("projectSettings")}
                   >
                     <Icon as={MdOutlineSettings} boxSize={"5"} />
                   </Button>

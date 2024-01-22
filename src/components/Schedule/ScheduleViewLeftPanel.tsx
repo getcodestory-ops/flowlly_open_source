@@ -47,6 +47,7 @@ import DocumentList from "../DocumentEditor/DocumentList";
 import KanbanBoard from "../kanban/KanbanBoard";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import AddNewActivityModal from "./AddNewActivityModal";
 
 function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   const {
@@ -102,242 +103,147 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
     }
   }, [chatEntitities]);
 
+  const handleAddActivity = () => {
+    onOpen();
+  };
+
   return (
-    <Grid
-      h={"full"}
-      templateRows="repeat(10, 1fr)"
-      templateColumns="repeat(2, 1fr)"
-      gap={4}
-    >
-      <GridItem rowSpan={1} colSpan={1}>
-        <Flex borderColor={"brand2.mid"}>
-          <Flex alignItems={"center"} mr={"4"}>
-            <Button
-              size={"sm"}
-              bg={`${view === "gantt" ? "brand2.accent" : "white"}`}
-              _hover={{ bg: "brand.dark", color: "white" }}
-              onClick={() => setView("gantt")}
-              p={"0.5"}
-              border={"2px"}
-              rounded={"lg"}
-              mr={"0.5"}
-            >
-              <Icon as={LuGanttChart} boxSize={"5"} />
-            </Button>
-            <Text fontSize={"xs"} fontWeight={"bold"}>
-              Gantt
-            </Text>
-          </Flex>
-          <Flex alignItems={"center"} mr={"4"}>
-            <Button
-              p={"0.5"}
-              size={"sm"}
-              border={"2px"}
-              rounded={"lg"}
-              mr={"0.5"}
-              bg={`${view === "kanban" ? "brand2.accent" : "white"}`}
-              _hover={{ bg: "brand.dark", color: "white" }}
-              onClick={() => setView("kanban")}
-            >
-              <Icon as={PiKanban} boxSize={"5"} />
-            </Button>
-            <Text fontSize={"xs"} fontWeight={"bold"}>
-              Kanban
-            </Text>
-          </Flex>
-          <Flex alignItems={"center"} mr={"4"}>
-            <Button
-              p={"0.5"}
-              size={"sm"}
-              border={"2px"}
-              rounded={"lg"}
-              mr={"0.5"}
-              bg={`${view === "tasks" ? "brand2.accent" : "white"}`}
-              _hover={{ bg: "brand.dark", color: "white" }}
-              onClick={() => setView("tasks")}
-            >
-              <Icon as={FaTasks} />
-            </Button>
-            <Text fontSize={"xs"} fontWeight={"bold"}>
-              Tasks
-            </Text>
-          </Flex>
-        </Flex>
-      </GridItem>
-      <GridItem rowSpan={1} colSpan={1}>
-        <Flex justifyContent={"space-between"}>
-          <Flex>
-            <CustomDatePicker />
-            <Flex ml={"4"}>
-              <ProbabilitySelector />
+    <>
+      <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
+      <Grid
+        h={"full"}
+        templateRows="repeat(10, 1fr)"
+        templateColumns="repeat(2, 1fr)"
+        gap={4}
+      >
+        <GridItem rowSpan={1} colSpan={1}>
+          <Flex borderColor={"brand2.mid"}>
+            <Flex alignItems={"center"} mr={"4"}>
+              <Button
+                size={"sm"}
+                bg={`${view === "gantt" ? "brand2.accent" : "white"}`}
+                _hover={{ bg: "brand.dark", color: "white" }}
+                onClick={() => setView("gantt")}
+                p={"0.5"}
+                border={"2px"}
+                rounded={"lg"}
+                mr={"0.5"}
+              >
+                <Icon as={LuGanttChart} boxSize={"5"} />
+              </Button>
+              <Text fontSize={"xs"} fontWeight={"bold"}>
+                Gantt
+              </Text>
+            </Flex>
+            <Flex alignItems={"center"} mr={"4"}>
+              <Button
+                p={"0.5"}
+                size={"sm"}
+                border={"2px"}
+                rounded={"lg"}
+                mr={"0.5"}
+                bg={`${view === "kanban" ? "brand2.accent" : "white"}`}
+                _hover={{ bg: "brand.dark", color: "white" }}
+                onClick={() => setView("kanban")}
+              >
+                <Icon as={PiKanban} boxSize={"5"} />
+              </Button>
+              <Text fontSize={"xs"} fontWeight={"bold"}>
+                Kanban
+              </Text>
+            </Flex>
+            <Flex alignItems={"center"} mr={"4"}>
+              <Button
+                p={"0.5"}
+                size={"sm"}
+                border={"2px"}
+                rounded={"lg"}
+                mr={"0.5"}
+                bg={`${view === "tasks" ? "brand2.accent" : "white"}`}
+                _hover={{ bg: "brand.dark", color: "white" }}
+                onClick={() => setView("tasks")}
+              >
+                <Icon as={FaTasks} />
+              </Button>
+              <Text fontSize={"xs"} fontWeight={"bold"}>
+                Tasks
+              </Text>
             </Flex>
           </Flex>
-          <Button size={"xs"} bg={"brand.dark"} color={"white"}>
-            + Add Task
-          </Button>
-        </Flex>
-      </GridItem>
-      <GridItem rowSpan={9} colSpan={2}>
-        {view === "gantt" && (
-          <Grid h="full" templateColumns="repeat(1, 1fr)" gap={4}>
-            <GridItem
-              colSpan={1}
-              overflow={"auto"}
-              className="custom-scrollbar"
-            >
-              <Flex w={"full"}>
-                <ScheduleGanttInterface />
+        </GridItem>
+        <GridItem rowSpan={1} colSpan={1}>
+          <Flex justifyContent={"space-between"}>
+            <Flex>
+              <CustomDatePicker />
+              <Flex ml={"4"}>
+                <ProbabilitySelector />
               </Flex>
-            </GridItem>
-          </Grid>
-        )}
-        {userActivities && userActivities.length > 0 && view === "kanban" && (
-          <Grid h="full" templateColumns="repeat(1, 1fr)" gap={4}>
-            <GridItem
-              colSpan={1}
-              overflow={"auto"}
-              className="custom-scrollbar"
+            </Flex>
+            <Button
+              size={"xs"}
+              bg={"brand.dark"}
+              color={"white"}
+              onClick={handleAddActivity}
             >
-              <Flex w={"full"}>
-                <DndProvider backend={HTML5Backend}>
-                  <KanbanBoard />
-                </DndProvider>
-              </Flex>
-            </GridItem>
-          </Grid>
-        )}
+              + Add Task
+            </Button>
+          </Flex>
+        </GridItem>
+        <GridItem rowSpan={9} colSpan={2}>
+          {view === "gantt" && (
+            <Grid h="full" templateColumns="repeat(1, 1fr)" gap={4}>
+              <GridItem
+                colSpan={1}
+                overflow={"auto"}
+                className="custom-scrollbar"
+              >
+                <Flex w={"full"}>
+                  <ScheduleGanttInterface />
+                </Flex>
+              </GridItem>
+            </Grid>
+          )}
+          {userActivities && userActivities.length > 0 && view === "kanban" && (
+            <Grid h="full" templateColumns="repeat(1, 1fr)" gap={4}>
+              <GridItem
+                colSpan={1}
+                overflow={"auto"}
+                className="custom-scrollbar"
+              >
+                <Flex w={"full"}>
+                  <DndProvider backend={HTML5Backend}>
+                    <KanbanBoard />
+                  </DndProvider>
+                </Flex>
+              </GridItem>
+            </Grid>
+          )}
 
-        {view === "tasks" && (
-          <Grid h="full" templateColumns="repeat(3, 1fr)" gap={4}>
-            <GridItem
-              colSpan={1}
-              overflowY={"auto"}
-              className="custom-scrollbar"
-            >
-              <Flex w={"full"}>
-                <ScheduleInsights />
-              </Flex>
-            </GridItem>
-            <GridItem
-              colSpan={2}
-              overflowY={"auto"}
-              className="custom-scrollbar"
-            >
-              <Flex w={"full"} h={"full"}>
-                <ActivitiesDetailPage />
-              </Flex>
-            </GridItem>
-          </Grid>
-        )}
-      </GridItem>
-    </Grid>
-    // <Flex h={"full"}>
-    //   <Flex>
-    //     <Flex borderColor={"brand2.mid"}>
-    //       <Flex alignItems={"center"} mr={"4"}>
-    //         <Button
-    //           size={"sm"}
-    //           bg={`${view === "gantt" ? "brand2.accent" : "white"}`}
-    //           _hover={{ bg: "brand.dark", color: "white" }}
-    //           onClick={() => setView("gantt")}
-    //           p={"0.5"}
-    //           border={"2px"}
-    //           rounded={"lg"}
-    //           mr={"0.5"}
-    //         >
-    //           <Icon as={LuGanttChart} boxSize={"5"} />
-    //         </Button>
-    //         <Text fontSize={"xs"} fontWeight={"bold"}>
-    //           Gantt
-    //         </Text>
-    //       </Flex>
-    //       <Flex alignItems={"center"} mr={"4"}>
-    //         <Button
-    //           p={"0.5"}
-    //           size={"sm"}
-    //           border={"2px"}
-    //           rounded={"lg"}
-    //           mr={"0.5"}
-    //           bg={`${view === "kanban" ? "brand2.accent" : "white"}`}
-    //           _hover={{ bg: "brand.dark", color: "white" }}
-    //           onClick={() => setView("kanban")}
-    //         >
-    //           <Icon as={PiKanban} boxSize={"5"} />
-    //         </Button>
-    //         <Text fontSize={"xs"} fontWeight={"bold"}>
-    //           Kanban
-    //         </Text>
-    //       </Flex>
-    //       <Flex alignItems={"center"} mr={"4"}>
-    //         <Button
-    //           p={"0.5"}
-    //           size={"sm"}
-    //           border={"2px"}
-    //           rounded={"lg"}
-    //           mr={"0.5"}
-    //           bg={`${view === "tasks" ? "brand2.accent" : "white"}`}
-    //           _hover={{ bg: "brand.dark", color: "white" }}
-    //           onClick={() => setView("tasks")}
-    //         >
-    //           <Icon as={FaTasks} />
-    //         </Button>
-    //         <Text fontSize={"xs"} fontWeight={"bold"}>
-    //           Tasks
-    //         </Text>
-    //       </Flex>
-    //     </Flex>
-    //   </Flex>
-    //   <Flex>
-    //     <Flex justifyContent={"space-between"}>
-    //       <Flex>
-    //         <CustomDatePicker />
-    //         <Flex ml={"4"}>
-    //           <ProbabilitySelector />
-    //         </Flex>
-    //       </Flex>
-    //       <Button size={"xs"} bg={"brand.dark"} color={"white"}>
-    //         + Add Task
-    //       </Button>
-    //     </Flex>
-    //   </Flex>
-    //   <Flex>
-    //     {view === "gantt" && (
-    //       <Flex h="full">
-    //         <Flex overflow={"auto"} className="custom-scrollbar">
-    //           <Flex w={"full"}>
-    //             <ScheduleGanttInterface />
-    //           </Flex>
-    //         </Flex>
-    //       </Flex>
-    //     )}
-    //     {userActivities && userActivities.length > 0 && view === "kanban" && (
-    //       <Flex h="full">
-    //         <Flex overflow={"auto"} className="custom-scrollbar">
-    //           <Flex w={"full"}>
-    //             <DndProvider backend={HTML5Backend}>
-    //               <KanbanBoard />
-    //             </DndProvider>
-    //           </Flex>
-    //         </Flex>
-    //       </Flex>
-    //     )}
-
-    //     {view === "tasks" && (
-    //       <Flex h="full">
-    //         <Flex overflowY={"auto"} className="custom-scrollbar">
-    //           <Flex w={"full"}>
-    //             <ScheduleInsights />
-    //           </Flex>
-    //         </Flex>
-    //         <Flex overflowY={"auto"} className="custom-scrollbar">
-    //           <Flex w={"full"} h={"full"}>
-    //             <ActivitiesDetailPage />
-    //           </Flex>
-    //         </Flex>
-    //       </Flex>
-    //     )}
-    //   </Flex>
-    // </Flex>
+          {view === "tasks" && (
+            <Grid h="full" templateColumns="repeat(3, 1fr)" gap={4}>
+              <GridItem
+                colSpan={1}
+                overflowY={"auto"}
+                className="custom-scrollbar"
+              >
+                <Flex w={"full"}>
+                  <ScheduleInsights />
+                </Flex>
+              </GridItem>
+              <GridItem
+                colSpan={2}
+                overflowY={"auto"}
+                className="custom-scrollbar"
+              >
+                <Flex w={"full"} h={"full"}>
+                  <ActivitiesDetailPage />
+                </Flex>
+              </GridItem>
+            </Grid>
+          )}
+        </GridItem>
+      </Grid>
+    </>
   );
 }
 

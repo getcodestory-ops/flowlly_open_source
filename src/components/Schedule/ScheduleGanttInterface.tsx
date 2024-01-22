@@ -293,11 +293,11 @@ const ScheduleGanttInterface = () => {
             onClick={handleCriticalPath}
           />
 
-          <Icon
+          {/* <Icon
             as={MdFormatListBulletedAdd}
             cursor={"pointer"}
             onClick={handleAddActivity}
-          />
+          /> */}
         </Flex>
         <ViewSwitcher
           onViewModeChange={(viewMode) => setView(viewMode)}

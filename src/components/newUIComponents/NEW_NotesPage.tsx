@@ -3,6 +3,7 @@ import { Grid, GridItem, Text, Flex, useDisclosure } from "@chakra-ui/react";
 import DocumentList from "../DocumentEditor/DocumentList";
 import CreateNewDocument from "../DocumentEditor/CreateNewDocument";
 import EditorBlock from "@/components/DocumentEditor/Editor";
+import Editor from "@/pages/documents/editor";
 import { useStore } from "@/utils/store";
 
 const NEW_NotesPage = () => {
@@ -55,7 +56,8 @@ const NEW_NotesPage = () => {
         // className="custom-shadow"
         overflowY={"auto"}
       >
-        <EditorBlock />
+        {/* <EditorBlock /> */}
+        <Editor />
       </GridItem>
     </Grid>
   );

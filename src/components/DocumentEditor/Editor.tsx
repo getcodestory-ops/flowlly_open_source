@@ -6,8 +6,12 @@ import UploadVoiceModal from "@/components/VoiceComponent/UploadVoiceModal";
 import { Flex, Button, Tooltip, Icon, Grid, GridItem } from "@chakra-ui/react";
 import { useContentSave } from "./useContentSave";
 import { IoShareSocialOutline } from "react-icons/io5";
+import { useStore } from "@/utils/store";
 
 const EditorBlock = ({ id }: { id?: string | string[] }) => {
+  const { documentId } = useStore((state) => ({
+    documentId: state.documentId,
+  }));
   const holder = "editorjs-container";
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const { ref, processDoc, data, onSubmit } = useContentSave(id);

@@ -38,10 +38,6 @@ function NEW_Menu() {
     }
   }, [router.pathname]);
 
-  useEffect(() => {
-    console.log("appView", appView);
-  }, [appView]);
-
   return (
     <Flex px={"2"}>
       <Flex
@@ -53,7 +49,7 @@ function NEW_Menu() {
         fontWeight={"semibold"}
         fontSize={"14px"}
         className="custom-shadow"
-        w={"45%"}
+        w={"35%"}
       >
         {/* <Button
         size={"sm"}
@@ -66,7 +62,7 @@ function NEW_Menu() {
       </Button> */}
         <Button
           size={"sm"}
-          bg={"white"}
+          bg={appView === "updates" ? "brand.accent" : "white"}
           onClick={() => {
             setAppView("updates");
           }}
@@ -77,7 +73,7 @@ function NEW_Menu() {
         </Button>
         <Button
           size={"sm"}
-          bg={"white"}
+          bg={appView === "schedule" ? "brand.accent" : "white"}
           onClick={() => {
             setAppView("schedule");
           }}
@@ -107,7 +103,7 @@ function NEW_Menu() {
       </Button> */}
         <Button
           size={"sm"}
-          bg={"white"}
+          bg={appView === "notes" ? "brand.accent" : "white"}
           onClick={() => {
             setAppView("notes");
           }}
@@ -116,9 +112,9 @@ function NEW_Menu() {
           <Icon as={CgNotes} mr={"2"}></Icon>
           Notes
         </Button>
-        <Button
+        {/* <Button
           size={"sm"}
-          bg={"white"}
+          bg={appView === "reports" ? "brand.accent" : "white"}
           onClick={() => {
             setAppView("reports");
           }}
@@ -126,7 +122,7 @@ function NEW_Menu() {
         >
           <Icon as={TbReportAnalytics} mr={"2"}></Icon>
           Reports
-        </Button>
+        </Button> */}
 
         {/* <Button
         size={"sm"}
