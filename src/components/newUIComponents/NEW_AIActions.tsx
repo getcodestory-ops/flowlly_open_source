@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Flex,
   Grid,
@@ -19,30 +19,143 @@ import {
 import { PiRobot } from "react-icons/pi";
 import PdfLoader from "../PdfLoader";
 import { getBrains } from "@/api/brainRoutes";
+import { getChatSessions } from "@/api/chatRoutes";
+import ChatMessageDisplay from "../ChatMessageDisplay";
+import SearchMemory from "@/Layouts/SearchMemory";
+import { getFirstFiveWords } from "@/utils/getFirstWords";
+import { createNewChatSession, getChatHistory } from "@/api/chatRoutes";
+import {
+  getContext,
+  getAnswer,
+  updateContext,
+  getContexualAnswer,
+} from "@/utils/getAiAnswers";
 
 function AiActions() {
-  const { AiActionsView, setAiActionsView, sessionToken } = useStore(
-    (state) => ({
-      AiActionsView: state.AiActionsView,
-      setAiActionsView: state.setAiActionsView,
-      sessionToken: state.session,
-    })
-  );
+  const [chatInput, setChatInput] = useState("");
 
-  //TEMP DELETE AFTER TESTING
+  const {
+    AiActionsView,
+    setAiActionsView,
+    sessionToken,
+    chatSession,
+    chatSessions,
+    selectedContext,
+    folderList,
+    setSelectedContext,
+    setChatSessions,
+    setChatSession,
+    setChatHistory,
+    updateChatHistory,
+  } = useStore((state) => ({
+    AiActionsView: state.AiActionsView,
+    setAiActionsView: state.setAiActionsView,
+    sessionToken: state.session,
+    chatSession: state.chatSession,
+    chatSessions: state.chatSessions,
+    selectedContext: state.selectedContext,
+    setSelectedContext: state.setSelectedContext,
+    folderList: state.folderList,
+    setChatSessions: state.setChatSessions,
+    setChatSession: state.setChatSession,
+    setChatHistory: state.setChatHistory,
+    updateChatHistory: state.updateChatHistory,
+  }));
+
   useEffect(() => {
-    const fetchFolderLists = async () => {
-      if (!sessionToken) return;
-      const brains = await getBrains(sessionToken);
-      // setFolderList(brains || null);
-      console.log("brains", brains);
+    if (!sessionToken || chatSessions.length > 0) return;
+    const fetchchat = async () => {
+      try {
+        const chats = await getChatSessions(sessionToken);
+        setChatSessions(chats);
+        setChatSession(chats[0]);
+      } catch (error) {
+        console.error("There was a problem with the fetch operation:", error);
+      }
     };
+    fetchchat();
+  }, [sessionToken]);
 
-    fetchFolderLists();
-  }, [sessionToken]);
   useEffect(() => {
-    console.log("session token", sessionToken);
-  }, [sessionToken]);
+    if (!sessionToken || !chatSession) return;
+    const fetchChatHistory = async () => {
+      try {
+        const chats = await getChatHistory(sessionToken, chatSession.chat_id);
+        setChatHistory([]);
+        updateChatHistory(chatSession.chat_id, chats);
+      } catch (error) {
+        console.error("There was a problem with the fetch operation:", error);
+      }
+    };
+    fetchChatHistory();
+  }, [sessionToken, chatSession, setChatHistory, updateChatHistory]);
+
+  useEffect(() => {
+    if (!folderList) return;
+    console.log("chat sessions", chatSessions);
+    console.log("folder list", folderList);
+    setSelectedContext(folderList?.[0] ?? null);
+  }, [folderList, setSelectedContext, chatSessions]);
+
+  const handleChatSubmit = async () => {
+    let newChatSession = null;
+
+    if (!chatSession) {
+      const chatTitle = getFirstFiveWords(chatInput);
+      newChatSession = await createNewChatSession(sessionToken!, chatTitle);
+      setChatSession(newChatSession);
+      setChatSessions([newChatSession, ...chatSessions]);
+    }
+
+    const newChatItem = {
+      body: {
+        user_message: chatInput,
+        chat_id: newChatSession?.chat_id! ?? chatSession?.chat_id!,
+        context: [],
+        assistant: "loading...",
+      },
+      item_type: "MESSAGE",
+    };
+    const chatHistory = chatSessions.filter(
+      (session) => session.chat_id === chatSession?.chat_id
+    )[0]?.chat_history!;
+
+    updateChatHistory(chatSession?.chat_id!, [...chatHistory, newChatItem]);
+
+    console.log("selected context", selectedContext);
+
+    try {
+      if (!sessionToken || !chatSession || !selectedContext) return;
+      const context = await getContext(
+        sessionToken,
+        chatSession.chat_id,
+        chatInput,
+        selectedContext!
+      );
+
+      const context_id = context?.context_id;
+      newChatItem.body.context = context.context;
+
+      updateChatHistory(chatSession?.chat_id!, [...chatHistory, newChatItem]);
+
+      const assistant_response = await getContexualAnswer(
+        sessionToken,
+        chatSession.chat_id!,
+        selectedContext.id!,
+        chatInput
+      );
+
+      const message_id = assistant_response?.message_id;
+      updateContext(sessionToken!, message_id!, context_id!);
+
+      newChatItem.body.assistant = assistant_response.assistant;
+      updateChatHistory(chatSession?.chat_id!, [...chatHistory, newChatItem]);
+    } catch (error: any) {
+      console.log(error);
+    }
+
+    setChatInput("");
+  };
 
   return (
     <>
@@ -53,6 +166,7 @@ function AiActions() {
           bgGradient="linear(brand.gray 5%, white 30% )"
           rounded={"2xl"}
           boxShadow={"lg"}
+          visibility={AiActionsView === "open" ? "visible" : "hidden"}
         >
           <GridItem rowSpan={1} pt={"4"} px={"4"}>
             <Flex direction={"column"} h={"full"} justifyContent={"flex-end"}>
@@ -123,8 +237,19 @@ function AiActions() {
                   rounded={"lg"}
                   placeholder="Folder or File"
                   className="custom-selector"
+                  onChange={(e) =>
+                    setSelectedContext(
+                      folderList?.filter(
+                        (folder) => folder.name === e.target.value
+                      )?.[0] ?? null
+                    )
+                  }
                 >
-                  <option value="option1">Option 1</option>
+                  {folderList?.map((folder) => (
+                    <option key={folder.id} value={folder.id}>
+                      {folder.name}
+                    </option>
+                  ))}
                 </Select>
               </Flex>
             </Flex>
@@ -138,6 +263,12 @@ function AiActions() {
             pb={"2"}
             px={"2"}
           >
+            {/* <Flex>
+              <SearchMemory />
+            </Flex> */}
+            <Flex w="inherit" overflow={"contain"}>
+              <ChatMessageDisplay />
+            </Flex>
             <Flex
               alignItems={"center"}
               bg={"brand.background"}
@@ -150,12 +281,23 @@ function AiActions() {
                 rounded={"lg"}
                 placeholder={"Flowlly help me ..."}
                 className="custom-selector"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleChatSubmit();
+                  }
+                }}
               ></Input>
 
               <Button
                 rounded={"full"}
                 bg={"white"}
                 _hover={{ bg: "brand.dark", color: "white" }}
+                onClick={() => {
+                  handleChatSubmit();
+                }}
               >
                 <Icon as={BsSend} fontSize={"22px"}></Icon>
               </Button>
@@ -193,49 +335,54 @@ function AiActions() {
           </Tooltip>
         </Flex>
       )}
-      {AiActionsView === "expand" && (
-        <Grid h={"full"} templateColumns="repeat(14,1fr)" gap={"4"}>
-          <GridItem
-            colSpan={10}
-            bgGradient="linear(brand.gray 5%, white 30% )"
-            rounded={"2xl"}
-            boxShadow={"lg"}
-            w={"full"}
-            h={"full"}
-            p={"4"}
-          >
-            {" "}
-            <Flex direction={"column"} h="full">
-              <Flex mb={"2"}>
-                <Tooltip
-                  label="Collapse"
-                  aria-label="A tooltip"
-                  bg="white"
-                  color="brand.dark"
+      {/* {AiActionsView === "expand" && ( */}
+      <Grid
+        h={"full"}
+        templateColumns="repeat(14,1fr)"
+        gap={"4"}
+        visibility={AiActionsView === "expand" ? "visible" : "hidden"}
+      >
+        <GridItem
+          colSpan={10}
+          bgGradient="linear(brand.gray 5%, white 30% )"
+          rounded={"2xl"}
+          boxShadow={"lg"}
+          w={"full"}
+          h={"full"}
+          p={"4"}
+        >
+          {" "}
+          <Flex direction={"column"} h="full">
+            <Flex mb={"2"}>
+              <Tooltip
+                label="Collapse"
+                aria-label="A tooltip"
+                bg="white"
+                color="brand.dark"
+              >
+                <Button
+                  bg={"white"}
+                  boxShadow={"md"}
+                  p={0}
+                  size={"sm"}
+                  onClick={() => setAiActionsView("open")}
+                  rounded={"full"}
+                  _hover={{ bg: "brand.dark", color: "white" }}
                 >
-                  <Button
-                    bg={"white"}
-                    boxShadow={"md"}
-                    p={0}
-                    size={"sm"}
-                    onClick={() => setAiActionsView("open")}
-                    rounded={"full"}
-                    _hover={{ bg: "brand.dark", color: "white" }}
-                  >
-                    <Icon
-                      as={TbLayoutSidebarLeftExpand}
-                      // fontSize={"20px"}
-                      fontWeight={"light"}
-                    />
-                  </Button>
-                </Tooltip>
-              </Flex>
-              <Flex h="full">
-                <PdfLoader />
-              </Flex>
+                  <Icon
+                    as={TbLayoutSidebarLeftExpand}
+                    // fontSize={"20px"}
+                    fontWeight={"light"}
+                  />
+                </Button>
+              </Tooltip>
             </Flex>
-          </GridItem>
-          <GridItem colSpan={4}>
+            <Flex h="full">
+              <PdfLoader />
+            </Flex>
+          </Flex>
+        </GridItem>
+        {/* <GridItem colSpan={4}>
             <Grid
               h={"full"}
               templateRows="repeat(7, 1fr)"
@@ -308,15 +455,18 @@ function AiActions() {
                     rounded={"full"}
                     bg={"white"}
                     _hover={{ bg: "brand.dark", color: "white" }}
+                    onClick={() => {
+                      handleChatSubmit();
+                    }}
                   >
                     <Icon as={BsSend} fontSize={"22px"}></Icon>
                   </Button>
                 </Flex>
               </GridItem>
             </Grid>
-          </GridItem>
-        </Grid>
-      )}
+          </GridItem> */}
+      </Grid>
+      {/* )} */}
     </>
   );
 }

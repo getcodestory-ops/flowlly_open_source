@@ -68,8 +68,14 @@ const ContextDisplay: React.FC<DocumentProps> = ({
               return (
                 <Flex
                   key={`page-${page.metadata.file_name}-${index}`}
-                  bg={index === isExpandedNumber ? "brand.accent" : "brand.mid"}
-                  color={index === isExpandedNumber ? "brand.dark" : "white"}
+                  bg={
+                    index === isExpandedNumber
+                      ? "brand.background"
+                      : "brand.background"
+                  }
+                  color={
+                    index === isExpandedNumber ? "brand.dark" : "brand.dark"
+                  }
                   mx={2}
                   my={2}
                   py={1}

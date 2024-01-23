@@ -38,7 +38,6 @@ import { MdOutlineDeleteOutline } from "react-icons/md";
 import { IoIosCloseCircle, IoIosCloseCircleOutline } from "react-icons/io";
 import AddNewProjectModal from "@/components/Schedule/AddNewProjectModal";
 import CreateNewProjectButton from "@/components/Schedule/NewProjectButton";
-
 import ProjectChats from "@/components/ProjectChats/ProjectChats";
 
 function ProjectSetup() {
@@ -320,7 +319,7 @@ function ProjectSetup() {
               >
                 Resources
               </Button> */}
-              <Button
+              {/* <Button
                 bg={settingsView === "chats" ? "brand.accent" : "white"}
                 _hover={{ bg: "brand.dark", color: "white" }}
                 onClick={() => setSettingsView("chats")}
@@ -330,12 +329,12 @@ function ProjectSetup() {
                 borderColor={"brand.dark"}
               >
                 Chats
-              </Button>
+              </Button> */}
             </Flex>
           </Flex>
           {settingsView === "folders" && folderAndFIles()}
           {settingsView === "members" && projectMembers()}
-          {settingsView === "chats" && <ProjectChats />}
+          {/* {settingsView === "chats" && <ProjectChats />} */}
         </>
       ) : (
         <>
