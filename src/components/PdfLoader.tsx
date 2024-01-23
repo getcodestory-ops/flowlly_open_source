@@ -70,7 +70,7 @@ const VirtualPdfLoader = () => {
   }, [pageNumber]);
 
   return (
-    <Flex bg={"white"}>
+    <Flex w={"full"}>
       {selectedFolder && isPdfVisible && (
         <Box overflow={"auto"} h={"100vh"}>
           <Flex

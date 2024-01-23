@@ -83,7 +83,7 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
 
   useEffect(() => {
     if (revisions) {
-      console.log("revisions", revisions);
+      // console.log("revisions", revisions);
 
       // Reset impactfulRevisions to an empty array
       setImpactfulRevisions([]);
@@ -159,7 +159,7 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
     }
     const formattedDate = new Date(selectedDate);
     setScheduleDate(formattedDate);
-    console.log("formattedDate", formattedDate);
+    // console.log("formattedDate", formattedDate);
     // return formattedDate;
   };
 

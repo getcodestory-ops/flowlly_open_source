@@ -28,9 +28,9 @@ function UploadVoiceModal() {
   const { isOpen, onClose, onOpen, handleSubmit, mutate } = useVoiceUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    console.log("documentId", documentId);
-  }, [documentId]);
+  // useEffect(() => {
+  //   console.log("documentId", documentId);
+  // }, [documentId]);
 
   return (
     <>

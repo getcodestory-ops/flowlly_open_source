@@ -40,7 +40,7 @@ export const submitTaskToAgent = async (
     }
 
     const data = await response.json();
-    console.log(data.agent_response);
+    // console.log(data.agent_response);
     return data.agent_response;
   } catch (error) {
     throw new Error("Network response was not ok");

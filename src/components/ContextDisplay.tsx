@@ -34,8 +34,8 @@ const ContextDisplay: React.FC<DocumentProps> = ({
   );
 
   const handleRefereces = (filePath: string, pageNumber: number) => {
-    console.log("foldername", sourceFolder);
-    console.log(folderList);
+    // console.log("foldername", sourceFolder);
+    // console.log(folderList);
 
     setSelectedContext(
       folderList?.filter((state) => state.name === sourceFolder?.name)[0]!

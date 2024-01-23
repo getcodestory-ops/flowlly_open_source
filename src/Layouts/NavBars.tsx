@@ -31,10 +31,10 @@ export default function NavBars({ children }: { children: React.ReactNode }) {
     loginCheck();
   }, [router]);
 
-  useEffect(() => {
-    console.log("appView", appView);
-    console.log("children", children);
-  }, [appView]);
+  // useEffect(() => {
+  //   console.log("appView", appView);
+  //   console.log("children", children);
+  // }, [appView]);
 
   return (
     <>

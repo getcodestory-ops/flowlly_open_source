@@ -81,7 +81,7 @@ function NewTopBar() {
     if (projects && projects.length > 0) {
       setUserProjects(projects);
       setActiveProject(projects[0]);
-      console.log("projects", projects);
+      // console.log("projects", projects);
     }
   }, [projects]);
 

@@ -17,12 +17,32 @@ import {
   TbLayoutSidebarRightExpand,
 } from "react-icons/tb";
 import { PiRobot } from "react-icons/pi";
+import PdfLoader from "../PdfLoader";
+import { getBrains } from "@/api/brainRoutes";
 
 function AiActions() {
-  const { AiActionsView, setAiActionsView } = useStore((state) => ({
-    AiActionsView: state.AiActionsView,
-    setAiActionsView: state.setAiActionsView,
-  }));
+  const { AiActionsView, setAiActionsView, sessionToken } = useStore(
+    (state) => ({
+      AiActionsView: state.AiActionsView,
+      setAiActionsView: state.setAiActionsView,
+      sessionToken: state.session,
+    })
+  );
+
+  //TEMP DELETE AFTER TESTING
+  useEffect(() => {
+    const fetchFolderLists = async () => {
+      if (!sessionToken) return;
+      const brains = await getBrains(sessionToken);
+      // setFolderList(brains || null);
+      console.log("brains", brains);
+    };
+
+    fetchFolderLists();
+  }, [sessionToken]);
+  useEffect(() => {
+    console.log("session token", sessionToken);
+  }, [sessionToken]);
 
   return (
     <>
@@ -45,12 +65,20 @@ function AiActions() {
                   AI Actions
                 </Flex>
                 <Flex>
-                  {/* <Button
-                    size={"xs"}
+                  <Button
+                    bg={"white"}
+                    boxShadow={"md"}
+                    p={0}
+                    size={"sm"}
                     onClick={() => setAiActionsView("expand")}
+                    rounded={"full"}
+                    _hover={{ bg: "brand.dark", color: "white" }}
                   >
-                    <Icon as={TbLayoutSidebarRightExpand} fontSize={"22px"} />
-                  </Button> */}
+                    <Icon
+                      as={TbLayoutSidebarRightExpand}
+                      fontWeight={"light"}
+                    />
+                  </Button>
                   <Tooltip
                     label="Collapse"
                     aria-label="A tooltip"
@@ -167,12 +195,44 @@ function AiActions() {
       )}
       {AiActionsView === "expand" && (
         <Grid h={"full"} templateColumns="repeat(14,1fr)" gap={"4"}>
-          <GridItem colSpan={10} bg={"tomato"} w={"full"} h={"full"}>
+          <GridItem
+            colSpan={10}
+            bgGradient="linear(brand.gray 5%, white 30% )"
+            rounded={"2xl"}
+            boxShadow={"lg"}
+            w={"full"}
+            h={"full"}
+            p={"4"}
+          >
             {" "}
-            <Flex>
-              <Button size={"xs"} onClick={() => setAiActionsView("open")}>
-                Reduce
-              </Button>
+            <Flex direction={"column"} h="full">
+              <Flex mb={"2"}>
+                <Tooltip
+                  label="Collapse"
+                  aria-label="A tooltip"
+                  bg="white"
+                  color="brand.dark"
+                >
+                  <Button
+                    bg={"white"}
+                    boxShadow={"md"}
+                    p={0}
+                    size={"sm"}
+                    onClick={() => setAiActionsView("open")}
+                    rounded={"full"}
+                    _hover={{ bg: "brand.dark", color: "white" }}
+                  >
+                    <Icon
+                      as={TbLayoutSidebarLeftExpand}
+                      // fontSize={"20px"}
+                      fontWeight={"light"}
+                    />
+                  </Button>
+                </Tooltip>
+              </Flex>
+              <Flex h="full">
+                <PdfLoader />
+              </Flex>
             </Flex>
           </GridItem>
           <GridItem colSpan={4}>
