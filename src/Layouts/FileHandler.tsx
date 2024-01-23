@@ -41,6 +41,7 @@ function FileHandler() {
     setPdfViewer,
     selectedContext,
     setSelectedContext,
+    activeProject,
   } = useStore((state) => ({
     sessionToken: state.session,
     hasAdminRights: state.hasAdminRights,
@@ -49,6 +50,7 @@ function FileHandler() {
     setPdfViewer: state.setPdfViewer,
     selectedContext: state.selectedContext,
     setSelectedContext: state.setSelectedContext,
+    activeProject: state.activeProject,
   }));
 
   const toast = useToast();
@@ -107,13 +109,13 @@ function FileHandler() {
 
   useEffect(() => {
     const fetchFolderLists = async () => {
-      if (!sessionToken) return;
-      const brains = await getBrains(sessionToken);
+      if (!sessionToken || !activeProject?.project_id) return;
+      const brains = await getBrains(sessionToken, activeProject.project_id);
       setFolderList(brains || null);
     };
 
     fetchFolderLists();
-  }, [sessionToken, setFolderList]);
+  }, [sessionToken, setFolderList, activeProject]);
 
   useEffect(() => {
     const realtime = supabase
@@ -166,11 +168,12 @@ function FileHandler() {
 
   const handleCreateFolder = (folderName: string) => {
     async function createFolder() {
-      if (!sessionToken) return;
-      const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/brains/`; // Replace 'YOUR_API_ENDPOINT' with your actual API URL.
+      if (!sessionToken || !activeProject?.project_id) return;
+      const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/brains`; // Replace 'YOUR_API_ENDPOINT' with your actual API URL.
 
       const brainData = {
         name: folderName,
+        project_access_id: activeProject.project_id,
       };
 
       try {
@@ -288,31 +291,29 @@ function FileHandler() {
             Project Files
           </Heading>
         </Box> */}
-        {hasAdminRights && (
-          <Stack direction="row" justify="space-between" mb={2}>
-            <Stack justify="start" width="full">
-              <Button
-                color="brand.dark"
-                width="full"
-                variant="outline"
-                bg={"brand.light"}
-                _hover={{ bg: "brand.dark", color: "white" }}
-                onClick={() => setIsFolderSubMenuOpen(true)}
-              >
-                <FaPlus />
+        <Stack direction="row" justify="space-between" mb={2}>
+          <Stack justify="start" width="full">
+            <Button
+              color="brand.dark"
+              width="full"
+              variant="outline"
+              bg={"brand.light"}
+              _hover={{ bg: "brand.dark", color: "white" }}
+              onClick={() => setIsFolderSubMenuOpen(true)}
+            >
+              <FaPlus />
 
-                <Text ml="2" fontSize={"base"}>
-                  Add New Folder
-                </Text>
-              </Button>
-            </Stack>
-            <AddFolderMenu
-              isOpen={isFolderSubMenuOpen}
-              onClose={() => setIsFolderSubMenuOpen(false)}
-              onCreateFolder={handleCreateFolder}
-            />
+              <Text ml="2" fontSize={"base"}>
+                Add New Folder
+              </Text>
+            </Button>
           </Stack>
-        )}
+          <AddFolderMenu
+            isOpen={isFolderSubMenuOpen}
+            onClose={() => setIsFolderSubMenuOpen(false)}
+            onCreateFolder={handleCreateFolder}
+          />
+        </Stack>
       </>
       <>
         <Accordion
@@ -410,39 +411,38 @@ function FileHandler() {
                       </Box>
                     );
                   })}
-                {hasAdminRights && (
-                  <Box p="2">
-                    <Stack
-                      spacing={4}
-                      border="1px"
-                      p="4"
-                      borderRadius={"md"}
-                      borderColor="brand.dark"
+
+                <Box p="2">
+                  <Stack
+                    spacing={4}
+                    border="1px"
+                    p="4"
+                    borderRadius={"md"}
+                    borderColor="brand.dark"
+                  >
+                    <Box>
+                      <input
+                        id="file-upload"
+                        type="file"
+                        accept="application/pdf"
+                        ref={inputRef}
+                        onChange={handleFileSelect}
+                      />
+                    </Box>
+                    <Button
+                      id="upload_button_id"
+                      colorScheme="teal"
+                      size="sm"
+                      bg="brand.light"
+                      color="brand.dark"
+                      _hover={{ bg: "brand.dark", color: "white" }}
+                      onClick={() => handleFileUpload(folder)}
                     >
-                      <Box>
-                        <input
-                          id="file-upload"
-                          type="file"
-                          accept="application/pdf"
-                          ref={inputRef}
-                          onChange={handleFileSelect}
-                        />
-                      </Box>
-                      <Button
-                        id="upload_button_id"
-                        colorScheme="teal"
-                        size="sm"
-                        bg="brand.light"
-                        color="brand.dark"
-                        _hover={{ bg: "brand.dark", color: "white" }}
-                        onClick={() => handleFileUpload(folder)}
-                      >
-                        <FaUpload />
-                        <Text ml="2">Upload</Text>
-                      </Button>
-                    </Stack>
-                  </Box>
-                )}
+                      <FaUpload />
+                      <Text ml="2">Upload</Text>
+                    </Button>
+                  </Stack>
+                </Box>
               </AccordionPanel>
             </AccordionItem>
           ))}
