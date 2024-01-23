@@ -68,6 +68,10 @@ function UpdateActivityModal({
         });
       }
     });
+  }, [tasks, modifyTask]);
+
+  useEffect(() => {
+    console.log("activity", activity);
   }, [activity]);
 
   const queryClient = useQueryClient();
@@ -111,7 +115,7 @@ function UpdateActivityModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent bg={"brand.background"}>
         {!activeProject && (
           <>
             <ModalHeader> No Project Selected </ModalHeader>
@@ -135,6 +139,12 @@ function UpdateActivityModal({
                     </Text>
                     <Input
                       placeholder="Activity Name"
+                      shadow={"sm"}
+                      variant={"unstyled"}
+                      p={"2"}
+                      rounded={"md"}
+                      bg={"white"}
+                      size={"sm"}
                       required
                       value={activity.name.replace("(on schedule)", "")}
                       onChange={(e) => {
@@ -150,6 +160,12 @@ function UpdateActivityModal({
                       Task Duration
                     </Text>
                     <Input
+                      shadow={"sm"}
+                      variant={"unstyled"}
+                      p={"2"}
+                      rounded={"md"}
+                      bg={"white"}
+                      size={"sm"}
                       placeholder="Activity Duration (Days)"
                       value={activity.duration === 0 ? "" : activity.duration}
                       type="number"
@@ -168,6 +184,12 @@ function UpdateActivityModal({
                       Task Start Date
                     </Text>
                     <Input
+                      shadow={"sm"}
+                      variant={"unstyled"}
+                      p={"2"}
+                      rounded={"md"}
+                      bg={"white"}
+                      size={"sm"}
                       placeholder="Start Date"
                       type="date"
                       value={activity.start}
@@ -195,6 +217,12 @@ function UpdateActivityModal({
                       Task End Date
                     </Text>
                     <Input
+                      shadow={"sm"}
+                      variant={"unstyled"}
+                      p={"2"}
+                      rounded={"md"}
+                      bg={"white"}
+                      size={"sm"}
                       placeholder="End Date"
                       type="date"
                       value={activity.end}
@@ -246,9 +274,12 @@ function UpdateActivityModal({
                   </Text>
 
                   <Select
+                    className="custom-selector"
+                    bg={"white"}
                     id="dependencies"
                     placeholder="Select dependency"
-                    size={"md"}
+                    size={"sm"}
+                    rounded={"md"}
                     onChange={(e) => {
                       setActivity((state) => ({
                         ...state!,
@@ -269,8 +300,11 @@ function UpdateActivityModal({
                   </Text>
                   <Select
                     id="status"
+                    className="custom-selector"
+                    bg={"white"}
                     placeholder={`${activity.status}`}
-                    size={"md"}
+                    size={"sm"}
+                    rounded={"md"}
                     onChange={(e) => {
                       setActivity((state) => ({
                         ...state!,
@@ -290,6 +324,12 @@ function UpdateActivityModal({
                     <Input
                       placeholder="Activity Name"
                       required
+                      shadow={"sm"}
+                      variant={"unstyled"}
+                      p={"2"}
+                      rounded={"md"}
+                      bg={"white"}
+                      size={"sm"}
                       value={activity.name.replace("(on schedule)", "")}
                       onChange={(e) => {
                         setActivity((state) => ({
@@ -304,10 +344,15 @@ function UpdateActivityModal({
             </ModalBody>
             <ModalFooter>
               <Flex direction={"row"}>
-                <Button onClick={updateTask} mr={"3"} bg={"brand.accent"}>
+                <Button
+                  size={"sm"}
+                  onClick={updateTask}
+                  mr={"3"}
+                  bg={"brand.accent"}
+                >
                   Update
                 </Button>
-                <Button bg={"white"} onClick={onClose}>
+                <Button size={"sm"} bg={"white"} onClick={onClose}>
                   Cancel
                 </Button>
               </Flex>
