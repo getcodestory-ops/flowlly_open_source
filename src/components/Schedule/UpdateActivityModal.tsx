@@ -49,6 +49,15 @@ function UpdateActivityModal({
     activeProject: state.activeProject,
   }));
 
+  useEffect(() => {
+    console.log(
+      "session, active project, activity",
+      session,
+      activeProject,
+      activity
+    );
+  }, []);
+
   const [activity, setActivity] = useState<UpdateActivityTypes>();
 
   useEffect(() => {
@@ -331,12 +340,12 @@ function UpdateActivityModal({
                       bg={"white"}
                       size={"sm"}
                       value={activity.name.replace("(on schedule)", "")}
-                      onChange={(e) => {
-                        setActivity((state) => ({
-                          ...state!,
-                          name: e.target.value,
-                        }));
-                      }}
+                      // onChange={(e) => {
+                      //   setActivity((state) => ({
+                      //     ...state!,
+                      //     name: e.target.value,
+                      //   }));
+                      // }}
                     />
                   </Flex>
                 </Flex>

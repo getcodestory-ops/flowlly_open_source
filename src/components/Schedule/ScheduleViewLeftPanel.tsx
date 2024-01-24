@@ -63,7 +63,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
     activeProject: state.activeProject,
     userActivities: state.userActivities,
   }));
-  const [view, setView] = useState<string>("gantt");
+  const [view, setView] = useState<string>("tasks");
   const [conversationView, setConversationView] = useState(false);
   const onConversation = () => {
     setConversationView(!conversationView);
@@ -118,41 +118,24 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
       >
         <GridItem rowSpan={1} colSpan={1}>
           <Flex borderColor={"brand2.mid"}>
-            <Flex alignItems={"center"} mr={"4"}>
-              <Button
-                size={"sm"}
-                bg={`${view === "gantt" ? "brand2.accent" : "white"}`}
-                _hover={{ bg: "brand.dark", color: "white" }}
-                onClick={() => setView("gantt")}
-                p={"0.5"}
-                border={"2px"}
-                rounded={"lg"}
-                mr={"0.5"}
-              >
-                <Icon as={LuGanttChart} boxSize={"5"} />
-              </Button>
-              <Text fontSize={"xs"} fontWeight={"bold"}>
-                Gantt
+            <Flex
+              alignItems={"center"}
+              mr={"4"}
+              border={"1px"}
+              px={"2"}
+              py={"0.5"}
+              rounded={"lg"}
+              bg={`${view === "tasks" ? "brand2.accent" : "white"}`}
+              _hover={{ bg: "brand.dark", color: "white" }}
+              cursor={"pointer"}
+              onClick={() => setView("tasks")}
+            >
+              <Icon as={FaTasks} />
+              <Text ml={"2"} fontSize={"xs"} fontWeight={"bold"}>
+                List
               </Text>
             </Flex>
-            <Flex alignItems={"center"} mr={"4"}>
-              <Button
-                p={"0.5"}
-                size={"sm"}
-                border={"2px"}
-                rounded={"lg"}
-                mr={"0.5"}
-                bg={`${view === "kanban" ? "brand2.accent" : "white"}`}
-                _hover={{ bg: "brand.dark", color: "white" }}
-                onClick={() => setView("kanban")}
-              >
-                <Icon as={PiKanban} boxSize={"5"} />
-              </Button>
-              <Text fontSize={"xs"} fontWeight={"bold"}>
-                Kanban
-              </Text>
-            </Flex>
-            <Flex alignItems={"center"} mr={"4"}>
+            {/* <Flex alignItems={"center"} mr={"4"}>
               <Button
                 p={"0.5"}
                 size={"sm"}
@@ -166,7 +149,43 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
                 <Icon as={FaTasks} />
               </Button>
               <Text fontSize={"xs"} fontWeight={"bold"}>
-                Tasks
+                List
+              </Text>
+            </Flex> */}
+            <Flex
+              alignItems={"center"}
+              mr={"4"}
+              border={"1px"}
+              px={"2"}
+              py={"0.5"}
+              rounded={"lg"}
+              bg={`${view === "gantt" ? "brand2.accent" : "white"}`}
+              _hover={{ bg: "brand.dark", color: "white" }}
+              cursor={"pointer"}
+              onClick={() => setView("gantt")}
+            >
+              <Icon as={LuGanttChart} boxSize={"5"} />
+
+              <Text fontSize={"xs"} fontWeight={"bold"} ml={"2"}>
+                Gantt
+              </Text>
+            </Flex>
+            <Flex
+              alignItems={"center"}
+              mr={"4"}
+              border={"1px"}
+              px={"2"}
+              py={"0.5"}
+              rounded={"lg"}
+              bg={`${view === "kanban" ? "brand2.accent" : "white"}`}
+              _hover={{ bg: "brand.dark", color: "white" }}
+              cursor={"pointer"}
+              onClick={() => setView("kanban")}
+            >
+              <Icon as={PiKanban} boxSize={"5"} />
+
+              <Text fontSize={"xs"} fontWeight={"bold"} ml={"2"}>
+                Kanban
               </Text>
             </Flex>
           </Flex>

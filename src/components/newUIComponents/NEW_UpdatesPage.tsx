@@ -9,6 +9,7 @@ import {
   Tooltip,
   Select,
   Icon,
+  Image,
 } from "@chakra-ui/react";
 import {
   MdOutlinePlayCircleOutline,
@@ -19,7 +20,9 @@ import {
   MdOutlineMessage,
   MdOutlineNote,
   MdOutlineInsertDriveFile,
+  MdFiberNew,
 } from "react-icons/md";
+
 import { useStore } from "@/utils/store";
 import { IoDocumentTextOutline, IoPlayCircleOutline } from "react-icons/io5";
 import { AiOutlineAlert } from "react-icons/ai";
@@ -206,7 +209,7 @@ const NEW_UpdatesPage = () => {
       id: 3,
       type: "note",
       title: "Unexpected zoning regulation changes",
-      date: "2024-01-05",
+      date: "2024-01-23",
       impact: "negative",
       projectImpact:
         "Substantial negative impact from unexpected zoning regulation changes requiring project redesign, compliance challenges, permitting delays, cost increases, and potential stakeholder relationship issues.",
@@ -464,12 +467,15 @@ const NEW_UpdatesPage = () => {
               {update.type}
             </Text>
           </Flex>
-          <Flex fontSize={"10px"}>{convertDateToTimeText(update.date)}</Flex>
+          <Flex>
+            <Flex fontSize={"10px"}>{convertDateToTimeText(update.date)}</Flex>
+            <Icon as={MdFiberNew} color={"purple.400"} boxSize={"5"} ml={"2"} />
+          </Flex>
         </Flex>
-
         <Text fontSize={"12px"} my={"2"} fontWeight={"semibold"}>
           {update.title.slice(0, 55) + "..."}
         </Text>
+
         <Flex>
           <Text fontSize={"10px"} mr={"1"}>
             Impact:
