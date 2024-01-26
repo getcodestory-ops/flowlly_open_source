@@ -189,6 +189,7 @@ function AiActions() {
                 <Flex fontSize={"22px"} fontWeight={"bold"}>
                   AI Actions
                 </Flex>
+                <SearchMemory />
                 <Flex>
                   <Button
                     bg={"white"}
@@ -238,8 +239,8 @@ function AiActions() {
                   className="custom-selector"
                 >
                   <option value="search">Search</option>
-                  <option value="analyze">Analyze Document</option>
-                  <option value="email">Draft Email</option>
+                  {/* <option value="analyze">Analyze Document</option>
+                  <option value="email">Draft Email</option> */}
                 </Select>
                 {folderList && folderList.length > 0 && (
                   <Select
