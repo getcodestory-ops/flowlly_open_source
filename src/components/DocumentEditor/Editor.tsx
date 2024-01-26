@@ -9,9 +9,6 @@ import { IoShareSocialOutline } from "react-icons/io5";
 import { useStore } from "@/utils/store";
 
 const EditorBlock = ({ id }: { id?: string | string[] }) => {
-  const { documentId } = useStore((state) => ({
-    documentId: state.documentId,
-  }));
   const holder = "editorjs-container";
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const { ref, processDoc, data, onSubmit } = useContentSave(id);
@@ -37,7 +34,7 @@ const EditorBlock = ({ id }: { id?: string | string[] }) => {
       onchange;
       ref.current = editor;
     }
-  }, [data]);
+  }, [data, id]);
 
   useEffect(() => {
     const init = async () => {

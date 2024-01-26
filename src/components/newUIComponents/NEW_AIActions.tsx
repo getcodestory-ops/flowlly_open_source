@@ -47,6 +47,8 @@ function AiActions() {
     setChatSession,
     setChatHistory,
     updateChatHistory,
+    setFolderList,
+    activeProject,
   } = useStore((state) => ({
     AiActionsView: state.AiActionsView,
     setAiActionsView: state.setAiActionsView,
@@ -60,6 +62,8 @@ function AiActions() {
     setChatSession: state.setChatSession,
     setChatHistory: state.setChatHistory,
     updateChatHistory: state.updateChatHistory,
+    activeProject: state.activeProject,
+    setFolderList: state.setFolderList,
   }));
 
   useEffect(() => {
@@ -77,6 +81,16 @@ function AiActions() {
   }, [sessionToken]);
 
   useEffect(() => {
+    const fetchFolderLists = async () => {
+      if (!sessionToken || !activeProject?.project_id) return;
+      const brains = await getBrains(sessionToken, activeProject.project_id);
+      if (brains && brains.length > 0) setFolderList(brains || null);
+    };
+
+    fetchFolderLists();
+  }, [sessionToken, setFolderList, activeProject]);
+
+  useEffect(() => {
     if (!sessionToken || !chatSession) return;
     const fetchChatHistory = async () => {
       try {
@@ -92,8 +106,7 @@ function AiActions() {
 
   useEffect(() => {
     if (!folderList) return;
-    console.log("chat sessions", chatSessions);
-    console.log("folder list", folderList);
+
     setSelectedContext(folderList?.[0] ?? null);
   }, [folderList, setSelectedContext, chatSessions]);
 
@@ -121,8 +134,6 @@ function AiActions() {
     )[0]?.chat_history!;
 
     updateChatHistory(chatSession?.chat_id!, [...chatHistory, newChatItem]);
-
-    console.log("selected context", selectedContext);
 
     try {
       if (!sessionToken || !chatSession || !selectedContext) return;
@@ -230,27 +241,30 @@ function AiActions() {
                   <option value="analyze">Analyze Document</option>
                   <option value="email">Draft Email</option>
                 </Select>
-                <Select
-                  size={"sm"}
-                  bg={"white"}
-                  border={"white"}
-                  rounded={"lg"}
-                  placeholder="Folder or File"
-                  className="custom-selector"
-                  onChange={(e) =>
-                    setSelectedContext(
-                      folderList?.filter(
-                        (folder) => folder.name === e.target.value
-                      )?.[0] ?? null
-                    )
-                  }
-                >
-                  {folderList?.map((folder) => (
-                    <option key={folder.id} value={folder.id}>
-                      {folder.name}
-                    </option>
-                  ))}
-                </Select>
+                {folderList && folderList.length > 0 && (
+                  <Select
+                    size={"sm"}
+                    bg={"white"}
+                    border={"white"}
+                    rounded={"lg"}
+                    placeholder={"Folder or File"}
+                    className="custom-selector"
+                    value={selectedContext?.id}
+                    onChange={(e) =>
+                      setSelectedContext(
+                        folderList?.filter(
+                          (folder) => folder.name === e.target.value
+                        )?.[0] ?? null
+                      )
+                    }
+                  >
+                    {folderList?.map((folder) => (
+                      <option key={folder.id} value={folder.id}>
+                        {folder.name}
+                      </option>
+                    ))}
+                  </Select>
+                )}
               </Flex>
             </Flex>
           </GridItem>
@@ -263,9 +277,6 @@ function AiActions() {
             pb={"2"}
             px={"2"}
           >
-            {/* <Flex>
-              <SearchMemory />
-            </Flex> */}
             <Flex w="inherit" overflow={"contain"}>
               <ChatMessageDisplay />
             </Flex>
@@ -335,54 +346,54 @@ function AiActions() {
           </Tooltip>
         </Flex>
       )}
-      {/* {AiActionsView === "expand" && ( */}
-      <Grid
-        h={"full"}
-        templateColumns="repeat(14,1fr)"
-        gap={"4"}
-        visibility={AiActionsView === "expand" ? "visible" : "hidden"}
-      >
-        <GridItem
-          colSpan={10}
-          bgGradient="linear(brand.gray 5%, white 30% )"
-          rounded={"2xl"}
-          boxShadow={"lg"}
-          w={"full"}
+      {AiActionsView === "expand" && (
+        <Grid
           h={"full"}
-          p={"4"}
+          templateColumns="repeat(14,1fr)"
+          gap={"4"}
+          visibility={AiActionsView === "expand" ? "visible" : "hidden"}
         >
-          {" "}
-          <Flex direction={"column"} h="full">
-            <Flex mb={"2"}>
-              <Tooltip
-                label="Collapse"
-                aria-label="A tooltip"
-                bg="white"
-                color="brand.dark"
-              >
-                <Button
-                  bg={"white"}
-                  boxShadow={"md"}
-                  p={0}
-                  size={"sm"}
-                  onClick={() => setAiActionsView("open")}
-                  rounded={"full"}
-                  _hover={{ bg: "brand.dark", color: "white" }}
+          <GridItem
+            colSpan={10}
+            bgGradient="linear(brand.gray 5%, white 30% )"
+            rounded={"2xl"}
+            boxShadow={"lg"}
+            w={"full"}
+            h={"full"}
+            p={"4"}
+          >
+            {" "}
+            <Flex direction={"column"} h="full">
+              <Flex mb={"2"}>
+                <Tooltip
+                  label="Collapse"
+                  aria-label="A tooltip"
+                  bg="white"
+                  color="brand.dark"
                 >
-                  <Icon
-                    as={TbLayoutSidebarLeftExpand}
-                    // fontSize={"20px"}
-                    fontWeight={"light"}
-                  />
-                </Button>
-              </Tooltip>
+                  <Button
+                    bg={"white"}
+                    boxShadow={"md"}
+                    p={0}
+                    size={"sm"}
+                    onClick={() => setAiActionsView("open")}
+                    rounded={"full"}
+                    _hover={{ bg: "brand.dark", color: "white" }}
+                  >
+                    <Icon
+                      as={TbLayoutSidebarLeftExpand}
+                      // fontSize={"20px"}
+                      fontWeight={"light"}
+                    />
+                  </Button>
+                </Tooltip>
+              </Flex>
+              <Flex h="full">
+                <PdfLoader />
+              </Flex>
             </Flex>
-            <Flex h="full">
-              <PdfLoader />
-            </Flex>
-          </Flex>
-        </GridItem>
-        {/* <GridItem colSpan={4}>
+          </GridItem>
+          {/* <GridItem colSpan={4}>
             <Grid
               h={"full"}
               templateRows="repeat(7, 1fr)"
@@ -465,8 +476,8 @@ function AiActions() {
               </GridItem>
             </Grid>
           </GridItem> */}
-      </Grid>
-      {/* )} */}
+        </Grid>
+      )}
     </>
   );
 }

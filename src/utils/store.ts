@@ -18,6 +18,7 @@ export const useStore = create<State>((set) => ({
   hasAdminRights: false,
   prompts: scopeConfig,
   sidePanelExtensionView: "memory",
+
   folderList: [],
   chatSession: null,
   chatSessions: [],

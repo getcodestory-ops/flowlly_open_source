@@ -171,7 +171,7 @@ function ChatMessageDisplay() {
       width="full"
       ref={chatBoxRef}
       my="8"
-      height="67vh"
+      height="64vh"
       fontSize={"xs"}
     >
       {activeChatMessages &&

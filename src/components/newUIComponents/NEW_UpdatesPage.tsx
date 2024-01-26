@@ -27,22 +27,44 @@ import { useStore } from "@/utils/store";
 import { IoDocumentTextOutline, IoPlayCircleOutline } from "react-icons/io5";
 import { AiOutlineAlert } from "react-icons/ai";
 import { convertDateToTimeText } from "@/utils/timeSinceLatestSignificantEvent";
-
+import { useQuery } from "@tanstack/react-query";
 import ProcessHistoryButton from "../Schedule/ProcessHistory/ProcessHistoryButton";
+import { getUpdates } from "@/api/update_routes";
+import { UpdateProperties } from "@/types/updates";
+import EditorBlock from "@/components/DocumentEditor/Editor";
 
 const NEW_UpdatesPage = () => {
-  const { documentId, setDocumentId } = useStore((state) => ({
-    documentId: state.documentId,
-    setDocumentId: state.setDocumentId,
-  }));
+  const { documentId, setDocumentId, session, activeProject } = useStore(
+    (state) => ({
+      documentId: state.documentId,
+      setDocumentId: state.setDocumentId,
+      session: state.session,
+      activeProject: state.activeProject,
+    })
+  );
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [objectId, setObjectId] = useState<string | null>(null);
+  const [previewCardContent, setPreviewCardContent] = useState<
+    Record<string, any>
+  >({});
   const [objectView, setObjectView] = useState<string>("content");
 
+  const { data, isLoading, isSuccess } = useQuery({
+    queryKey: ["updates", session, activeProject],
+    queryFn: () => {
+      if (!session || !activeProject) {
+        return Promise.reject("Set session first !");
+      }
+
+      return getUpdates(session, activeProject.project_id);
+    },
+
+    enabled: !!session?.access_token && !!activeProject?.project_id,
+  });
+
   useEffect(() => {
-    // console.log("objectId", objectId);
-  }, [objectId]);
+    console.log(data);
+  }, [data]);
 
   const updatesObject = {
     1: {
@@ -438,9 +460,7 @@ const NEW_UpdatesPage = () => {
     },
   };
 
-  const previewCard = (id: any) => {
-    const update = updatesObject[id];
-
+  const previewCard = (update: UpdateProperties) => {
     return (
       <Flex
         w="full"
@@ -468,24 +488,26 @@ const NEW_UpdatesPage = () => {
             </Text>
           </Flex>
           <Flex>
-            <Flex fontSize={"10px"}>{convertDateToTimeText(update.date)}</Flex>
+            <Flex fontSize={"10px"}>
+              {convertDateToTimeText(update.created_at)}
+            </Flex>
             <Icon as={MdFiberNew} color={"purple.400"} boxSize={"5"} ml={"2"} />
           </Flex>
         </Flex>
         <Text fontSize={"12px"} my={"2"} fontWeight={"semibold"}>
-          {update.title.slice(0, 55) + "..."}
+          {update.update.message + "..."}
         </Text>
 
         <Flex>
           <Text fontSize={"10px"} mr={"1"}>
-            Impact:
+            Status:
           </Text>
           <Text
             fontSize={"10px"}
             fontWeight={"bold"}
-            color={`${update.impact === "negative" ? "red" : ""}`}
+            color={`${update.update.status === "negative" ? "red" : ""}`}
           >
-            {update.impact}
+            {update.update.status}
           </Text>
         </Flex>
       </Flex>
@@ -519,30 +541,33 @@ const NEW_UpdatesPage = () => {
           </Select>
         </Flex>
         <Flex direction={"column"}>
-          {Object.keys(updatesObject)
-            .sort(
-              (a, b) =>
-                new Date(updatesObject[b].date) -
-                new Date(updatesObject[a].date)
-            )
-            .map((id) => (
-              <Flex
-                key={id}
-                onClick={() => setObjectId(id)}
-                w="full"
-                mb={"2"}
-                p={"2"}
-                background={"brand.background"}
-                dropShadow={"lg"}
-                cursor={"pointer"}
-                display="flex"
-                flexDirection="column"
-                borderRadius={"md"}
-                _hover={{ bg: "brand.dark", color: "white" }}
-              >
-                {previewCard(id)}
-              </Flex>
-            ))}
+          {
+            // Object.keys(data)
+            //   .sort(
+            //     (a, b) =>
+            //       new Date(updatesObject[b].date) -
+            //       new Date(updatesObject[a].date)
+            //   )
+            data &&
+              data.map((update) => (
+                <Flex
+                  key={update.id}
+                  onClick={() => setPreviewCardContent(update)}
+                  w="full"
+                  mb={"2"}
+                  p={"2"}
+                  background={"brand.background"}
+                  dropShadow={"lg"}
+                  cursor={"pointer"}
+                  display="flex"
+                  flexDirection="column"
+                  borderRadius={"md"}
+                  _hover={{ bg: "brand.dark", color: "white" }}
+                >
+                  {previewCard(update)}
+                </Flex>
+              ))
+          }
         </Flex>
       </GridItem>
       <GridItem
@@ -557,7 +582,7 @@ const NEW_UpdatesPage = () => {
         // className="custom-shadow"
       >
         <Flex h={"full"}>
-          {!objectId && (
+          {!Object.keys(previewCardContent).length && (
             <Flex
               w={"full"}
               h={"full"}
@@ -576,111 +601,118 @@ const NEW_UpdatesPage = () => {
               </Text>
             </Flex>
           )}
-          {objectId && objectView === "content" && (
-            <Flex
-              w={"full"}
-              h={"full"}
-              py={"2"}
-              px={"4"}
-              bg={"brand.background"}
-              rounded={"lg"}
-              overflowY={"auto"}
-              className="custom-scrollbar"
-              direction={"column"}
-            >
-              <Flex alignItems={"center"} mb={"2"}>
-                {updatesObject[objectId].type === "email" && (
-                  <Icon as={MdOutlineEmail} mr={"0.5"} boxSize={"3"} />
-                )}
-                {updatesObject[objectId].type === "message" && (
-                  <Icon as={MdOutlineMessage} mr={"0.5"} boxSize={"3"} />
-                )}
-                {updatesObject[objectId].type === "note" && (
-                  <Icon as={MdOutlineNote} mr={"0.5"} boxSize={"3"} />
-                )}
-                {updatesObject[objectId].type === "file" && (
-                  <Icon
-                    as={MdOutlineInsertDriveFile}
-                    mr={"0.5"}
-                    boxSize={"3"}
-                  />
-                )}
-                <Text fontSize={"12px"} fontStyle={"italic"}>
-                  {updatesObject[objectId].type}
+          {}
+          {Object.keys(previewCardContent).length &&
+            previewCardContent.update && (
+              <Flex
+                w={"full"}
+                h={"full"}
+                py={"2"}
+                px={"4"}
+                bg={"brand.background"}
+                rounded={"lg"}
+                overflowY={"auto"}
+                className="custom-scrollbar"
+                direction={"column"}
+              >
+                <Flex alignItems={"center"} mb={"2"}>
+                  {previewCardContent.type === "email" && (
+                    <Icon as={MdOutlineEmail} mr={"0.5"} boxSize={"3"} />
+                  )}
+                  {previewCardContent.type === "message" && (
+                    <Icon as={MdOutlineMessage} mr={"0.5"} boxSize={"3"} />
+                  )}
+                  {previewCardContent.type === "note" && (
+                    <Icon as={MdOutlineNote} mr={"0.5"} boxSize={"3"} />
+                  )}
+                  {previewCardContent.type === "file" && (
+                    <Icon
+                      as={MdOutlineInsertDriveFile}
+                      mr={"0.5"}
+                      boxSize={"3"}
+                    />
+                  )}
+                  <Text fontSize={"12px"} fontStyle={"italic"}>
+                    {previewCardContent.type}
+                  </Text>
+                </Flex>
+                <Text fontSize={"14px"} fontWeight={"bold"} mb={"6"}>
+                  {previewCardContent.update.message}
                 </Text>
-              </Flex>
-              <Text fontSize={"14px"} fontWeight={"bold"} mb={"6"}>
-                {updatesObject[objectId].title}
-              </Text>
-              <Flex mb={"6"} direction={"column"}>
-                <Text fontWeight={"bold"} fontSize={"14px"} my={"2"}>
-                  Project Impact
-                </Text>
-                <Text
-                  fontSize={"12px"}
-                  fontWeight={"bold"}
-                  color={`${
-                    updatesObject[objectId].impact === "negative" ? "red" : ""
-                  }`}
-                >
-                  {updatesObject[objectId].impact}
+                <Flex>
+                  {previewCardContent.document_access_id && (
+                    <EditorBlock id={previewCardContent.document_access_id} />
+                  )}
+                </Flex>
+                {/* <Flex mb={"6"} direction={"column"}>
+                  <Text fontWeight={"bold"} fontSize={"14px"} my={"2"}>
+                    Project Impact
+                  </Text>
+                  <Text
+                    fontSize={"12px"}
+                    fontWeight={"bold"}
+                    color={`${
+                      updatesObject[objectId].impact === "negative" ? "red" : ""
+                    }`}
+                  >
+                    {updatesObject[objectId].impact}
+                  </Text>
+                  <Text fontSize={"14px"} my={"2"}>
+                    {updatesObject[objectId].projectImpact}
+                  </Text>
+                </Flex> */}
+                {/* <Text fontWeight={"bold"} fontSize={"14px"}>
+                  Content
                 </Text>
                 <Text fontSize={"14px"} my={"2"}>
-                  {updatesObject[objectId].projectImpact}
+                  {updatesObject[objectId].content}
                 </Text>
-              </Flex>
-              <Text fontWeight={"bold"} fontSize={"14px"}>
-                Content
-              </Text>
-              <Text fontSize={"14px"} my={"2"}>
-                {updatesObject[objectId].content}
-              </Text>
-              <Text fontWeight={"bold"} fontSize={"14px"} my={"2"}>
-                Risks
-              </Text>
-              {updatesObject[objectId].risk.length === 0 ? (
-                <Text fontSize={"14px"}>None</Text>
-              ) : (
-                updatesObject[objectId].risk.map((risk: any, index: any) => (
-                  <Flex mb={"2"} direction={"column"} key={index}>
-                    <Text
-                      fontSize={"14px"}
-                      fontStyle={"italic"}
-                      fontWeight={"semibold"}
-                    >
-                      {risk.title}
-                    </Text>
-                    <Text fontSize={"14px"} pl={"2"}>
-                      {risk.description}
-                    </Text>
-                  </Flex>
-                ))
-              )}
-              <Text fontWeight={"bold"} fontSize={"14px"} my={"2"}>
-                Actions
-              </Text>
-              {updatesObject[objectId].actions.length === 0 ? (
-                <Text fontSize={"14px"}>None</Text>
-              ) : (
-                updatesObject[objectId].actions.map(
-                  (action: any, index: any) => (
+                <Text fontWeight={"bold"} fontSize={"14px"} my={"2"}>
+                  Risks
+                </Text> */}
+                {/* {updatesObject[objectId].risk.length === 0 ? (
+                  <Text fontSize={"14px"}>None</Text>
+                ) : (
+                  updatesObject[objectId].risk.map((risk: any, index: any) => (
                     <Flex mb={"2"} direction={"column"} key={index}>
                       <Text
                         fontSize={"14px"}
                         fontStyle={"italic"}
                         fontWeight={"semibold"}
                       >
-                        {action.title}
+                        {risk.title}
                       </Text>
                       <Text fontSize={"14px"} pl={"2"}>
-                        {action.description}
+                        {risk.description}
                       </Text>
                     </Flex>
+                  ))
+                )} */}
+                {/* <Text fontWeight={"bold"} fontSize={"14px"} my={"2"}>
+                  Actions
+                </Text>
+                {updatesObject[objectId].actions.length === 0 ? (
+                  <Text fontSize={"14px"}>None</Text>
+                ) : (
+                  updatesObject[objectId].actions.map(
+                    (action: any, index: any) => (
+                      <Flex mb={"2"} direction={"column"} key={index}>
+                        <Text
+                          fontSize={"14px"}
+                          fontStyle={"italic"}
+                          fontWeight={"semibold"}
+                        >
+                          {action.title}
+                        </Text>
+                        <Text fontSize={"14px"} pl={"2"}>
+                          {action.description}
+                        </Text>
+                      </Flex>
+                    )
                   )
-                )
-              )}
-            </Flex>
-          )}
+                )} */}
+              </Flex>
+            )}
         </Flex>
       </GridItem>
     </Grid>

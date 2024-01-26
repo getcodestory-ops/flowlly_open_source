@@ -24,14 +24,19 @@ const ContextDisplay: React.FC<DocumentProps> = ({
   chatFolder,
 }) => {
   const [sourceFolder, setSourceFolder] = useState(chatFolder);
-  const { pdfViewer, setPdfViewer, setSelectedContext, folderList } = useStore(
-    (state) => ({
-      pdfViewer: state.pdfViewer,
-      setPdfViewer: state.setPdfViewer,
-      setSelectedContext: state.setSelectedContext,
-      folderList: state.folderList,
-    })
-  );
+  const {
+    pdfViewer,
+    setPdfViewer,
+    setSelectedContext,
+    folderList,
+    setAiActionsView,
+  } = useStore((state) => ({
+    pdfViewer: state.pdfViewer,
+    setPdfViewer: state.setPdfViewer,
+    setSelectedContext: state.setSelectedContext,
+    folderList: state.folderList,
+    setAiActionsView: state.setAiActionsView,
+  }));
 
   const handleRefereces = (filePath: string, pageNumber: number) => {
     // console.log("foldername", sourceFolder);
@@ -150,6 +155,8 @@ const ContextDisplay: React.FC<DocumentProps> = ({
                     cursor={"pointer"}
                     onClick={() => {
                       setPdfViewer({ isPdfVisible: true });
+                      setAiActionsView("expand");
+
                       handleRefereces(
                         page.metadata.file_name,
                         page.metadata.page_number + 1
