@@ -275,7 +275,7 @@ function AiActions() {
             display="flex"
             flexDirection="column"
             justifyContent="end"
-            pb={"2"}
+            // pb={"2"}
             px={"2"}
           >
             <Flex w="inherit" overflow={"contain"}>
