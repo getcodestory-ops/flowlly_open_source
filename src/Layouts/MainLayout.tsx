@@ -15,12 +15,14 @@ import {
 } from "@chakra-ui/react";
 import supabase from "@/utils/supabaseClient";
 import logo from "../img/logo_full.svg";
+import { useStore } from "@/utils/store";
 
 export default function MainLayout() {
   const router = useRouter();
   const toast = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const setAppView = useStore((state) => state.setAppView);
 
   const handleLogin = async (email: string, password: string) => {
     const { data: user, error } = await supabase.auth.signInWithPassword({
@@ -43,7 +45,8 @@ export default function MainLayout() {
       });
       return;
     }
-    router.push("/dashboard");
+
+    router.push("/");
   };
 
   useEffect(() => {
@@ -51,7 +54,8 @@ export default function MainLayout() {
       const { data } = await supabase.auth.getSession();
 
       if (data?.session?.user) {
-        router.replace("/dashboard");
+        router.replace("/");
+        setAppView("updates");
       } else {
         console.log("Sign in to continue !");
       }
