@@ -31,7 +31,7 @@ function TaskViewsModal({
   task,
   setTaskView,
 }: TaskViewsModalProps) {
-  console.log("props", taskView, task);
+  // console.log("props", taskView, task);
   return (
     <>
       {task && taskView ? (

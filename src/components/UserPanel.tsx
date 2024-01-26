@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import {
-  Box,
+  Flex,
   Avatar,
   Menu,
   MenuButton,
@@ -41,7 +41,7 @@ const UserPanel = () => {
   };
 
   return (
-    <Box ml="auto" display="flex" alignItems="center">
+    <Flex ml="auto" display="flex" alignItems="center">
       {user && (
         <Menu>
           <Tooltip
@@ -57,7 +57,13 @@ const UserPanel = () => {
               justifyContent="center"
               cursor={"pointer"}
             >
-              <Avatar name={user.email} bg={"brand.dark"} color="white" />
+              <Avatar
+                name={user.email}
+                bg={"brand.dark"}
+                color="white"
+                w={"30px"}
+                h={"30px"}
+              />
             </MenuButton>
           </Tooltip>
           <MenuList zIndex="50">
@@ -72,7 +78,7 @@ const UserPanel = () => {
           </MenuList>
         </Menu>
       )}
-    </Box>
+    </Flex>
   );
 };
 

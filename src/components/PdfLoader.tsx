@@ -70,7 +70,7 @@ const VirtualPdfLoader = () => {
   }, [pageNumber]);
 
   return (
-    <Flex bg={"white"}>
+    <Flex w={"full"}>
       {selectedFolder && isPdfVisible && (
         <Box overflow={"auto"} h={"100vh"}>
           <Flex
@@ -81,7 +81,7 @@ const VirtualPdfLoader = () => {
             px="8"
             py="2"
             gap={2}
-            background="gray"
+            // background="gray"
             zIndex={"overlay"}
           >
             <IconButton
@@ -90,7 +90,7 @@ const VirtualPdfLoader = () => {
               onClick={() => setScale((state) => state + 0.2)}
               size={"xs"}
               color="white"
-              bg="green.500"
+              bg="brand.dark"
               zIndex="overlay"
             />
             <IconButton
@@ -99,7 +99,7 @@ const VirtualPdfLoader = () => {
               onClick={() => setScale((state) => state - 0.2)}
               size={"xs"}
               color="white"
-              bg="blue.500"
+              bg="brand.dark"
               zIndex="overlay"
             />
             <IconButton
@@ -109,12 +109,11 @@ const VirtualPdfLoader = () => {
               icon={<AiOutlineClose />}
               onClick={() => setPdfViewer({ isPdfVisible: false })}
               color="white"
-              bg="red.400"
+              bg="brand.dark"
               zIndex={"overlay"}
             />
           </Flex>
-
-          <Flex
+          {/* <Flex
             position="absolute"
             right="16"
             top="2"
@@ -142,7 +141,7 @@ const VirtualPdfLoader = () => {
               bg="gray.300"
               zIndex="overlay"
             />
-          </Flex>
+          </Flex> */}
           <Flex
             alignItems="center"
             flexDir="row"

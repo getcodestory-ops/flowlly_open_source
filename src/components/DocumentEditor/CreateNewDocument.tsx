@@ -78,7 +78,7 @@ function CreateNewDocument({ isOpen, onClose }: CreateNewDocumentProps) {
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Create new document</ModalHeader>
+        <ModalHeader>Create new note</ModalHeader>
 
         <ModalCloseButton />
         <ModalBody pb={6} fontSize={"lg"}>

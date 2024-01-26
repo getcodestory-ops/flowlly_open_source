@@ -9,6 +9,7 @@ import CommunicationInterface from "./CommunicationInterface";
 import SafetyInterface from "./SafetyInterface";
 import ProjectDashboard from "./ProjectDashboard";
 import ProjectSetup from "./ProjectSetup";
+import MainLayout from "./MainLayout";
 
 export default function Dashboard() {
   const appView = useStore((state) => state.appView);
@@ -23,6 +24,7 @@ export default function Dashboard() {
       {appView === "communication" && <CommunicationInterface />}
       {appView === "safety" && <SafetyInterface />}
       {appView === "dashboard" && <ProjectDashboard />}
+      {appView === "newLayout" && <MainLayout />}
       {appView === "projectSettings" && <ProjectSetup />}
     </Flex>
   );

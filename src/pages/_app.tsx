@@ -3,6 +3,7 @@ import type { AppProps } from "next/app";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import colors from "../styles/theme";
 import NavBars from "@/Layouts/NavBars";
+import NewLayout from "@/Layouts/NEW_MainLayout";
 
 const theme = extendTheme({
   colors,
@@ -29,9 +30,11 @@ const theme = extendTheme({
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <ChakraProvider theme={theme}>
-      <NavBars>
+      {/* <NavBars> */}
+      <NewLayout>
         <Component {...pageProps} />
-      </NavBars>
+      </NewLayout>
+      {/* </NavBars> */}
     </ChakraProvider>
   );
 }

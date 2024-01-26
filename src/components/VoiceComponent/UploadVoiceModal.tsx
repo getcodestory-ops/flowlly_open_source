@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect, use } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
   Button,
@@ -15,20 +15,36 @@ import {
   Tooltip,
   Icon,
 } from "@chakra-ui/react";
+import { useStore } from "@/utils/store";
 
 import { useVoiceUpload } from "./useVoiceUpload";
 import { BsFiletypeMp3 } from "react-icons/bs";
 
-function UploadVoiceModal({ documentId }: { documentId?: string | string[] }) {
+function UploadVoiceModal() {
+  // { documentId }: { documentId?: string | string[] }
+  const { documentId } = useStore((state) => ({
+    documentId: state.documentId,
+  }));
   const { isOpen, onClose, onOpen, handleSubmit, mutate } = useVoiceUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // useEffect(() => {
+  //   console.log("documentId", documentId);
+  // }, [documentId]);
 
   return (
     <>
       {typeof documentId === "string" && (
         <Flex>
-          <Tooltip label="Upload minutes of the meeting">
-            <Button cursor={"pointer"} size={"md"} maxW="16" onClick={onOpen}>
+          <Tooltip label="Upload audio file" bg="white" color="brand.dark">
+            <Button
+              cursor={"pointer"}
+              size={"sm"}
+              onClick={onOpen}
+              bg={"white"}
+              boxShadow={"lg"}
+              _hover={{ bg: "brand.dark", color: "white" }}
+            >
               <Icon as={BsFiletypeMp3} />
             </Button>
           </Tooltip>

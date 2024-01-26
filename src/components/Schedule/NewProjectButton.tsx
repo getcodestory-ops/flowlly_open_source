@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Button, Icon } from "@chakra-ui/react";
+import { Box, Button, Icon, Flex } from "@chakra-ui/react";
 import { FiPlus } from "react-icons/fi";
 import AddNewProjectModal from "./AddNewProjectModal";
 
@@ -10,26 +10,20 @@ const CreateNewProjectButton = () => {
   const onOpen = () => setIsOpen(true);
 
   return (
-    <Box
-      display="flex"
-      alignItems="center"
-      bg="brand.md"
-      p={2}
-      width="full"
-      borderRadius="md"
-    >
+    <Flex alignItems="center" width="full" mr={"2"}>
       <Button
-        leftIcon={<Icon as={FiPlus} />}
-        width="full"
-        variant="outline"
-        borderColor="white"
-        _hover={{ bg: "gray.600" }}
+        bg={"brand.dark"}
+        // leftIcon={<Icon as={FiPlus} />}
+        _hover={{ bg: "brand.accent", color: "brand.dark" }}
         onClick={onOpen}
+        size={"xs"}
+        color={"white"}
+        py={"4"}
       >
         New Project
       </Button>
       <AddNewProjectModal isOpen={isOpen} onClose={onClose} />
-    </Box>
+    </Flex>
   );
 };
 

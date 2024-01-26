@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { Box, Flex, Icon, Text } from "@chakra-ui/react";
+import React, { useEffect, useRef, useState } from "react";
+import { Box, Flex, Icon, Text, Grid, GridItem } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 const Chart = dynamic(
   () => import("react-apexcharts").then((mod) => mod.default),
@@ -13,6 +13,9 @@ import TopBar from "@/components/TopBar";
 import { useStore } from "@/utils/store";
 import GraphSection from "@/components/ProjectDashboard/GraphsSection";
 import RSSsection from "@/components/ProjectDashboard/RSSsection";
+import RisksRSSsection from "@/components/ProjectDashboard/RiskRSS";
+import UpdatesRSSsection from "@/components/ProjectDashboard/UpdatesRSS";
+import ActionsRSSsection from "@/components/ProjectDashboard/ActionsRSS";
 
 function ProjectDashboard() {
   const {
@@ -30,27 +33,180 @@ function ProjectDashboard() {
     setActiveChatEntity: state.setActiveChatEntity,
     userActivities: state.userActivities,
   }));
+  const [risksRSSNeedsScrolling, setRisksRSSNeedsScrolling] = useState(false);
+  const [updatesRSSNeedsScrolling, setUpdatesRSSNeedsScrolling] =
+    useState(false);
+  const [actionsRSSNeedsScrolling, setActionsRSSNeedsScrolling] =
+    useState(false);
+  const [graphSectionNeedsScrolling, setGraphSectionNeedsScrolling] =
+    useState(false);
+
+  const graphSectionRef = useRef(null);
+  const riskRSSRef = useRef(null);
+  const updateRSSRef = useRef(null);
+  const actionRSSRef = useRef(null);
+
+  const checkScrolling = (element: HTMLElement, elementName: string) => {
+    const vertical = element.scrollHeight > element.clientHeight;
+
+    // Match each ref with the appropriate state setter
+    switch (elementName) {
+      case "graphSectionRef":
+        setGraphSectionNeedsScrolling(vertical);
+        break;
+      case "risksRSSRef":
+        setRisksRSSNeedsScrolling(vertical);
+        break;
+      case "updateRSSRef":
+        setUpdatesRSSNeedsScrolling(vertical);
+        break;
+      case "actionRSSRef":
+        setActionsRSSNeedsScrolling(vertical);
+        break;
+      default:
+        break;
+    }
+
+    // console.log(`${elementName} - Vertical scrolling needed: ${vertical}`);
+  };
 
   useEffect(() => {
-    console.log("user activities", userActivities);
-  }, [userActivities]);
+    // Check if each GridItem needs scrolling after the component mounts
+    if (graphSectionRef.current) {
+      checkScrolling(graphSectionRef.current, "graphSectionRef");
+    }
+    if (riskRSSRef.current) {
+      checkScrolling(riskRSSRef.current, "risksRSSRef");
+    }
+    if (updateRSSRef.current) {
+      checkScrolling(updateRSSRef.current, "updateRSSRef");
+    }
+    if (actionRSSRef.current) {
+      checkScrolling(actionRSSRef.current, "actionRSSRef");
+    }
+  }, []);
+
+  // useEffect(() => {
+  //   console.log("user activities", userActivities);
+  // }, [userActivities]);
+
+  // useEffect(() => {
+  //   console.log("graphSectionNeedsScrolling", graphSectionNeedsScrolling);
+  // }, [graphSectionNeedsScrolling]);
 
   return (
-    <Flex pl={"10"} w="full">
-      {activeProject?.name ? (
-        <Flex direction={{ base: "column" }} gap="4" w="full">
-          <Flex direction={"column"}>
+    <Flex w="full" h={"full"}>
+      <Grid templateColumns="repeat(5, 1fr)" gap={4} w={"full"}>
+        <GridItem
+          position="relative"
+          ref={graphSectionRef}
+          colSpan={2}
+          overflowX={"auto"}
+          sx={{
+            "&::-webkit-scrollbar": {
+              width: "0px",
+              borderRadius: "8px",
+              // backgroundColor: `rgba(0, 0, 0, 0.05)`,
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: `rgba(0, 0, 0, 0.05)`,
+            },
+          }}
+        >
+          <GraphSection />
+          {/* {graphSectionNeedsScrolling && (
             <Flex
-              direction={"row"}
-              fontSize={"md"}
-              gap="2"
-              alignItems={"center"}
-              color={"#FFA840"}
+              position="absolute"
+              bottom={0}
+              left={0}
+              right={0}
+              bgColor="pink"
+              // opacity={0.5}
+              justifyContent="center"
+              alignItems="center"
+              // other styles as needed
+              w="100%" // Set width to 100%
+              h="30px" // Adjust height as needed
             >
-              <Icon as={BiSolidCircle} />
-              <Text as={"b"}>At Risk</Text>
+              Test
+              
             </Flex>
-          </Flex>
+          )} */}
+        </GridItem>
+
+        <GridItem
+          colSpan={1}
+          overflowY={"auto"}
+          className="custom-scrollbar"
+          ref={riskRSSRef}
+        >
+          <RisksRSSsection />
+          {/* {risksRSSNeedsScrolling && (
+            <Flex
+              position="absolute"
+              bottom={0}
+              left={0}
+              right={0}
+              bgColor="pink"
+              opacity={0.5}
+              justifyContent="center"
+              alignItems="center"
+              // other styles as needed
+            >
+              
+            </Flex>
+          )} */}
+        </GridItem>
+        <GridItem
+          colSpan={1}
+          overflowY={"auto"}
+          className="custom-scrollbar"
+          ref={updateRSSRef}
+        >
+          <UpdatesRSSsection />
+          {/* {updatesRSSNeedsScrolling && (
+            <Flex
+              position="absolute"
+              bottom={0}
+              left={0}
+              right={0}
+              bgColor="pink"
+              opacity={0.5}
+              justifyContent="center"
+              alignItems="center"
+              // other styles as needed
+            >
+              
+            </Flex>
+          )} */}
+        </GridItem>
+        <GridItem
+          colSpan={1}
+          overflowY={"auto"}
+          className="custom-scrollbar"
+          ref={actionRSSRef}
+        >
+          <ActionsRSSsection />
+
+          {/* {actionsRSSNeedsScrolling && (
+            <Flex
+              position="absolute"
+              bottom={0}
+              left={0}
+              right={0}
+              bgColor="pink"
+              opacity={0.5}
+              justifyContent="center"
+              alignItems="center"
+              // other styles as needed
+            >
+              
+            </Flex>
+          )} */}
+        </GridItem>
+      </Grid>
+      {/* {activeProject?.name ? (
+        <Flex direction={{ base: "column" }} gap="4" w="full">
           <Flex w="full" direction={{ base: "column-reverse", md: "row" }}>
             <Flex>
               <GraphSection />
@@ -71,7 +227,7 @@ function ProjectDashboard() {
         >
           Select a project at the top left corner
         </Flex>
-      )}
+      )} */}
     </Flex>
   );
 }

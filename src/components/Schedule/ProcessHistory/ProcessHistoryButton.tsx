@@ -1,7 +1,8 @@
-import { Button, useToast } from "@chakra-ui/react";
+import { Button, useToast, Tooltip, Icon } from "@chakra-ui/react";
 import { processMessageHistory } from "@/api/analysis_routes";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
+import { TbAnalyzeFilled } from "react-icons/tb";
 
 const ProcessHistoryButton = () => {
   const toast = useToast();
@@ -41,15 +42,43 @@ const ProcessHistoryButton = () => {
   });
 
   return (
-    <Button
-      variant="solid"
-      size={"xs"}
-      background={"black"}
-      color="white"
-      onClick={() => mutate()}
+    // <Button
+    //   variant="solid"
+    //   size={"xs"}
+    //   background={"black"}
+    //   color="white"
+    //   onClick={() => mutate()}
+    // >
+    //   Process History
+    // </Button>
+    <Tooltip
+      label="Process Latest Updates"
+      aria-label="A tooltip"
+      bg="white"
+      color="brand.dark"
     >
-      Process History
-    </Button>
+      <Button
+        mx={"2"}
+        bg={"white"}
+        size={"xs"}
+        className="custom-shadow"
+        rounded={"full"}
+        _hover={{ bg: "brand.dark", color: "white" }}
+        cursor={"pointer"}
+        p={"0"}
+        onClick={() => mutate()}
+      >
+        <Icon
+          as={TbAnalyzeFilled}
+          boxSize={"4"}
+          _hover={{
+            transform: "rotate(360deg)",
+
+            transition: "transform 0.5s ease-in-out",
+          }}
+        />
+      </Button>
+    </Tooltip>
   );
 };
 

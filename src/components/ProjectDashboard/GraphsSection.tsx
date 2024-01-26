@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Flex, Icon, Text, Grid, GridItem } from "@chakra-ui/react";
+import { Stack } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import GraphCard, { GraphCardProps } from "./GraphCard";
 
@@ -205,13 +205,11 @@ function GraphSection() {
   ];
 
   return (
-    <Grid templateColumns={{ md: "repeat(2, 1fr)" }}>
-      {data.map((item) => (
-        <GridItem key={item.title}>
-          <GraphCard {...item} />
-        </GridItem>
+    <Stack spacing={2}>
+      {data.map((item, index) => (
+        <GraphCard {...item} key={index} />
       ))}
-    </Grid>
+    </Stack>
   );
 }
 
