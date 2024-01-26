@@ -43,6 +43,7 @@ const UserPanel = () => {
     await supabase.auth.signOut();
 
     router.push("/");
+    setAppView("login");
   };
 
   return (

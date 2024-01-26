@@ -46,7 +46,7 @@ export default function MainLayout() {
       return;
     }
 
-    router.push("/");
+    router.push("/dasboard");
   };
 
   useEffect(() => {
@@ -54,9 +54,10 @@ export default function MainLayout() {
       const { data } = await supabase.auth.getSession();
 
       if (data?.session?.user) {
-        router.replace("/");
+        router.replace("/dasboard");
         setAppView("updates");
       } else {
+        setAppView("login");
         console.log("Sign in to continue !");
       }
     }
