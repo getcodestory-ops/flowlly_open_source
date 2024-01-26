@@ -89,6 +89,8 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
     if (path === "/auth/passwordChange") {
       console.log("path", router.pathname);
       setAppView("changePassword");
+    } else {
+      setAppView("updates");
     }
   }, [router.pathname]);
 

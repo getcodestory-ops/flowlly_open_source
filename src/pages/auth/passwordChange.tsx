@@ -15,6 +15,7 @@ import { useRouter } from "next/router";
 import supabase from "@/utils/supabaseClient";
 import checkAdminRights from "@/utils/checkAdminRights";
 import { Session } from "@supabase/supabase-js";
+import { useStore } from "@/utils/store";
 
 function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -24,6 +25,7 @@ function ResetPassword() {
   const [hasAdminRights, setAdminRights] = useState<boolean>(false);
   const toast = useToast();
   const router = useRouter();
+  const setAppView = useStore((state) => state.setAppView);
 
   useEffect(() => {
     async function loginCheck() {
@@ -86,6 +88,7 @@ function ResetPassword() {
         isClosable: true,
       });
       setIsLoading(false);
+      setAppView("updates");
       return;
     }
 
