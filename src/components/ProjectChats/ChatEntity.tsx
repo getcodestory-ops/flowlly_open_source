@@ -8,6 +8,7 @@ import {
   Tbody,
   Tr,
   Td,
+  Tooltip,
 } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
 import { getAgentChatEntities } from "@/api/agentRoutes";
@@ -44,7 +45,7 @@ function ChatEntity() {
           <Tr>
             <Th>Chat Name</Th>
             <Th>Chat Details</Th>
-            <Th>Register</Th>
+            <Th>Add Memeber to Chat</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -54,10 +55,12 @@ function ChatEntity() {
                 key={chatEntity.id}
                 onClick={() => setActiveChatEntity(chatEntity)}
                 gap="4"
+                fontSize={"14px"}
               >
                 <Td>{chatEntity.chat_name}</Td>
 
                 <Td>{chatEntity.chat_details}</Td>
+
                 <Td cursor={"pointer"} onClick={() => setIsOpen(true)}>
                   <IoIosExpand />
                   <RegisterPhoneChats isOpen={isOpen} onClose={onClose} />

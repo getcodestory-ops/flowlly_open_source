@@ -38,7 +38,6 @@ import { MdOutlineDeleteOutline } from "react-icons/md";
 import { IoIosCloseCircle, IoIosCloseCircleOutline } from "react-icons/io";
 import AddNewProjectModal from "@/components/Schedule/AddNewProjectModal";
 import CreateNewProjectButton from "@/components/Schedule/NewProjectButton";
-
 import ProjectChats from "@/components/ProjectChats/ProjectChats";
 
 function ProjectSetup() {
@@ -137,7 +136,7 @@ function ProjectSetup() {
       <Grid templateColumns="repeat(2, 1fr)" gap={"24"} w={"60%"} mt={"8"}>
         <GridItem colSpan={1}>
           <Flex direction={"column"}>
-            <Text fontSize={"md"} as={"b"} mb={"4"}>
+            <Text fontSize={"14px"} as={"b"} mb={"4"}>
               Project Files
             </Text>
             <FileHandler />
@@ -145,7 +144,7 @@ function ProjectSetup() {
         </GridItem>
         <GridItem colSpan={1}>
           <Flex direction={"column"}>
-            <Text fontSize={"md"} as={"b"} mb={"4"}>
+            <Text fontSize={"14px"} as={"b"} mb={"4"}>
               Schedule Files
             </Text>
             <CSVUploader />
@@ -162,8 +161,8 @@ function ProjectSetup() {
     }
 
     return (
-      <Flex direction={"column"} mt={"10"} p={"4"}>
-        <Flex pl={"4"}>
+      <Flex direction={"column"} pt={"4"}>
+        <Flex>
           <Button
             size={"xs"}
             bg={"brand.light"}
@@ -267,8 +266,15 @@ function ProjectSetup() {
   // console.log("projects", projects);
 
   return (
-    <Flex direction={"column"} w={"100%"} p={"10"}>
-      <CreateNewProjectButton />
+    <Flex
+      direction={"column"}
+      w={"100%"}
+      bg={"brand.background"}
+      h="full"
+      rounded={"xl"}
+      p={"4"}
+    >
+      {/* <CreateNewProjectButton /> */}
       {activeProject ? (
         <>
           <Flex
@@ -276,42 +282,59 @@ function ProjectSetup() {
             // alignItems={"center"}
             justifyContent={"space-between"}
           >
-            <Flex className="menu" gap="8" mt={"6"}>
+            <Text mb={"4"} fontSize={"14px"} fontWeight={"bold"}>
+              Project Settings
+            </Text>
+            <Flex className="menu" gap="4">
               <Button
-                bg={settingsView === "folders" ? "brand.accent" : "brand.light"}
+                bg={settingsView === "folders" ? "brand.accent" : "white"}
                 _hover={{ bg: "brand.dark", color: "white" }}
                 onClick={() => setSettingsView("folders")}
+                size={"xs"}
+                py={1}
+                border={"1px"}
+                borderColor={"brand.dark"}
               >
                 Folders and Files
               </Button>
               <Button
-                bg={settingsView === "members" ? "brand.accent" : "brand.light"}
+                bg={settingsView === "members" ? "brand.accent" : "white"}
                 _hover={{ bg: "brand.dark", color: "white" }}
                 onClick={() => setSettingsView("members")}
+                size={"xs"}
+                py={1}
+                border={"1px"}
+                borderColor={"brand.dark"}
               >
                 Members
               </Button>
-              <Button
-                bg={
-                  settingsView === "resources" ? "brand.accent" : "brand.light"
-                }
+              {/* <Button
+                bg={settingsView === "resources" ? "brand.accent" : "white"}
                 _hover={{ bg: "brand.dark", color: "white" }}
                 onClick={() => setSettingsView("resources")}
+                size={"xs"}
+                py={1}
+                border={"1px"}
+                borderColor={"brand.dark"}
               >
                 Resources
-              </Button>
-              <Button
-                bg={settingsView === "chats" ? "brand.accent" : "brand.light"}
+              </Button> */}
+              {/* <Button
+                bg={settingsView === "chats" ? "brand.accent" : "white"}
                 _hover={{ bg: "brand.dark", color: "white" }}
                 onClick={() => setSettingsView("chats")}
+                size={"xs"}
+                py={1}
+                border={"1px"}
+                borderColor={"brand.dark"}
               >
                 Chats
-              </Button>
+              </Button> */}
             </Flex>
           </Flex>
           {settingsView === "folders" && folderAndFIles()}
           {settingsView === "members" && projectMembers()}
-          {settingsView === "chats" && <ProjectChats />}
+          {/* {settingsView === "chats" && <ProjectChats />} */}
         </>
       ) : (
         <>

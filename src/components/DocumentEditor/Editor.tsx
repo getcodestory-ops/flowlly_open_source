@@ -1,9 +1,12 @@
 import React, { memo, useEffect, useRef, useState, useCallback } from "react";
 import { IoIosSave } from "react-icons/io";
 import { FcProcess } from "react-icons/fc";
+import { TbAnalyzeFilled } from "react-icons/tb";
 import UploadVoiceModal from "@/components/VoiceComponent/UploadVoiceModal";
-import { Flex, Button, Tooltip, Icon } from "@chakra-ui/react";
+import { Flex, Button, Tooltip, Icon, Grid, GridItem } from "@chakra-ui/react";
 import { useContentSave } from "./useContentSave";
+import { IoShareSocialOutline } from "react-icons/io5";
+import { useStore } from "@/utils/store";
 
 const EditorBlock = ({ id }: { id?: string | string[] }) => {
   const holder = "editorjs-container";
@@ -31,7 +34,7 @@ const EditorBlock = ({ id }: { id?: string | string[] }) => {
       onchange;
       ref.current = editor;
     }
-  }, [data]);
+  }, [data, id]);
 
   useEffect(() => {
     const init = async () => {
@@ -50,7 +53,9 @@ const EditorBlock = ({ id }: { id?: string | string[] }) => {
 
   return (
     <Flex
+      p={"2"}
       w="full"
+      h="full"
       overflowY={"scroll"}
       sx={{
         "&::-webkit-scrollbar": {
@@ -59,47 +64,70 @@ const EditorBlock = ({ id }: { id?: string | string[] }) => {
           backgroundColor: `rgba(0, 0, 0, 0.01)`,
         },
       }}
-      py="8"
       flexDirection={"column"}
       alignItems={"flex-end"}
     >
-      <Flex position="absolute" transform={"translateX(-400%)"} top="32">
-        <UploadVoiceModal documentId={id} />
-      </Flex>
-      <Tooltip label="Save the document">
-        <Button
-          onClick={() => onSubmit()}
-          cursor={"pointer"}
-          size={"md"}
-          maxW="16"
-          top="32"
-          position={"absolute"}
-          zIndex={"overlay"}
-        >
-          <IoIosSave />
-        </Button>
-      </Tooltip>
-      <Tooltip label="Process the document">
-        <Button
-          cursor={"pointer"}
-          size={"md"}
-          maxW="16"
-          position="absolute"
-          zIndex={"overlay"}
-          top="32"
-          onClick={() => processDoc()}
-          transform={"translateX(-200%)"}
-        >
-          <Icon
-            as={FcProcess}
-            _hover={{
-              transform: "rotate(360deg)",
+      <Flex>
+        {/* <UploadVoiceModal /> */}
 
-              transition: "transform 0.5s ease-in-out",
-            }}
-          />
-        </Button>
-      </Tooltip>
+        {/* <Tooltip label="AI Note Analysis" bg="white" color="brand.dark">
+          <Button
+            mx={"2"}
+            boxShadow={"lg"}
+            cursor={"pointer"}
+            size={"sm"}
+            bg={"white"}
+            // position="absolute"
+            // zIndex={"overlay"}
+            // top="32"
+            onClick={() => processDoc()}
+            _hover={{ bg: "brand.dark", color: "white" }}
+
+            // transform={"translateX(-200%)"}
+          >
+            <Icon
+              as={TbAnalyzeFilled}
+              _hover={{
+                transform: "rotate(360deg)",
+
+                transition: "transform 0.5s ease-in-out",
+              }}
+            />
+          </Button>
+        </Tooltip> */}
+        <Tooltip label="Save note" bg="white" color="brand.dark">
+          <Button
+            onClick={() => onSubmit()}
+            mr={"2"}
+            cursor={"pointer"}
+            size={"sm"}
+            bg={"white"}
+            boxShadow={"lg"}
+            _hover={{ bg: "brand.dark", color: "white" }}
+            // top="32"
+            // position={"absolute"}
+            // zIndex={"overlay"}
+          >
+            <IoIosSave />
+          </Button>
+        </Tooltip>
+        {/* <Tooltip label="Share note" bg="white" color="brand.dark">
+          <Button
+            // onClick={() => onSubmit()}
+            cursor={"pointer"}
+            size={"sm"}
+            bg={"white"}
+            boxShadow={"lg"}
+            _hover={{ bg: "brand.dark", color: "white" }}
+            // top="32"
+            // position={"absolute"}
+            // zIndex={"overlay"}
+          >
+            <IoShareSocialOutline />
+          </Button>
+        </Tooltip> */}
+      </Flex>
+
       <Flex
         w="full"
         sx={{

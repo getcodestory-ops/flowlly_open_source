@@ -31,6 +31,11 @@ export default function NavBars({ children }: { children: React.ReactNode }) {
     loginCheck();
   }, [router]);
 
+  // useEffect(() => {
+  //   console.log("appView", appView);
+  //   console.log("children", children);
+  // }, [appView]);
+
   return (
     <>
       <Head>
@@ -45,7 +50,8 @@ export default function NavBars({ children }: { children: React.ReactNode }) {
       <main>
         <QueryClientProvider client={queryClient}>
           <Flex
-            bg={"brand2.light"}
+            // bg={"brand2.light"}
+            // bg={"pink.200"}
             w="100vw"
             h="100vh"
             direction={{ base: "column", md: "row" }}

@@ -7,6 +7,7 @@ import {
   Text,
   useToast,
   Tooltip,
+  Select,
 } from "@chakra-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
@@ -14,6 +15,7 @@ import { BiSolidCircle } from "react-icons/bi";
 import { MdHistoryToggleOff, MdInfoOutline } from "react-icons/md";
 import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
 import { AiOutlineAlert } from "react-icons/ai";
+import { PiBank } from "react-icons/pi";
 
 function ScheduleInsights() {
   const {
@@ -47,7 +49,7 @@ function ScheduleInsights() {
   const [openHistory, setOpenHistory] = useState<string>("");
   const { isOpen, onClose, onOpen } = useScheduleUpdate();
   const [taskView, setTaskView] = useState<string>("");
-
+  const [countOfActivities, setCountOfActivities] = useState<number>(0);
   const [countOfDelayed, setCountOfDelayed] = useState<number>(0);
   const [countOfAtRisk, setCountOfAtRisk] = useState<number>(0);
   const [countOfInProgress, setCountOfInProgress] = useState<number>(0);
@@ -56,6 +58,14 @@ function ScheduleInsights() {
   // const [filteredView, setFilteredView] = useState<string>("none");
   const [sliderValue, setSliderValue] = useState(scheduleProbability * 100);
   const [showTooltip, setShowTooltip] = useState(false);
+
+  const countTotalActivities = (activities: any[]) => {
+    let count = 0;
+    activities.forEach((activity) => {
+      count++;
+    });
+    setCountOfActivities(count);
+  };
 
   const countDelayedActivities = (activities: any[]) => {
     let count = 0;
@@ -110,6 +120,7 @@ function ScheduleInsights() {
   useEffect(() => {
     // console.log("activities", activities);
     if (activities) {
+      countTotalActivities(activities);
       countDelayedActivities(activities);
       countAtRiskActivities(activities);
       countInProgressActivities(activities);
@@ -153,11 +164,17 @@ function ScheduleInsights() {
     };
 
     return sortedActivities
-      .filter((activity) => {
+      .filter((activity: any) => {
         if (filterView === "Delayed") {
           return activity.status === "Delayed";
         } else if (filterView === "At Risk") {
           return activity.status === "At Risk";
+        } else if (filterView === "On Schedule") {
+          return activity.status === "On Schedule";
+        } else if (filterView === "In Progress") {
+          return activity.status === "In Progress";
+        } else if (filterView === "Completed") {
+          return activity.status === "Completed";
         } else {
           return true;
         }
@@ -182,34 +199,35 @@ function ScheduleInsights() {
                   ? "#5F55EE"
                   : "brand2.dark"
               }
+              boxSize={"3"}
             />
-            <Text fontWeight={"bold"} ml={2}>
+            <Text fontWeight={"bold"} fontSize={"14px"} ml={2}>
               {activity.name}
             </Text>
           </Flex>
           <Flex mr={5} paddingLeft={6}>
-            <Text as={"i"} fontSize={"sm"}>
+            <Text as={"i"} fontSize={"12px"}>
               Status:
             </Text>
-            <Text fontSize={"sm"} ml={1} fontWeight={"semibold"}>
+            <Text fontSize={"12px"} ml={1} fontWeight={"semibold"}>
               {activity.status}
             </Text>
           </Flex>
 
-          <Flex direction={"row"} paddingLeft={6}>
-            <Flex mr={5}>
-              <Text as={"i"} fontSize={"sm"}>
+          <Flex direction={"row"} paddingLeft={6} mt={"2"}>
+            <Flex mr={5} direction={"column"}>
+              <Text as={"i"} fontSize={"10px"}>
                 Start Date:
               </Text>
-              <Text fontSize={"sm"} ml={1} fontWeight={"semibold"}>
+              <Text fontSize={"12px"} ml={1} fontWeight={"semibold"}>
                 {activity.start}
               </Text>
             </Flex>
-            <Flex>
-              <Text as={"i"} fontSize={"sm"}>
+            <Flex direction={"column"}>
+              <Text as={"i"} fontSize={"10px"}>
                 End Date:
               </Text>
-              <Text fontSize={"sm"} ml={1} fontWeight={"semibold"}>
+              <Text fontSize={"12px"} ml={1} fontWeight={"semibold"}>
                 {activity.end}
               </Text>
             </Flex>
@@ -286,81 +304,41 @@ function ScheduleInsights() {
       ));
   };
 
-  const quickDataViewCard = (name: string, value: number) => {
+  // const quickDataViewCard = (name: string, value: number) => {
+  const quickDataViewCard = () => {
     return (
-      <Flex
-        bg={
-          name === "Delayed" && filterView === "Delayed"
-            ? "brand.accent"
-            : name === "At Risk" && filterView === "At Risk"
-            ? "brand.accent"
-            : "brand.light"
-        }
-        rounded={"full"}
-        px={"2"}
-        py={"0.5"}
-        // minW={"120px"}
-        // maxH={"150px"}
-        justifyContent={"center"}
-        mr={"4"}
-        cursor={"pointer"}
-        _hover={{ bg: "brand.dark", color: "white" }}
-        onClick={() => {
-          if (filterView === name) {
-            setFilterView("none");
-          } else {
-            setFilterView(name);
-          }
-        }}
+      <Select
+        size={"xs"}
+        className="custom-selector"
+        onChange={(e: any) => setFilterView(e.target.value)}
       >
-        <Flex direction={"row"} alignItems={"center"}>
-          <Flex alignItems={"center"}>
-            <Icon
-              as={BiSolidCircle}
-              w={"10px"}
-              mr={"1"}
-              color={
-                name === "Delayed"
-                  ? "#FF4141"
-                  : name === "At Risk"
-                  ? "#FFA841"
-                  : name === "In Progress"
-                  ? "#5F55EE"
-                  : name === "Completed"
-                  ? "#00B87C"
-                  : name === "On Schedule"
-                  ? "#FFFFFF"
-                  : "brand2.mid"
-              }
-            />
-            <Text fontSize={"xs"}>{name}</Text>
-          </Flex>
-          <Text fontSize={"md"} as={"b"} ml={2}>
-            {value}
-          </Text>
-        </Flex>
-      </Flex>
+        <option value="All">All Tasks {countOfActivities}</option>
+        <option value="Delayed">Delayed {countOfDelayed}</option>
+        <option value="At Risk">At Risk {countOfAtRisk}</option>
+        <option value="In Progress">In Progress {countOfInProgress}</option>
+        <option value="Completed">Completed {countOfCompleted}</option>
+        <option value="On Schedule">On Schedule {countOfOnSchedule}</option>
+      </Select>
     );
   };
 
   return (
-    <Flex p={"10"}>
+    <Flex>
       <Flex direction={"column"}>
-        <Flex mb={"4"}>
-          {quickDataViewCard("Delayed", countOfDelayed)}
-          {quickDataViewCard("At Risk", countOfAtRisk)}
-          {quickDataViewCard("In Progress", countOfInProgress)}
-          {quickDataViewCard("Completed", countOfCompleted)}
-          {quickDataViewCard("On Schedule", countOfOnSchedule)}
+        <Flex alignItems={"center"}>
+          <Flex fontSize={"12px"} fontWeight={"bold"}>
+            Filter:
+          </Flex>
+          <Flex direction={"column"}>{quickDataViewCard()}</Flex>
         </Flex>
         <Flex
-          overflowY={"scroll"}
-          overscrollBehaviorY={"contain"}
-          sx={{
-            "::-webkit-scrollbar": {
-              display: "none",
-            },
-          }}
+          // overflowY={"scroll"}
+          // overscrollBehaviorY={"contain"}
+          // sx={{
+          //   "::-webkit-scrollbar": {
+          //     display: "none",
+          //   },
+          // }}
           direction={"column"}
         >
           {activitiesCard()}

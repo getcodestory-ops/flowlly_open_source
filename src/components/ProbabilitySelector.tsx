@@ -60,8 +60,8 @@ function ProbabilitySelector() {
           <SliderThumb />
         </Tooltip>
       </Slider> */}
-      <Text fontSize={"xs"} fontWeight={"bold"} mr={"2"}>
-        Impact Probability:
+      <Text fontSize={"xs"} fontWeight={"bold"} mr={"0.5"}>
+        Probability:
       </Text>
       <Select
         onChange={(e: any) => setScheduleProbability(e.target.value)}

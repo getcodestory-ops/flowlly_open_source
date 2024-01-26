@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { Task, ViewMode, Gantt } from "gantt-task-react";
 import { ViewSwitcher } from "./view-switcher";
 import {
@@ -57,6 +57,7 @@ const ScheduleGanttInterface = () => {
     scheduleProbability,
     setScheduleProbability,
     scheduleDate,
+    userActivities,
   } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
@@ -66,6 +67,7 @@ const ScheduleGanttInterface = () => {
     scheduleProbability: state.scheduleProbability,
     setScheduleProbability: state.setScheduleProbability,
     scheduleDate: state.scheduleDate,
+    userActivities: state.userActivities,
   }));
   const { isOpen, onClose, onOpen } = useScheduleUpdate();
 
@@ -130,6 +132,11 @@ const ScheduleGanttInterface = () => {
   };
 
   useEffect(() => {
+    console.log("activities", activities);
+    console.log("userActivities", userActivities);
+  }, [activities, userActivities]);
+
+  useEffect(() => {
     if (activities) {
       if (activities.length > 0) {
         // console.log("activities", activities);
@@ -184,7 +191,7 @@ const ScheduleGanttInterface = () => {
   };
 
   const handleTaskChange = (task: Task) => {
-    console.log("On date change Id:" + task.id);
+    // console.log("On date change Id:" + task.id);
     let newTasks = tasks.map((t) => (t.id === task.id ? task : t));
     if (task.project) {
       const [start, end] = getStartEndDateForProject(newTasks, task.project);
@@ -219,12 +226,12 @@ const ScheduleGanttInterface = () => {
 
   const handleProgressChange = async (task: Task) => {
     setTasks(tasks.map((t) => (t.id === task.id ? task : t)));
-    console.log("On progress change Id:" + task.id);
+    // console.log("On progress change Id:" + task.id);
   };
 
   const handleDblClick = (task: Task) => {
     setModifyTask(task);
-    console.log("On double click Id:" + modifyTask?.id);
+    // console.log("On double click Id:" + modifyTask?.id);
     setEditOpen(true);
   };
 
@@ -234,12 +241,12 @@ const ScheduleGanttInterface = () => {
   };
 
   const handleSelect = (task: Task, isSelected: boolean) => {
-    console.log(task.name + " has " + (isSelected ? "selected" : "unselected"));
+    // console.log(task.name + " has " + (isSelected ? "selected" : "unselected"));
   };
 
   const handleExpanderClick = (task: Task) => {
     setTasks(tasks.map((t) => (t.id === task.id ? task : t)));
-    console.log("On expander click Id:" + task.id);
+    // console.log("On expander click Id:" + task.id);
   };
 
   const handleAddActivity = () => {
@@ -263,9 +270,13 @@ const ScheduleGanttInterface = () => {
     );
   };
 
+  useEffect(() => {
+    console.log("Gantt modifyTask", modifyTask);
+  }, [modifyTask]);
+
   return (
-    <Flex direction={"column"} mt={"4"}>
-      <Flex direction={"column"} ml={"8"}>
+    <Flex direction={"column"}>
+      <Flex direction={"column"}>
         <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
         {modifyTask && (
           <UpdateActivityModal
@@ -293,11 +304,11 @@ const ScheduleGanttInterface = () => {
             onClick={handleCriticalPath}
           />
 
-          <Icon
+          {/* <Icon
             as={MdFormatListBulletedAdd}
             cursor={"pointer"}
             onClick={handleAddActivity}
-          />
+          /> */}
         </Flex>
         <ViewSwitcher
           onViewModeChange={(viewMode) => setView(viewMode)}
@@ -313,11 +324,9 @@ const ScheduleGanttInterface = () => {
         className="Wrapper"
         flexDir={"column"}
         backgroundColor="white"
-        ml={"8"}
-        width="92vw"
-        overflow={"auto"}
-        overscrollBehaviorY={"contain"}
-        height={"70vh"}
+        // overflow={"auto"}
+        // overscrollBehaviorY={"contain"}
+        // w={"50%"}
       >
         <Gantt
           tasks={tasks}

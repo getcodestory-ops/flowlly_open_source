@@ -161,11 +161,19 @@ function ChatMessageDisplay() {
     const chatHistory = chatSessions.filter(
       (session) => session.chat_id === chatSession?.chat_id
     )[0];
+
     setActiveChatMessages(chatHistory?.chat_history ?? null);
   }, [chatSession, chatSessions]);
 
   return (
-    <Box overflowY="auto" width="full" ref={chatBoxRef} mb="8">
+    <Box
+      overflowY="auto"
+      width="full"
+      ref={chatBoxRef}
+      my="8"
+      height="64vh"
+      fontSize={"xs"}
+    >
       {activeChatMessages &&
         activeChatMessages.length > 0 &&
         activeChatMessages.map((message, index) => (
@@ -183,12 +191,12 @@ function ChatMessageDisplay() {
               justifyContent="center"
               color="white"
             >
-              <Box width="2xl">
+              <Box>
                 {message.body?.user_message && (
                   <Flex
-                    color="white"
+                    color="brand.dark"
                     fontWeight={"bold"}
-                    bg="brand.dark"
+                    bg="brand.background"
                     p="4"
                     rounded="md"
                     mt="16"
@@ -215,8 +223,8 @@ function ChatMessageDisplay() {
                   <Box borderBottom="2px " borderBottomColor={"brand.mid"}>
                     <Box
                       mb="16"
-                      color="brand.light"
-                      bg="brand.mid"
+                      color="brand.dark"
+                      bg="brand.background"
                       p="8"
                       borderRadius="14px"
                     >
@@ -230,7 +238,12 @@ function ChatMessageDisplay() {
                           {message?.body.assistant
                             ?.split("/n")
                             .map((line: string, i: number) => (
-                              <Box key={i} mb="2" whiteSpace="pre-line">
+                              <Box
+                                key={i}
+                                mb="2"
+                                whiteSpace="pre-line"
+                                fontSize={"sm"}
+                              >
                                 {line}
                               </Box>
                             ))}

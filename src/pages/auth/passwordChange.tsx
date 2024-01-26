@@ -36,31 +36,29 @@ function ResetPassword() {
     loginCheck();
   }, [router]);
 
-  useEffect(()=>{
+  useEffect(() => {
     async function getAdminRights() {
-    if(!sessionToken?.user.id) return;
-    const adminRights = await checkAdminRights(sessionToken?.user.id)
-    setAdminRights(adminRights)
-  }
-    getAdminRights()
-  },[sessionToken?.user])
-
+      if (!sessionToken?.user.id) return;
+      const adminRights = await checkAdminRights(sessionToken?.user.id);
+      setAdminRights(adminRights);
+    }
+    getAdminRights();
+  }, [sessionToken?.user]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
 
-if (!hasAdminRights) {
-  toast({
-    title: "You dont have admin rights to change password",
-    status: "error",
-    duration: 5000,
-    isClosable: true,
-  });
-  setIsLoading(false);
-  return;
-}
-
+    if (!hasAdminRights) {
+      toast({
+        title: "You dont have admin rights to change password",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      setIsLoading(false);
+      return;
+    }
 
     if (password !== confirmPassword) {
       toast({

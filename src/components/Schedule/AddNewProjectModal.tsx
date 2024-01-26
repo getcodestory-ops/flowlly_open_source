@@ -70,7 +70,9 @@ function AddNewProjectModal({ isOpen, onClose }: AddNewProjectModalProps) {
 
         <ModalFooter>
           <Button
-            colorScheme="blue"
+            bg={"brand.dark"}
+            color={"white"}
+            _hover={{ bg: "brand.accent", color: "brand.dark" }}
             mr={3}
             onClick={() => {
               mutation.mutate();

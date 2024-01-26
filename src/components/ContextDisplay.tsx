@@ -24,18 +24,23 @@ const ContextDisplay: React.FC<DocumentProps> = ({
   chatFolder,
 }) => {
   const [sourceFolder, setSourceFolder] = useState(chatFolder);
-  const { pdfViewer, setPdfViewer, setSelectedContext, folderList } = useStore(
-    (state) => ({
-      pdfViewer: state.pdfViewer,
-      setPdfViewer: state.setPdfViewer,
-      setSelectedContext: state.setSelectedContext,
-      folderList: state.folderList,
-    })
-  );
+  const {
+    pdfViewer,
+    setPdfViewer,
+    setSelectedContext,
+    folderList,
+    setAiActionsView,
+  } = useStore((state) => ({
+    pdfViewer: state.pdfViewer,
+    setPdfViewer: state.setPdfViewer,
+    setSelectedContext: state.setSelectedContext,
+    folderList: state.folderList,
+    setAiActionsView: state.setAiActionsView,
+  }));
 
   const handleRefereces = (filePath: string, pageNumber: number) => {
-    console.log("foldername", sourceFolder);
-    console.log(folderList);
+    // console.log("foldername", sourceFolder);
+    // console.log(folderList);
 
     setSelectedContext(
       folderList?.filter((state) => state.name === sourceFolder?.name)[0]!
@@ -68,8 +73,14 @@ const ContextDisplay: React.FC<DocumentProps> = ({
               return (
                 <Flex
                   key={`page-${page.metadata.file_name}-${index}`}
-                  bg={index === isExpandedNumber ? "brand.accent" : "brand.mid"}
-                  color={index === isExpandedNumber ? "brand.dark" : "white"}
+                  bg={
+                    index === isExpandedNumber
+                      ? "brand.background"
+                      : "brand.background"
+                  }
+                  color={
+                    index === isExpandedNumber ? "brand.dark" : "brand.dark"
+                  }
                   mx={2}
                   my={2}
                   py={1}
@@ -144,6 +155,8 @@ const ContextDisplay: React.FC<DocumentProps> = ({
                     cursor={"pointer"}
                     onClick={() => {
                       setPdfViewer({ isPdfVisible: true });
+                      setAiActionsView("expand");
+
                       handleRefereces(
                         page.metadata.file_name,
                         page.metadata.page_number + 1

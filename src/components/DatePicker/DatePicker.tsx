@@ -83,7 +83,7 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
 
   useEffect(() => {
     if (revisions) {
-      console.log("revisions", revisions);
+      // console.log("revisions", revisions);
 
       // Reset impactfulRevisions to an empty array
       setImpactfulRevisions([]);
@@ -159,7 +159,7 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
     }
     const formattedDate = new Date(selectedDate);
     setScheduleDate(formattedDate);
-    console.log("formattedDate", formattedDate);
+    // console.log("formattedDate", formattedDate);
     // return formattedDate;
   };
 
@@ -246,7 +246,7 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
         p={"1"}
         // border={"1px"}
         // borderColor={"red"}
-        w={"120px"}
+        // w={"120px"}
         justifyContent={"center"}
         onClick={() => setOpenCalendar((state) => !state)}
         cursor={"pointer"}
@@ -280,16 +280,16 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
     setHighlightedDates(newHighlightedDates);
   }, [impactfulRevisions]);
 
-  useEffect(() => {
-    console.log("impactfulRevisions", impactfulRevisions);
-    console.log("highlightedDates", highlightedDates);
-  }, [highlightedDates]);
+  // useEffect(() => {
+  //   console.log("impactfulRevisions", impactfulRevisions);
+  //   console.log("highlightedDates", highlightedDates);
+  // }, [highlightedDates]);
 
   return (
     <Flex alignItems={"center"}>
-      <Flex mr={"1"}>
+      <Flex mr={"0.5"}>
         <Text fontSize={"xs"} fontWeight={"bold"}>
-          Impactful Events:
+          Events:
         </Text>
       </Flex>
       <Flex direction={"column"} position={"relative"} fontSize={"xs"}>

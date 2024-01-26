@@ -26,8 +26,8 @@ export default function Signup() {
   const toast = useToast();
 
   const handleSignup = async () => {
-    console.log(email);
-    console.log(password);
+    // console.log(email);
+    // console.log(password);
     try {
       const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) {
