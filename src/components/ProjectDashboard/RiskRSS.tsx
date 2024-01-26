@@ -44,7 +44,9 @@ function RisksRSSsection() {
                 status={activity.status}
                 key={index}
                 index={index}
-                explanation={activity.revision?.[0]?.analysis}
+                explanation={
+                  activity.revision?.[0]?.name ?? "No explanation provided"
+                }
                 severity={
                   activity.history?.[0]?.severity ?? "defaultSeverityValue"
                 }

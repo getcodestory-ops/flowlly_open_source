@@ -69,6 +69,7 @@ function RSSsection() {
                 date={timeSinceLatestSignificantEvent(activity)}
                 status={activity.status}
                 key={index}
+                source="action"
               />
             ))}
       </Flex>
