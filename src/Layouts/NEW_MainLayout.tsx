@@ -114,8 +114,9 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
             overflow="auto"
             bg={"brand.background"}
           >
-            {appView === "login" ||
-              (appView === "changePassword" && <Flex>{children}</Flex>)}
+            {(appView === "login" || appView === "changePassword") && (
+              <Flex>{children}</Flex>
+            )}
 
             {appView !== "login" && appView !== "changePassword" && (
               <Grid
