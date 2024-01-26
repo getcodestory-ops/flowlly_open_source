@@ -15,6 +15,10 @@ import { useStore } from "@/utils/store";
 
 const UserPanel = () => {
   const [user, setUser] = useState<any>(null);
+  const { appView, setAppView } = useStore((state) => ({
+    appView: state.appView,
+    setAppView: state.setAppView,
+  }));
   const router = useRouter();
   // const session = useStore(state=>state.session)
 
@@ -37,6 +41,7 @@ const UserPanel = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+
     router.push("/");
   };
 
@@ -68,7 +73,12 @@ const UserPanel = () => {
           </Tooltip>
           <MenuList zIndex="50">
             <MenuItem>{user.email}</MenuItem>
-            <MenuItem onClick={() => router.push("/auth/passwordChange")}>
+            <MenuItem
+              onClick={() => {
+                setAppView("changePassword");
+                router.push("/auth/passwordChange");
+              }}
+            >
               Change Password
             </MenuItem>
             {/* <MenuItem onClick={() => setIsChatbotInstructionsOpen(true)}>

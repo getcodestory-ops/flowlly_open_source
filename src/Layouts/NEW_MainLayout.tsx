@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { use, useEffect, useRef } from "react";
 import { Box, Flex, Grid, GridItem } from "@chakra-ui/react";
 import SidePanel from "@/Layouts/SidePanel";
 import { useStore } from "@/utils/store";
@@ -23,6 +23,10 @@ const queryClient = new QueryClient();
 
 export default function NewLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const path = router.pathname;
+  //check if router path has /auth/passwordchange
+  //if so, render only the children
+
   const {
     setSessionToken,
     userProjects,
@@ -70,15 +74,23 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
         router.replace("/");
       } else {
         setSessionToken(data?.session);
-        setAppView("updates");
+        if (path === "/auth/passwordChange") {
+          setAppView("changePassword");
+        } else {
+          setAppView("updates");
+        }
       }
     }
     loginCheck();
-  }, [router]);
+  }, []);
 
-  // useEffect(() => {
-  //   console.log("userProjects", userProjects);
-  // }, [userProjects]);
+  useEffect(() => {
+    console.log("path", router.pathname);
+    if (path === "/auth/passwordChange") {
+      console.log("path", router.pathname);
+      setAppView("changePassword");
+    }
+  }, [router.pathname]);
 
   return (
     <>
@@ -100,8 +112,10 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
             overflow="auto"
             bg={"brand.background"}
           >
-            {appView === "login" && <Flex>{children}</Flex>}
-            {appView !== "login" && (
+            {appView === "login" ||
+              (appView === "changePassword" && <Flex>{children}</Flex>)}
+
+            {appView !== "login" && appView !== "changePassword" && (
               <Grid
                 w={"full"}
                 templateRows="repeat(16, 1fr)"

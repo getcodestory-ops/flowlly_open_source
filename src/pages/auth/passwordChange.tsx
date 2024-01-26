@@ -8,6 +8,8 @@ import {
   Button,
   useToast,
   Flex,
+  Center,
+  Image,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import supabase from "@/utils/supabaseClient";
@@ -99,31 +101,83 @@ function ResetPassword() {
   };
 
   return (
-    <Flex height="100vh" justifyContent={"center"} alignItems="center">
-      <Box bg="blackAlpha.50" p={6} borderRadius="md" width="xl">
-        <Heading mb={6}>Lets setup a password !</Heading>
-        <form onSubmit={handleSubmit}>
-          <FormControl id="password" isRequired>
-            <FormLabel>Password</FormLabel>
-            <Input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          </FormControl>
-          <FormControl id="confirmPassword" isRequired mt={4}>
-            <FormLabel>Confirm Password</FormLabel>
-            <Input
-              type="password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-            />
-          </FormControl>
-          <Button type="submit" colorScheme="teal" isLoading={isLoading} mt={4}>
-            Set Password
-          </Button>
-        </form>
-      </Box>
+    <Flex
+      height="100vh"
+      justifyContent={"center"}
+      alignItems="center"
+      width="100vw"
+      bg="brand.dark"
+    >
+      <Flex w={"100vw"}>
+        <Center
+          p="2"
+          width="full"
+          height="100vh"
+          display="flex"
+          alignItems="center"
+          flexDirection="column"
+        >
+          <Box p={6} borderRadius={8} width="full">
+            <Heading
+              size="xl"
+              mb={4}
+              textAlign="center"
+              fontWeight="bold"
+              letterSpacing="tight"
+              color="brand.accent"
+              display="flex"
+              alignItems="center"
+              flexDirection="column"
+            >
+              <Image
+                src="https://qfktimnmlcnfowxuoune.supabase.co/storage/v1/object/public/logos/logo_full.svg"
+                alt="logo"
+                w={60}
+                mb={4}
+              />
+              AI Project Management Assistant
+            </Heading>
+          </Box>
+          <Box
+            p={8}
+            backgroundColor="brand.mid"
+            borderRadius="md"
+            m="8"
+            textColor="white"
+          >
+            <Box p={6} borderRadius="md">
+              <Heading mb={6}>Lets setup a new password !</Heading>
+              <form onSubmit={handleSubmit}>
+                <FormControl id="password" isRequired>
+                  <FormLabel>Password</FormLabel>
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                  />
+                </FormControl>
+                <FormControl id="confirmPassword" isRequired mt={4}>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <Input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                  />
+                </FormControl>
+                <Button
+                  type="submit"
+                  colorScheme="gray"
+                  textColor="black"
+                  isLoading={isLoading}
+                  mt={4}
+                >
+                  Set Password
+                </Button>
+              </form>
+            </Box>
+          </Box>
+        </Center>
+      </Flex>
     </Flex>
   );
 }

@@ -44,7 +44,7 @@ const SearchMemory = () => {
   const [editChatSessionId, setEditChatSessionId] = useState<string>("");
   const [newChatSessionName, setNewChatSessionName] = useState<string>("");
   const [show, setShow] = useState(false);
-  const isLargerThanLg = useBreakpointValue({ base: false, lg: true });
+  const isLargerThanLg = useBreakpointValue({ base: false, lg: false });
 
   const deleteChat = async (chatId: string) => {
     if (!session) return;
@@ -101,29 +101,37 @@ const SearchMemory = () => {
   };
 
   return (
-    <Flex direction="column" borderColor={"gray.200"}>
+    <Flex
+      flexDirection={"column"}
+      borderColor={"gray.200"}
+      position={"absolute"}
+      mx="32"
+      top="28"
+      zIndex={"overlay"}
+      fontSize={"xs"}
+    >
       <Button
         onClick={() => setShow((state) => !state)}
-        display={{ lg: "none" }}
         size="xs"
         w="16"
         variant="outline"
-        colorScheme="gray"
+        background="white"
         rightIcon={show ? <FaChevronUp /> : <FaChevronDown />}
       >
         chats
       </Button>
-
       <Collapse in={show} animateOpacity>
         <Flex
           direction="column"
           width="full"
           p="4"
-          bg={"white"}
+          bg={"brand.light"}
           overflow={"auto"}
+          borderRadius={"md"}
+          boxShadow={"lg"}
         >
           <Flex marginBottom="4">
-            <Heading as="h2" size="sm" color="brand.dark">
+            <Heading as="h6" size="sm" color="brand.dark">
               Conversations
             </Heading>
           </Flex>
@@ -161,8 +169,9 @@ const SearchMemory = () => {
                       cursor={"pointer"}
                       onClick={() => setChatSession(chats)}
                       _hover={{
-                        bg: "brand.light",
+                        bg: "white",
                         color: "brand.dark",
+                        borderRadius: "md",
                       }}
                       w="full"
                     >

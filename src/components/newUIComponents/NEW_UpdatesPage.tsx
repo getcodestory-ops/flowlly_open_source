@@ -541,33 +541,26 @@ const NEW_UpdatesPage = () => {
           </Select>
         </Flex>
         <Flex direction={"column"}>
-          {
-            // Object.keys(data)
-            //   .sort(
-            //     (a, b) =>
-            //       new Date(updatesObject[b].date) -
-            //       new Date(updatesObject[a].date)
-            //   )
-            data &&
-              data.map((update) => (
-                <Flex
-                  key={update.id}
-                  onClick={() => setPreviewCardContent(update)}
-                  w="full"
-                  mb={"2"}
-                  p={"2"}
-                  background={"brand.background"}
-                  dropShadow={"lg"}
-                  cursor={"pointer"}
-                  display="flex"
-                  flexDirection="column"
-                  borderRadius={"md"}
-                  _hover={{ bg: "brand.dark", color: "white" }}
-                >
-                  {previewCard(update)}
-                </Flex>
-              ))
-          }
+          {data &&
+            data.length > 0 &&
+            data.map((update) => (
+              <Flex
+                key={update.id}
+                onClick={() => setPreviewCardContent(update)}
+                w="full"
+                mb={"2"}
+                p={"2"}
+                background={"brand.background"}
+                dropShadow={"lg"}
+                cursor={"pointer"}
+                display="flex"
+                flexDirection="column"
+                borderRadius={"md"}
+                _hover={{ bg: "brand.dark", color: "white" }}
+              >
+                {previewCard(update)}
+              </Flex>
+            ))}
         </Flex>
       </GridItem>
       <GridItem
@@ -601,8 +594,7 @@ const NEW_UpdatesPage = () => {
               </Text>
             </Flex>
           )}
-          {}
-          {Object.keys(previewCardContent).length &&
+          {Object.keys(previewCardContent).length > 0 &&
             previewCardContent.update && (
               <Flex
                 w={"full"}
@@ -644,73 +636,6 @@ const NEW_UpdatesPage = () => {
                     <EditorBlock id={previewCardContent.document_access_id} />
                   )}
                 </Flex>
-                {/* <Flex mb={"6"} direction={"column"}>
-                  <Text fontWeight={"bold"} fontSize={"14px"} my={"2"}>
-                    Project Impact
-                  </Text>
-                  <Text
-                    fontSize={"12px"}
-                    fontWeight={"bold"}
-                    color={`${
-                      updatesObject[objectId].impact === "negative" ? "red" : ""
-                    }`}
-                  >
-                    {updatesObject[objectId].impact}
-                  </Text>
-                  <Text fontSize={"14px"} my={"2"}>
-                    {updatesObject[objectId].projectImpact}
-                  </Text>
-                </Flex> */}
-                {/* <Text fontWeight={"bold"} fontSize={"14px"}>
-                  Content
-                </Text>
-                <Text fontSize={"14px"} my={"2"}>
-                  {updatesObject[objectId].content}
-                </Text>
-                <Text fontWeight={"bold"} fontSize={"14px"} my={"2"}>
-                  Risks
-                </Text> */}
-                {/* {updatesObject[objectId].risk.length === 0 ? (
-                  <Text fontSize={"14px"}>None</Text>
-                ) : (
-                  updatesObject[objectId].risk.map((risk: any, index: any) => (
-                    <Flex mb={"2"} direction={"column"} key={index}>
-                      <Text
-                        fontSize={"14px"}
-                        fontStyle={"italic"}
-                        fontWeight={"semibold"}
-                      >
-                        {risk.title}
-                      </Text>
-                      <Text fontSize={"14px"} pl={"2"}>
-                        {risk.description}
-                      </Text>
-                    </Flex>
-                  ))
-                )} */}
-                {/* <Text fontWeight={"bold"} fontSize={"14px"} my={"2"}>
-                  Actions
-                </Text>
-                {updatesObject[objectId].actions.length === 0 ? (
-                  <Text fontSize={"14px"}>None</Text>
-                ) : (
-                  updatesObject[objectId].actions.map(
-                    (action: any, index: any) => (
-                      <Flex mb={"2"} direction={"column"} key={index}>
-                        <Text
-                          fontSize={"14px"}
-                          fontStyle={"italic"}
-                          fontWeight={"semibold"}
-                        >
-                          {action.title}
-                        </Text>
-                        <Text fontSize={"14px"} pl={"2"}>
-                          {action.description}
-                        </Text>
-                      </Flex>
-                    )
-                  )
-                )} */}
               </Flex>
             )}
         </Flex>
