@@ -68,9 +68,9 @@ const EditorBlock = ({ id }: { id?: string | string[] }) => {
       alignItems={"flex-end"}
     >
       <Flex>
-        <UploadVoiceModal />
+        {/* <UploadVoiceModal /> */}
 
-        <Tooltip label="AI Note Analysis" bg="white" color="brand.dark">
+        {/* <Tooltip label="AI Note Analysis" bg="white" color="brand.dark">
           <Button
             mx={"2"}
             boxShadow={"lg"}
@@ -94,7 +94,7 @@ const EditorBlock = ({ id }: { id?: string | string[] }) => {
               }}
             />
           </Button>
-        </Tooltip>
+        </Tooltip> */}
         <Tooltip label="Save note" bg="white" color="brand.dark">
           <Button
             onClick={() => onSubmit()}
@@ -111,7 +111,7 @@ const EditorBlock = ({ id }: { id?: string | string[] }) => {
             <IoIosSave />
           </Button>
         </Tooltip>
-        <Tooltip label="Share note" bg="white" color="brand.dark">
+        {/* <Tooltip label="Share note" bg="white" color="brand.dark">
           <Button
             // onClick={() => onSubmit()}
             cursor={"pointer"}
@@ -125,7 +125,7 @@ const EditorBlock = ({ id }: { id?: string | string[] }) => {
           >
             <IoShareSocialOutline />
           </Button>
-        </Tooltip>
+        </Tooltip> */}
       </Flex>
 
       <Flex
