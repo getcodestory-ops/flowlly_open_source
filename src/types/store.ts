@@ -45,7 +45,8 @@ export type AppView =
   | "reports"
   | "scenarios"
   | "login"
-  | "analysis";
+  | "analysis"
+  | "changePassword";
 
 export type State = {
   session: Session | null;

@@ -541,33 +541,26 @@ const NEW_UpdatesPage = () => {
           </Select>
         </Flex>
         <Flex direction={"column"}>
-          {
-            // Object.keys(data)
-            //   .sort(
-            //     (a, b) =>
-            //       new Date(updatesObject[b].date) -
-            //       new Date(updatesObject[a].date)
-            //   )
-            data &&
-              data.map((update) => (
-                <Flex
-                  key={update.id}
-                  onClick={() => setPreviewCardContent(update)}
-                  w="full"
-                  mb={"2"}
-                  p={"2"}
-                  background={"brand.background"}
-                  dropShadow={"lg"}
-                  cursor={"pointer"}
-                  display="flex"
-                  flexDirection="column"
-                  borderRadius={"md"}
-                  _hover={{ bg: "brand.dark", color: "white" }}
-                >
-                  {previewCard(update)}
-                </Flex>
-              ))
-          }
+          {data &&
+            data.length > 0 &&
+            data.map((update) => (
+              <Flex
+                key={update.id}
+                onClick={() => setPreviewCardContent(update)}
+                w="full"
+                mb={"2"}
+                p={"2"}
+                background={"brand.background"}
+                dropShadow={"lg"}
+                cursor={"pointer"}
+                display="flex"
+                flexDirection="column"
+                borderRadius={"md"}
+                _hover={{ bg: "brand.dark", color: "white" }}
+              >
+                {previewCard(update)}
+              </Flex>
+            ))}
         </Flex>
       </GridItem>
       <GridItem
