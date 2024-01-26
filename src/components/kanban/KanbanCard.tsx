@@ -1,8 +1,9 @@
 import React from "react";
 import { Flex, Text } from "@chakra-ui/react";
 import { useDrag } from "react-dnd";
+import { ActivityEntity } from "@/types/activities";
 
-const TaskCard = ({ task }) => {
+const TaskCard = ({ task }: { task: ActivityEntity }) => {
   const [{ isDragging }, dragRef] = useDrag(() => ({
     type: "task",
     item: { id: task.id },

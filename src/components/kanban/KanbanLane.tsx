@@ -2,8 +2,15 @@ import React from "react";
 import { Flex, Text } from "@chakra-ui/react";
 import TaskCard from "./KanbanCard";
 import { useDrop } from "react-dnd";
+import { ActivityEntity } from "@/types/activities";
 
-const KanbanLane = ({ status, tasks, onDrop }) => {
+interface KanbanLaneProps {
+  status: string;
+  tasks: ActivityEntity[];
+  onDrop: (item: any, status: string) => void;
+}
+
+const KanbanLane = ({ status, tasks, onDrop }: KanbanLaneProps) => {
   const [, dropRef] = useDrop(() => ({
     accept: "task",
     drop: (item, monitor) => onDrop(item, status),
