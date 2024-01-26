@@ -41,7 +41,7 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
     end: dateToday,
     duration: 0,
     cost: 0,
-    status: true,
+    status: "On Schedule",
   });
 
   useEffect(() => {

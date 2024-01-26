@@ -35,6 +35,7 @@ const CreateNewChatButton = () => {
         <Text
           noOfLines={{ base: 2, md: 1 }} // 2 lines on small screens, 1 line on medium and larger screens
           width="full"
+          onClick={() => createNewChat()}
         >
           New Conversation
         </Text>
