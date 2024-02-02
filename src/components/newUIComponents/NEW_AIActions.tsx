@@ -9,6 +9,7 @@ import {
   Icon,
   Button,
   Tooltip,
+  Text,
 } from "@chakra-ui/react";
 import { BsSend } from "react-icons/bs";
 import { useStore } from "@/utils/store";
@@ -30,6 +31,8 @@ import {
   updateContext,
   getContexualAnswer,
 } from "@/utils/getAiAnswers";
+import ChatComponent from "./NEW_ChatComponet";
+import { NestBlockButton } from "@blocknote/react";
 
 function AiActions() {
   const [chatInput, setChatInput] = useState("");
@@ -170,153 +173,7 @@ function AiActions() {
 
   return (
     <>
-      {AiActionsView === "open" && (
-        <Grid
-          h={"full"}
-          templateRows="repeat(7, 1fr)"
-          bgGradient="linear(brand.gray 5%, white 30% )"
-          rounded={"2xl"}
-          boxShadow={"lg"}
-          visibility={AiActionsView === "open" ? "visible" : "hidden"}
-        >
-          <GridItem rowSpan={1} pt={"4"} px={"4"}>
-            <Flex direction={"column"} h={"full"} justifyContent={"flex-end"}>
-              <Flex
-                alignItems={"center"}
-                mb={"2"}
-                justifyContent={"space-between"}
-              >
-                <Flex fontSize={"22px"} fontWeight={"bold"}>
-                  AI Actions
-                </Flex>
-                <SearchMemory />
-                <Flex>
-                  <Button
-                    bg={"white"}
-                    boxShadow={"md"}
-                    p={0}
-                    size={"sm"}
-                    onClick={() => setAiActionsView("expand")}
-                    rounded={"full"}
-                    _hover={{ bg: "brand.dark", color: "white" }}
-                  >
-                    <Icon
-                      as={TbLayoutSidebarRightExpand}
-                      fontWeight={"light"}
-                    />
-                  </Button>
-                  <Tooltip
-                    label="Collapse"
-                    aria-label="A tooltip"
-                    bg="white"
-                    color="brand.dark"
-                  >
-                    <Button
-                      bg={"white"}
-                      boxShadow={"md"}
-                      p={0}
-                      size={"sm"}
-                      onClick={() => setAiActionsView("close")}
-                      rounded={"full"}
-                      _hover={{ bg: "brand.dark", color: "white" }}
-                    >
-                      <Icon
-                        as={TbLayoutSidebarLeftExpand}
-                        // fontSize={"20px"}
-                        fontWeight={"light"}
-                      />
-                    </Button>
-                  </Tooltip>
-                </Flex>
-              </Flex>
-              <Flex>
-                <Select
-                  mr={"2"}
-                  size={"sm"}
-                  bg={"white"}
-                  border={"white"}
-                  rounded={"lg"}
-                  className="custom-selector"
-                >
-                  <option value="search">Search</option>
-                  {/* <option value="analyze">Analyze Document</option>
-                  <option value="email">Draft Email</option> */}
-                </Select>
-                {folderList && folderList.length > 0 && (
-                  <Select
-                    size={"sm"}
-                    bg={"white"}
-                    border={"white"}
-                    rounded={"lg"}
-                    placeholder={"Folder or File"}
-                    className="custom-selector"
-                    value={selectedContext?.id}
-                    onChange={(e) =>
-                      setSelectedContext(
-                        folderList?.filter(
-                          (folder) => folder.name === e.target.value
-                        )?.[0] ?? null
-                      )
-                    }
-                  >
-                    {folderList?.map((folder) => (
-                      <option key={folder.id} value={folder.id}>
-                        {folder.name}
-                      </option>
-                    ))}
-                  </Select>
-                )}
-              </Flex>
-            </Flex>
-          </GridItem>
-          <GridItem rowSpan={5} />
-          <GridItem
-            rowSpan={1}
-            display="flex"
-            flexDirection="column"
-            justifyContent="end"
-            // pb={"2"}
-            px={"2"}
-          >
-            <Flex w="inherit" overflow={"contain"}>
-              <ChatMessageDisplay />
-            </Flex>
-            <Flex
-              alignItems={"center"}
-              bg={"brand.background"}
-              p={"2"}
-              rounded={"xl"}
-            >
-              <Input
-                size={"sm"}
-                border={"white"}
-                rounded={"lg"}
-                placeholder={"Flowlly help me ..."}
-                className="custom-selector"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleChatSubmit();
-                  }
-                }}
-              ></Input>
-
-              <Button
-                rounded={"full"}
-                bg={"white"}
-                _hover={{ bg: "brand.dark", color: "white" }}
-                onClick={() => {
-                  handleChatSubmit();
-                }}
-              >
-                <Icon as={BsSend} fontSize={"22px"}></Icon>
-              </Button>
-            </Flex>
-          </GridItem>
-        </Grid>
-      )}
+      {AiActionsView === "open" && <ChatComponent />}
       {AiActionsView === "close" && (
         <Flex
           h={"full"}
@@ -355,7 +212,7 @@ function AiActions() {
           visibility={AiActionsView === "expand" ? "visible" : "hidden"}
         >
           <GridItem
-            colSpan={10}
+            colSpan={14}
             bgGradient="linear(brand.gray 5%, white 30% )"
             rounded={"2xl"}
             boxShadow={"lg"}
@@ -394,8 +251,11 @@ function AiActions() {
               </Flex>
             </Flex>
           </GridItem>
-          {/* <GridItem colSpan={4}>
-            <Grid
+          {/* <GridItem colSpan={4} bg={"papayawhip"}>
+            <ChatComponent />
+          </GridItem> */}
+
+          {/* <Grid
               h={"full"}
               templateRows="repeat(7, 1fr)"
               bgGradient="linear(brand.gray 5%, white 30% )"
@@ -475,8 +335,7 @@ function AiActions() {
                   </Button>
                 </Flex>
               </GridItem>
-            </Grid>
-          </GridItem> */}
+            </Grid> */}
         </Grid>
       )}
     </>

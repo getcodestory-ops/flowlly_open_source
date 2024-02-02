@@ -94,7 +94,13 @@ function CreateNewDocument({ isOpen, onClose }: CreateNewDocumentProps) {
         </ModalBody>
 
         <ModalFooter>
-          <Button colorScheme="blue" mr={3} onClick={() => mutate()}>
+          <Button
+            bg={"brand.dark"}
+            color={"white"}
+            mr={3}
+            onClick={() => mutate()}
+            _hover={{ bg: "brand.accent", color: "brand.dark" }}
+          >
             Save
           </Button>
           <Button onClick={onClose}>Cancel</Button>

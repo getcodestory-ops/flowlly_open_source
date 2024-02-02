@@ -186,6 +186,7 @@ function ScheduleInsights() {
           borderBottom={"2px"}
           borderBottomColor={"brand2.mid"}
           pb={4}
+          minW={"22vw"}
         >
           <Flex direction={"row"} alignItems={"center"}>
             <Icon

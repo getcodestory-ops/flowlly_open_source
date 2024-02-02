@@ -103,7 +103,7 @@ function KanbanBoard() {
   }, [tasksNew]);
 
   return (
-    <Flex>
+    <Flex w={"full"} justifyContent={"space-around"}>
       {modifyTask && (
         <UpdateActivityModal
           isOpen={editOpen}

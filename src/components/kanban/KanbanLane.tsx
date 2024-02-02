@@ -3,6 +3,7 @@ import { Flex, Text } from "@chakra-ui/react";
 import TaskCard from "./KanbanCard";
 import { useDrop } from "react-dnd";
 import { ActivityEntity } from "@/types/activities";
+import { useBreakpoint } from "@chakra-ui/react";
 
 interface KanbanLaneProps {
   status: string;
@@ -19,7 +20,7 @@ const KanbanLane = ({ status, tasks, onDrop }: KanbanLaneProps) => {
   return (
     <Flex
       ref={dropRef}
-      w="200px"
+      w={{ base: "200px", lg: "500px" }}
       p="2"
       bg={`${
         status === "Delayed"
@@ -29,7 +30,8 @@ const KanbanLane = ({ status, tasks, onDrop }: KanbanLaneProps) => {
           : "brand.background"
       }`}
       rounded={"lg"}
-      m="2"
+      my="2"
+      mx={"2"}
       direction={"column"}
       cursor={"grab"}
     >

@@ -42,14 +42,13 @@ function NEW_Menu() {
     <Flex px={"2"}>
       <Flex
         justifyContent={"space-between"}
-        px={"4"}
+        // px={"4"}
         bg={"white"}
         py={"1"}
         rounded={"lg"}
         fontWeight={"semibold"}
         fontSize={"14px"}
         className="custom-shadow"
-        w={"35%"}
       >
         {/* <Button
         size={"sm"}
@@ -61,6 +60,7 @@ function NEW_Menu() {
         Dashboard
       </Button> */}
         <Button
+          mx={"2"}
           size={"sm"}
           bg={appView === "updates" ? "brand.accent" : "white"}
           onClick={() => {
@@ -72,6 +72,7 @@ function NEW_Menu() {
           Updates
         </Button>
         <Button
+          mx={"2"}
           size={"sm"}
           bg={appView === "schedule" ? "brand.accent" : "white"}
           onClick={() => {
@@ -102,6 +103,7 @@ function NEW_Menu() {
         Updates
       </Button> */}
         <Button
+          mx={"2"}
           size={"sm"}
           bg={appView === "notes" ? "brand.accent" : "white"}
           onClick={() => {

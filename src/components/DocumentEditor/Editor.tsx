@@ -3,12 +3,41 @@ import { IoIosSave } from "react-icons/io";
 import { FcProcess } from "react-icons/fc";
 import { TbAnalyzeFilled } from "react-icons/tb";
 import UploadVoiceModal from "@/components/VoiceComponent/UploadVoiceModal";
-import { Flex, Button, Tooltip, Icon, Grid, GridItem } from "@chakra-ui/react";
+import {
+  Flex,
+  Button,
+  Tooltip,
+  Icon,
+  Grid,
+  GridItem,
+  Text,
+} from "@chakra-ui/react";
 import { useContentSave } from "./useContentSave";
 import { IoShareSocialOutline } from "react-icons/io5";
 import { useStore } from "@/utils/store";
+import {
+  MdOutlinePlayCircleOutline,
+  MdOpenInNew,
+  MdOutlineEmail,
+  MdOutlinePeopleAlt,
+  MdOutlineSmsFailed,
+  MdOutlineMessage,
+  MdOutlineNote,
+  MdOutlineInsertDriveFile,
+  MdFiberNew,
+} from "react-icons/md";
 
-const EditorBlock = ({ id }: { id?: string | string[] }) => {
+interface EditorBlockProps {
+  previewCardContent?: any;
+  id?: string | string[];
+  noteTitle?: string;
+}
+
+const EditorBlock = ({
+  previewCardContent,
+  id,
+  noteTitle,
+}: EditorBlockProps) => {
   const holder = "editorjs-container";
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const { ref, processDoc, data, onSubmit } = useContentSave(id);
@@ -65,12 +94,49 @@ const EditorBlock = ({ id }: { id?: string | string[] }) => {
         },
       }}
       flexDirection={"column"}
-      alignItems={"flex-end"}
+      // alignItems={"flex-end"}
     >
-      <Flex>
-        {/* <UploadVoiceModal /> */}
+      <Flex
+        alignItems={"center"}
+        justifyContent={
+          previewCardContent || noteTitle ? "space-between" : "flex-end"
+        }
+      >
+        {previewCardContent && (
+          <Flex direction={"column"}>
+            <Flex alignItems={"center"} mb={"2"}>
+              {previewCardContent.type === "email" && (
+                <Icon as={MdOutlineEmail} mr={"0.5"} boxSize={"3"} />
+              )}
+              {previewCardContent.type === "message" && (
+                <Icon as={MdOutlineMessage} mr={"0.5"} boxSize={"3"} />
+              )}
+              {previewCardContent.type === "note" && (
+                <Icon as={MdOutlineNote} mr={"0.5"} boxSize={"3"} />
+              )}
+              {previewCardContent.type === "file" && (
+                <Icon as={MdOutlineInsertDriveFile} mr={"0.5"} boxSize={"3"} />
+              )}
+              <Text fontSize={"12px"} fontStyle={"italic"}>
+                {previewCardContent.type}
+              </Text>
+            </Flex>
+            <Text fontSize={"14px"} fontWeight={"bold"} mb={"6"}>
+              {previewCardContent.update.message}
+            </Text>
+          </Flex>
+        )}
+        {noteTitle && (
+          <Flex ml={"4"}>
+            <Text fontSize={"14px"} fontWeight={"bold"}>
+              {noteTitle}
+            </Text>
+          </Flex>
+        )}
+        <Flex>
+          <UploadVoiceModal />
 
-        {/* <Tooltip label="AI Note Analysis" bg="white" color="brand.dark">
+          {/* <Tooltip label="AI Note Analysis" bg="white" color="brand.dark">
           <Button
             mx={"2"}
             boxShadow={"lg"}
@@ -95,23 +161,24 @@ const EditorBlock = ({ id }: { id?: string | string[] }) => {
             />
           </Button>
         </Tooltip> */}
-        <Tooltip label="Save note" bg="white" color="brand.dark">
-          <Button
-            onClick={() => onSubmit()}
-            mr={"2"}
-            cursor={"pointer"}
-            size={"sm"}
-            bg={"white"}
-            boxShadow={"lg"}
-            _hover={{ bg: "brand.dark", color: "white" }}
-            // top="32"
-            // position={"absolute"}
-            // zIndex={"overlay"}
-          >
-            <IoIosSave />
-          </Button>
-        </Tooltip>
-        {/* <Tooltip label="Share note" bg="white" color="brand.dark">
+          <Tooltip label="Save note" bg="white" color="brand.dark">
+            <Button
+              onClick={() => onSubmit()}
+              mr={"2"}
+              cursor={"pointer"}
+              size={"sm"}
+              bg={"white"}
+              boxShadow={"lg"}
+              _hover={{ bg: "brand.dark", color: "white" }}
+              ml={"2"}
+              // top="32"
+              // position={"absolute"}
+              // zIndex={"overlay"}
+            >
+              <IoIosSave />
+            </Button>
+          </Tooltip>
+          {/* <Tooltip label="Share note" bg="white" color="brand.dark">
           <Button
             // onClick={() => onSubmit()}
             cursor={"pointer"}
@@ -126,6 +193,7 @@ const EditorBlock = ({ id }: { id?: string | string[] }) => {
             <IoShareSocialOutline />
           </Button>
         </Tooltip> */}
+        </Flex>
       </Flex>
 
       <Flex

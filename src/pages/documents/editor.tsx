@@ -6,7 +6,11 @@ import { useRouter } from "next/router";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import { useStore } from "@/utils/store";
 
-function Editor() {
+interface EditorProps {
+  documentTitle?: string;
+}
+
+function Editor({ documentTitle }: EditorProps) {
   const { documentId, setDocumentId } = useStore((state) => ({
     documentId: state.documentId,
     setDocumentId: state.setDocumentId,
@@ -28,7 +32,7 @@ function Editor() {
       >
         {title}
       </Flex> */}
-      <EditorBlock id={documentId} />
+      <EditorBlock id={documentId} noteTitle={documentTitle} />
     </Flex>
   );
 }

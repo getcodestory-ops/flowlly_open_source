@@ -113,6 +113,7 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
             // direction={{ base: "column", md: "row" }}
             overflow="auto"
             bg={"brand.background"}
+            p={{ base: "0", lg: "18" }}
           >
             {(appView === "login" || appView === "changePassword") && (
               <Flex>{children}</Flex>
@@ -158,7 +159,7 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
                           </GridItem>
                         )}
                         {appView === "schedule" && (
-                          <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
+                          <GridItem rowSpan={5} colSpan={5} px={"4"} pb={"2"}>
                             <ScheduleUiView />
                           </GridItem>
                         )}

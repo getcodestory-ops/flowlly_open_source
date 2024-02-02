@@ -170,8 +170,7 @@ function ChatMessageDisplay() {
       overflowY="auto"
       width="full"
       ref={chatBoxRef}
-      my="8"
-      height="60vh"
+      // height="60vh"
       fontSize={"xs"}
     >
       {activeChatMessages &&
