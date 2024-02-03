@@ -70,7 +70,7 @@ function ProjectInfoDisplay() {
           rounded={"2xl"}
         >
           <Flex justifyContent={"space-between"}>
-            <Flex>
+            <Flex alignItems={"center"}>
               <Flex mr={"12"}>
                 {/* <Flex fontSize={"xs"}>PROJECT</Flex> */}
                 {userProjects && userProjects.length > 0 && (

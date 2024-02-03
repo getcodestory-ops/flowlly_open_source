@@ -18,12 +18,14 @@ import NEW_ReportsPage from "@/components/newUIComponents/NEW_ReportsPage";
 import NEW_UpdatesPage from "@/components/newUIComponents/NEW_UpdatesPage";
 import ProjectSetup from "./ProjectSetup";
 import checkProjectStatus from "@/utils/checkProjectStatus";
+import { useMediaQuery } from "@chakra-ui/react";
 
 const queryClient = new QueryClient();
 
 export default function NewLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const path = router.pathname;
+  const [smallScreen] = useMediaQuery("(max-width: 1441px)");
   //check if router path has /auth/passwordchange
   //if so, render only the children
 
@@ -112,8 +114,7 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
             h="100vh"
             // direction={{ base: "column", md: "row" }}
             overflow="auto"
-            bg={"brand.background"}
-            p={{ base: "0", lg: "18" }}
+            p={smallScreen ? "0" : "18"}
           >
             {(appView === "login" || appView === "changePassword") && (
               <Flex>{children}</Flex>
