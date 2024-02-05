@@ -38,6 +38,9 @@ const EditorBlock = ({
   id,
   noteTitle,
 }: EditorBlockProps) => {
+  const { appView } = useStore((state) => ({
+    appView: state.appView,
+  }));
   const holder = "editorjs-container";
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const { ref, processDoc, data, onSubmit } = useContentSave(id);
@@ -134,7 +137,7 @@ const EditorBlock = ({
           </Flex>
         )}
         <Flex>
-          <UploadVoiceModal />
+          {appView === "notes" && <UploadVoiceModal />}
 
           {/* <Tooltip label="AI Note Analysis" bg="white" color="brand.dark">
           <Button

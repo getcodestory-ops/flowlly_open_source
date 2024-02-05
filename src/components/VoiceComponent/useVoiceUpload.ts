@@ -20,6 +20,12 @@ export function useVoiceUpload() {
         return Promise.reject("No session , or project selected");
       }
       return uploadMP3File(session, documentId, activeProject.project_id, file);
+      // return (
+      //   console.log("session", session),
+      //   console.log("documentId", documentId),
+      //   console.log("activeProject.project_id", activeProject.project_id),
+      //   console.log("file", file)
+      // );
     },
     onSuccess: () => {
       toast({

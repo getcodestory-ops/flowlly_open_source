@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Grid, GridItem, Text, Flex, useDisclosure } from "@chakra-ui/react";
 import DocumentList from "../DocumentEditor/DocumentList";
 import CreateNewDocument from "../DocumentEditor/CreateNewDocument";
@@ -14,6 +14,11 @@ const NEW_NotesPage = () => {
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [noteTitle, setNoteTitle] = useState("");
+
+  useEffect(() => {
+    console.log("documentId", documentId);
+  }, [documentId]);
+
   return (
     <Grid templateColumns="repeat(6, 1fr)" gap={4} w="full" h={"full"}>
       <GridItem

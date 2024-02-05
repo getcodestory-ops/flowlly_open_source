@@ -89,7 +89,7 @@ function DocumentList({ setNoteTitle }: DocumentListProps) {
             py={"4"}
             fontSize="14px"
             key={document.id}
-            background={"brand.gray"}
+            bg={document.id === documentId ? "brand.accent" : "brand.gray"}
             cursor={"pointer"}
             display="flex"
             flexDirection="column"
@@ -103,7 +103,7 @@ function DocumentList({ setNoteTitle }: DocumentListProps) {
               h={"full"}
               alignItems={"center"}
             >
-              {document.title}
+              {document.title.slice(0, 10)}...
             </Flex>
           </Flex>
           // </Link>

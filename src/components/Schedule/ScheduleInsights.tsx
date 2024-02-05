@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, use } from "react";
 import {
   Flex,
   Button,
@@ -16,6 +16,7 @@ import { MdHistoryToggleOff, MdInfoOutline } from "react-icons/md";
 import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
 import { AiOutlineAlert } from "react-icons/ai";
 import { PiBank } from "react-icons/pi";
+import { GiConsoleController } from "react-icons/gi";
 
 function ScheduleInsights() {
   const {
@@ -58,6 +59,10 @@ function ScheduleInsights() {
   // const [filteredView, setFilteredView] = useState<string>("none");
   const [sliderValue, setSliderValue] = useState(scheduleProbability * 100);
   const [showTooltip, setShowTooltip] = useState(false);
+
+  // useEffect(() => {
+  //   setTaskToView(activities[0]);
+  // }, [activeProject]);
 
   const countTotalActivities = (activities: any[]) => {
     let count = 0;
