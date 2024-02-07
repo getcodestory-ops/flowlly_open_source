@@ -32,6 +32,7 @@ function ScheduleInsights() {
     scheduleDate,
     scheduleProbability,
     setScheduleProbability,
+    taskToView,
   } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
@@ -45,6 +46,7 @@ function ScheduleInsights() {
     scheduleDate: state.scheduleDate,
     scheduleProbability: state.scheduleProbability,
     setScheduleProbability: state.setScheduleProbability,
+    taskToView: state.taskToView,
   }));
   const [view, setView] = useState<string>("master");
   const [openHistory, setOpenHistory] = useState<string>("");
@@ -187,11 +189,13 @@ function ScheduleInsights() {
       .map((activity) => (
         <Box
           key={activity.id}
-          my={4}
+          // my={4}
           borderBottom={"2px"}
-          borderBottomColor={"brand2.mid"}
-          pb={4}
+          borderBottomColor={"brand.background"}
+          py={4}
+          pl={"1"}
           minW={"22vw"}
+          bg={activity.id === taskToView.id ? "brand.background" : "white"}
         >
           <Flex direction={"row"} alignItems={"center"}>
             <Icon
