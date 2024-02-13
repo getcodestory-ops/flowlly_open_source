@@ -9,16 +9,22 @@ import {
   Tr,
   Td,
   Tooltip,
+  Select,
+  Button,
 } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
 import { getAgentChatEntities } from "@/api/agentRoutes";
 import { useStore } from "@/utils/store";
 import { IoIosExpand } from "react-icons/io";
+import { FaPhoneAlt } from "react-icons/fa";
 import RegisterPhoneChats from "./RegisterPhoneChats";
+import { AgentChatEntity } from "@/types/agentChats";
 
 function ChatEntity() {
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
+  const [selectedChatId, setSelectedChatId] = useState("");
+
   const { session, activeChatEntity, setActiveChatEntity, activeProject } =
     useStore((state) => ({
       session: state.session,
@@ -27,7 +33,7 @@ function ChatEntity() {
       activeProject: state.activeProject,
     }));
 
-  const { data: chatEntitities, isLoading: chatsLoading } = useQuery({
+  const { data: chatEntities, isLoading: chatsLoading } = useQuery({
     queryKey: ["chatEntityList", session, activeProject],
     queryFn: () => {
       if (!session || !activeProject) {
@@ -38,38 +44,38 @@ function ChatEntity() {
     enabled: !!session?.access_token,
   });
 
+  const handleSelectChat = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const chatId = e.target.value;
+    if (!chatEntities) {
+      return;
+    }
+    const selectedChat = chatEntities.find((chat) => chat.id === chatId);
+    setSelectedChatId(chatId);
+    if (selectedChat) {
+      setActiveChatEntity(selectedChat);
+    }
+  };
+
   return (
-    <TableContainer mt={"4"}>
-      <Table variant="unstyled">
-        <Thead>
-          <Tr>
-            <Th>Chat Name</Th>
-            <Th>Chat Details</Th>
-            <Th>Add Memeber to Chat</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {chatEntitities &&
-            chatEntitities.map((chatEntity, index) => (
-              <Tr
-                key={chatEntity.id}
-                onClick={() => setActiveChatEntity(chatEntity)}
-                gap="4"
-                fontSize={"14px"}
-              >
-                <Td>{chatEntity.chat_name}</Td>
-
-                <Td>{chatEntity.chat_details}</Td>
-
-                <Td cursor={"pointer"} onClick={() => setIsOpen(true)}>
-                  <IoIosExpand />
-                  <RegisterPhoneChats isOpen={isOpen} onClose={onClose} />
-                </Td>
-              </Tr>
+    <Flex mt={8} gap={8}>
+      {/* <Flex>
+        <Select placeholder="Select chat" onChange={handleSelectChat}>
+          {chatEntities &&
+            chatEntities.map((chatEntity) => (
+              <option key={chatEntity.id} value={chatEntity.id}>
+                {chatEntity.chat_name}
+              </option>
             ))}
-        </Tbody>
-      </Table>
-    </TableContainer>
+        </Select>
+      </Flex> */}
+
+      <Flex cursor={"pointer"} onClick={() => setIsOpen(true)}>
+        <Button bg="brand.accent" leftIcon={<FaPhoneAlt />}>
+          Register{" "}
+        </Button>
+        <RegisterPhoneChats isOpen={isOpen} onClose={onClose} />
+      </Flex>
+    </Flex>
   );
 }
 

@@ -319,7 +319,7 @@ function ProjectSetup() {
               >
                 Resources
               </Button> */}
-              {/* <Button
+              <Button
                 bg={settingsView === "chats" ? "brand.accent" : "white"}
                 _hover={{ bg: "brand.dark", color: "white" }}
                 onClick={() => setSettingsView("chats")}
@@ -328,13 +328,13 @@ function ProjectSetup() {
                 border={"1px"}
                 borderColor={"brand.dark"}
               >
-                Chats
-              </Button> */}
+                Phone Registration
+              </Button>
             </Flex>
           </Flex>
           {settingsView === "folders" && folderAndFIles()}
           {settingsView === "members" && projectMembers()}
-          {/* {settingsView === "chats" && <ProjectChats />} */}
+          {settingsView === "chats" && <ProjectChats />}
         </>
       ) : (
         <>
