@@ -24,6 +24,7 @@ import {
   deleteChatSession,
   updateChatSessionName,
 } from "@/api/chatRoutes";
+import { getAgentChats } from "@/api/agentRoutes";
 import CreateNewChatButton from "@/components/CreateNewChatButton";
 import { FiEdit, FiTrash, FiCheck, FiX } from "react-icons/fi";
 import { BsChatLeftDots } from "react-icons/bs";
@@ -39,12 +40,14 @@ const SearchMemory = () => {
     setChatSession,
     setChatSessions,
     chatSessions,
+    activeProject,
   } = useStore((state) => ({
     session: state.session,
     chatSession: state.chatSession,
     setChatSession: state.setChatSession,
     setChatSessions: state.setChatSessions,
     chatSessions: state.chatSessions,
+    activeProject: state.activeProject,
   }));
 
   const [refreshChatList, setRefreshChatList] = useState<Boolean>(false);
@@ -79,7 +82,7 @@ const SearchMemory = () => {
       }
     };
     fetchchat();
-  }, [session]);
+  }, [session, activeProject]);
 
   useEffect(() => {
     if (isLargerThanLg !== undefined) {

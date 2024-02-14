@@ -65,7 +65,6 @@ function RegisterPhoneChats({ isOpen, onClose }: AddNewRegistrationModal) {
       return addPhoneChats(session, activeProject.project_id, {
         phone_number: phoneNumber,
         brain_id: selectedContext?.id,
-        agent_chat_id: activeChatEntity.id,
       });
     },
     onError: (error: Error & { response?: any }) => {

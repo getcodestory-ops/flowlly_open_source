@@ -71,7 +71,7 @@ function ChatEntity() {
 
       <Flex cursor={"pointer"} onClick={() => setIsOpen(true)}>
         <Button bg="brand.accent" leftIcon={<FaPhoneAlt />}>
-          Register{" "}
+          Register
         </Button>
         <RegisterPhoneChats isOpen={isOpen} onClose={onClose} />
       </Flex>
