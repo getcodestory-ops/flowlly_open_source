@@ -71,10 +71,13 @@ const SearchMemory = () => {
   };
 
   useEffect(() => {
-    if (!session || chatSessions.length > 0) return;
+    console.log("active project");
+    if (!session || !activeProject) return;
+
     const fetchchat = async () => {
       try {
-        const chats = await getChatSessions(session);
+        console.log("fetching chats");
+        const chats = await getChatSessions(session, activeProject.project_id);
         setChatSessions(chats);
         setChatSession(chats[0]);
       } catch (error) {

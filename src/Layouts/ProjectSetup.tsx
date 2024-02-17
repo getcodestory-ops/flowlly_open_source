@@ -24,111 +24,36 @@ import {
   TableContainer,
 } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
-import { IoChevronDownOutline } from "react-icons/io5";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { getProjects, deleteProject } from "@/api/projectRoutes";
-import { getAgentChatEntities } from "@/api/agentRoutes";
-import { ProjectEntity } from "@/types/projects";
 import FileHandler from "./FileHandler";
 import CSVUploader from "@/components/Schedule/CSVUpload/CSVUploader";
-import { getMembers, createNewMemberEntry } from "@/api/membersRoutes";
 import { MemberEntity } from "@/types/members";
 import { FiEdit, FiSave } from "react-icons/fi";
 import { MdOutlineDeleteOutline } from "react-icons/md";
-import { IoIosCloseCircle, IoIosCloseCircleOutline } from "react-icons/io";
-import AddNewProjectModal from "@/components/Schedule/AddNewProjectModal";
-import CreateNewProjectButton from "@/components/Schedule/NewProjectButton";
+import { IoIosCloseCircleOutline } from "react-icons/io";
 import ProjectChats from "@/components/ProjectChats/ProjectChats";
+import { usePhoneRegistration } from "@/components/PhoneRegistration/usePhoneRegistration";
 
 function ProjectSetup() {
-  const {
-    session,
-    activeProject,
-    setActiveProject,
-    activeChatEntity,
-    setActiveChatEntity,
-  } = useStore((state) => ({
-    session: state.session,
+  const { activeProject } = useStore((state) => ({
     activeProject: state.activeProject,
-    setActiveProject: state.setActiveProject,
-    activeChatEntity: state.activeChatEntity,
-    setActiveChatEntity: state.setActiveChatEntity,
   }));
   const [settingsView, setSettingsView] = useState<string>("folders");
-  const [isOpen, setIsOpen] = useState(false);
-  const onClose = () => setIsOpen(false);
-  const [newMember, setNewMember] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    role: "",
-  });
-  const [addingMember, setAddingMember] = useState(false);
-  const [Members, setMembers] = useState<any>([]);
 
-  const { data: members, isLoading: membersLoading } = useQuery({
-    queryKey: ["memberList", session, activeProject],
-    queryFn: async () => {
-      if (!session || !activeProject) {
-        return Promise.reject("No session or active project");
-      }
-
-      return getMembers(session, activeProject.project_id);
-    },
-    enabled: !!session?.access_token,
-  });
-
-  const handleInputChange = (e: any, field: any) => {
-    setNewMember({ ...newMember, [field]: e.target.value });
-  };
+  const {
+    registerPhoneNumber,
+    deleteMember,
+    members,
+    handleSaveMember,
+    handleInputChange,
+    handleMemberEdit,
+    addingMember,
+    setAddingMember,
+    editMember,
+    setEditMember,
+  } = usePhoneRegistration();
 
   const handleAddMemberClick = () => {
     setAddingMember(!addingMember);
-  };
-
-  const handleSaveMember = async () => {
-    try {
-      if (!session || !activeProject) {
-        return Promise.reject("No session or active project");
-      }
-      // Prepare the projectDetails object, including additional fields
-      const projectDetails = {
-        ...newMember, // This includes first_name, last_name, email, phone, role
-        project_id: activeProject?.project_id, // Assuming activeProject contains project_id
-        // user_id: "", // Set the user_id if available or required
-        responsibilities: "", // Set default or get from form
-        skills: "", // Set default or get from form
-        active: true, // Set default active status
-      };
-
-      // Call the API to create the new member entry
-      const savedMember = await createNewMemberEntry(
-        session,
-        activeProject?.project_id,
-        projectDetails
-      );
-
-      // Update members list with the newly saved member
-      setMembers((prevMembers: any) => ({
-        ...prevMembers,
-        // data: [...prevMembers, newMember],
-        projectDetails,
-      }));
-
-      // Reset new member state and hide the add member row
-      setNewMember({
-        first_name: "",
-        last_name: "",
-        email: "",
-        phone: "",
-        role: "",
-      });
-      setAddingMember(false);
-    } catch (error) {
-      // Handle error (e.g., display an error message)
-      console.error("Error saving member:", error);
-    }
   };
 
   const folderAndFIles = () => {
@@ -181,6 +106,7 @@ function ProjectSetup() {
                 <Th>Last Name</Th>
                 <Th>Email</Th>
                 <Th>Phone Number</Th>
+                <Th>Enroll SMS</Th>
                 <Th>Role</Th>
               </Tr>
             </Thead>
@@ -215,6 +141,7 @@ function ProjectSetup() {
                       onChange={(e) => handleInputChange(e, "phone")}
                     />
                   </Td>
+                  <Td>{/* <input type="checkbox" /> */}</Td>
                   <Td>
                     <input
                       type="text"
@@ -238,23 +165,105 @@ function ProjectSetup() {
                 </Tr>
               )}
               {members?.data.map((member: MemberEntity) => (
-                <Tr key={member.id} fontSize={"sm"}>
-                  <Td>{member.first_name}</Td>
-                  <Td>{member.last_name}</Td>
-                  <Td>{member.email}</Td>
-                  <Td>{member.phone}</Td>
-                  <Td>{member.role}</Td>
-                  <Td>
-                    <Flex>
-                      <Flex mr={"4"} cursor={"pointer"}>
-                        <FiEdit />
-                      </Flex>
-                      <Flex cursor={"pointer"}>
-                        <MdOutlineDeleteOutline />
-                      </Flex>
-                    </Flex>
-                  </Td>
-                </Tr>
+                <>
+                  {editMember?.id !== member.id && (
+                    <Tr key={member.id} fontSize={"sm"}>
+                      <Td>{member.first_name}</Td>
+                      <Td>{member.last_name}</Td>
+                      <Td>{member.email}</Td>
+                      <Td>{member.phone}</Td>
+                      <Td>
+                        {!member.phone && <b>Add phone number to enroll</b>}
+                        {member.phone && (
+                          <input
+                            type="checkbox"
+                            onChange={(e) =>
+                              registerPhoneNumber(e, member.phone)
+                            }
+                          ></input>
+                        )}
+                      </Td>
+                      <Td>{member.role}</Td>
+                      <Td>
+                        <Flex>
+                          <Flex
+                            mr={"4"}
+                            cursor={"pointer"}
+                            onClick={() => setEditMember(member)}
+                          >
+                            <FiEdit />
+                          </Flex>
+                          <Flex
+                            cursor={"pointer"}
+                            onClick={() => deleteMember(member.email)}
+                          >
+                            <MdOutlineDeleteOutline />
+                          </Flex>
+                        </Flex>
+                      </Td>
+                    </Tr>
+                  )}
+
+                  {editMember?.id === member.id && (
+                    <Tr fontSize={"sm"}>
+                      <Td>
+                        <input
+                          type="text"
+                          placeholder="First Name"
+                          value={editMember.first_name}
+                          onChange={(e) => handleMemberEdit(e, "first_name")}
+                        />
+                      </Td>
+                      <Td>
+                        <input
+                          type="text"
+                          placeholder="Last Name"
+                          value={editMember.last_name}
+                          onChange={(e) => handleMemberEdit(e, "last_name")}
+                        />
+                      </Td>
+                      <Td>
+                        <input
+                          type="email"
+                          placeholder="Email"
+                          value={editMember.email}
+                          onChange={(e) => handleMemberEdit(e, "email")}
+                        />
+                      </Td>
+                      <Td>
+                        <input
+                          type="text"
+                          placeholder="Phone Number"
+                          value={editMember.phone}
+                          onChange={(e) => handleMemberEdit(e, "phone")}
+                        />
+                      </Td>
+                      <Td>{/* <input type="checkbox" /> */}</Td>
+                      <Td>
+                        <input
+                          type="text"
+                          placeholder="Role"
+                          value={editMember.role}
+                          onChange={(e) => handleMemberEdit(e, "role")}
+                        />
+                      </Td>
+                      <Td>
+                        <Icon
+                          as={FiSave}
+                          onClick={handleSaveMember}
+                          mr={"4"}
+                          cursor={"pointer"}
+                        />
+                        <Icon
+                          as={IoIosCloseCircleOutline}
+                          onClick={handleAddMemberClick}
+                          cursor={"pointer"}
+                        />
+                      </Td>
+                    </Tr>
+                  )}
+                  {/* <>{editMember && editMember.email}</> */}
+                </>
               ))}
             </Tbody>
           </Table>
@@ -319,7 +328,7 @@ function ProjectSetup() {
               >
                 Resources
               </Button> */}
-              <Button
+              {/* <Button
                 bg={settingsView === "chats" ? "brand.accent" : "white"}
                 _hover={{ bg: "brand.dark", color: "white" }}
                 onClick={() => setSettingsView("chats")}
@@ -329,7 +338,7 @@ function ProjectSetup() {
                 borderColor={"brand.dark"}
               >
                 Phone Registration
-              </Button>
+              </Button> */}
             </Flex>
           </Flex>
           {settingsView === "folders" && folderAndFIles()}

@@ -73,7 +73,11 @@ function AiActions() {
     if (!sessionToken || chatSessions.length > 0) return;
     const fetchchat = async () => {
       try {
-        const chats = await getChatSessions(sessionToken);
+        if (!activeProject) return;
+        const chats = await getChatSessions(
+          sessionToken,
+          activeProject?.project_id
+        );
         setChatSessions(chats);
         setChatSession(chats[0]);
       } catch (error) {
@@ -117,8 +121,13 @@ function AiActions() {
     let newChatSession = null;
 
     if (!chatSession) {
+      if (!activeProject) return;
       const chatTitle = getFirstFiveWords(chatInput);
-      newChatSession = await createNewChatSession(sessionToken!, chatTitle);
+      newChatSession = await createNewChatSession(
+        sessionToken!,
+        chatTitle,
+        activeProject.project_id
+      );
       setChatSession(newChatSession);
       setChatSessions([newChatSession, ...chatSessions]);
     }

@@ -65,8 +65,13 @@ function ChatComponent() {
     let newChatSession = null;
 
     if (!chatSession) {
+      if (!activeProject) return;
       const chatTitle = getFirstFiveWords(chatInput);
-      newChatSession = await createNewChatSession(sessionToken!, chatTitle);
+      newChatSession = await createNewChatSession(
+        sessionToken!,
+        chatTitle,
+        activeProject?.project_id
+      );
       setChatSession(newChatSession);
       setChatSessions([newChatSession, ...chatSessions]);
     }
@@ -80,14 +85,20 @@ function ChatComponent() {
       },
       item_type: "MESSAGE",
     };
+
     const chatHistory = chatSessions.filter(
       (session) => session.chat_id === chatSession?.chat_id
     )[0]?.chat_history!;
 
-    updateChatHistory(chatSession?.chat_id!, [...chatHistory, newChatItem]);
+    if (chatHistory && chatHistory.length > 0) {
+      updateChatHistory(chatSession?.chat_id!, [...chatHistory, newChatItem]);
+    } else {
+      updateChatHistory(chatSession?.chat_id!, [newChatItem]);
+    }
 
     try {
       if (!sessionToken || !chatSession || !selectedContext) return;
+
       const context = await getContext(
         sessionToken,
         chatSession.chat_id,

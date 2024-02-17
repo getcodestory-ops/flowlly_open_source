@@ -1,8 +1,11 @@
 import { Session } from "@supabase/supabase-js";
 import { Chat } from "@/types/chat";
 
-export const getChatSessions = async (session: Session) => {
-  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/chat`;
+export const getChatSessions = async (
+  session: Session,
+  project_access_id: string
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/chat/list/${project_access_id}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -21,10 +24,13 @@ export const getChatSessions = async (session: Session) => {
 
 export const createNewChatSession = async (
   sessionToken: Session,
-  chatName: string
+  chatName: string,
+  project_access_id: string
 ) => {
+  console.log(project_access_id);
   const chat_data = {
-    name: chatName, // Replace with the actual chat name
+    name: chatName,
+    project_access_id: project_access_id,
   };
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/chat`,
