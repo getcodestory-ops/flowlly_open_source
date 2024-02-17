@@ -36,7 +36,7 @@ export interface CreateNewActivity {
   cost: number;
   dependencies?: string[];
   resources?: string[];
-  status: string;
+  status: boolean | string;
   creation_time?: string;
   created_by?: string;
   owner?: string;
