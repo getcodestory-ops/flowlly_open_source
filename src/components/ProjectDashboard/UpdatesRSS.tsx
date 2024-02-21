@@ -47,16 +47,18 @@ function UpdatesRSSsection() {
       </Text>
       <Flex direction={"column"}>
         {updateActivities &&
-          updateActivities.map((activity, index) => (
-            <RSSCard
-              title={activity.title}
-              date={convertDateToTimeText(activity.created_at)}
-              explanation={activity.message}
-              type={activity.type}
-              key={index}
-              source="update"
-            />
-          ))}
+          updateActivities
+            .reverse()
+            .map((activity, index) => (
+              <RSSCard
+                title={activity.title}
+                date={convertDateToTimeText(activity.created_at)}
+                explanation={activity.message}
+                type={activity.type}
+                key={index}
+                source="update"
+              />
+            ))}
       </Flex>
     </Flex>
   );

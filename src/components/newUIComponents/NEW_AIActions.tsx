@@ -116,11 +116,11 @@ function AiActions() {
     if (!folderList) return;
 
     setSelectedContext(folderList?.[0] ?? null);
-  }, [folderList, setSelectedContext, chatSessions]);
+  }, [folderList, setSelectedContext]);
 
   const handleChatSubmit = async () => {
     let newChatSession = null;
-
+    //console.log("triggered submit", chatInput, chatSession, selectedContext);
     if (!chatSession) {
       if (!activeProject) return;
       const chatTitle = getFirstFiveWords(chatInput);

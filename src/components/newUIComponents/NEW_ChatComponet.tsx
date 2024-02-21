@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Grid,
   GridItem,
@@ -61,8 +61,15 @@ function ChatComponent() {
     setFolderList: state.setFolderList,
   }));
 
+  useEffect(() => {
+    if (!folderList) return;
+
+    setSelectedContext(folderList?.[0] ?? null);
+  }, [folderList, setSelectedContext]);
+
   const handleChatSubmit = async () => {
     let newChatSession = null;
+    //console.log("chatSession", chatSession, selectedContext, folderList);
 
     if (!chatSession) {
       if (!activeProject) return;
@@ -233,13 +240,13 @@ function ChatComponent() {
                     value={selectedContext?.id}
                     onChange={(e) =>
                       setSelectedContext(
-                        folderList?.filter(
-                          (folder) => folder.name === e.target.value
+                        folderList.filter(
+                          (folder) => folder.id === e.target.value
                         )?.[0] ?? null
                       )
                     }
                   >
-                    {folderList?.map((folder) => (
+                    {folderList.map((folder) => (
                       <option key={folder.id} value={folder.id}>
                         {folder.name}
                       </option>
@@ -285,7 +292,6 @@ function ChatComponent() {
                     onChange={(e) => setChatInput(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
                         handleChatSubmit();
                       }
                     }}

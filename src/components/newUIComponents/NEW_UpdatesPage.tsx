@@ -49,7 +49,11 @@ const NEW_UpdatesPage = () => {
   >({});
   const [objectView, setObjectView] = useState<string>("content");
 
-  const { data, isLoading, isSuccess } = useQuery({
+  const {
+    data: updates,
+    isLoading,
+    isSuccess,
+  } = useQuery({
     queryKey: ["updates", session, activeProject],
     queryFn: () => {
       if (!session || !activeProject) {
@@ -537,9 +541,9 @@ const NEW_UpdatesPage = () => {
           </Select>
         </Flex>
         <Flex direction={"column"}>
-          {data &&
-            data.length > 0 &&
-            data.map((update) => (
+          {updates &&
+            updates.length > 0 &&
+            updates.map((update) => (
               <Flex
                 key={update.id}
                 onClick={() => setPreviewCardContent(update)}
