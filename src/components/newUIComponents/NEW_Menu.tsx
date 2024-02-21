@@ -1,4 +1,4 @@
-import React, { use, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Flex, Button, Link, Icon } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { useRouter } from "next/router";
@@ -15,6 +15,7 @@ function NEW_Menu() {
     setAppView: state.setAppView,
     appView: state.appView,
   }));
+  const [settingsView, setSettingsView] = useState<string>("folders");
 
   const router = useRouter();
   const { projectId } = router.query;
@@ -91,8 +92,10 @@ function NEW_Menu() {
         <Button
           mx={"2"}
           size={"sm"}
-          bg={appView === "projectSettings" ? "brand.accent" : "white"}
-          onClick={() => setAppView("projectSettings")}
+          bg={appView === "folders" ? "brand.accent" : "white"}
+          onClick={() => {
+            setAppView("folders");
+          }}
           _hover={{ bg: "brand.dark", color: "white" }}
         >
           <Icon as={FaFolderOpen} mr={"2"}></Icon>
@@ -101,8 +104,10 @@ function NEW_Menu() {
         <Button
           mx={"2"}
           size={"sm"}
-          bg={appView === "projectSettings" ? "brand.accent" : "white"}
-          onClick={() => setAppView("projectSettings")}
+          bg={appView === "members" ? "brand.accent" : "white"}
+          onClick={() => {
+            setAppView("members");
+          }}
           _hover={{ bg: "brand.dark", color: "white" }}
         >
           <Icon as={LuContact2} mr={"2"}></Icon>

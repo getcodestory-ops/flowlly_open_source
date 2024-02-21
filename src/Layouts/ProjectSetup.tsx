@@ -33,9 +33,11 @@ import { IoIosCloseCircleOutline } from "react-icons/io";
 import ProjectChats from "@/components/ProjectChats/ProjectChats";
 import { usePhoneRegistration } from "@/components/PhoneRegistration/usePhoneRegistration";
 
-function ProjectSetup() {
-  const { activeProject } = useStore((state) => ({
+function ProjectSetup({ settingView }: { settingView?: string }) {
+  const { activeProject, appView, setAppView } = useStore((state) => ({
     activeProject: state.activeProject,
+    appView: state.appView,
+    setAppView: state.setAppView,
   }));
   const [settingsView, setSettingsView] = useState<string>("folders");
 
@@ -317,14 +319,14 @@ function ProjectSetup() {
             // alignItems={"center"}
             justifyContent={"space-between"}
           >
-            <Text mb={"4"} fontSize={"14px"} fontWeight={"bold"}>
+            {/* <Text mb={"4"} fontSize={"14px"} fontWeight={"bold"}>
               Project Settings
-            </Text>
+            </Text> */}
             <Flex className="menu" gap="4">
-              <Button
-                bg={settingsView === "folders" ? "brand.accent" : "white"}
+              {/* <Button
+                bg={appView === "folders" ? "brand.accent" : "white"}
                 _hover={{ bg: "brand.dark", color: "white" }}
-                onClick={() => setSettingsView("folders")}
+                onClick={() => setAppView("folders")}
                 size={"xs"}
                 py={1}
                 border={"1px"}
@@ -333,16 +335,16 @@ function ProjectSetup() {
                 Folders and Files
               </Button>
               <Button
-                bg={settingsView === "members" ? "brand.accent" : "white"}
+                bg={appView === "members" ? "brand.accent" : "white"}
                 _hover={{ bg: "brand.dark", color: "white" }}
-                onClick={() => setSettingsView("members")}
+                onClick={() => setAppView("members")}
                 size={"xs"}
                 py={1}
                 border={"1px"}
                 borderColor={"brand.dark"}
               >
                 Members
-              </Button>
+              </Button> */}
               {/* <Button
                 bg={settingsView === "resources" ? "brand.accent" : "white"}
                 _hover={{ bg: "brand.dark", color: "white" }}
@@ -367,9 +369,9 @@ function ProjectSetup() {
               </Button> */}
             </Flex>
           </Flex>
-          {settingsView === "folders" && folderAndFIles()}
-          {settingsView === "members" && projectMembers()}
-          {settingsView === "chats" && <ProjectChats />}
+          {appView === "folders" && folderAndFIles()}
+          {appView === "members" && projectMembers()}
+          {/* //{setting === "chats" && <ProjectChats />} */}
         </>
       ) : (
         <>

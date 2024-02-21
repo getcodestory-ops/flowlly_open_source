@@ -158,7 +158,7 @@ function ProjectInfoDisplay() {
                     <Icon as={IoShareSocialOutline} boxSize={"5"} />
                   </Button>
                 </Tooltip> */}
-                <Tooltip
+                {/* <Tooltip
                   label="Project Settings"
                   aria-label="A tooltip"
                   bg={"white"}
@@ -178,7 +178,7 @@ function ProjectInfoDisplay() {
                   >
                     <Icon as={MdOutlineSettings} boxSize={"5"} />
                   </Button>
-                </Tooltip>
+                </Tooltip> */}
               </Flex>
             </Flex>
           </Flex>

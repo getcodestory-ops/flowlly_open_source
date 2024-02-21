@@ -46,6 +46,8 @@ export type AppView =
   | "scenarios"
   | "login"
   | "analysis"
+  | "members"
+  | "folders"
   | "changePassword";
 
 export type State = {

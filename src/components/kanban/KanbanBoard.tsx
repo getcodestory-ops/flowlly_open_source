@@ -41,7 +41,13 @@ function KanbanBoard() {
       if (tasks.length > 0) {
         const transformedTasks = tasks
           .map(activityEntityToTask)
-          .sort((a, b) => a.start.getTime() - b.start.getTime()); // Assuming the data you want is in activities.data
+          .sort((a, b) => {
+            if (a.start.getTime() === b.start.getTime()) {
+              return a.start.getTime() - b.start.getTime();
+            } else {
+              return 0;
+            }
+          }); // Assuming the data you want is in activities.data
         setTasksNew(transformedTasks);
       } else {
         const currentDate = new Date();

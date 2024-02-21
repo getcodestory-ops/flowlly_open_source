@@ -1,4 +1,4 @@
-import React, { use, useEffect, useRef } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import { Box, Flex, Grid, GridItem } from "@chakra-ui/react";
 import SidePanel from "@/Layouts/SidePanel";
 import { useStore } from "@/utils/store";
@@ -46,6 +46,8 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
     userActivities: state.userActivities,
     setProjectStatus: state.setProjectStatus,
   }));
+
+  const [settingsView, setSettingsView] = useState<string>("folders");
 
   useEffect(() => {
     // console.log("userActivities", userActivities);
@@ -179,7 +181,7 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
                             <NEW_UpdatesPage />
                           </GridItem>
                         )}
-                        {appView === "projectSettings" && (
+                        {(appView === "members" || appView === "folders") && (
                           <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
                             <ProjectSetup />
                           </GridItem>
