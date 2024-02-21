@@ -35,6 +35,7 @@ export default function AddFolderMenu({
         <ModalHeader>Create New Folder</ModalHeader>
         <ModalBody>
           <Input
+            className="custom-selector"
             placeholder="Folder Name"
             value={folderName}
             onChange={(e) => setFolderName(e.target.value)}
@@ -42,11 +43,12 @@ export default function AddFolderMenu({
         </ModalBody>
         <ModalFooter>
           <Button
-            bg="purple"
+            bg="brand.dark"
             color="white"
             onClick={handleCreateFolder}
-            ml={3}
+            mr={3}
             disabled={!folderName}
+            _hover={{ bg: "brand.accent", color: "brand.dark" }}
           >
             Create
           </Button>

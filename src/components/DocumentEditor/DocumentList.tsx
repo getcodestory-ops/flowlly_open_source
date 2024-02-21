@@ -7,7 +7,11 @@ import { useStore } from "@/utils/store";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-function DocumentList() {
+interface DocumentListProps {
+  setNoteTitle?: any;
+}
+
+function DocumentList({ setNoteTitle }: DocumentListProps) {
   const router = useRouter();
   const { projectId } = router.query;
   const { session, activeProject, taskToView, setDocumentId, documentId } =
@@ -39,13 +43,14 @@ function DocumentList() {
     enabled: !!session?.access_token && !!activeProject?.project_id,
   });
 
-  const afterClick = (id: any) => {
+  const afterClick = (id: any, title: any) => {
     setDocumentId(id);
+    setNoteTitle(title);
   };
 
-  // useEffect(() => {
-  //   console.log("documents", documents);
-  // }, [documents]);
+  useEffect(() => {
+    console.log("documents", documents);
+  }, [documents]);
 
   return (
     <Flex
@@ -84,12 +89,12 @@ function DocumentList() {
             py={"4"}
             fontSize="14px"
             key={document.id}
-            background={"brand.gray"}
+            bg={document.id === documentId ? "brand.accent" : "brand.gray"}
             cursor={"pointer"}
             display="flex"
             flexDirection="column"
             borderRadius={"md"}
-            onClick={() => afterClick(document.id)}
+            onClick={() => afterClick(document.id, document.title)}
             _hover={{ bg: "brand.dark", color: "white" }}
           >
             <Flex
@@ -98,7 +103,7 @@ function DocumentList() {
               h={"full"}
               alignItems={"center"}
             >
-              {document.title}
+              {document.title.slice(0, 10)}...
             </Flex>
           </Flex>
           // </Link>

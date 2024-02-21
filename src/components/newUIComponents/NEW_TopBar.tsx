@@ -73,17 +73,29 @@ function NewTopBar() {
   useEffect(() => {
     if (isSuccess && activities && activities.length > 0) {
       setUserActivities(activities);
-      console.log("activities", activities);
+    } else if (isSuccess && activities && activities.length === 0) {
+      setUserActivities([
+        {
+          id: "SCHEDULE",
+          project_id: "parent",
+          name: "No active task",
+          start: "0/00/00",
+          end: "00/00/00",
+          progress: 0,
+          activity_critical: {
+            critical_path: false,
+          },
+        },
+      ]);
     }
-  }, [activities]);
+  }, [activities, isSuccess, setUserActivities]);
 
   useEffect(() => {
     if (projects && projects.length > 0) {
       setUserProjects(projects);
       setActiveProject(projects[0]);
-      // console.log("projects", projects);
     }
-  }, [projects]);
+  }, [projects, setActiveProject, setUserProjects]);
 
   return (
     <Flex

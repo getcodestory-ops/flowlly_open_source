@@ -73,10 +73,18 @@ function SearchPanel() {
   }, [folderList, setSelectedContext]);
 
   const handleChatSubmit = async () => {
+    console.log("i am doing here");
     let newChatSession = null;
     if (!chatSession) {
+      if (!activeProject || !activeProject.project_id) return;
+      console.log(activeProject.project_id);
       const chatTitle = getFirstFiveWords(chatInput);
-      newChatSession = await createNewChatSession(sessionToken!, chatTitle);
+
+      newChatSession = await createNewChatSession(
+        sessionToken!,
+        chatTitle,
+        activeProject.project_id
+      );
       setChatSession(newChatSession);
       setChatSessions([newChatSession, ...chatSessions]);
     }

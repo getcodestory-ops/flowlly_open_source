@@ -15,32 +15,31 @@ const CreateNewChatButton = () => {
   };
 
   return (
+    // <Flex
+    //   display="flex"
+    //   alignItems="center"
+    //   p={2}
+    //   width="full"
+    //   borderRadius="md"
+    // >
     <Flex
-      display="flex"
-      alignItems="center"
-      p={2}
+      align="center"
+      justify="center"
+      gap="2"
+      p="2"
       width="full"
+      bg="none"
+      _hover={{ bg: "none", color: "brand.dark" }}
+      onClick={() => createNewChat()}
+      cursor="pointer"
       borderRadius="md"
     >
-      <Button
-        leftIcon={<Icon as={FiPlus} />}
-        color="brand.dark"
-        width="full"
-        variant="outline"
-        borderColor="white"
-        _hover={{ bg: "brand.dark", color: "white" }}
-        onClick={() => createNewChat()}
-        bg="brand.light"
-      >
-        <Text
-          noOfLines={{ base: 2, md: 1 }} // 2 lines on small screens, 1 line on medium and larger screens
-          width="full"
-          onClick={() => createNewChat()}
-        >
-          New Conversation
-        </Text>
-      </Button>
+      <Icon as={FiPlus} />
+      <Text noOfLines={{ base: 2, md: 1 }} width="full">
+        New Chat
+      </Text>
     </Flex>
+    // </Flex>
   );
 };
 

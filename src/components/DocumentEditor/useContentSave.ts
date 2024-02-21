@@ -50,11 +50,21 @@ export const useContentSave = (id?: string | string[]) => {
   }, [error]);
 
   useEffect(() => {
-    console.log(content);
-    if (content) {
-      setData(content);
+    console.log("content", content);
+    if (isLoading) {
+      setData({
+        blocks: [
+          { data: { text: "loading..." }, id: "HVVp3toaI3", type: "paragraph" },
+        ],
+      });
+      return;
     }
-  }, [content]);
+    if (content && isSuccess) {
+      setData(content);
+    } else {
+      setData({ blocks: [] });
+    }
+  }, [content, isLoading, isSuccess]);
 
   //save document
 
@@ -125,5 +135,5 @@ export const useContentSave = (id?: string | string[]) => {
     },
   });
 
-  return { ref, processDoc, data, mutate, onSubmit };
+  return { ref, processDoc, data, mutate, onSubmit, content };
 };

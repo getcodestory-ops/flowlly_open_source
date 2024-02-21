@@ -1,5 +1,4 @@
 export interface MemberEntity {
-  data: [];
   id: string;
   creation_time?: string;
   first_name: string;
@@ -12,4 +11,6 @@ export interface MemberEntity {
   user_id?: string;
   skills?: string;
   active?: boolean;
+  phone_registration?: { phone_number: string }[];
+  enable_sms?: boolean;
 }

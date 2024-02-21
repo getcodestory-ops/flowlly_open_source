@@ -10,6 +10,12 @@ import {
   Stack,
   Collapse,
   useBreakpointValue,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  MenuDivider,
+  Text,
 } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { Session } from "@supabase/supabase-js";
@@ -18,11 +24,13 @@ import {
   deleteChatSession,
   updateChatSessionName,
 } from "@/api/chatRoutes";
+import { getAgentChats } from "@/api/agentRoutes";
 import CreateNewChatButton from "@/components/CreateNewChatButton";
 import { FiEdit, FiTrash, FiCheck, FiX } from "react-icons/fi";
 import { BsChatLeftDots } from "react-icons/bs";
 import { MdBorderColor } from "react-icons/md";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa";
+import { IoChevronDown } from "react-icons/io5";
 
 const SearchMemory = () => {
   const toast = useToast();
@@ -32,12 +40,14 @@ const SearchMemory = () => {
     setChatSession,
     setChatSessions,
     chatSessions,
+    activeProject,
   } = useStore((state) => ({
     session: state.session,
     chatSession: state.chatSession,
     setChatSession: state.setChatSession,
     setChatSessions: state.setChatSessions,
     chatSessions: state.chatSessions,
+    activeProject: state.activeProject,
   }));
 
   const [refreshChatList, setRefreshChatList] = useState<Boolean>(false);
@@ -61,10 +71,11 @@ const SearchMemory = () => {
   };
 
   useEffect(() => {
-    if (!session || chatSessions.length > 0) return;
+    if (!session || !activeProject) return;
+
     const fetchchat = async () => {
       try {
-        const chats = await getChatSessions(session);
+        const chats = await getChatSessions(session, activeProject.project_id);
         setChatSessions(chats);
         setChatSession(chats[0]);
       } catch (error) {
@@ -72,7 +83,7 @@ const SearchMemory = () => {
       }
     };
     fetchchat();
-  }, [session]);
+  }, [session, activeProject]);
 
   useEffect(() => {
     if (isLargerThanLg !== undefined) {
@@ -104,13 +115,111 @@ const SearchMemory = () => {
     <Flex
       flexDirection={"column"}
       borderColor={"gray.200"}
-      position={"absolute"}
-      mx="32"
-      top="28"
-      zIndex={"overlay"}
+      // position={"absolute"}
+      // mx="32"
+      // top="28"
+      // zIndex={"overlay"}
       fontSize={"xs"}
     >
-      <Button
+      <Menu>
+        <MenuButton
+          as={Button}
+          rightIcon={<IoChevronDown />}
+          size={"xs"}
+          bg={"white"}
+          _hover={{ bg: "brand.dark", color: "white" }}
+        >
+          Saved Chats
+        </MenuButton>
+        <MenuList>
+          <MenuItem>
+            <CreateNewChatButton />
+          </MenuItem>
+          <MenuDivider />
+          {chatSessions.length > 0 &&
+            chatSessions.map((chats, index) => (
+              <MenuItem
+                key={`chat-${chats.chat_id}-index-${index}`}
+                onClick={() => setChatSession(chats)}
+                _hover={{ bg: "gray.100" }}
+              >
+                <Flex
+                  alignItems={"center"}
+                  w="full"
+                  justifyContent={"space-between"}
+                >
+                  <Flex alignItems={"center"}>
+                    <Icon as={BsChatLeftDots} mr={4} />
+                    <Text
+                      fontWeight={
+                        chats.chat_id === chatSession?.chat_id ? "bold" : ""
+                      }
+                    >
+                      {chats.chat_name}
+                    </Text>
+                  </Flex>
+
+                  {editChatSessionId !== chats?.chat_id &&
+                    chats.chat_id === chatSession?.chat_id && (
+                      <Flex>
+                        <Flex
+                          color="brand.dark"
+                          onClick={() => {
+                            setNewChatSessionName(chatSession?.chat_name);
+                            setEditChatSessionId(chatSession?.chat_id);
+                          }}
+                          _hover={{ bg: "brand.dark", color: "white" }}
+                        >
+                          <Icon as={FiEdit} />
+                        </Flex>
+                        <Flex
+                          color="brand.dark"
+                          onClick={() => deleteChat(chatSession?.chat_id)}
+                          _hover={{ bg: "brand.dark", color: "white" }}
+                        >
+                          <Icon as={FiTrash} />
+                        </Flex>
+                      </Flex>
+                    )}
+
+                  {editChatSessionId === chats?.chat_id && (
+                    <Flex flexGrow={1} alignItems={"center"}>
+                      <Input
+                        ml={4}
+                        placeholder={chats.chat_name}
+                        value={newChatSessionName!}
+                        onChange={(e) => setNewChatSessionName(e.target.value)}
+                      />
+                      <Button
+                        color="brand.dark"
+                        variant="ghost"
+                        size={"sm"}
+                        onClick={() => {
+                          chatSession
+                            ? editChatSessionMetadata(chatSession?.chat_id)
+                            : null;
+                        }}
+                        _hover={{ bg: "gray.200" }}
+                      >
+                        <Icon as={FiCheck} />
+                      </Button>
+                      <Button
+                        color="brand.dark"
+                        variant="ghost"
+                        size={"sm"}
+                        onClick={() => setEditChatSessionId("")}
+                        _hover={{ bg: "gray.200" }}
+                      >
+                        <Icon as={FiX} />
+                      </Button>
+                    </Flex>
+                  )}
+                </Flex>
+              </MenuItem>
+            ))}
+        </MenuList>
+      </Menu>
+      {/* <Button
         onClick={() => setShow((state) => !state)}
         size="xs"
         w="16"
@@ -263,7 +372,7 @@ const SearchMemory = () => {
               ))}
           </Flex>
         </Flex>
-      </Collapse>
+      </Collapse> */}
     </Flex>
   );
 };

@@ -62,12 +62,14 @@ function UploadVoiceModal() {
 
               <ModalFooter>
                 <Button
-                  colorScheme="blue"
+                  bg={"brand.dark"}
+                  color={"white"}
                   mr={3}
                   type="submit"
                   onClick={(e) =>
                     handleSubmit(documentId, fileInputRef.current?.files?.[0])
                   }
+                  _hover={{ bg: "brand.accent", color: "brand.dark" }}
                 >
                   Upload
                 </Button>

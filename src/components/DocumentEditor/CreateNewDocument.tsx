@@ -12,6 +12,7 @@ import {
   FormLabel,
   Input,
   useToast,
+  Icon,
 } from "@chakra-ui/react";
 
 import { createDocument } from "@/api/documentRoutes";
@@ -37,6 +38,7 @@ function CreateNewDocument({ isOpen, onClose }: CreateNewDocumentProps) {
     taskToView: state.taskToView,
   }));
   const toast = useToast();
+  const [noteType, setNoteType] = useState<string>("");
 
   const { mutate, isPending, data } = useMutation({
     mutationFn: () => {
@@ -83,10 +85,10 @@ function CreateNewDocument({ isOpen, onClose }: CreateNewDocumentProps) {
         <ModalCloseButton />
         <ModalBody pb={6} fontSize={"lg"}>
           <FormControl>
-            <FormLabel>Title</FormLabel>
+            <FormLabel>Note Title</FormLabel>
 
             <Input
-              placeholder="Title"
+              placeholder="Note Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
@@ -94,7 +96,13 @@ function CreateNewDocument({ isOpen, onClose }: CreateNewDocumentProps) {
         </ModalBody>
 
         <ModalFooter>
-          <Button colorScheme="blue" mr={3} onClick={() => mutate()}>
+          <Button
+            bg={"brand.dark"}
+            color={"white"}
+            mr={3}
+            onClick={() => mutate()}
+            _hover={{ bg: "brand.accent", color: "brand.dark" }}
+          >
             Save
           </Button>
           <Button onClick={onClose}>Cancel</Button>

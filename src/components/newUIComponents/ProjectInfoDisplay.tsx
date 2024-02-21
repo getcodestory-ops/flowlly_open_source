@@ -48,10 +48,9 @@ function ProjectInfoDisplay() {
     projectStatus: state.projectStatus,
   }));
 
-  // useEffect(() => {
-  //   console.log("activeProject", activeProject);
-  //   console.log("userProjects", userProjects);
-  // }, [activeProject]);
+  useEffect(() => {
+    console.log("activeProject", activeProject?.name);
+  }, [activeProject?.name]);
 
   return (
     <Flex h="100%">
@@ -70,7 +69,7 @@ function ProjectInfoDisplay() {
           rounded={"2xl"}
         >
           <Flex justifyContent={"space-between"}>
-            <Flex>
+            <Flex alignItems={"center"}>
               <Flex mr={"12"}>
                 {/* <Flex fontSize={"xs"}>PROJECT</Flex> */}
                 {userProjects && userProjects.length > 0 && (
@@ -85,13 +84,13 @@ function ProjectInfoDisplay() {
                     </MenuButton>
                     <MenuList>
                       {userProjects.map((project, index) => (
-                        <MenuItem key={index}>
-                          <Flex
-                            onClick={() => setActiveProject(project)}
-                            alignItems={"center"}
-                          >
-                            {project.name}
-                          </Flex>
+                        <MenuItem
+                          key={`project-menu-${project.project_id}`}
+                          onClick={(e) => {
+                            setActiveProject(project);
+                          }}
+                        >
+                          <Flex alignItems={"center"}>{project.name}</Flex>
                         </MenuItem>
                       ))}
                     </MenuList>
@@ -139,7 +138,7 @@ function ProjectInfoDisplay() {
                   </Button>
                 </Tooltip> */}
 
-                <Tooltip
+                {/* <Tooltip
                   label="Share Project"
                   aria-label="A tooltip"
                   bg="white"
@@ -158,7 +157,7 @@ function ProjectInfoDisplay() {
                   >
                     <Icon as={IoShareSocialOutline} boxSize={"5"} />
                   </Button>
-                </Tooltip>
+                </Tooltip> */}
                 <Tooltip
                   label="Project Settings"
                   aria-label="A tooltip"

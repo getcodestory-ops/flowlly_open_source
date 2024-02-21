@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, use } from "react";
 import {
   Flex,
   Button,
@@ -16,6 +16,7 @@ import { MdHistoryToggleOff, MdInfoOutline } from "react-icons/md";
 import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
 import { AiOutlineAlert } from "react-icons/ai";
 import { PiBank } from "react-icons/pi";
+import { GiConsoleController } from "react-icons/gi";
 
 function ScheduleInsights() {
   const {
@@ -31,6 +32,7 @@ function ScheduleInsights() {
     scheduleDate,
     scheduleProbability,
     setScheduleProbability,
+    taskToView,
   } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
@@ -44,6 +46,7 @@ function ScheduleInsights() {
     scheduleDate: state.scheduleDate,
     scheduleProbability: state.scheduleProbability,
     setScheduleProbability: state.setScheduleProbability,
+    taskToView: state.taskToView,
   }));
   const [view, setView] = useState<string>("master");
   const [openHistory, setOpenHistory] = useState<string>("");
@@ -58,6 +61,10 @@ function ScheduleInsights() {
   // const [filteredView, setFilteredView] = useState<string>("none");
   const [sliderValue, setSliderValue] = useState(scheduleProbability * 100);
   const [showTooltip, setShowTooltip] = useState(false);
+
+  // useEffect(() => {
+  //   setTaskToView(activities[0]);
+  // }, [activeProject]);
 
   const countTotalActivities = (activities: any[]) => {
     let count = 0;
@@ -182,10 +189,13 @@ function ScheduleInsights() {
       .map((activity) => (
         <Box
           key={activity.id}
-          my={4}
+          // my={4}
           borderBottom={"2px"}
-          borderBottomColor={"brand2.mid"}
-          pb={4}
+          borderBottomColor={"brand.background"}
+          py={4}
+          pl={"1"}
+          minW={"22vw"}
+          bg={activity.id === taskToView.id ? "brand.background" : "white"}
         >
           <Flex direction={"row"} alignItems={"center"}>
             <Icon

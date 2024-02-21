@@ -276,21 +276,8 @@ function FileHandler() {
 
   //ui
   return (
-    <Flex
-      direction={"column"}
-      // p="4"
-      // background="brand.mid"
-      // px={2}
-      // mt={4}
-      height="400px"
-      width="full"
-    >
+    <Flex direction={"column"} height="400px" width="full">
       <>
-        {/* <Box marginBottom="4">
-          <Heading as="h2" size="sm" color="white">
-            Project Files
-          </Heading>
-        </Box> */}
         <Stack direction="row" justify="space-between" mb={2}>
           <Stack justify="start" width="full">
             <Button
