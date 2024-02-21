@@ -43,15 +43,22 @@ const EditorBlock = ({
   }));
   const holder = "editorjs-container";
   const [isMounted, setIsMounted] = useState<boolean>(false);
-  const { ref, processDoc, data, onSubmit } = useContentSave(id);
+  const { ref, processDoc, data, onSubmit, content } = useContentSave(id);
 
   useEffect(() => {
     if (typeof window !== "undefined") setIsMounted(true);
   }, []);
 
   const initializeEditor = useCallback(async () => {
+    // if (ref.current) {
+    //   // If there's an existing instance, destroy it before creating a new one
+    //   //ref.current?.destroy();
+    //   ref.current = undefined;
+    // }
+
     const EditorJs = (await import("@editorjs/editorjs")).default;
     const EDITOR_JS_TOOLS = (await import("./constants")).EDITOR_JS_TOOLS;
+
     if (!ref.current) {
       const editor = new EditorJs({
         inlineToolbar: true,
@@ -66,7 +73,7 @@ const EditorBlock = ({
       onchange;
       ref.current = editor;
     }
-  }, [data, id]);
+  }, [ref, data]);
 
   useEffect(() => {
     const init = async () => {
@@ -74,14 +81,15 @@ const EditorBlock = ({
     };
     if (isMounted) {
       init();
-      if (ref.current) {
-        return () => {
+
+      return () => {
+        if (ref.current && ref.current?.destroy) {
           ref.current?.destroy();
           ref.current = undefined;
-        };
-      }
+        }
+      };
     }
-  }, [isMounted, initializeEditor]);
+  }, [ref, isMounted, initializeEditor]);
 
   return (
     <Flex

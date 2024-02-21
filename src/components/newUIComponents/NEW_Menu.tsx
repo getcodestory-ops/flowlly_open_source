@@ -7,6 +7,8 @@ import { CgNotes } from "react-icons/cg";
 import { TbReportAnalytics } from "react-icons/tb";
 import { GoDependabot } from "react-icons/go";
 import { BsStars } from "react-icons/bs";
+import { FaFolderOpen } from "react-icons/fa";
+import { LuContact2 } from "react-icons/lu";
 
 function NEW_Menu() {
   const { setAppView, appView } = useStore((state) => ({
@@ -36,7 +38,7 @@ function NEW_Menu() {
     if (router.pathname === "/projects") {
       setAppView("projectSettings");
     }
-  }, [router.pathname]);
+  }, [router.pathname, setAppView]);
 
   return (
     <Flex px={"2"}>
@@ -50,15 +52,6 @@ function NEW_Menu() {
         fontSize={"14px"}
         className="custom-shadow"
       >
-        {/* <Button
-        size={"sm"}
-        bg={"white"}
-        onClick={() => {
-          setAppView("dashboard");
-        }}
-      >
-        Dashboard
-      </Button> */}
         <Button
           mx={"2"}
           size={"sm"}
@@ -83,25 +76,6 @@ function NEW_Menu() {
           <Icon as={FaTasks} mr={"2"}></Icon>
           Tasks
         </Button>
-        {/* <Flex>Budget</Flex> */}
-        {/* <Button
-        size={"sm"}
-        bg={"white"}
-        onClick={() => {
-          setAppView("risks");
-        }}
-      >
-        Risks
-      </Button> */}
-        {/* <Button
-        size={"sm"}
-        bg={"white"}
-        onClick={() => {
-          setAppView("updates");
-        }}
-      >
-        Updates
-      </Button> */}
         <Button
           mx={"2"}
           size={"sm"}
@@ -114,17 +88,26 @@ function NEW_Menu() {
           <Icon as={CgNotes} mr={"2"}></Icon>
           Notes
         </Button>
-        {/* <Button
+        <Button
+          mx={"2"}
           size={"sm"}
-          bg={appView === "reports" ? "brand.accent" : "white"}
-          onClick={() => {
-            setAppView("reports");
-          }}
+          bg={appView === "projectSettings" ? "brand.accent" : "white"}
+          onClick={() => setAppView("projectSettings")}
           _hover={{ bg: "brand.dark", color: "white" }}
         >
-          <Icon as={TbReportAnalytics} mr={"2"}></Icon>
-          Reports
-        </Button> */}
+          <Icon as={FaFolderOpen} mr={"2"}></Icon>
+          Files
+        </Button>
+        <Button
+          mx={"2"}
+          size={"sm"}
+          bg={appView === "projectSettings" ? "brand.accent" : "white"}
+          onClick={() => setAppView("projectSettings")}
+          _hover={{ bg: "brand.dark", color: "white" }}
+        >
+          <Icon as={LuContact2} mr={"2"}></Icon>
+          Members
+        </Button>
 
         {/* <Button
         size={"sm"}

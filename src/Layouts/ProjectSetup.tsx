@@ -50,6 +50,7 @@ function ProjectSetup() {
     setAddingMember,
     editMember,
     setEditMember,
+    updatememberDetails,
   } = usePhoneRegistration();
 
   const handleAddMemberClick = () => {
@@ -106,7 +107,7 @@ function ProjectSetup() {
                 <Th>Last Name</Th>
                 <Th>Email</Th>
                 <Th>Phone Number</Th>
-                <Th>Enroll SMS</Th>
+                <Th>Enroll IN SMS</Th>
                 <Th>Role</Th>
               </Tr>
             </Thead>
@@ -141,7 +142,12 @@ function ProjectSetup() {
                       onChange={(e) => handleInputChange(e, "phone")}
                     />
                   </Td>
-                  <Td>{/* <input type="checkbox" /> */}</Td>
+                  <Td>
+                    <input
+                      type="checkbox"
+                      onChange={(e) => handleInputChange(e, "enable_sms")}
+                    />
+                  </Td>
                   <Td>
                     <input
                       type="text"
@@ -165,9 +171,9 @@ function ProjectSetup() {
                 </Tr>
               )}
               {members?.data.map((member: MemberEntity) => (
-                <>
+                <Tr key={member.id} fontSize={"sm"}>
                   {editMember?.id !== member.id && (
-                    <Tr key={member.id} fontSize={"sm"}>
+                    <>
                       <Td>{member.first_name}</Td>
                       <Td>{member.last_name}</Td>
                       <Td>{member.email}</Td>
@@ -177,6 +183,10 @@ function ProjectSetup() {
                         {member.phone && (
                           <input
                             type="checkbox"
+                            checked={
+                              !!member?.phone_registration?.[0]?.phone_number ??
+                              false
+                            }
                             onChange={(e) =>
                               registerPhoneNumber(e, member.phone)
                             }
@@ -189,7 +199,13 @@ function ProjectSetup() {
                           <Flex
                             mr={"4"}
                             cursor={"pointer"}
-                            onClick={() => setEditMember(member)}
+                            onClick={() => {
+                              const { phone_registration, ...otherProps } =
+                                member;
+                              setEditMember({
+                                ...otherProps,
+                              });
+                            }}
                           >
                             <FiEdit />
                           </Flex>
@@ -201,11 +217,11 @@ function ProjectSetup() {
                           </Flex>
                         </Flex>
                       </Td>
-                    </Tr>
+                    </>
                   )}
 
                   {editMember?.id === member.id && (
-                    <Tr fontSize={"sm"}>
+                    <>
                       <Td>
                         <input
                           type="text"
@@ -238,7 +254,16 @@ function ProjectSetup() {
                           onChange={(e) => handleMemberEdit(e, "phone")}
                         />
                       </Td>
-                      <Td>{/* <input type="checkbox" /> */}</Td>
+                      <Td>
+                        <input
+                          type="checkbox"
+                          checked={
+                            !!member?.phone_registration?.[0]?.phone_number ??
+                            false
+                          }
+                          onChange={(e) => handleInputChange(e, "enable_sms")}
+                        />
+                      </Td>
                       <Td>
                         <input
                           type="text"
@@ -250,20 +275,23 @@ function ProjectSetup() {
                       <Td>
                         <Icon
                           as={FiSave}
-                          onClick={handleSaveMember}
+                          onClick={updatememberDetails}
                           mr={"4"}
                           cursor={"pointer"}
                         />
                         <Icon
                           as={IoIosCloseCircleOutline}
-                          onClick={handleAddMemberClick}
+                          onClick={() => {
+                            setAddingMember(false);
+                            setEditMember(null);
+                          }}
                           cursor={"pointer"}
                         />
                       </Td>
-                    </Tr>
+                    </>
                   )}
                   {/* <>{editMember && editMember.email}</> */}
-                </>
+                </Tr>
               ))}
             </Tbody>
           </Table>
@@ -271,8 +299,6 @@ function ProjectSetup() {
       </Flex>
     );
   };
-
-  // console.log("projects", projects);
 
   return (
     <Flex

@@ -6,7 +6,11 @@ import {
   removePhoneRegister,
   removeDirectoryEntry,
 } from "@/api/registrationRoutes";
-import { getMembers, createNewMemberEntry } from "@/api/membersRoutes";
+import {
+  getMembers,
+  createNewMemberEntry,
+  updateMemberEntity,
+} from "@/api/membersRoutes";
 import { useToast } from "@chakra-ui/react";
 import { MemberEntity } from "@/types/members";
 
@@ -19,11 +23,16 @@ export const usePhoneRegistration = () => {
     email: "",
     phone: "",
     role: "",
+    enable_sms: false,
   });
   const [editMember, setEditMember] = useState<MemberEntity | null>(null);
   const [Members, setMembers] = useState<any>([]);
   const [addingMember, setAddingMember] = useState(false);
   const handleInputChange = (e: any, field: any) => {
+    if (field === "enable_sms") {
+      setNewMember({ ...newMember, [field]: e.target.checked });
+      return;
+    }
     setNewMember({ ...newMember, [field]: e.target.value });
   };
 
@@ -79,7 +88,49 @@ export const usePhoneRegistration = () => {
         isClosable: true,
         position: "bottom-right",
       });
-      queryClient.invalidateQueries({ queryKey: ["chatEntityList"] });
+      queryClient.invalidateQueries({ queryKey: ["memberList"] });
+    },
+  });
+
+  const updateMember = useMutation({
+    mutationFn: (memberDetails: MemberEntity) => {
+      if (!session || !activeProject) {
+        toast({
+          title: "Error",
+          description: "No session or active project",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+          position: "bottom-right",
+        });
+        return Promise.reject("No session or active project");
+      }
+      return updateMemberEntity(
+        session,
+        activeProject.project_id,
+        memberDetails
+      );
+    },
+    onError: (error: Error & { response?: any }) => {
+      toast({
+        title: "Error",
+        description: error.response?.data.detail ?? "Something went wrong",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom-right",
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Phone Number successfully registered !",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom-right",
+      });
+      queryClient.invalidateQueries({ queryKey: ["memberList"] });
     },
   });
 
@@ -231,6 +282,7 @@ export const usePhoneRegistration = () => {
         email: "",
         phone: "",
         role: "",
+        enable_sms: false,
       });
       setAddingMember(false);
       queryClient.invalidateQueries({ queryKey: ["memberList"] });
@@ -246,31 +298,21 @@ export const usePhoneRegistration = () => {
         return Promise.reject("No session or active project");
       }
 
+      if (!editMember) {
+        return Promise.reject("No active member to update");
+      }
       const memberDetails = {
-        ...newMember, // This includes first_name, last_name, email, phone, role
-        project_id: activeProject?.project_id, // Assuming activeProject contains project_id
-        // user_id: "", // Set the user_id if available or required
-        responsibilities: "", // Set default or get from form
-        skills: "", // Set default or get from form
-        active: true, // Set default active status
+        ...editMember,
+        project_id: activeProject?.project_id,
+        responsibilities: "",
+        skills: "",
+        active: true,
       };
 
-      // Call the API to create the new member entry
-      const savedMember = await createNewMemberEntry(
-        session,
-        activeProject?.project_id,
-        memberDetails
-      );
+      updateMember.mutate(memberDetails);
 
-      // Reset new member state and hide the add member row
-      setNewMember({
-        first_name: "",
-        last_name: "",
-        email: "",
-        phone: "",
-        role: "",
-      });
-      setAddingMember(false);
+      setEditMember(null);
+
       queryClient.invalidateQueries({ queryKey: ["memberList"] });
     } catch (error) {
       // Handle error (e.g., display an error message)
@@ -289,5 +331,6 @@ export const usePhoneRegistration = () => {
     setAddingMember,
     editMember,
     setEditMember,
+    updatememberDetails,
   };
 };

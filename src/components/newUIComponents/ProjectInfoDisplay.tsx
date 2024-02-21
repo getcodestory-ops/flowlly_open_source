@@ -48,10 +48,9 @@ function ProjectInfoDisplay() {
     projectStatus: state.projectStatus,
   }));
 
-  // useEffect(() => {
-  //   console.log("activeProject", activeProject);
-  //   console.log("userProjects", userProjects);
-  // }, [activeProject]);
+  useEffect(() => {
+    console.log("activeProject", activeProject?.name);
+  }, [activeProject?.name]);
 
   return (
     <Flex h="100%">
@@ -85,13 +84,13 @@ function ProjectInfoDisplay() {
                     </MenuButton>
                     <MenuList>
                       {userProjects.map((project, index) => (
-                        <MenuItem key={index}>
-                          <Flex
-                            onClick={() => setActiveProject(project)}
-                            alignItems={"center"}
-                          >
-                            {project.name}
-                          </Flex>
+                        <MenuItem
+                          key={`project-menu-${project.project_id}`}
+                          onClick={(e) => {
+                            setActiveProject(project);
+                          }}
+                        >
+                          <Flex alignItems={"center"}>{project.name}</Flex>
                         </MenuItem>
                       ))}
                     </MenuList>

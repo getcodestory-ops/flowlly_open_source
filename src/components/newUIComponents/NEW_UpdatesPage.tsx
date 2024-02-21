@@ -62,10 +62,6 @@ const NEW_UpdatesPage = () => {
     enabled: !!session?.access_token && !!activeProject?.project_id,
   });
 
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
-
   // const updatesObject = {
   //   1: {
   //     id: 1,

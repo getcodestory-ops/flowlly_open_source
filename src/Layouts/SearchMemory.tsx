@@ -71,12 +71,10 @@ const SearchMemory = () => {
   };
 
   useEffect(() => {
-    console.log("active project");
     if (!session || !activeProject) return;
 
     const fetchchat = async () => {
       try {
-        console.log("fetching chats");
         const chats = await getChatSessions(session, activeProject.project_id);
         setChatSessions(chats);
         setChatSession(chats[0]);
@@ -164,10 +162,8 @@ const SearchMemory = () => {
                   {editChatSessionId !== chats?.chat_id &&
                     chats.chat_id === chatSession?.chat_id && (
                       <Flex>
-                        <Button
+                        <Flex
                           color="brand.dark"
-                          variant="ghost"
-                          size={"xs"}
                           onClick={() => {
                             setNewChatSessionName(chatSession?.chat_name);
                             setEditChatSessionId(chatSession?.chat_id);
@@ -175,16 +171,14 @@ const SearchMemory = () => {
                           _hover={{ bg: "brand.dark", color: "white" }}
                         >
                           <Icon as={FiEdit} />
-                        </Button>
-                        <Button
+                        </Flex>
+                        <Flex
                           color="brand.dark"
-                          variant="ghost"
-                          size={"xs"}
                           onClick={() => deleteChat(chatSession?.chat_id)}
                           _hover={{ bg: "brand.dark", color: "white" }}
                         >
                           <Icon as={FiTrash} />
-                        </Button>
+                        </Flex>
                       </Flex>
                     )}
 

@@ -48,6 +48,7 @@ import KanbanBoard from "../kanban/KanbanBoard";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import AddNewActivityModal from "./AddNewActivityModal";
+import CsvUploadIcon from "./CSVUpload/csvUploadIcon";
 
 function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   const {
@@ -198,6 +199,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
                 <ProbabilitySelector />
               </Flex>
             </Flex>
+            <CsvUploadIcon />
             <Button
               size={"xs"}
               bg={"brand.dark"}

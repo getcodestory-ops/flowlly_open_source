@@ -22,25 +22,23 @@ const CreateNewChatButton = () => {
     //   width="full"
     //   borderRadius="md"
     // >
-    <Button
-      leftIcon={<Icon as={FiPlus} />}
-      color="brand.dark"
+    <Flex
+      align="center"
+      justify="center"
+      gap="2"
+      p="2"
       width="full"
-      // variant="outline"
-      // borderColor="white"
+      bg="none"
       _hover={{ bg: "none", color: "brand.dark" }}
       onClick={() => createNewChat()}
-      // bg="brand.light"
-      bg={"none"}
+      cursor="pointer"
+      borderRadius="md"
     >
-      <Text
-        noOfLines={{ base: 2, md: 1 }} // 2 lines on small screens, 1 line on medium and larger screens
-        width="full"
-        onClick={() => createNewChat()}
-      >
+      <Icon as={FiPlus} />
+      <Text noOfLines={{ base: 2, md: 1 }} width="full">
         New Chat
       </Text>
-    </Button>
+    </Flex>
     // </Flex>
   );
 };
