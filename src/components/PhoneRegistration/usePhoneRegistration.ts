@@ -40,6 +40,10 @@ export const usePhoneRegistration = () => {
     if (!editMember) {
       return;
     }
+    if (field === "enable_sms") {
+      setEditMember({ ...editMember, [field]: e.target.checked });
+      return;
+    }
     setEditMember({ ...editMember, [field]: e.target.value });
   };
 
@@ -330,6 +334,7 @@ export const usePhoneRegistration = () => {
     addingMember,
     setAddingMember,
     editMember,
+    newMember,
     setEditMember,
     updatememberDetails,
   };

@@ -51,6 +51,7 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
     addingMember,
     setAddingMember,
     editMember,
+    newMember,
     setEditMember,
     updatememberDetails,
   } = usePhoneRegistration();
@@ -120,6 +121,7 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                     <input
                       type="text"
                       placeholder="First Name"
+                      value={newMember.first_name}
                       onChange={(e) => handleInputChange(e, "first_name")}
                     />
                   </Td>
@@ -127,6 +129,7 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                     <input
                       type="text"
                       placeholder="Last Name"
+                      value={newMember.last_name}
                       onChange={(e) => handleInputChange(e, "last_name")}
                     />
                   </Td>
@@ -134,6 +137,7 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                     <input
                       type="email"
                       placeholder="Email"
+                      value={newMember.email}
                       onChange={(e) => handleInputChange(e, "email")}
                     />
                   </Td>
@@ -141,12 +145,14 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                     <input
                       type="text"
                       placeholder="Phone Number"
+                      value={newMember.phone}
                       onChange={(e) => handleInputChange(e, "phone")}
                     />
                   </Td>
                   <Td>
                     <input
                       type="checkbox"
+                      checked={newMember.enable_sms}
                       onChange={(e) => handleInputChange(e, "enable_sms")}
                     />
                   </Td>
@@ -154,6 +160,7 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                     <input
                       type="text"
                       placeholder="Role"
+                      value={newMember.role}
                       onChange={(e) => handleInputChange(e, "role")}
                     />
                   </Td>
@@ -256,14 +263,12 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                           onChange={(e) => handleMemberEdit(e, "phone")}
                         />
                       </Td>
+
                       <Td>
                         <input
                           type="checkbox"
-                          checked={
-                            !!member?.phone_registration?.[0]?.phone_number ??
-                            false
-                          }
-                          onChange={(e) => handleInputChange(e, "enable_sms")}
+                          checked={editMember.enable_sms}
+                          onChange={(e) => handleMemberEdit(e, "enable_sms")}
                         />
                       </Td>
                       <Td>
