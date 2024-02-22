@@ -82,7 +82,11 @@ function ProjectInfoDisplay() {
                         <Icon as={FaChevronDown} ml={"3"} boxSize={"4"} />
                       </Flex>
                     </MenuButton>
-                    <MenuList>
+                    <MenuList
+                      maxHeight={"70vh"}
+                      overflowY={"auto"}
+                      className="custom-scrollbar"
+                    >
                       {userProjects.map((project, index) => (
                         <MenuItem
                           key={`project-menu-${project.project_id}`}
