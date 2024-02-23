@@ -92,21 +92,6 @@ function FileHandler() {
     [userId]
   );
 
-  // const fetchFileProcessStatus = useCallback(async () => {
-  //   if (!userId) return;
-
-  //   const { data: fileStatus, error } = await supabase
-  //     .from("uploadfileTrack")
-  //     .select("id, file_name, status, folder_name, uploaded_size, total_size")
-  //     .eq("user_id", userId);
-
-  //   if (error) {
-  //     console.log(error);
-  //   } else {
-  //     setListFileStatus(fileStatus);
-  //   }
-  // }, [userId]);
-
   useEffect(() => {
     const fetchFolderLists = async () => {
       if (!sessionToken || !activeProject?.project_id) return;
@@ -276,33 +261,58 @@ function FileHandler() {
 
   //ui
   return (
-    <Flex direction={"column"} height="400px" width="full">
-      <>
-        <Stack direction="row" justify="space-between" mb={2}>
-          <Stack justify="start" width="full">
-            <Button
-              color="brand.dark"
-              width="full"
-              variant="outline"
-              bg={"brand.light"}
-              _hover={{ bg: "brand.dark", color: "white" }}
-              onClick={() => setIsFolderSubMenuOpen(true)}
-            >
-              <FaPlus />
+    <Flex direction={"column"} maxHeight="75vh" width="full">
+      <Stack direction="row" justify="space-between" mb={2}>
+        <Stack justify="start" width="full">
+          <Button
+            color="brand.dark"
+            size="sm"
+            variant="outline"
+            bg={"brand.light"}
+            _hover={{ bg: "brand.dark", color: "white" }}
+            onClick={() => setIsFolderSubMenuOpen(true)}
+          >
+            <FaPlus />
 
-              <Text ml="2" fontSize={"base"}>
-                Add New Folder
-              </Text>
-            </Button>
-          </Stack>
-          <AddFolderMenu
-            isOpen={isFolderSubMenuOpen}
-            onClose={() => setIsFolderSubMenuOpen(false)}
-            onCreateFolder={handleCreateFolder}
-          />
+            <Text ml="2" fontSize={"base"}>
+              Add New Folder
+            </Text>
+          </Button>
         </Stack>
-      </>
-      <>
+        <AddFolderMenu
+          isOpen={isFolderSubMenuOpen}
+          onClose={() => setIsFolderSubMenuOpen(false)}
+          onCreateFolder={handleCreateFolder}
+        />
+      </Stack>
+      <Flex>
+        {/* {folderList?.map((folder) => (
+          <Box
+            key={folder.name}
+            onClick={() => setSelectedContext(folder)}
+            sx={{
+              cursor: "pointer",
+              "&:hover": {
+                boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)", // Adds hover effect
+              },
+            }}
+          >
+            <Flex
+              direction="column"
+              alignItems="center"
+              justifyContent="center"
+              p={4}
+              bg="brand.light"
+              borderRadius="md"
+              boxShadow="sm"
+            >
+              <Icon as={FaFolder} color="brand.dark" w={8} h={8} mb={2} />
+              <Text textAlign="center" fontSize="md" fontWeight="semibold">
+                {folder.name}
+              </Text>
+            </Flex>
+          </Box>
+        ))} */}
         <Accordion
           allowToggle
           width="100%"
@@ -324,12 +334,11 @@ function FileHandler() {
             <AccordionItem
               key={folder.name}
               onClick={() => setSelectedContext(folder)}
-              boxShadow={folder.id === selectedContext?.id ? "none" : "none"}
             >
               <h2>
                 <AccordionButton>
                   <Flex flex="1" textAlign="left" align-items="center">
-                    <Icon as={FaFolder} mr={4} mt={1} color="brand.dark" />
+                    <Icon as={FaFolder} mr={4} mt={1} color="brand.accent" />
                     {folder.name}
                   </Flex>
 
@@ -434,7 +443,7 @@ function FileHandler() {
             </AccordionItem>
           ))}
         </Accordion>
-      </>
+      </Flex>
     </Flex>
   );
 }

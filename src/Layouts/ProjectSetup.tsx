@@ -62,12 +62,10 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
 
   const folderAndFIles = () => {
     return (
-      <Grid templateColumns="repeat(2, 1fr)" gap={"24"} w={"60%"} mt={"8"}>
+      <Grid templateColumns="repeat(2, 1fr)" gap={"24"} mt={"8"}>
         <GridItem colSpan={1}>
           <Flex direction={"column"}>
-            <Text fontSize={"14px"} as={"b"} mb={"4"}>
-              Project Files
-            </Text>
+            <Text fontSize={"14px"} as={"b"} mb={"4"}></Text>
             <FileHandler />
           </Flex>
         </GridItem>
@@ -316,81 +314,28 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
       rounded={"xl"}
       p={"4"}
     >
-      {/* <CreateNewProjectButton /> */}
       {activeProject ? (
-        <>
-          <Flex
-            direction={"column"}
-            // alignItems={"center"}
-            justifyContent={"space-between"}
-          >
-            {/* <Text mb={"4"} fontSize={"14px"} fontWeight={"bold"}>
-              Project Settings
-            </Text> */}
-            <Flex className="menu" gap="4">
-              {/* <Button
-                bg={appView === "folders" ? "brand.accent" : "white"}
-                _hover={{ bg: "brand.dark", color: "white" }}
-                onClick={() => setAppView("folders")}
-                size={"xs"}
-                py={1}
-                border={"1px"}
-                borderColor={"brand.dark"}
-              >
-                Folders and Files
-              </Button>
-              <Button
-                bg={appView === "members" ? "brand.accent" : "white"}
-                _hover={{ bg: "brand.dark", color: "white" }}
-                onClick={() => setAppView("members")}
-                size={"xs"}
-                py={1}
-                border={"1px"}
-                borderColor={"brand.dark"}
-              >
-                Members
-              </Button> */}
-              {/* <Button
-                bg={settingsView === "resources" ? "brand.accent" : "white"}
-                _hover={{ bg: "brand.dark", color: "white" }}
-                onClick={() => setSettingsView("resources")}
-                size={"xs"}
-                py={1}
-                border={"1px"}
-                borderColor={"brand.dark"}
-              >
-                Resources
-              </Button> */}
-              {/* <Button
-                bg={settingsView === "chats" ? "brand.accent" : "white"}
-                _hover={{ bg: "brand.dark", color: "white" }}
-                onClick={() => setSettingsView("chats")}
-                size={"xs"}
-                py={1}
-                border={"1px"}
-                borderColor={"brand.dark"}
-              >
-                Phone Registration
-              </Button> */}
-            </Flex>
+        <Flex direction={"column"}>
+          <Flex direction={"column"} justifyContent={"space-between"}>
+            <Flex className="menu" gap="4"></Flex>
           </Flex>
-          {appView === "folders" && folderAndFIles()}
-          {appView === "members" && projectMembers()}
+          <Flex>
+            {appView === "folders" && folderAndFIles()}
+            {appView === "members" && projectMembers()}
+          </Flex>
           {/* //{setting === "chats" && <ProjectChats />} */}
-        </>
+        </Flex>
       ) : (
-        <>
-          <Flex
-            fontSize={"3xl"}
-            fontWeight={"black"}
-            color={"brand.mid"}
-            justifyContent={"center"}
-            alignItems={"center"}
-            h={"100%"}
-          >
-            Select or create a project at the top left corner
-          </Flex>
-        </>
+        <Flex
+          fontSize={"3xl"}
+          fontWeight={"black"}
+          color={"brand.mid"}
+          justifyContent={"center"}
+          alignItems={"center"}
+          h={"100%"}
+        >
+          Select or create a project at the top left corner
+        </Flex>
       )}
     </Flex>
   );
