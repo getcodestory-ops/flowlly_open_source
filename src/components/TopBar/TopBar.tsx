@@ -1,34 +1,125 @@
-import React, { useState, useEffect, use } from "react";
-import { Flex, useToast } from "@chakra-ui/react";
+import React, { useEffect } from "react";
+import { Flex, Image } from "@chakra-ui/react";
+import flowlly_logo from "../../img/logo_full.svg";
+import UserPanel from "../UserPanel";
 import { useStore } from "@/utils/store";
+import {
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
+import { getProjects, deleteProject } from "@/api/projectRoutes";
+import { getActivities, deleteActivity } from "@/api/activity_routes";
+import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
+import CreateNewProjectButton from "../Schedule/NewProjectButton";
 
-import Breadcrubms from "./Breadcrubms";
-
-function TopBar() {
-  const toast = useToast();
-
-  const { taskToView } = useStore((state) => ({
-    taskToView: state.taskToView,
+function NewTopBar() {
+  const {
+    session,
+    setUserProjects,
+    setActiveProject,
+    activeProject,
+    scheduleDate,
+    scheduleProbability,
+    setUserActivities,
+  } = useStore((state) => ({
+    session: state.session,
+    setUserProjects: state.setUserProjects,
+    setActiveProject: state.setActiveProject,
+    activeProject: state.activeProject,
+    scheduleDate: state.scheduleDate,
+    scheduleProbability: state.scheduleProbability,
+    setUserActivities: state.setUserActivities,
   }));
 
-  return (
-    <Flex width={"full"} m="2" zIndex={"overlay"} ml="8">
-      <Breadcrubms
-        taskToView={{
+  const queryClient = useQueryClient();
+  // const [projects, setProjects] = useState<ProjectEntity[]>([]);
+
+  const { data: projects, isLoading } = useQuery({
+    queryKey: ["initialProjectList", session],
+    queryFn: () => getProjects(session!, "SCHEDULE"),
+    enabled: !!session?.access_token,
+    placeholderData: keepPreviousData,
+  });
+
+  const {
+    data: activities,
+    isLoading: isLoadingActivities,
+    isSuccess,
+  } = useQuery({
+    queryKey: [
+      "activityList",
+      session,
+      activeProject,
+      scheduleDate,
+      scheduleProbability,
+    ],
+    queryFn: () => {
+      if (!session || !activeProject) {
+        return Promise.reject("Set session first !");
+      }
+      const date = getCurrentDateFormatted(scheduleDate || new Date());
+      return getActivities(
+        session,
+        activeProject.project_id,
+        date,
+        scheduleProbability
+      );
+    },
+
+    enabled: !!session?.access_token && !!activeProject?.project_id,
+  });
+
+  useEffect(() => {
+    if (isSuccess && activities && activities.length > 0) {
+      setUserActivities(activities);
+    } else if (isSuccess && activities && activities.length === 0) {
+      setUserActivities([
+        {
           id: "SCHEDULE",
           project_id: "parent",
-          name: "Select a task",
-          start: "01/01/23",
-          end: "01/02/23",
+          name: "No active task",
+          start: "0/00/00",
+          end: "00/00/00",
           progress: 0,
           activity_critical: {
             critical_path: false,
           },
-        }}
-        renderProjects={1}
+        },
+      ]);
+    }
+  }, [activities, isSuccess, setUserActivities]);
+
+  useEffect(() => {
+    if (projects && projects.length > 0) {
+      setUserProjects(projects);
+      setActiveProject(projects[0]);
+    }
+  }, [projects, setActiveProject, setUserProjects]);
+
+  return (
+    <Flex
+      px={4}
+      py={"3"}
+      alignItems={"center"}
+      bg={"brand.gray"}
+      h={"full"}
+      justifyContent={"space-between"}
+      rounded={"xl"}
+      className="custom-shadow"
+    >
+      <Image
+        src="https://upthcaewktgrqjieqiya.supabase.co/storage/v1/object/public/images/logo_full.svg"
+        alt="logo"
+        width="150px"
       />
+
+      <Flex alignItems={"center"}>
+        <CreateNewProjectButton />
+        <UserPanel />
+      </Flex>
     </Flex>
   );
 }
 
-export default TopBar;
+export default NewTopBar;
