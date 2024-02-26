@@ -7,14 +7,22 @@ import Editor from "@/pages/documents/editor";
 import { useStore } from "@/utils/store";
 
 const NEW_NotesPage = () => {
-  const { documentId, setDocumentId, selectedContext } = useStore((state) => ({
+  const {
+    documentId,
+    setDocumentId,
+    selectedContext,
+    noteTitle,
+    setNoteTitle,
+  } = useStore((state) => ({
     documentId: state.documentId,
     setDocumentId: state.setDocumentId,
     selectedContext: state.selectedContext,
+    noteTitle: state.noteTitle,
+    setNoteTitle: state.setNoteTitle,
   }));
   const [folderView, setFolderView] = useState<boolean>(true);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [noteTitle, setNoteTitle] = useState("");
+  // const [noteTitle, setNoteTitle] = useState("");
 
   useEffect(() => {
     console.log("documentId", documentId);
@@ -60,17 +68,20 @@ const NEW_NotesPage = () => {
         >
           + New Note
         </Flex>
-        {folderView && (
-          <Flex direction={"column"} gap="2">
+        <Flex direction={"column"} gap="4">
+          {folderView && (
             <FolderViewer
               folderView={folderView}
               setFolderView={setFolderView}
             />
-            <DocumentList setNoteTitle={setNoteTitle} />
-          </Flex>
-        )}
-
-        <CreateNewDocument isOpen={isOpen} onClose={onClose} />
+          )}
+          <DocumentList setNoteTitle={setNoteTitle} folderView={folderView} />
+        </Flex>
+        <CreateNewDocument
+          isOpen={isOpen}
+          onClose={onClose}
+          folderView={folderView}
+        />
       </GridItem>
       <GridItem
         bg={"brand.background"}

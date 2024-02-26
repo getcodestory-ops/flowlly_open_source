@@ -26,17 +26,25 @@ import { useStore } from "@/utils/store";
 type CreateNewDocumentProps = {
   isOpen: boolean;
   onClose: () => void;
+  folderView?: boolean;
 };
 
-function CreateNewDocument({ isOpen, onClose }: CreateNewDocumentProps) {
+function CreateNewDocument({
+  isOpen,
+  onClose,
+  folderView,
+}: CreateNewDocumentProps) {
   const initialRef = useRef<HTMLElement>();
   const queryClient = useQueryClient();
   const [title, setTitle] = useState<string>("");
-  const { session, activeProject, taskToView } = useStore((state) => ({
-    session: state.session,
-    activeProject: state.activeProject,
-    taskToView: state.taskToView,
-  }));
+  const { session, activeProject, taskToView, selectedContext } = useStore(
+    (state) => ({
+      session: state.session,
+      activeProject: state.activeProject,
+      taskToView: state.taskToView,
+      selectedContext: state.selectedContext,
+    })
+  );
   const toast = useToast();
   const [noteType, setNoteType] = useState<string>("");
 
@@ -49,7 +57,8 @@ function CreateNewDocument({ isOpen, onClose }: CreateNewDocumentProps) {
         session!,
         activeProject.project_id,
         title,
-        taskToView.id === "SCHEDULE" ? undefined : taskToView.id
+        taskToView.id === "SCHEDULE" ? undefined : taskToView.id,
+        folderView ? undefined : selectedContext?.id
       );
     },
     onError: (error) => {

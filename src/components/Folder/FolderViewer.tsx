@@ -28,7 +28,7 @@ function FolderViewer({
               setSelectedContext(folder);
               setFolderView(false);
             }}
-            bg="brand.background"
+            bg="brand.gray"
             sx={{
               cursor: "pointer",
               borderRadius: "md",
@@ -42,11 +42,11 @@ function FolderViewer({
               direction="column"
               alignItems="center"
               justifyContent="center"
-              p={4}
               borderRadius="md"
+              py={2}
               cursor="pointer"
             >
-              <Icon as={CiFolderOn} color="inherit" w={4} h={4} mb={2} />
+              <Icon as={CiFolderOn} color="inherit" h={4} mb={2} />
               <Text textAlign="center" fontSize="md">
                 {folder.name}
               </Text>

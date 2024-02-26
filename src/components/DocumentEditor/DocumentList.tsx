@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Grid, GridItem, Flex, Text } from "@chakra-ui/react";
+import { Grid, GridItem, Flex, Text, Tooltip } from "@chakra-ui/react";
 import { getDocuments } from "@/api/documentRoutes";
 import { LuFileText } from "react-icons/lu";
 import { useQuery } from "@tanstack/react-query";
@@ -9,26 +9,41 @@ import { useRouter } from "next/router";
 
 interface DocumentListProps {
   setNoteTitle?: any;
+  folderView?: boolean;
 }
 
-function DocumentList({ setNoteTitle }: DocumentListProps) {
+function DocumentList({ setNoteTitle, folderView }: DocumentListProps) {
   const router = useRouter();
   const { projectId } = router.query;
-  const { session, activeProject, taskToView, setDocumentId, documentId } =
-    useStore((state) => ({
-      session: state.session,
-      activeProject: state.activeProject,
-      taskToView: state.taskToView,
-      setDocumentId: state.setDocumentId,
-      documentId: state.documentId,
-    }));
+  const {
+    session,
+    activeProject,
+    taskToView,
+    setDocumentId,
+    documentId,
+    selectedContext,
+  } = useStore((state) => ({
+    session: state.session,
+    activeProject: state.activeProject,
+    taskToView: state.taskToView,
+    setDocumentId: state.setDocumentId,
+    documentId: state.documentId,
+    selectedContext: state.selectedContext,
+  }));
 
   const {
     data: documents,
     isLoading,
     isSuccess,
   } = useQuery({
-    queryKey: ["documentList", session, activeProject, taskToView],
+    queryKey: [
+      "documentList",
+      session,
+      activeProject,
+      taskToView,
+      selectedContext,
+      folderView,
+    ],
     queryFn: () => {
       if (!session || !activeProject) {
         return Promise.reject("Set session first !");
@@ -36,7 +51,8 @@ function DocumentList({ setNoteTitle }: DocumentListProps) {
       return getDocuments(
         session,
         activeProject.project_id,
-        taskToView.id === "SCHEDULE" ? undefined : taskToView.id
+        taskToView.id === "SCHEDULE" ? undefined : taskToView.id,
+        folderView ? undefined : selectedContext?.id
       );
     },
 
@@ -55,8 +71,8 @@ function DocumentList({ setNoteTitle }: DocumentListProps) {
   return (
     <Flex
       w="full"
-      overflowY={"scroll"}
-      overscrollBehaviorY={"contain"}
+      overflowY={"auto"}
+      overscrollBehaviorY={"auto"}
       direction={"column"}
     >
       {/* <GridItem
@@ -83,29 +99,34 @@ function DocumentList({ setNoteTitle }: DocumentListProps) {
           //   }}
           //   key={document.id}
           // >
-          <Flex
-            w="full"
-            mb={"2"}
-            py={"4"}
-            fontSize="14px"
+          <Tooltip
+            label={document.title}
+            aria-label="A tooltip"
             key={document.id}
-            bg={document.id === documentId ? "brand.accent" : "brand.gray"}
-            cursor={"pointer"}
-            display="flex"
-            flexDirection="column"
-            borderRadius={"md"}
-            onClick={() => afterClick(document.id, document.title)}
-            _hover={{ bg: "brand.dark", color: "white" }}
           >
             <Flex
               w="full"
-              justifyContent={"center"}
-              h={"full"}
-              alignItems={"center"}
+              mb={"2"}
+              py={"4"}
+              fontSize="14px"
+              bg={document.id === documentId ? "brand.accent" : "brand.gray"}
+              cursor={"pointer"}
+              display="flex"
+              flexDirection="column"
+              borderRadius={"md"}
+              onClick={() => afterClick(document.id, document.title)}
+              _hover={{ bg: "brand.dark", color: "white" }}
             >
-              {document.title.slice(0, 10)}...
+              <Flex
+                w="full"
+                justifyContent={"center"}
+                h={"full"}
+                alignItems={"center"}
+              >
+                {document.title.slice(0, 10)}...
+              </Flex>
             </Flex>
-          </Flex>
+          </Tooltip>
           // </Link>
         ))}
     </Flex>

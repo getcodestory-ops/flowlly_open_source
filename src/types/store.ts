@@ -58,6 +58,7 @@ export type State = {
   activeProject: ProjectEntity | null;
   userActivities: ActivityEntity[];
   activeChatEntity: AgentChatEntity;
+  noteTitle: string;
   prompts: {
     scope: string;
     risks: string;
@@ -90,6 +91,7 @@ export type State = {
   setSidePanelExtensionView: (
     sidePanelExtensionView: SidePanelExtension
   ) => void;
+  setNoteTitle: (notesTitle: string) => void;
   setFolderList: (folderList: Brain[]) => void;
   setChatSession: (chatSession: Chat | null) => void;
   setChatSessions: (chatSession: Chat[]) => void;

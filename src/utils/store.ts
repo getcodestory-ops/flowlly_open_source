@@ -16,6 +16,7 @@ export const useStore = create<State>((set) => ({
   activeProject: null,
   activeChatEntity: { id: "", project_id: "", chat_name: "", chat_details: "" },
   hasAdminRights: false,
+  noteTitle: "",
   prompts: scopeConfig,
   sidePanelExtensionView: "memory",
 
@@ -67,6 +68,7 @@ export const useStore = create<State>((set) => ({
           ? null
           : sidePanelExtensionView,
     })),
+  setNoteTitle: (noteTitle: string) => set(() => ({ noteTitle })),
   setFolderList: (folderList: Brain[]) => set(() => ({ folderList })),
   setChatSession: (chatSession: Chat | null) => set(() => ({ chatSession })),
   setChatSessions: (chatSessions: Chat[]) => set(() => ({ chatSessions })),

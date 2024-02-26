@@ -15,6 +15,8 @@ interface DocumentProps {
       total_chunks: number;
       chunk_number: number;
       styleType: string | undefined;
+      type?: string;
+      document_id?: string;
     };
   }[];
 }
@@ -30,12 +32,16 @@ const ContextDisplay: React.FC<DocumentProps> = ({
     setSelectedContext,
     folderList,
     setAiActionsView,
+    setDocumentId,
+    setNoteTitle,
   } = useStore((state) => ({
     pdfViewer: state.pdfViewer,
     setPdfViewer: state.setPdfViewer,
     setSelectedContext: state.setSelectedContext,
     folderList: state.folderList,
     setAiActionsView: state.setAiActionsView,
+    setDocumentId: state.setDocumentId,
+    setNoteTitle: state.setNoteTitle,
   }));
 
   const handleRefereces = (filePath: string, pageNumber: number) => {
@@ -141,31 +147,50 @@ const ContextDisplay: React.FC<DocumentProps> = ({
                   h={"300px"}
                   overflowY={"auto"}
                 >
-                  <Box
-                    bg={"brand.mid"}
-                    color={"white"}
-                    fontSize={"sm"}
-                    px={2}
-                    py={1}
-                    w={28}
-                    rounded={"full"}
-                    textAlign={"center"}
-                    shadow={"md"}
-                    mb={2}
-                    cursor={"pointer"}
-                    onClick={() => {
-                      setPdfViewer({ isPdfVisible: true });
-                      setAiActionsView("expand");
-
-                      handleRefereces(
-                        page.metadata.file_name,
-                        page.metadata.page_number + 1
-                      );
-                    }}
-                  >
-                    Open in PDF
-                  </Box>
-                  <Text>Context:</Text>
+                  {page.metadata.type !== "document" && (
+                    <Box
+                      bg={"brand.mid"}
+                      color={"white"}
+                      fontSize={"sm"}
+                      px={2}
+                      py={1}
+                      w={28}
+                      rounded={"full"}
+                      textAlign={"center"}
+                      shadow={"md"}
+                      mb={2}
+                      cursor={"pointer"}
+                      onClick={() => {
+                        setPdfViewer({ isPdfVisible: true });
+                        setAiActionsView("expand");
+                        handleRefereces(
+                          page.metadata.file_name,
+                          page.metadata.page_number + 1
+                        );
+                      }}
+                    >
+                      Open in PDF
+                    </Box>
+                  )}
+                  <Text>
+                    {page.metadata.type !== "document" ? (
+                      "Context"
+                    ) : (
+                      <Flex
+                        onClick={() => {
+                          page.metadata.document_id &&
+                            setDocumentId(page.metadata.document_id);
+                          setNoteTitle(page.metadata.file_name);
+                        }}
+                      >
+                        <Text
+                          as="u"
+                          cursor="pointer"
+                        >{`Notes - ${page.metadata.file_name}`}</Text>
+                      </Flex>
+                    )}
+                    :
+                  </Text>
                   {page.page_content}
                 </Flex>
               );
