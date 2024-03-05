@@ -6,7 +6,8 @@ export const createDocument = async (
   session: Session,
   projectId: string,
   title: string,
-  activityId?: string
+  activityId?: string,
+  brainId?: string
 ) => {
   if (!session.access_token) return null;
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/document/${projectId}`;
@@ -14,6 +15,7 @@ export const createDocument = async (
     title: title,
     project_access_id: projectId,
     activity_id: activityId,
+    brain_id: brainId,
   };
   try {
     const response = await axios.post(url, data, {
@@ -31,10 +33,12 @@ export const createDocument = async (
 export const getDocuments = async (
   session: Session,
   projectId: string,
-  activityId?: string
+  activityId?: string,
+  brainId?: string
 ): Promise<DocumentEntity[]> => {
   const query = {
     activity_id: activityId,
+    brain_id: brainId,
   };
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/document/${projectId}`;
 

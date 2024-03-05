@@ -31,7 +31,7 @@ import {
   updateContext,
   getContexualAnswer,
 } from "@/utils/getAiAnswers";
-import ChatComponent from "./NEW_ChatComponet";
+import ChatComponent from "../ChatInput/ChatComponet";
 import { NestBlockButton } from "@blocknote/react";
 
 function AiActions() {

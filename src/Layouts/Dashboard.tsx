@@ -9,7 +9,7 @@ import CommunicationInterface from "./CommunicationInterface";
 import SafetyInterface from "./SafetyInterface";
 import ProjectDashboard from "./ProjectDashboard";
 import ProjectSetup from "./ProjectSetup";
-import MainLayout from "./MainLayout";
+import MainLayout from "./OldMainLayout";
 
 export default function Dashboard() {
   const appView = useStore((state) => state.appView);

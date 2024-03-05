@@ -7,6 +7,7 @@ import { AgentChatEntity } from "@/types/agentChats";
 import { ActivityEntity } from "@/types/activities";
 import { State, SidePanelExtension, Brain, AppView } from "@/types/store";
 import { persist } from "zustand/middleware";
+import { MemberEntity } from "@/types/members";
 
 export const useStore = create<State>((set) => ({
   session: null,
@@ -16,9 +17,10 @@ export const useStore = create<State>((set) => ({
   activeProject: null,
   activeChatEntity: { id: "", project_id: "", chat_name: "", chat_details: "" },
   hasAdminRights: false,
+  noteTitle: "",
   prompts: scopeConfig,
   sidePanelExtensionView: "memory",
-
+  members: [],
   folderList: [],
   chatSession: null,
   chatSessions: [],
@@ -67,6 +69,7 @@ export const useStore = create<State>((set) => ({
           ? null
           : sidePanelExtensionView,
     })),
+  setNoteTitle: (noteTitle: string) => set(() => ({ noteTitle })),
   setFolderList: (folderList: Brain[]) => set(() => ({ folderList })),
   setChatSession: (chatSession: Chat | null) => set(() => ({ chatSession })),
   setChatSessions: (chatSessions: Chat[]) => set(() => ({ chatSessions })),
@@ -97,6 +100,7 @@ export const useStore = create<State>((set) => ({
         };
       }
     }),
+  setMembers: (members: MemberEntity[]) => set(() => ({ members })),
   setChatHistory: (chatMessages: ChatMessage[]) => set({ chatMessages }),
   setSelectedContext: (selectedContext: Brain | null) =>
     set(() => ({ selectedContext })),

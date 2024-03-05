@@ -12,7 +12,7 @@ import {
   Tooltip,
   Button,
 } from "@chakra-ui/react";
-import NEW_Menu from "./NEW_Menu";
+import NEW_Menu from "../Menu/Menu";
 import { MdOutlineSettings } from "react-icons/md";
 import { FaChevronDown } from "react-icons/fa";
 import { useStore } from "@/utils/store";

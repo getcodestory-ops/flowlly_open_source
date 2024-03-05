@@ -2,18 +2,27 @@ import React, { useState, useEffect } from "react";
 import { Grid, GridItem, Text, Flex, useDisclosure } from "@chakra-ui/react";
 import DocumentList from "../DocumentEditor/DocumentList";
 import CreateNewDocument from "../DocumentEditor/CreateNewDocument";
-import EditorBlock from "@/components/DocumentEditor/Editor";
+import FolderViewer from "../Folder/FolderViewer";
 import Editor from "@/pages/documents/editor";
 import { useStore } from "@/utils/store";
 
 const NEW_NotesPage = () => {
-  const { documentId, setDocumentId } = useStore((state) => ({
+  const {
+    documentId,
+    setDocumentId,
+    selectedContext,
+    noteTitle,
+    setNoteTitle,
+  } = useStore((state) => ({
     documentId: state.documentId,
     setDocumentId: state.setDocumentId,
+    selectedContext: state.selectedContext,
+    noteTitle: state.noteTitle,
+    setNoteTitle: state.setNoteTitle,
   }));
-
+  const [folderView, setFolderView] = useState<boolean>(true);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [noteTitle, setNoteTitle] = useState("");
+  // const [noteTitle, setNoteTitle] = useState("");
 
   useEffect(() => {
     console.log("documentId", documentId);
@@ -27,9 +36,20 @@ const NEW_NotesPage = () => {
         overflowY={"auto"}
         className="custom-scrollbar"
       >
-        <Text fontSize={"14px"} fontWeight={"bold"}>
-          My Notes
-        </Text>
+        <Flex>
+          <Text
+            fontSize={"14px"}
+            fontWeight={"bold"}
+            cursor="pointer"
+            as={folderView ? undefined : "u"}
+            onClick={() => setFolderView(true)}
+          >
+            Home
+          </Text>
+          <Text fontSize={"14px"} fontWeight={"bold"}>
+            {folderView || `/ ${selectedContext?.name}` || ""}
+          </Text>
+        </Flex>
 
         <Flex
           px={"2"}
@@ -48,10 +68,20 @@ const NEW_NotesPage = () => {
         >
           + New Note
         </Flex>
-
-        <DocumentList setNoteTitle={setNoteTitle} />
-
-        <CreateNewDocument isOpen={isOpen} onClose={onClose} />
+        <Flex direction={"column"} gap="4">
+          {folderView && (
+            <FolderViewer
+              folderView={folderView}
+              setFolderView={setFolderView}
+            />
+          )}
+          <DocumentList setNoteTitle={setNoteTitle} folderView={folderView} />
+        </Flex>
+        <CreateNewDocument
+          isOpen={isOpen}
+          onClose={onClose}
+          folderView={folderView}
+        />
       </GridItem>
       <GridItem
         bg={"brand.background"}
