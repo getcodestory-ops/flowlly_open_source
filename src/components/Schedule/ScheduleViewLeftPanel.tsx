@@ -49,6 +49,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import AddNewActivityModal from "./AddNewActivityModal";
 import CsvUploadIcon from "./CSVUpload/csvUploadIcon";
+import { getMembers } from "@/api/membersRoutes";
 
 function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   const {
@@ -57,12 +58,16 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
     setActiveChatEntity,
     activeProject,
     userActivities,
+    members,
+    setMembers,
   } = useStore((state) => ({
     session: state.session,
     activeChatEntity: state.activeChatEntity,
     setActiveChatEntity: state.setActiveChatEntity,
     activeProject: state.activeProject,
     userActivities: state.userActivities,
+    members: state.members,
+    setMembers: state.setMembers,
   }));
   const [view, setView] = useState<string>("tasks");
   const [conversationView, setConversationView] = useState(false);
@@ -80,6 +85,24 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
     queryFn: () => getProjects(session!),
     enabled: !!session?.access_token,
   });
+
+  const { data: memberList, isLoading: membersLoading } = useQuery({
+    queryKey: ["memberList", session, activeProject],
+    queryFn: async () => {
+      if (!session || !activeProject) {
+        return Promise.reject("No session or active project");
+      }
+
+      return getMembers(session, activeProject.project_id);
+    },
+    enabled: !!session?.access_token,
+  });
+
+  useEffect(() => {
+    if (memberList && memberList.data.length > 0) {
+      setMembers(memberList.data);
+    }
+  }, [memberList]);
 
   useEffect(() => {
     if (uiView === "assistant" || uiView === "reports" || uiView === "gantt") {

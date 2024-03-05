@@ -79,8 +79,8 @@ function NewTopBar() {
           id: "SCHEDULE",
           project_id: "parent",
           name: "No active task",
-          start: "0/00/00",
-          end: "00/00/00",
+          start: "01/02/23",
+          end: "01/02/23",
           progress: 0,
           activity_critical: {
             critical_path: false,

@@ -99,7 +99,7 @@ function NEW_Menu() {
           _hover={{ bg: "brand.dark", color: "white" }}
         >
           <Icon as={FaFolderOpen} mr={"2"}></Icon>
-          Files
+          Documents
         </Button>
         <Button
           mx={"2"}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { Flex } from "@chakra-ui/react";
 import KanbanLane from "./KanbanLane";
 import { useStore } from "@/utils/store";
@@ -21,63 +21,60 @@ function KanbanBoard() {
   }));
 
   const [tasks, setTasks] = useState<any[]>(userActivities);
-  const [tasksNew, setTasksNew] = React.useState<Task[]>(initTasks());
-  const { isOpen, onClose, onOpen } = useScheduleUpdate();
+  // const [tasksNew, setTasksNew] = React.useState<Task[]>(initTasks());
+  // const { isOpen, onClose, onOpen } = useScheduleUpdate();
   const [modifyTask, setModifyTask] = useState<Task>();
   const [editOpen, setEditOpen] = useState<boolean>(false);
+  //
   const [changedTask, setChangedTask] = useState<any>();
 
-  useEffect(() => {
-    setTasks(userActivities);
-    // console.log("userActivities", userActivities);
-  }, [userActivities]);
+  // useEffect(() => {
+  //   setTasks(userActivities);
+  //   // console.log("userActivities", userActivities);
+  // }, [userActivities]);
 
-  useEffect(() => {
-    setUserActivities(tasks);
-  }, [tasks]);
+  // useEffect(() => {
+  //   setUserActivities(tasks);
+  // }, [tasks]);
 
-  useEffect(() => {
-    if (tasks) {
-      if (tasks.length > 0) {
-        const transformedTasks = tasks
-          .map(activityEntityToTask)
-          .sort((a, b) => {
-            if (a.start.getTime() === b.start.getTime()) {
-              return a.start.getTime() - b.start.getTime();
-            } else {
-              return 0;
-            }
-          }); // Assuming the data you want is in activities.data
-        setTasksNew(transformedTasks);
-      } else {
-        const currentDate = new Date();
-        setTasksNew([
-          {
-            start: new Date(
-              currentDate.getFullYear(),
-              currentDate.getMonth(),
-              currentDate.getDate()
-            ),
-            end: new Date(
-              currentDate.getFullYear(),
-              currentDate.getMonth(),
-              currentDate.getDate()
-            ),
-            name: "No data available",
-            id: "ProjectSample",
-            progress: 0,
-            type: "project",
-            hideChildren: false,
-            displayOrder: 1,
-          },
-        ]);
-      }
-    }
-  }, [tasks]);
-
-  useEffect(() => {
-    console.log("tasksNew", tasksNew);
-  }, [tasksNew]);
+  // useEffect(() => {
+  //   if (tasks) {
+  //     if (tasks.length > 0) {
+  //       const transformedTasks = tasks
+  //         .map(activityEntityToTask)
+  //         .sort((a, b) => {
+  //           if (a.start.getTime() === b.start.getTime()) {
+  //             return a.start.getTime() - b.start.getTime();
+  //           } else {
+  //             return 0;
+  //           }
+  //         }); // Assuming the data you want is in activities.data
+  //       setTasksNew(transformedTasks);
+  //     } else {
+  //       const currentDate = new Date();
+  //       setTasksNew([
+  //         {
+  //           start: new Date(
+  //             currentDate.getFullYear(),
+  //             currentDate.getMonth(),
+  //             currentDate.getDate()
+  //           ),
+  //           end: new Date(
+  //             currentDate.getFullYear(),
+  //             currentDate.getMonth(),
+  //             currentDate.getDate()
+  //           ),
+  //           name: "No data available",
+  //           id: "ProjectSample",
+  //           progress: 0,
+  //           type: "project",
+  //           hideChildren: false,
+  //           displayOrder: 1,
+  //         },
+  //       ]);
+  //     }
+  //   }
+  // }, [tasks]);
 
   const statuses = [
     "On Schedule",
@@ -88,25 +85,28 @@ function KanbanBoard() {
   ];
 
   const handleDrop = (draggedItem: ActivityEntity, newStatus: string) => {
-    setTasks((prevTasks) => {
-      const updatedTasks = prevTasks.map((task: any) => {
-        if (task.id === draggedItem.id) {
-          return { ...task, status: newStatus };
-        }
-        return task;
-      });
-      return updatedTasks;
+    console.log("draggedItem", draggedItem);
+    setModifyTask({
+      ...activityEntityToTask(tasks.find((task) => task.id === draggedItem.id)),
     });
-    setChangedTask(draggedItem);
-  };
+    //setEditOpen(true);
 
+    // setTasks((prevTasks) => {
+    //   const updatedTasks = prevTasks.map((task: any) => {
+    //     if (task.id === draggedItem.id) {
+    //       return { ...task, status: newStatus };
+    //     }
+    //     return task;
+    //   });
+    //   return updatedTasks;
+    // });
+    // setChangedTask(draggedItem);
+  };
   useEffect(() => {
-    if (changedTask) {
-      const result = tasksNew.find((task) => task.id === changedTask.id);
-      setModifyTask(result);
+    if (modifyTask) {
       setEditOpen(true);
     }
-  }, [tasksNew]);
+  }, [modifyTask]);
 
   return (
     <Flex w={"full"} justifyContent={"space-around"}>
@@ -114,7 +114,7 @@ function KanbanBoard() {
         <UpdateActivityModal
           isOpen={editOpen}
           onClose={() => setEditOpen(false)}
-          tasks={tasks}
+          tasks={userActivities}
           modifyTask={modifyTask}
           updateSource={"kanban"}
         />

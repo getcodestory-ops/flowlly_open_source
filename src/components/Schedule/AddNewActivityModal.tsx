@@ -13,12 +13,18 @@ import {
   Input,
   Textarea,
   useToast,
+  Select,
+  Divider,
 } from "@chakra-ui/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import MultiSelect from "../MultiSelect/MultiSelect";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { createActivity } from "@/api/activity_routes";
 import { CreateNewActivity } from "@/types/activities";
+import { MemberEntity } from "@/types/members";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
+import { getMembers } from "@/api/membersRoutes";
+import { ActivityEntity } from "@/types/activities";
 
 interface AddNewActivityModalProps {
   isOpen: boolean;
@@ -28,8 +34,9 @@ interface AddNewActivityModalProps {
 function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
   const toast = useToast();
   const dateToday = getCurrentDateFormatted();
-  const { session, activeProject } = useStore((state) => ({
+  const { session, activeProject, activities } = useStore((state) => ({
     session: state.session,
+    activities: state.userActivities,
     activeProject: state.activeProject,
   }));
 
@@ -53,6 +60,18 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
 
   const queryClient = useQueryClient();
 
+  const { data: members, isLoading: membersLoading } = useQuery({
+    queryKey: ["memberList", session, activeProject],
+    queryFn: async () => {
+      if (!session || !activeProject) {
+        return Promise.reject("No session or active project");
+      }
+
+      return getMembers(session, activeProject.project_id);
+    },
+    enabled: !!session?.access_token,
+  });
+
   const mutation = useMutation({
     mutationFn: () => {
       if (!activity) return Promise.reject("No activity");
@@ -68,7 +87,7 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
   });
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
       <ModalOverlay />
       <ModalContent>
         {!activeProject && (
@@ -83,10 +102,10 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
         )}
         {activeProject && (
           <>
-            <ModalHeader>Create New Activities</ModalHeader>
+            <ModalHeader>Create New Activity</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              <Flex mb={4} gap={2} flexDirection={"column"}>
+              <Flex mb={4} gap={8} flexDirection={"column"}>
                 <Input
                   placeholder="Activity Name"
                   required
@@ -167,6 +186,63 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
                     }));
                   }}
                 />
+                {/* owner selection based on member  */}
+                <Divider my="4" />
+                <Flex gap="8">
+                  <MultiSelect
+                    title="Assignees"
+                    options={members?.data.map((member: MemberEntity) => ({
+                      label: `${member.first_name} ${member.last_name}`,
+                      id: member.id,
+                    }))}
+                    onChange={(selectedOptions) => {
+                      setActivity((state) => ({
+                        ...state!,
+                        owner: selectedOptions,
+                      }));
+                    }}
+                  />
+                  <MultiSelect
+                    title="Depends on"
+                    options={activities.map((activity: ActivityEntity) => ({
+                      label: `${activity.name}`,
+                      id: activity.id,
+                    }))}
+                    onChange={(selectedOptions) => {
+                      setActivity((state) => ({
+                        ...state!,
+                        dependencies: selectedOptions,
+                      }));
+                    }}
+                  />
+                </Flex>
+                <Divider my="4" />
+
+                {/* <Select
+                  multiple
+                  placeholder="Asignees"
+                  size="lg"
+                  onChange={(e) => {
+                    const selectedOptions = e.target.selectedOptions;
+                    const values = Array.from(selectedOptions).map(
+                      (option) => option.value
+                    );
+                    setActivity((state) => ({
+                      ...state!,
+                      owner: values,
+                    }));
+                  }}
+                >
+                  {members &&
+                    members.data.map((member: MemberEntity) => {
+                      return (
+                        <option key={member.id} value={member.id}>
+                          {member.first_name} {member.last_name}
+                        </option>
+                      );
+                    })}
+                </Select> */}
+
                 {/* <Input
               placeholder="resources"
               value={activity?.cost}

@@ -3,6 +3,7 @@ import { Chat, ChatMessage, ChatHistory } from "@/types/chat";
 import { ProjectEntity } from "@/types/projects";
 import { AgentChatEntity } from "@/types/agentChats";
 import { ActivityEntity } from "@/types/activities";
+import { MemberEntity } from "./members";
 
 export type SidePanelExtension =
   | "fileExplorer"
@@ -65,6 +66,7 @@ export type State = {
     getScopePrompt: string;
     generateScopePrompt: string;
   };
+  members: MemberEntity[];
   sidePanelExtensionView: SidePanelExtension;
   folderList: Brain[] | null;
   chatSession: Chat | null;
@@ -100,6 +102,7 @@ export type State = {
     fromUser: "question" | "context" | "answer",
     id?: number
   ) => void;
+  setMembers: (members: MemberEntity[]) => void;
   setChatHistory: (chatMessages: ChatMessage[]) => void;
   setSelectedContext: (context: Brain | null) => void;
   setPdfViewer: (pdfDetails: any) => void;

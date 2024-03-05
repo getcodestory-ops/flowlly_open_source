@@ -25,6 +25,7 @@ import getCurrentDateFormatted, {
 } from "@/utils/getCurrentDateFormatted";
 import { updateActivity } from "@/api/activity_routes";
 import { ActivityEntity } from "@/types/activities";
+import MultiSelect from "../MultiSelect/MultiSelect";
 import type { Task } from "gantt-task-react";
 
 interface UpdateActivityModalProps {
@@ -49,15 +50,6 @@ function UpdateActivityModal({
     activeProject: state.activeProject,
   }));
 
-  useEffect(() => {
-    console.log(
-      "session, active project, activity",
-      session,
-      activeProject,
-      activity
-    );
-  }, []);
-
   const [activity, setActivity] = useState<UpdateActivityTypes>();
 
   useEffect(() => {
@@ -71,17 +63,13 @@ function UpdateActivityModal({
           start: getCurrentDateFormatted(modifyTask.start),
           project_id: activeProject?.project_id,
           end: getCurrentDateFormatted(modifyTask.end),
-          dependencies: [],
+          dependencies: modifyTask.dependencies,
           resources: [],
           status: task.status,
         });
       }
     });
   }, [tasks, modifyTask]);
-
-  useEffect(() => {
-    console.log("activity", activity);
-  }, [activity]);
 
   const queryClient = useQueryClient();
 
@@ -122,7 +110,7 @@ function UpdateActivityModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
       <ModalOverlay />
       <ModalContent bg={"brand.background"}>
         {!activeProject && (
@@ -281,8 +269,22 @@ function UpdateActivityModal({
                   <Text as={"b"} fontSize={"12px"}>
                     Select task dependency
                   </Text>
+                  <MultiSelect
+                    title="Depends on"
+                    options={tasks.map((activity: ActivityEntity) => ({
+                      label: `${activity.name}`,
+                      id: activity.id,
+                    }))}
+                    onChange={(selectedOptions) => {
+                      setActivity((state) => ({
+                        ...state!,
+                        dependencies: selectedOptions,
+                      }));
+                    }}
+                    existingSelection={activity.dependencies}
+                  />
 
-                  <Select
+                  {/* <Select
                     className="custom-selector"
                     bg={"white"}
                     id="dependencies"
@@ -301,7 +303,7 @@ function UpdateActivityModal({
                         {task.name}
                       </option>
                     ))}
-                  </Select>
+                  </Select> */}
                 </Flex>
                 <Flex direction={"column"}>
                   <Text as={"b"} fontSize={"12px"}>
@@ -327,7 +329,7 @@ function UpdateActivityModal({
                     <option value={"Delayed"}>Delayed</option>
                   </Select>
                   <Flex direction={"column"} mt={"2"}>
-                    <Text as={"b"} fontSize={"12px"}>
+                    {/* <Text as={"b"} fontSize={"12px"}>
                       Reason for update
                     </Text>
                     <Input
@@ -340,13 +342,13 @@ function UpdateActivityModal({
                       bg={"white"}
                       size={"sm"}
                       value={activity.name.replace("(on schedule)", "")}
-                      // onChange={(e) => {
-                      //   setActivity((state) => ({
-                      //     ...state!,
-                      //     name: e.target.value,
-                      //   }));
-                      // }}
-                    />
+                      onChange={(e) => {
+                        setActivity((state) => ({
+                          ...state!,
+                          name: e.target.value,
+                        }));
+                      }}
+                    /> */}
                   </Flex>
                 </Flex>
               </Flex>

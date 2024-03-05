@@ -20,6 +20,7 @@ import {
   keepPreviousData,
 } from "@tanstack/react-query";
 import UpdateActivityModal from "./UpdateActivityModal";
+import { ActivityEntity } from "@/types/activities";
 
 function ActivitiesDetailPage() {
   const {
@@ -30,6 +31,7 @@ function ActivitiesDetailPage() {
     taskDetailsView,
     setTaskDetailsView,
     userActivities,
+    members,
   } = useStore((state) => ({
     session: state.session,
     taskToView: state.taskToView,
@@ -38,6 +40,7 @@ function ActivitiesDetailPage() {
     taskDetailsView: state.taskDetailsView,
     setTaskDetailsView: state.setTaskDetailsView,
     userActivities: state.userActivities,
+    members: state.members,
   }));
 
   type Action = {
@@ -72,6 +75,16 @@ function ActivitiesDetailPage() {
     enabled: !!session?.access_token,
     placeholderData: keepPreviousData,
   });
+
+  const handleEdit = (activity: ActivityEntity, newStatus: string) => {
+    if (!activity) return;
+    console.log("activity", activity);
+    setModifyTask(activityEntityToTask(activity));
+  };
+
+  useEffect(() => {
+    setEditOpen(true);
+  }, [modifyTask]);
 
   useEffect(() => {
     if (contingencyPlans) {
@@ -113,13 +126,13 @@ function ActivitiesDetailPage() {
     }
   }, [userActivities]);
 
-  useEffect(() => {
-    tasks.forEach((task) => {
-      if (task.id === taskToView.id) {
-        setModifyTask(task);
-      }
-    });
-  }, [tasks, taskToView]);
+  // useEffect(() => {
+  //   tasks.forEach((task) => {
+  //     if (task.id === taskToView.id) {
+  //       setModifyTask(task);
+  //     }
+  //   });
+  // }, [tasks, taskToView]);
 
   const actionsCard = () => {
     let elements = []; // Initialize an empty array
@@ -213,7 +226,17 @@ function ActivitiesDetailPage() {
             fontWeight={"semibold"}
             color={`${!taskToView.owner ? "red" : "black"}`}
           >
-            {taskToView.owner ? taskToView.owner : "No owner assigned"}
+            {(members &&
+              taskToView.owner &&
+              taskToView.owner
+                .map((ownerId) => {
+                  const owner = members.filter(
+                    (member) => member.id === ownerId
+                  )[0];
+                  return owner.first_name + " " + owner.last_name;
+                })
+                .join(", ")) ??
+              "No owner assigned"}
           </Text>
         </Flex>
         <Flex direction={"column"} mt={"4"}>
@@ -580,7 +603,7 @@ function ActivitiesDetailPage() {
                         color={"white"}
                         _hover={{ bg: "brand.light", color: "brand.dark" }}
                         // onClick={() => setEditTask(!editTask)}
-                        onClick={() => setEditOpen(true)}
+                        onClick={() => handleEdit(taskToView, "In Progress")}
                       >
                         <Text>{editTask ? "Save Changes" : "Edit Task"}</Text>
                       </Button>

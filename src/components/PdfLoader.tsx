@@ -38,6 +38,7 @@ const VirtualPdfLoader = () => {
 
   useEffect(() => {
     async function setUrlForPdf() {
+      console.log("selectedContext", selectedContext);
       if (!selectedContext?.id || !filePath) return;
 
       if (!userId && !selectedFolder) return;
@@ -113,35 +114,6 @@ const VirtualPdfLoader = () => {
               zIndex={"overlay"}
             />
           </Flex>
-          {/* <Flex
-            position="absolute"
-            right="16"
-            top="2"
-            background="brand.accent"
-            px="8"
-            py="2"
-            borderRadius="lg"
-            gap={2}
-          >
-            <IconButton
-              aria-label="zoomout"
-              icon={<AiOutlinePlus />}
-              onClick={() => setScale((state) => state + 0.2)}
-              size={"xs"}
-              color="red.400"
-              bg="gray.300"
-              zIndex="overlay"
-            />
-            <IconButton
-              aria-label="zoomin"
-              icon={<AiOutlineMinus />}
-              onClick={() => setScale((state) => state - 0.2)}
-              size={"xs"}
-              color="red.400"
-              bg="gray.300"
-              zIndex="overlay"
-            />
-          </Flex> */}
           <Flex
             alignItems="center"
             flexDir="row"
@@ -174,7 +146,6 @@ const VirtualPdfLoader = () => {
                   {Array.from({ length: numPages }, (_, i) => i + 1).map(
                     (page) => (
                       <div key={page}>
-                        (
                         <div
                           key={page}
                           ref={(el) => {
@@ -190,7 +161,6 @@ const VirtualPdfLoader = () => {
                             scale={scale}
                           />
                         </div>
-                        )
                       </div>
                     )
                   )}
