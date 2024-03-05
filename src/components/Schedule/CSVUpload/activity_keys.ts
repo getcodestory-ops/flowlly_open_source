@@ -10,7 +10,7 @@ export const ACTIVITY_KEYS: CreateNewActivity = {
   dependencies: [],
   resources: [],
   status: true,
-  owner: "",
+  owner: [""],
   progress: 0,
 };
 
