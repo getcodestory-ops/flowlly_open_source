@@ -255,6 +255,7 @@ function UpdateActivityModal({
                     Select task dependency
                   </Text>
                   <MultiSelect
+                    key={activity.id}
                     title="Depends on"
                     options={tasks.map((activity: ActivityEntity) => ({
                       label: `${activity.name}`,

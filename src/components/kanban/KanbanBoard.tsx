@@ -35,9 +35,10 @@ function KanbanBoard() {
       userActivities.find((task) => task.id === draggedItem.id) ?? taskToView
     );
     setModifyTask((prev) => ({ ...prev, status: newStatus }));
+    setEditOpen(true);
   };
   useEffect(() => {
-    if (modifyTask) {
+    if (modifyTask && modifyTask.id !== taskToView.id) {
       setEditOpen(true);
     }
   }, [modifyTask]);
