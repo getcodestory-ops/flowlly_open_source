@@ -85,7 +85,7 @@ function KanbanBoard() {
   ];
 
   const handleDrop = (draggedItem: ActivityEntity, newStatus: string) => {
-    console.log("draggedItem", draggedItem);
+    console.log("draggedItem", newStatus);
     setModifyTask({
       ...activityEntityToTask(tasks.find((task) => task.id === draggedItem.id)),
     });
