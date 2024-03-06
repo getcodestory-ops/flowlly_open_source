@@ -88,7 +88,7 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
     }
 
     return (
-      <Flex direction={"column"} pt={"4"}>
+      <Flex direction={"column"} pt={"4"} overflow={"auto"}>
         <Flex>
           <Button
             size={"xs"}
