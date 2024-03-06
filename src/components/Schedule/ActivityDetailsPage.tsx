@@ -51,7 +51,7 @@ function ActivitiesDetailPage() {
 
   const queryClient = useQueryClient();
   const [editOpen, setEditOpen] = useState<boolean>(false);
-  const [modifyTask, setModifyTask] = useState<Task>();
+  const [modifyTask, setModifyTask] = useState<ActivityEntity>();
   const [editTask, setEditTask] = useState<boolean>(false);
   const [tasks, setTasks] = useState<any[]>(userActivities);
   const [actions, setActions] = useState<Action[]>([
@@ -78,13 +78,13 @@ function ActivitiesDetailPage() {
 
   const handleEdit = (activity: ActivityEntity, newStatus: string) => {
     if (!activity) return;
-    console.log("activity", activity);
-    setModifyTask(activityEntityToTask(activity));
+    setModifyTask(activity);
+    setEditOpen(true);
   };
 
-  useEffect(() => {
-    setEditOpen(true);
-  }, [modifyTask]);
+  // useEffect(() => {
+  //   setEditOpen(true);
+  // }, [modifyTask]);
 
   useEffect(() => {
     if (contingencyPlans) {

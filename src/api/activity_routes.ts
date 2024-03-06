@@ -48,14 +48,30 @@ export const createActivity = async (
 export const updateActivity = async (
   session: Session,
   projectId: string,
-  activity: UpdateActivityTypes
+  activity: ActivityEntity
 ) => {
   if (!session.access_token) return null;
+
+  const update: UpdateActivityTypes = {
+    id: activity.id,
+    name: activity.name,
+    project_id: projectId,
+    description: activity.description!,
+    duration: activity.duration!,
+    start: activity.start,
+    end: activity.end,
+    cost: activity.cost!,
+    dependencies: activity.dependencies,
+    resources: activity.resources,
+    status: activity.status,
+    owner: activity.owner,
+    progress: activity.progress,
+  };
 
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project/${projectId}/update_activity`;
 
   try {
-    const response = await axios.put(url, activity, {
+    const response = await axios.put(url, update, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.access_token}`,

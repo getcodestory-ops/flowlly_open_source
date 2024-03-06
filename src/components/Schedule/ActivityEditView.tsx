@@ -26,20 +26,20 @@ function ActivityEditView() {
     session: state.session,
     activeProject: state.activeProject,
   }));
-  const [activity, setActivity] = useState<UpdateActivityTypes>({
-    id: "",
-    name: "",
-    description: "",
-    duration: 0,
-    start: "",
-    end: "",
-    cost: 0,
-    owner: "",
-    progress: 0,
-    dependencies: [],
-    resources: [],
-    status: "",
-  });
+  // const [activity, setActivity] = useState<UpdateActivityTypes>({
+  //   id: "",
+  //   name: "",
+  //   description: "",
+  //   duration: 0,
+  //   start: "",
+  //   end: "",
+  //   cost: 0,
+  //   owner: "",
+  //   progress: 0,
+  //   dependencies: [],
+  //   resources: [],
+  //   status: "",
+  // });
 
   const dateAdjustment = (date: string) => {
     let currentDate = new Date(date);
