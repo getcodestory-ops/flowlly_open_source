@@ -32,7 +32,7 @@ interface UpdateActivityModalProps {
   isOpen: boolean;
   onClose: () => void;
   tasks: ActivityEntity[];
-  modifyTask: Task;
+  modifyTask: ActivityEntity;
   updateSource?: string;
 }
 
@@ -50,31 +50,16 @@ function UpdateActivityModal({
     activeProject: state.activeProject,
   }));
 
-  const [activity, setActivity] = useState<UpdateActivityTypes>();
+  const [activity, setActivity] = useState<ActivityEntity>(modifyTask);
 
   useEffect(() => {
-    tasks.forEach((task) => {
-      if (task.id === modifyTask.id) {
-        setActivity({
-          id: modifyTask.id,
-          name: modifyTask.name,
-          description: "",
-          duration: dateDiffInDays(modifyTask.start, modifyTask.end),
-          start: getCurrentDateFormatted(modifyTask.start),
-          project_id: activeProject?.project_id,
-          end: getCurrentDateFormatted(modifyTask.end),
-          dependencies: modifyTask.dependencies,
-          resources: [],
-          status: task.status,
-        });
-      }
-    });
-  }, [tasks, modifyTask]);
+    setActivity(modifyTask);
+  }, [modifyTask]);
 
   const queryClient = useQueryClient();
 
   const { mutate } = useMutation({
-    mutationFn: (activity: UpdateActivityTypes) => {
+    mutationFn: (activity: ActivityEntity) => {
       if (!activity || !activeProject) return Promise.reject("No activity");
       return updateActivity(session!, activeProject.project_id, activity);
     },
@@ -143,7 +128,7 @@ function UpdateActivityModal({
                       bg={"white"}
                       size={"sm"}
                       required
-                      value={activity.name.replace("(on schedule)", "")}
+                      value={activity.name}
                       onChange={(e) => {
                         setActivity((state) => ({
                           ...state!,
@@ -270,6 +255,7 @@ function UpdateActivityModal({
                     Select task dependency
                   </Text>
                   <MultiSelect
+                    key={activity.id}
                     title="Depends on"
                     options={tasks.map((activity: ActivityEntity) => ({
                       label: `${activity.name}`,

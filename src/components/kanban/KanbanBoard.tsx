@@ -10,71 +10,17 @@ import { Task } from "gantt-task-react";
 import { activityEntityToTask } from "@/utils/activityEntityToTask";
 import { getStartEndDateForProject, initTasks } from "../Schedule/helper";
 
-type GroupedActivities = {
-  [key: string]: ActivityEntity[];
-};
-
 function KanbanBoard() {
-  const { userActivities, setUserActivities } = useStore((state) => ({
-    userActivities: state.userActivities,
-    setUserActivities: state.setUserActivities,
-  }));
+  const { userActivities, setUserActivities, taskToView } = useStore(
+    (state) => ({
+      userActivities: state.userActivities,
+      setUserActivities: state.setUserActivities,
+      taskToView: state.taskToView,
+    })
+  );
 
-  const [tasks, setTasks] = useState<any[]>(userActivities);
-  // const [tasksNew, setTasksNew] = React.useState<Task[]>(initTasks());
-  // const { isOpen, onClose, onOpen } = useScheduleUpdate();
-  const [modifyTask, setModifyTask] = useState<Task>();
+  const [modifyTask, setModifyTask] = useState<ActivityEntity>(taskToView);
   const [editOpen, setEditOpen] = useState<boolean>(false);
-  //
-  const [changedTask, setChangedTask] = useState<any>();
-
-  // useEffect(() => {
-  //   setTasks(userActivities);
-  //   // console.log("userActivities", userActivities);
-  // }, [userActivities]);
-
-  // useEffect(() => {
-  //   setUserActivities(tasks);
-  // }, [tasks]);
-
-  // useEffect(() => {
-  //   if (tasks) {
-  //     if (tasks.length > 0) {
-  //       const transformedTasks = tasks
-  //         .map(activityEntityToTask)
-  //         .sort((a, b) => {
-  //           if (a.start.getTime() === b.start.getTime()) {
-  //             return a.start.getTime() - b.start.getTime();
-  //           } else {
-  //             return 0;
-  //           }
-  //         }); // Assuming the data you want is in activities.data
-  //       setTasksNew(transformedTasks);
-  //     } else {
-  //       const currentDate = new Date();
-  //       setTasksNew([
-  //         {
-  //           start: new Date(
-  //             currentDate.getFullYear(),
-  //             currentDate.getMonth(),
-  //             currentDate.getDate()
-  //           ),
-  //           end: new Date(
-  //             currentDate.getFullYear(),
-  //             currentDate.getMonth(),
-  //             currentDate.getDate()
-  //           ),
-  //           name: "No data available",
-  //           id: "ProjectSample",
-  //           progress: 0,
-  //           type: "project",
-  //           hideChildren: false,
-  //           displayOrder: 1,
-  //         },
-  //       ]);
-  //     }
-  //   }
-  // }, [tasks]);
 
   const statuses = [
     "On Schedule",
@@ -85,25 +31,14 @@ function KanbanBoard() {
   ];
 
   const handleDrop = (draggedItem: ActivityEntity, newStatus: string) => {
-    console.log("draggedItem", draggedItem);
-    setModifyTask({
-      ...activityEntityToTask(tasks.find((task) => task.id === draggedItem.id)),
-    });
-    //setEditOpen(true);
-
-    // setTasks((prevTasks) => {
-    //   const updatedTasks = prevTasks.map((task: any) => {
-    //     if (task.id === draggedItem.id) {
-    //       return { ...task, status: newStatus };
-    //     }
-    //     return task;
-    //   });
-    //   return updatedTasks;
-    // });
-    // setChangedTask(draggedItem);
+    setModifyTask(
+      userActivities.find((task) => task.id === draggedItem.id) ?? taskToView
+    );
+    setModifyTask((prev) => ({ ...prev, status: newStatus }));
+    setEditOpen(true);
   };
   useEffect(() => {
-    if (modifyTask) {
+    if (modifyTask && modifyTask.id !== taskToView.id) {
       setEditOpen(true);
     }
   }, [modifyTask]);

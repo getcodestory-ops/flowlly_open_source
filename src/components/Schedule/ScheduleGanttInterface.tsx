@@ -35,7 +35,7 @@ import {
 
 import { MdFormatListBulletedAdd } from "react-icons/md";
 import { from } from "form-data";
-import { UpdateActivityTypes } from "@/types/activities";
+import { ActivityEntity, UpdateActivityTypes } from "@/types/activities";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import { updateActivity } from "@/api/activity_routes";
 import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
@@ -73,7 +73,7 @@ const ScheduleGanttInterface = () => {
 
   const [tasks, setTasks] = React.useState<Task[]>(initTasks());
   const [editOpen, setEditOpen] = useState<boolean>(false);
-  const [modifyTask, setModifyTask] = useState<Task>();
+  const [modifyTask, setModifyTask] = useState<ActivityEntity>();
   const dateToday = getCurrentDateFormatted();
   const [modalType, setModalType] = useState<string>("");
   const [probability, setProbability] = useState<number>(0.5);
@@ -230,8 +230,8 @@ const ScheduleGanttInterface = () => {
   };
 
   const handleDblClick = (task: Task) => {
-    setModifyTask(task);
-    // console.log("On double click Id:" + modifyTask?.id);
+    setModifyTask(userActivities.find((t) => t.id === task.id));
+
     setEditOpen(true);
   };
 

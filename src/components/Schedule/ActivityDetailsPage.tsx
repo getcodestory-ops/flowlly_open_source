@@ -21,8 +21,11 @@ import {
 } from "@tanstack/react-query";
 import UpdateActivityModal from "./UpdateActivityModal";
 import { ActivityEntity } from "@/types/activities";
+import { useDeleteActivity } from "@/utils/useDeleteActivity";
 
 function ActivitiesDetailPage() {
+  const handleTaskDelete = useDeleteActivity();
+
   const {
     session,
     taskToView,
@@ -51,7 +54,7 @@ function ActivitiesDetailPage() {
 
   const queryClient = useQueryClient();
   const [editOpen, setEditOpen] = useState<boolean>(false);
-  const [modifyTask, setModifyTask] = useState<Task>();
+  const [modifyTask, setModifyTask] = useState<ActivityEntity>();
   const [editTask, setEditTask] = useState<boolean>(false);
   const [tasks, setTasks] = useState<any[]>(userActivities);
   const [actions, setActions] = useState<Action[]>([
@@ -78,13 +81,9 @@ function ActivitiesDetailPage() {
 
   const handleEdit = (activity: ActivityEntity, newStatus: string) => {
     if (!activity) return;
-    console.log("activity", activity);
-    setModifyTask(activityEntityToTask(activity));
-  };
-
-  useEffect(() => {
+    setModifyTask(activity);
     setEditOpen(true);
-  }, [modifyTask]);
+  };
 
   useEffect(() => {
     if (contingencyPlans) {
@@ -597,16 +596,27 @@ function ActivitiesDetailPage() {
 
                   {taskDetailsView === "details" && (
                     <>
-                      <Button
-                        size={"xs"}
-                        bg={"brand.dark"}
-                        color={"white"}
-                        _hover={{ bg: "brand.light", color: "brand.dark" }}
-                        // onClick={() => setEditTask(!editTask)}
-                        onClick={() => handleEdit(taskToView, "In Progress")}
-                      >
-                        <Text>{editTask ? "Save Changes" : "Edit Task"}</Text>
-                      </Button>
+                      <Flex gap="4">
+                        <Button
+                          size={"xs"}
+                          bg={"brand.dark"}
+                          color={"white"}
+                          _hover={{ bg: "brand.light", color: "brand.dark" }}
+                          // onClick={() => setEditTask(!editTask)}
+                          onClick={() => handleEdit(taskToView, "In Progress")}
+                        >
+                          <Text>{editTask ? "Save Changes" : "Edit Task"}</Text>
+                        </Button>
+                        <Button
+                          size={"xs"}
+                          bg={"brand.dark"}
+                          color={"white"}
+                          _hover={{ bg: "brand.light", color: "brand.dark" }}
+                          onClick={() => handleTaskDelete(taskToView.id)}
+                        >
+                          <Text> Delete Task</Text>
+                        </Button>
+                      </Flex>
                       <AddActivityChildren />
                     </>
                   )}
