@@ -17,6 +17,13 @@ import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
 import { AiOutlineAlert } from "react-icons/ai";
 import { PiBank } from "react-icons/pi";
 import { GiConsoleController } from "react-icons/gi";
+import { m } from "framer-motion";
+
+interface OwnerDetails {
+  initials: string;
+  firstName: string;
+  lastName: string;
+}
 
 function ScheduleInsights() {
   const {
@@ -33,6 +40,7 @@ function ScheduleInsights() {
     scheduleProbability,
     setScheduleProbability,
     taskToView,
+    members,
   } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
@@ -47,6 +55,7 @@ function ScheduleInsights() {
     scheduleProbability: state.scheduleProbability,
     setScheduleProbability: state.setScheduleProbability,
     taskToView: state.taskToView,
+    members: state.members,
   }));
   const [view, setView] = useState<string>("master");
   const [openHistory, setOpenHistory] = useState<string>("");
@@ -65,6 +74,11 @@ function ScheduleInsights() {
   // useEffect(() => {
   //   setTaskToView(activities[0]);
   // }, [activeProject]);
+
+  useEffect(() => {
+    console.log("activities", activities);
+    console.log("members", members);
+  }, [activities, members]);
 
   const countTotalActivities = (activities: any[]) => {
     let count = 0;
@@ -136,6 +150,32 @@ function ScheduleInsights() {
     }
   }, [activities]);
 
+  function extractOwnerDetails(activity: any, members: any): OwnerDetails[] {
+    // Check if owners exist
+    if (!activity.owner) {
+      return [];
+    }
+
+    const ownerDetails: OwnerDetails[] = [];
+
+    activity.owner.forEach((ownerId: any) => {
+      const matchingMember = members.find(
+        (member: any) => member.id === ownerId
+      );
+
+      if (matchingMember) {
+        ownerDetails.push({
+          initials:
+            `${matchingMember.first_name[0]}${matchingMember.last_name[0]}`.toUpperCase(),
+          firstName: matchingMember.first_name,
+          lastName: matchingMember.last_name,
+        });
+      }
+    });
+
+    return ownerDetails;
+  }
+
   const activitiesCard = () => {
     // console.log("activities", activities);
     if (!activities) return null;
@@ -197,7 +237,7 @@ function ScheduleInsights() {
           minW={"22vw"}
           bg={activity.id === taskToView.id ? "brand.background" : "white"}
         >
-          <Flex direction={"row"} alignItems={"center"}>
+          {/* <Flex direction={"row"} alignItems={"center"}>
             <Icon
               as={BiSolidCircle}
               color={
@@ -214,6 +254,55 @@ function ScheduleInsights() {
             <Text fontWeight={"bold"} fontSize={"14px"} ml={2}>
               {activity.name}
             </Text>
+          </Flex> */}
+          <Flex direction={"row"} justifyContent={"space-between"}>
+            <Flex width={"85%"}>
+              <Icon
+                as={BiSolidCircle}
+                color={
+                  activity.status === "Delayed"
+                    ? "#FF4141"
+                    : activity.status === "At Risk"
+                    ? "#FFA841"
+                    : activity.status === "In Progress"
+                    ? "#5F55EE"
+                    : "brand2.dark"
+                }
+                boxSize={"3"}
+              />
+              <Text fontWeight={"bold"} fontSize={"14px"} ml={2}>
+                {activity.name}
+              </Text>
+            </Flex>
+            <Flex>
+              {extractOwnerDetails(activity, members).map((owner, index) => (
+                <>
+                  <Tooltip
+                    label={owner.firstName + " " + owner.lastName}
+                    aria-label="A tooltip"
+                    bg="white"
+                    color="brand.dark"
+                  >
+                    <Flex
+                      key={index}
+                      bg={"brand.dark"}
+                      color={"white"}
+                      rounded={"full"}
+                      fontSize={"8px"}
+                      fontWeight={"bold"}
+                      mr={1}
+                      mt={"2"}
+                      w={"18px"}
+                      h={"18px"}
+                      alignItems={"center"}
+                      justifyContent={"center"}
+                    >
+                      {owner.initials}
+                    </Flex>
+                  </Tooltip>
+                </>
+              ))}
+            </Flex>
           </Flex>
           <Flex mr={5} paddingLeft={6}>
             <Text as={"i"} fontSize={"12px"}>
