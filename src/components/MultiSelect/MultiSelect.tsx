@@ -52,6 +52,7 @@ const MultiSelect = ({
   };
 
   useEffect(() => {
+    console.log(options);
     setSelectedOptions(existingSelection);
   }, [existingSelection]);
   return (
@@ -75,7 +76,7 @@ const MultiSelect = ({
           </MenuButton>
           <MenuList minWidth="xs" maxW={"sm"}>
             <MenuOptionGroup
-              value={selectedOptions}
+              value={selectedOptions ?? []}
               onChange={handleOptionSelect}
               type="checkbox"
             >
@@ -115,15 +116,16 @@ const MultiSelect = ({
 
               {options &&
                 options.length > 0 &&
-                options.map((option) => (
+                options.map((activities, index) => (
+                  // <Flex>{option.label ?? index}</Flex>
                   <MenuItemOption
-                    key={`option_${option.id}`}
-                    value={option.id}
+                    key={`option_${activities.id ?? index}`}
+                    value={activities.id ?? index}
                     _focus={{ bg: "yellow.100" }}
                     _hover={{ bg: "yellow.100" }}
                     transition={"background 0.3s ease"}
                   >
-                    {option.label}
+                    {activities.label ?? index}
                   </MenuItemOption>
                 ))}
             </MenuOptionGroup>
