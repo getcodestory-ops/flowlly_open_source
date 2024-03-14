@@ -32,6 +32,7 @@ import ProcessHistoryButton from "../Schedule/ProcessHistory/ProcessHistoryButto
 import { getUpdates } from "@/api/update_routes";
 import { UpdateProperties } from "@/types/updates";
 import EditorBlock from "@/components/DocumentEditor/Editor";
+import ConfigureDailyUpdate from "../Schedule/ConfigureTaskQueue/ConfigureDailyUpdate";
 
 const NEW_UpdatesPage = () => {
   const { documentId, setDocumentId, session, activeProject } = useStore(
@@ -48,7 +49,12 @@ const NEW_UpdatesPage = () => {
     Record<string, any>
   >({});
   const [objectView, setObjectView] = useState<string>("content");
-
+  const [contextMenu, setContextMenu] = useState({
+    isVisible: false,
+    x: 0,
+    y: 0,
+    id: "",
+  });
   const {
     data: updates,
     isLoading,
@@ -66,6 +72,42 @@ const NEW_UpdatesPage = () => {
     enabled: !!session?.access_token && !!activeProject?.project_id,
   });
 
+  const handleRightClick = (
+    e: React.MouseEvent<HTMLDivElement>,
+    update: UpdateProperties
+  ) => {
+    e.preventDefault(); // Prevent default context menu
+    setContextMenu({
+      isVisible: true,
+      x: e.pageX,
+      y: e.pageY,
+      id: update.id,
+    });
+  };
+
+  const ContextMenu = ({ x, y }: { x: number; y: number }) => {
+    return (
+      <Flex
+        position="absolute"
+        left={`${x}px`}
+        top={`${y}px`}
+        zIndex="popover"
+        background="white"
+        borderRadius="md"
+        boxShadow="md"
+        flexDirection="column"
+      >
+        <Flex
+          p="2"
+          cursor="pointer"
+          _hover={{ bg: "gray.100" }}
+          // onClick={onDelete}
+        >
+          Delete
+        </Flex>
+      </Flex>
+    );
+  };
   // const updatesObject = {
   //   1: {
   //     id: 1,
@@ -526,7 +568,10 @@ const NEW_UpdatesPage = () => {
           <Text fontSize={"14px"} fontWeight={"bold"}>
             Updates
           </Text>
-          <ProcessHistoryButton />
+          <Flex gap="2">
+            <ProcessHistoryButton />
+            <ConfigureDailyUpdate />
+          </Flex>
         </Flex>
         <Flex alignItems={"center"} mb={"2"}>
           <Text fontSize={"12px"} fontWeight={"bold"}>
@@ -547,6 +592,9 @@ const NEW_UpdatesPage = () => {
               <Flex
                 key={update.id}
                 onClick={() => setPreviewCardContent(update)}
+                onContextMenu={(e: React.MouseEvent<HTMLDivElement>) =>
+                  handleRightClick(e, update)
+                }
                 w="full"
                 mb={"2"}
                 p={"2"}
@@ -561,6 +609,9 @@ const NEW_UpdatesPage = () => {
                 {previewCard(update)}
               </Flex>
             ))}
+          {contextMenu.isVisible && (
+            <ContextMenu x={contextMenu.x} y={contextMenu.y} />
+          )}
         </Flex>
       </GridItem>
       <GridItem
