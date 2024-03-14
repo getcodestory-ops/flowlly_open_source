@@ -51,6 +51,9 @@ const MultiSelect = ({
     onChange([]);
   };
 
+  useEffect(() => {
+    setSelectedOptions(existingSelection);
+  }, [existingSelection]);
   return (
     <Flex direction={"column"}>
       <Flex gap="4" align={"center"}>
