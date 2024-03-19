@@ -201,6 +201,7 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
                         owner: selectedOptions,
                       }));
                     }}
+                    existingSelection={activity?.owner ?? []}
                   />
                   <MultiSelect
                     title="Depends on"
@@ -214,6 +215,7 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
                         dependencies: selectedOptions,
                       }));
                     }}
+                    existingSelection={activity?.dependencies ?? []}
                   />
                 </Flex>
                 <Divider my="4" />

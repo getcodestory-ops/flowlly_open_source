@@ -232,7 +232,7 @@ function ActivitiesDetailPage() {
                   const owner = members.filter(
                     (member) => member.id === ownerId
                   )[0];
-                  return owner.first_name + " " + owner.last_name;
+                  return owner?.first_name ?? "" + " " + owner?.last_name ?? "";
                 })
                 .join(", ")) ??
               "No owner assigned"}
