@@ -34,6 +34,7 @@ import MultiSelect from "@/components/MultiSelect/MultiSelect";
 import { MemberEntity } from "@/types/members";
 import { timezones } from "./timezones";
 import { MdDeleteOutline } from "react-icons/md";
+import { time } from "console";
 
 function UpdateDailyUpdateScheduleModal({
   isOpen,
@@ -54,7 +55,9 @@ function UpdateDailyUpdateScheduleModal({
   const [timezoneFilter, setTimezoneFilter] = useState("");
   const [showTimezoneOptions, setShowTimezoneOptions] = useState(false);
   const [timeInput, setTimeInput] = useState<string>("");
-  const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
+  const [selectedTimes, setSelectedTimes] = useState<string[]>(
+    editQueueItem.run_config.time ?? []
+  );
   const ref = useRef<HTMLDivElement>(null);
   useOutsideClick({
     ref: ref,
@@ -67,8 +70,9 @@ function UpdateDailyUpdateScheduleModal({
 
   useEffect(() => {
     setTimezoneFilter(editQueueItem.run_config.time_zone);
+    console.log(editQueueItem.run_config.time_zone);
     setSelectedTimes(editQueueItem.run_config.time);
-  }, [editQueueItem.run_config.time_zone]);
+  }, [editQueueItem]);
 
   const handleDayChange = (selectedDays: string[]) => {
     const dayNumbers = selectedDays.map((day) => parseInt(day));
@@ -122,13 +126,14 @@ function UpdateDailyUpdateScheduleModal({
   };
 
   const handleAddTime = () => {
-    setEditQueueItem((prev) => ({
-      ...prev,
-      run_config: {
-        ...prev.run_config,
-        time: [...prev.run_config.time, timeInput],
-      },
-    }));
+    timeInput &&
+      setEditQueueItem((prev) => ({
+        ...prev,
+        run_config: {
+          ...prev.run_config,
+          time: [...prev.run_config.time, timeInput],
+        },
+      }));
     if (timeInput && !selectedTimes.includes(timeInput)) {
       setSelectedTimes([...selectedTimes, timeInput]);
       setTimeInput(""); // Reset input after adding
@@ -211,13 +216,13 @@ function UpdateDailyUpdateScheduleModal({
                   <MultiSelect
                     title="Days"
                     options={[
-                      { id: "0", label: "Sunday" },
-                      { id: "1", label: "Monday" },
-                      { id: "2", label: "Tuesday" },
-                      { id: "3", label: "Wednesday" },
-                      { id: "4", label: "Thursday" },
-                      { id: "5", label: "Friday" },
-                      { id: "6", label: "Saturday" },
+                      { id: "0", label: "Monday" },
+                      { id: "1", label: "Tuesday" },
+                      { id: "2", label: "Wednesday" },
+                      { id: "3", label: "Thursday" },
+                      { id: "4", label: "Friday" },
+                      { id: "5", label: "Saturday" },
+                      { id: "6", label: "Sunday" },
                     ]}
                     onChange={handleDayChange}
                     existingSelection={editQueueItem.run_config.day.map(String)}
