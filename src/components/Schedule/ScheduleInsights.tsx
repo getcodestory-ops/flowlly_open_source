@@ -278,7 +278,7 @@ function ScheduleInsights() {
               {extractOwnerDetails(activity, members).map((owner, index) => (
                 <>
                   <Tooltip
-                    label={owner.firstName + " " + owner.lastName}
+                    label={owner?.firstName + " " + owner?.lastName}
                     aria-label="A tooltip"
                     bg="white"
                     color="brand.dark"
@@ -297,7 +297,7 @@ function ScheduleInsights() {
                       alignItems={"center"}
                       justifyContent={"center"}
                     >
-                      {owner.initials}
+                      {owner?.initials}
                     </Flex>
                   </Tooltip>
                 </>

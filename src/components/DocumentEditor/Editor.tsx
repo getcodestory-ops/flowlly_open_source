@@ -147,31 +147,31 @@ const EditorBlock = ({
         <Flex>
           {appView === "notes" && <UploadVoiceModal />}
 
-          {/* <Tooltip label="AI Note Analysis" bg="white" color="brand.dark">
-          <Button
-            mx={"2"}
-            boxShadow={"lg"}
-            cursor={"pointer"}
-            size={"sm"}
-            bg={"white"}
-            // position="absolute"
-            // zIndex={"overlay"}
-            // top="32"
-            onClick={() => processDoc()}
-            _hover={{ bg: "brand.dark", color: "white" }}
+          <Tooltip label="AI Note Analysis" bg="white" color="brand.dark">
+            <Button
+              mx={"2"}
+              boxShadow={"lg"}
+              cursor={"pointer"}
+              size={"sm"}
+              bg={"white"}
+              // position="absolute"
+              // zIndex={"overlay"}
+              // top="32"
+              onClick={() => processDoc()}
+              _hover={{ bg: "brand.dark", color: "white" }}
 
-            // transform={"translateX(-200%)"}
-          >
-            <Icon
-              as={TbAnalyzeFilled}
-              _hover={{
-                transform: "rotate(360deg)",
+              // transform={"translateX(-200%)"}
+            >
+              <Icon
+                as={TbAnalyzeFilled}
+                _hover={{
+                  transform: "rotate(360deg)",
 
-                transition: "transform 0.5s ease-in-out",
-              }}
-            />
-          </Button>
-        </Tooltip> */}
+                  transition: "transform 0.5s ease-in-out",
+                }}
+              />
+            </Button>
+          </Tooltip>
           <Tooltip label="Save note" bg="white" color="brand.dark">
             <Button
               onClick={() => onSubmit()}

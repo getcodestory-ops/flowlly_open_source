@@ -32,9 +32,7 @@ const MultiSelect = ({
   onChange = () => {},
   existingSelection = [],
 }: MultiSelectProps) => {
-  const [selectedOptions, setSelectedOptions] = useState<string[]>(
-    existingSelection ?? []
-  );
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
   const handleOptionSelect = (selected: string | string[]) => {
     console.log(selected);
@@ -52,9 +50,10 @@ const MultiSelect = ({
   };
 
   useEffect(() => {
-    console.log(options);
+    console.log("loading multiselect");
     setSelectedOptions(existingSelection);
   }, [existingSelection]);
+
   return (
     <Flex direction={"column"}>
       <Flex gap="4" align={"center"}>
