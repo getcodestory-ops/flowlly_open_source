@@ -1,6 +1,8 @@
 import Head from "next/head";
 import LoginPage from "@/Layouts/OldMainLayout";
-import MainLayout from "@/Layouts/MainLayout";
+import FormPage from "@/components/ChatInput/Forms/FormPage";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+const queryClient = new QueryClient();
 
 export default function Home() {
   return (
@@ -15,9 +17,11 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <MainLayout>
-          <LoginPage />
-        </MainLayout>
+        <QueryClientProvider client={queryClient}>
+          <FormPage>
+            <LoginPage />
+          </FormPage>
+        </QueryClientProvider>
       </main>
     </>
   );

@@ -17,7 +17,6 @@ import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
 import { AiOutlineAlert } from "react-icons/ai";
 import { PiBank } from "react-icons/pi";
 import { GiConsoleController } from "react-icons/gi";
-import { m } from "framer-motion";
 
 interface OwnerDetails {
   initials: string;
@@ -75,10 +74,10 @@ function ScheduleInsights() {
   //   setTaskToView(activities[0]);
   // }, [activeProject]);
 
-  useEffect(() => {
-    console.log("activities", activities);
-    console.log("members", members);
-  }, [activities, members]);
+  // useEffect(() => {
+  //   console.log("activities", activities);
+  //   console.log("members", members);
+  // }, [activities, members]);
 
   const countTotalActivities = (activities: any[]) => {
     let count = 0;
@@ -276,31 +275,30 @@ function ScheduleInsights() {
             </Flex>
             <Flex>
               {extractOwnerDetails(activity, members).map((owner, index) => (
-                <>
-                  <Tooltip
-                    label={owner?.firstName + " " + owner?.lastName}
-                    aria-label="A tooltip"
-                    bg="white"
-                    color="brand.dark"
+                <Tooltip
+                  label={owner?.firstName + " " + owner?.lastName}
+                  aria-label="A tooltip"
+                  bg="white"
+                  color="brand.dark"
+                  key={`${index}-details`}
+                >
+                  <Flex
+                    key={index}
+                    bg={"brand.dark"}
+                    color={"white"}
+                    rounded={"full"}
+                    fontSize={"8px"}
+                    fontWeight={"bold"}
+                    mr={1}
+                    mt={"2"}
+                    w={"18px"}
+                    h={"18px"}
+                    alignItems={"center"}
+                    justifyContent={"center"}
                   >
-                    <Flex
-                      key={index}
-                      bg={"brand.dark"}
-                      color={"white"}
-                      rounded={"full"}
-                      fontSize={"8px"}
-                      fontWeight={"bold"}
-                      mr={1}
-                      mt={"2"}
-                      w={"18px"}
-                      h={"18px"}
-                      alignItems={"center"}
-                      justifyContent={"center"}
-                    >
-                      {owner?.initials}
-                    </Flex>
-                  </Tooltip>
-                </>
+                    {owner?.initials}
+                  </Flex>
+                </Tooltip>
               ))}
             </Flex>
           </Flex>

@@ -6,7 +6,7 @@ import FolderViewer from "../Folder/FolderViewer";
 import Editor from "@/pages/documents/editor";
 import { useStore } from "@/utils/store";
 
-const NEW_NotesPage = () => {
+const NotesPage = () => {
   const {
     documentId,
     setDocumentId,
@@ -100,4 +100,4 @@ const NEW_NotesPage = () => {
   );
 };
 
-export default NEW_NotesPage;
+export default NotesPage;

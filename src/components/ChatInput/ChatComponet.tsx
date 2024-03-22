@@ -26,9 +26,12 @@ import {
   getContexualAnswer,
 } from "@/utils/getAiAnswers";
 import { BsSend } from "react-icons/bs";
+import AssistantChatInterface from "../Schedule/AssistantChatInterface";
+import AssistantChatSelector from "../Schedule/AssistantChatSelector";
 
 function ChatComponent() {
   const [chatInput, setChatInput] = useState("");
+  const [chatType, setChatType] = useState<string>("search");
   const {
     AiActionsView,
     setAiActionsView,
@@ -177,7 +180,8 @@ function ChatComponent() {
                 </Flex>
                 <Flex alignItems={"center"}>
                   <Flex mr={"4"}>
-                    <SearchMemory />
+                    {chatType == "search" && <SearchMemory />}
+                    {chatType == "schedule" && <AssistantChatSelector />}
                   </Flex>
                   {/* <Button
                     bg={"white"}
@@ -223,11 +227,14 @@ function ChatComponent() {
                   bg={"white"}
                   border={"white"}
                   rounded={"lg"}
+                  value={chatType}
+                  onChange={(e) => setChatType(e.target.value)}
                   className="custom-selector"
                 >
                   <option value="search">Search</option>
-                  <option value="analyze">Analyze Document</option>
-                  <option value="email">Draft Email</option>
+                  {/* <option value="analyze">Analyze Document</option>
+                  <option value="email">Draft Email</option> */}
+                  <option value="schedule">Daily updates</option>
                 </Select>
                 {folderList && folderList.length > 0 && (
                   <Select
@@ -264,52 +271,59 @@ function ChatComponent() {
             // justifyContent="end"
             px={"2"}
           >
-            <Grid templateRows="repeat(10, 1fr)" gap={"2"} h={"full"}>
-              <GridItem rowSpan={9} px={"4"} overflowY={"auto"}>
-                <ChatMessageDisplay />
-              </GridItem>
-              <GridItem
-                rowSpan={1}
-                px={"4"}
-                display="flex"
-                flexDirection="column"
-                justifyContent="flex-end"
-                py={"2"}
-              >
-                <Flex
-                  justifyContent={"center"}
-                  bg={"brand.background"}
-                  p={"2"}
-                  rounded={"xl"}
+            {chatType === "schedule" && (
+              <Grid templateRows="repeat(10, 1fr)" gap={"2"} h={"full"}>
+                <AssistantChatInterface />
+              </Grid>
+            )}
+            {chatType === "search" && (
+              <Grid templateRows="repeat(10, 1fr)" gap={"2"} h={"full"}>
+                <GridItem rowSpan={9} px={"4"} overflowY={"auto"}>
+                  <ChatMessageDisplay />
+                </GridItem>
+                <GridItem
+                  rowSpan={1}
+                  px={"4"}
+                  display="flex"
+                  flexDirection="column"
+                  justifyContent="flex-end"
+                  py={"2"}
                 >
-                  <Input
-                    size={"sm"}
-                    border={"white"}
-                    rounded={"lg"}
-                    placeholder={"Flowlly help me ..."}
-                    className="custom-selector"
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        handleChatSubmit();
-                      }
-                    }}
-                  ></Input>
-
-                  <Button
-                    rounded={"full"}
-                    bg={"white"}
-                    _hover={{ bg: "brand.dark", color: "white" }}
-                    onClick={() => {
-                      handleChatSubmit();
-                    }}
+                  <Flex
+                    justifyContent={"center"}
+                    bg={"brand.background"}
+                    p={"2"}
+                    rounded={"xl"}
                   >
-                    <Icon as={BsSend} fontSize={"22px"}></Icon>
-                  </Button>
-                </Flex>
-              </GridItem>
-            </Grid>
+                    <Input
+                      size={"sm"}
+                      border={"white"}
+                      rounded={"lg"}
+                      placeholder={"Flowlly help me ..."}
+                      className="custom-selector"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          handleChatSubmit();
+                        }
+                      }}
+                    ></Input>
+
+                    <Button
+                      rounded={"full"}
+                      bg={"white"}
+                      _hover={{ bg: "brand.dark", color: "white" }}
+                      onClick={() => {
+                        handleChatSubmit();
+                      }}
+                    >
+                      <Icon as={BsSend} fontSize={"22px"}></Icon>
+                    </Button>
+                  </Flex>
+                </GridItem>
+              </Grid>
+            )}
             {/* <Flex w="inherit" overflow={"contain"}>
               <ChatMessageDisplay />
             </Flex>

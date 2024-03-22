@@ -4,7 +4,7 @@ import SearchMemory from "@/Layouts/SearchMemory";
 import AgentMemoryPane from "@/components/Agent/MemoryPane";
 import { useStore } from "@/utils/store";
 import ScheduleProjectPanel from "@/components/Schedule/ScheduleProjectPane";
-import SchedulePanel from "@/components/Schedule/SchedulePane";
+import SchedulePanel from "@/components/Schedule/AssistantChatSelector";
 
 function SidePanelExtension() {
   const { sidePanelExtensionView } = useStore((state) => ({

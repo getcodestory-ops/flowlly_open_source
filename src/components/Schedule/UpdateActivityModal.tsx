@@ -16,7 +16,7 @@ import {
   Text,
   Select,
 } from "@chakra-ui/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { createActivity } from "@/api/activity_routes";
 import { UpdateActivityTypes } from "@/types/activities";
@@ -27,6 +27,8 @@ import { updateActivity } from "@/api/activity_routes";
 import { ActivityEntity } from "@/types/activities";
 import MultiSelect from "../MultiSelect/MultiSelect";
 import type { Task } from "gantt-task-react";
+import { getMembers } from "@/api/membersRoutes";
+import { MemberEntity } from "@/types/members";
 
 interface UpdateActivityModalProps {
   isOpen: boolean;
@@ -57,6 +59,18 @@ function UpdateActivityModal({
   }, [modifyTask]);
 
   const queryClient = useQueryClient();
+
+  const { data: members, isLoading: membersLoading } = useQuery({
+    queryKey: ["memberList", session, activeProject],
+    queryFn: async () => {
+      if (!session || !activeProject) {
+        return Promise.reject("No session or active project");
+      }
+
+      return getMembers(session, activeProject.project_id);
+    },
+    enabled: !!session?.access_token,
+  });
 
   const { mutate } = useMutation({
     mutationFn: (activity: ActivityEntity) => {
@@ -251,6 +265,24 @@ function UpdateActivityModal({
                     }))
                   }
                 /> */}
+                  <Text as={"b"} fontSize={"12px"}>
+                    Select task Asignee
+                  </Text>
+                  <MultiSelect
+                    title="Assignees"
+                    options={members?.data.map((member: MemberEntity) => ({
+                      label: `${member.first_name} ${member.last_name}`,
+                      id: member.id,
+                    }))}
+                    onChange={(selectedOptions) => {
+                      setActivity((state) => ({
+                        ...state!,
+                        owner: selectedOptions,
+                      }));
+                    }}
+                    existingSelection={activity?.owner ?? []}
+                  />
+
                   <Text as={"b"} fontSize={"12px"}>
                     Select task dependency
                   </Text>

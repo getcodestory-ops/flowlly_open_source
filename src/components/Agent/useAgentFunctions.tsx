@@ -36,7 +36,7 @@ export function useScheduleUpdate() {
   const { data: taskStatus } = useQuery({
     queryKey: ["taskStatus", currentTaskId, session],
     queryFn: () => getStatusAndUpdateChats(session, currentTaskId),
-    refetchInterval: 8000,
+    refetchInterval: 1000,
     enabled: !!session && !!currentTaskId,
   });
 

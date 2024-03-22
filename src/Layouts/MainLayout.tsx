@@ -13,16 +13,20 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import DocumentList from "@/components/DocumentEditor/DocumentList";
 import supabase from "@/utils/supabaseClient";
-import NewNotesPage from "@/components/Notes/NotesPage";
-import NEW_ReportsPage from "@/components/AiActions/ReportsPage";
-import NEW_UpdatesPage from "@/components/AiActions/UpdatesPage";
+import NotesPage from "@/components/Notes/NotesPage";
+import ReportsPage from "@/components/AiActions/ReportsPage";
+import UpdatesPage from "@/components/AiActions/UpdatesPage";
 import ProjectSetup from "./ProjectSetup";
 import checkProjectStatus from "@/utils/checkProjectStatus";
 import { useMediaQuery } from "@chakra-ui/react";
 
 const queryClient = new QueryClient();
 
-export default function NewLayout({ children }: { children: React.ReactNode }) {
+export default function MainLayout({
+  children,
+}: {
+  children?: React.ReactNode;
+}) {
   const router = useRouter();
   const path = router.pathname;
   const [smallScreen] = useMediaQuery("(max-width: 1441px)");
@@ -168,17 +172,17 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
                         )}
                         {appView === "notes" && (
                           <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
-                            {<NewNotesPage />}
+                            {<NotesPage />}
                           </GridItem>
                         )}
                         {appView === "reports" && (
                           <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
-                            {<NEW_ReportsPage />}
+                            {<ReportsPage />}
                           </GridItem>
                         )}
                         {appView === "updates" && (
                           <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
-                            <NEW_UpdatesPage />
+                            <UpdatesPage />
                           </GridItem>
                         )}
                         {(appView === "members" || appView === "folders") && (

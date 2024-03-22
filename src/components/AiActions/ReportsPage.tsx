@@ -5,7 +5,7 @@ import CreateNewDocument from "../DocumentEditor/CreateNewDocument";
 import EditorBlock from "@/components/DocumentEditor/Editor";
 import { useStore } from "@/utils/store";
 
-const NEW_ReportsPage = () => {
+const ReportsPage = () => {
   const { documentId, setDocumentId } = useStore((state) => ({
     documentId: state.documentId,
     setDocumentId: state.setDocumentId,
@@ -62,4 +62,4 @@ const NEW_ReportsPage = () => {
   );
 };
 
-export default NEW_ReportsPage;
+export default ReportsPage;
