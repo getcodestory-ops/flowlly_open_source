@@ -176,11 +176,11 @@ export default function MainLayout({
                             {<NotesPage />}
                           </GridItem>
                         )}
-                        {appView === "reports" && (
+                        {/* {appView === "reports" && (
                           <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
                             {<ReportsPage />}
                           </GridItem>
-                        )}
+                        )} */}
                         {appView === "updates" && (
                           <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
                             <UpdatesPage />
