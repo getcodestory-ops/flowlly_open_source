@@ -17,7 +17,7 @@ import supabase from "@/utils/supabaseClient";
 import logo from "../img/logo_full.svg";
 import { useStore } from "@/utils/store";
 
-export default function MainLayout() {
+export default function LoginPage() {
   const router = useRouter();
   const toast = useToast();
   const [email, setEmail] = useState("");

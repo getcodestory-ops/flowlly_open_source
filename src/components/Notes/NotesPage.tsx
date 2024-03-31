@@ -3,10 +3,11 @@ import { Grid, GridItem, Text, Flex, useDisclosure } from "@chakra-ui/react";
 import DocumentList from "../DocumentEditor/DocumentList";
 import CreateNewDocument from "../DocumentEditor/CreateNewDocument";
 import FolderViewer from "../Folder/FolderViewer";
-import Editor from "@/pages/documents/editor";
+
+import EditorBlock from "@/components/DocumentEditor/Editor";
 import { useStore } from "@/utils/store";
 
-const NEW_NotesPage = () => {
+const NotesPage = () => {
   const {
     documentId,
     setDocumentId,
@@ -94,10 +95,10 @@ const NEW_NotesPage = () => {
         overflowY={"auto"}
       >
         {/* <EditorBlock /> */}
-        <Editor documentTitle={noteTitle} />
+        <EditorBlock id={documentId} noteTitle={noteTitle} />
       </GridItem>
     </Grid>
   );
 };
 
-export default NEW_NotesPage;
+export default NotesPage;

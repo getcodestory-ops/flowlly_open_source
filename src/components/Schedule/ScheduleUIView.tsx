@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { CgInsights } from "react-icons/cg";
 import { PiRobot } from "react-icons/pi";
-import ScheduleChatInterface from "./ScheduleChat";
+import ScheduleChatInterface from "./AssistantChatInterface";
 import ScheduleInsights from "./ScheduleInsights";
 
 function ScheduleUiViewOLD() {

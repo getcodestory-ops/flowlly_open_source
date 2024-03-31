@@ -22,7 +22,7 @@ import {
 import { CgInsights } from "react-icons/cg";
 import { PiRobot } from "react-icons/pi";
 import { TbReportAnalytics } from "react-icons/tb";
-import ScheduleChatInterface from "./ScheduleChat";
+import ScheduleChatInterface from "./AssistantChatInterface";
 import ScheduleInsights from "./ScheduleInsights";
 import ReportsPage from "./ReportsPage";
 import { useStore } from "@/utils/store";

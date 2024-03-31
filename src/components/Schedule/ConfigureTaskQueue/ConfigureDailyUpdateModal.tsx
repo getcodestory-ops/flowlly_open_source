@@ -203,6 +203,23 @@ function UpdateDailyUpdateScheduleModal({
             <Box flex="2">
               {editQueueItem && (
                 <Flex flexDirection="column" gap="4">
+                  <Select
+                    onChange={(e) =>
+                      setEditQueueItem({
+                        ...editQueueItem,
+                        task_function: e.target.value,
+                      })
+                    }
+                    value={editQueueItem.task_function}
+                  >
+                    <option value="generate_daily_briefing">
+                      Send Daily Updates
+                    </option>
+                    <option value="process_task_history">
+                      Generate Daily Report
+                    </option>
+                  </Select>
+
                   <Input
                     placeholder="Task Name"
                     value={editQueueItem.task_name}

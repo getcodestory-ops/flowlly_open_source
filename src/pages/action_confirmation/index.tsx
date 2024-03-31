@@ -1,14 +1,8 @@
-// import Dashboard from "@/Layouts/Dashboard";
-// import ProjectDashboard from "@/Layouts/ProjectDashboard";
-// import MainLayout from "@/Layouts/MainLayout";
-
-// export default function DashboardPage() {
-//   return <ProjectDashboard />;
-//   // return <MainLayout />;
-// }
-
 import Head from "next/head";
-import MainLayout from "@/Layouts/OldMainLayout";
+import LoginPage from "@/Layouts/OldMainLayout";
+import FormPage from "@/components/ChatInput/Forms/FormPage";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+const queryClient = new QueryClient();
 
 export default function Home() {
   return (
@@ -23,7 +17,11 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <MainLayout />
+        <QueryClientProvider client={queryClient}>
+          <FormPage>
+            <LoginPage />
+          </FormPage>
+        </QueryClientProvider>
       </main>
     </>
   );

@@ -107,6 +107,7 @@ function TopBar() {
 
   useEffect(() => {
     if (isSuccess && activities && activities.length > 0) {
+      console.log("activities", activities);
       setUserActivities(activities);
     }
   }, [activities]);

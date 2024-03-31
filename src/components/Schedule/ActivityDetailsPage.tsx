@@ -318,6 +318,7 @@ function ActivitiesDetailPage() {
                 taskToView.creation_time.slice(0, 10)}
             </Text>
           </Flex>
+
           <Flex>
             <Text as={"i"} mr={"2"}>
               Action Type:
@@ -337,14 +338,14 @@ function ActivitiesDetailPage() {
 
                 return +dateB - +dateA;
               })
-              .map((history) => (
+              .map((history, index) => (
                 <Flex
+                  key={`history-${index}`}
                   direction={"column"}
                   borderBottom={"2px"}
                   borderBottomColor={"brand.light"}
                   pb={"4"}
                   pt={"4"}
-                  key={history.created_at}
                   pl={"10"}
                 >
                   <Flex>
@@ -376,7 +377,9 @@ function ActivitiesDetailPage() {
                     <Text as={"i"} mr={"2"}>
                       Message:
                     </Text>
-                    <Text as={"b"}>{history.message}</Text>
+                    <Text as={"b"}>
+                      {history.message ?? history.impact ?? ""}
+                    </Text>
                   </Flex>
                   {/* <Flex>
                     <Text fontSize={"sm"} as={"i"} mr={"2"}>
@@ -439,7 +442,7 @@ function ActivitiesDetailPage() {
                   <Text as={"i"} mr={"2"}>
                     Date:
                   </Text>
-                  <Text as={"b"}>{history.created_at.slice(0, 10)}</Text>
+                  <Text as={"b"}>{history.created_at?.slice(0, 10)}</Text>
                 </Flex>
                 <Flex mt={"2"}>
                   <Text as={"i"} mr={"2"}>

@@ -10,7 +10,7 @@ const CreateNewProjectButton = () => {
   const onOpen = () => setIsOpen(true);
 
   return (
-    <Flex alignItems="center" width="full" mr={"2"}>
+    <Flex alignItems="center" width="full">
       <Button
         bg={"brand.dark"}
         // leftIcon={<Icon as={FiPlus} />}

@@ -1,5 +1,6 @@
 import Head from "next/head";
-import MainLayout from "@/Layouts/OldMainLayout";
+import LoginPage from "@/Layouts/OldMainLayout";
+import MainLayout from "@/Layouts/MainLayout";
 
 export default function Home() {
   return (
@@ -14,7 +15,9 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <MainLayout />
+        <MainLayout>
+          <LoginPage />
+        </MainLayout>
       </main>
     </>
   );

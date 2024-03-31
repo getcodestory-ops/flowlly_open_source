@@ -9,6 +9,7 @@ import { GoDependabot } from "react-icons/go";
 import { BsStars } from "react-icons/bs";
 import { FaFolderOpen } from "react-icons/fa";
 import { LuContact2 } from "react-icons/lu";
+import { GrConnect } from "react-icons/gr";
 
 function NEW_Menu() {
   const { setAppView, appView } = useStore((state) => ({
@@ -112,6 +113,18 @@ function NEW_Menu() {
         >
           <Icon as={LuContact2} mr={"2"}></Icon>
           Members
+        </Button>
+        <Button
+          mx={"2"}
+          size={"sm"}
+          bg={appView === "integrations" ? "brand.accent" : "white"}
+          onClick={() => {
+            setAppView("integrations");
+          }}
+          _hover={{ bg: "brand.dark", color: "white" }}
+        >
+          <Icon as={GrConnect} mr={"2"}></Icon>
+          Integration
         </Button>
 
         {/* <Button
