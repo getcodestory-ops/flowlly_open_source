@@ -34,7 +34,7 @@ import { UpdateProperties } from "@/types/updates";
 import EditorBlock from "@/components/DocumentEditor/Editor";
 import ConfigureDailyUpdate from "../Schedule/ConfigureTaskQueue/ConfigureDailyUpdate";
 
-const NEW_UpdatesPage = () => {
+const UpdatesPage = () => {
   const { documentId, setDocumentId, session, activeProject } = useStore(
     (state) => ({
       documentId: state.documentId,
@@ -698,4 +698,4 @@ const NEW_UpdatesPage = () => {
   );
 };
 
-export default NEW_UpdatesPage;
+export default UpdatesPage;

@@ -103,3 +103,17 @@ export const getAgentChats = async (
 
   return response.data.chats;
 };
+
+export const getAgentChatHistoryItem = async (
+  session: Session,
+  historyId: string
+): Promise<AgentChat> => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat/history_item/${historyId}`;
+  const response = await axios.get(url, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+  return response.data;
+};

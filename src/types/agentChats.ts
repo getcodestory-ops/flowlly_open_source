@@ -12,6 +12,7 @@ export interface AgentChat {
       name?: string;
       arguments?: string;
     };
+    metadata?: any;
   };
 }
 

@@ -12,6 +12,7 @@ import { getProjects, deleteProject } from "@/api/projectRoutes";
 import { getActivities, deleteActivity } from "@/api/activity_routes";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import CreateNewProjectButton from "../Schedule/NewProjectButton";
+import NotificationButton from "../Notifications/NotificationButton";
 
 function NewTopBar() {
   const {
@@ -114,9 +115,10 @@ function NewTopBar() {
         width="150px"
       />
 
-      <Flex alignItems={"center"}>
+      <Flex alignItems={"center"} gap="2">
         <CreateNewProjectButton />
         <UserPanel />
+        <NotificationButton />
       </Flex>
     </Flex>
   );
