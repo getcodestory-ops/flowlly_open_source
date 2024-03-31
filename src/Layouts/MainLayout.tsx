@@ -19,6 +19,7 @@ import UpdatesPage from "@/components/AiActions/UpdatesPage";
 import ProjectSetup from "./ProjectSetup";
 import checkProjectStatus from "@/utils/checkProjectStatus";
 import { useMediaQuery } from "@chakra-ui/react";
+import Integration from "./Integration";
 
 const queryClient = new QueryClient();
 
@@ -188,6 +189,11 @@ export default function MainLayout({
                         {(appView === "members" || appView === "folders") && (
                           <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
                             <ProjectSetup />
+                          </GridItem>
+                        )}
+                        {appView === "integrations" && (
+                          <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
+                            <Integration />
                           </GridItem>
                         )}
                       </Grid>

@@ -75,7 +75,7 @@ export function useScheduleUpdate() {
         status: "success",
         duration: 4000,
         isClosable: true,
-        position: "bottom-right",
+        position: "top-right",
       });
       setChatInput("");
       setCurrentTaskId(data.agent_response);

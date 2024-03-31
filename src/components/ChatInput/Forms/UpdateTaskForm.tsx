@@ -45,10 +45,10 @@ function UpdateTaskForm({
       return;
     }
     setTask({
-      name: data.message.metadata[formIndex].name,
-      details: data.message.metadata[formIndex].details,
-      duration: data.message.metadata[formIndex].duration,
-      startAfter: data.message.metadata[formIndex].startAfter,
+      name: data.message.metadata[formIndex]?.name,
+      details: data.message.metadata[formIndex]?.details,
+      duration: data.message.metadata[formIndex]?.duration,
+      startAfter: data.message.metadata[formIndex]?.startAfter,
     });
   }, [data, formIndex]);
 

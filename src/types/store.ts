@@ -49,6 +49,7 @@ export type AppView =
   | "analysis"
   | "members"
   | "folders"
+  | "integrations"
   | "changePassword";
 
 export type State = {
