@@ -13,6 +13,7 @@ import { getActivities, deleteActivity } from "@/api/activity_routes";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import CreateNewProjectButton from "../Schedule/NewProjectButton";
 import NotificationButton from "../Notifications/NotificationButton";
+import NEW_Menu from "../Menu/Menu";
 
 function NewTopBar() {
   const {
@@ -100,26 +101,29 @@ function NewTopBar() {
 
   return (
     <Flex
-      px={4}
-      py={"3"}
+      px={1}
+      py={"2"}
+      flexDirection={"column"}
       alignItems={"center"}
+      justifyContent={"space-between"}
       bg={"brand.gray"}
       h={"full"}
-      justifyContent={"space-between"}
       rounded={"xl"}
       className="custom-shadow"
     >
+      <Flex alignItems={"center"} flexDirection={"column"}>
+        {/* <CreateNewProjectButton /> */}
+        <NEW_Menu />
+
+        {/* <NotificationButton /> */}
+      </Flex>
       <Image
         src="https://upthcaewktgrqjieqiya.supabase.co/storage/v1/object/public/images/logo_full.svg"
         alt="logo"
-        width="150px"
+        w="150px"
+        transform={"rotate(90deg) "}
       />
-
-      <Flex alignItems={"center"} gap="2">
-        <CreateNewProjectButton />
-        <UserPanel />
-        <NotificationButton />
-      </Flex>
+      <UserPanel />
     </Flex>
   );
 }
