@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Flex, Button, Link, Icon } from "@chakra-ui/react";
+import { Flex, Button, Link, Icon, Tooltip } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { useRouter } from "next/router";
 import { FaTasks } from "react-icons/fa";
@@ -10,6 +10,7 @@ import { BsStars } from "react-icons/bs";
 import { FaFolderOpen } from "react-icons/fa";
 import { LuContact2 } from "react-icons/lu";
 import { GrConnect } from "react-icons/gr";
+import UserPanel from "../UserPanel";
 
 function NEW_Menu() {
   const { setAppView, appView } = useStore((state) => ({
@@ -46,39 +47,46 @@ function NEW_Menu() {
     <Flex px={"2"}>
       <Flex
         justifyContent={"space-between"}
+        alignContent={"start"}
+        alignItems={"start"}
         // px={"4"}
-        bg={"white"}
+        flexDirection="column"
+        // bg={"white"}
         py={"1"}
         rounded={"lg"}
         fontWeight={"semibold"}
         fontSize={"14px"}
-        className="custom-shadow"
+        gap="8"
+        // className="custom-shadow"
       >
-        <Button
-          mx={"2"}
-          size={"sm"}
-          bg={appView === "updates" ? "brand.accent" : "white"}
-          onClick={() => {
-            setAppView("updates");
-          }}
-          _hover={{ bg: "brand.dark", color: "white" }}
-        >
-          <Icon as={BsStars} mr={"2"}></Icon>
-          Updates
-        </Button>
-        <Button
-          mx={"2"}
-          size={"sm"}
-          bg={appView === "schedule" ? "brand.accent" : "white"}
-          onClick={() => {
-            setAppView("schedule");
-          }}
-          _hover={{ bg: "brand.dark", color: "white" }}
-        >
-          <Icon as={FaTasks} mr={"2"}></Icon>
-          Tasks
-        </Button>
-        <Button
+        <Tooltip label="Daily Reports" aria-label="Daily">
+          <Button
+            mx={"2"}
+            size={"sm"}
+            bg={appView === "updates" ? "brand.accent" : ""}
+            onClick={() => {
+              setAppView("updates");
+            }}
+            _hover={{ bg: "brand.dark", color: "white" }}
+          >
+            <Icon as={BsStars}></Icon>
+          </Button>
+        </Tooltip>
+        <Tooltip label="Look Ahead" aria-label="Look Ahead">
+          <Button
+            mx={"2"}
+            size={"sm"}
+            bg={appView === "schedule" ? "brand.accent" : ""}
+            onClick={() => {
+              setAppView("schedule");
+            }}
+            _hover={{ bg: "brand.dark", color: "white" }}
+          >
+            <Icon as={FaTasks}></Icon>
+          </Button>
+        </Tooltip>
+
+        {/* <Button
           mx={"2"}
           size={"sm"}
           bg={appView === "notes" ? "brand.accent" : "white"}
@@ -89,8 +97,8 @@ function NEW_Menu() {
         >
           <Icon as={CgNotes} mr={"2"}></Icon>
           Notes
-        </Button>
-        <Button
+        </Button> */}
+        {/* <Button
           mx={"2"}
           size={"sm"}
           bg={appView === "folders" ? "brand.accent" : "white"}
@@ -101,20 +109,22 @@ function NEW_Menu() {
         >
           <Icon as={FaFolderOpen} mr={"2"}></Icon>
           Documents
-        </Button>
-        <Button
-          mx={"2"}
-          size={"sm"}
-          bg={appView === "members" ? "brand.accent" : "white"}
-          onClick={() => {
-            setAppView("members");
-          }}
-          _hover={{ bg: "brand.dark", color: "white" }}
-        >
-          <Icon as={LuContact2} mr={"2"}></Icon>
-          Members
-        </Button>
-        <Button
+        </Button> */}
+        <Tooltip label="Project Members" aria-label="Members">
+          <Button
+            mx={"2"}
+            size={"sm"}
+            bg={appView === "members" ? "brand.accent" : ""}
+            onClick={() => {
+              setAppView("members");
+            }}
+            _hover={{ bg: "brand.dark", color: "white" }}
+          >
+            <Icon as={LuContact2}></Icon>
+          </Button>
+        </Tooltip>
+
+        {/* <Button
           mx={"2"}
           size={"sm"}
           bg={appView === "integrations" ? "brand.accent" : "white"}
@@ -125,7 +135,7 @@ function NEW_Menu() {
         >
           <Icon as={GrConnect} mr={"2"}></Icon>
           Integration
-        </Button>
+        </Button> */}
 
         {/* <Button
         size={"sm"}

@@ -47,7 +47,7 @@ const UserPanel = () => {
   };
 
   return (
-    <Flex ml="auto" display="flex" alignItems="center">
+    <Flex display="flex" alignItems="center">
       {user && (
         <Menu>
           <Tooltip
