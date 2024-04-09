@@ -174,16 +174,21 @@ const DailyReports = () => {
         overflowY={"auto"}
         className="custom-scrollbar"
       >
-        <Flex alignItems={"center"} mb={"2"} justifyContent={"space-between"}>
+        <Flex
+          alignItems={"center"}
+          mb={"2"}
+          justifyContent={"space-between"}
+          ml={"2"}
+        >
           <Text fontSize={"14px"} fontWeight={"bold"}>
             Updates
           </Text>
-          <Flex gap="2">
+          <Flex>
             <ProcessHistoryButton />
-            <ConfigureDailyUpdate />
+            {/* <ConfigureDailyUpdate /> */}
           </Flex>
         </Flex>
-        <Flex alignItems={"center"} mb={"2"}>
+        <Flex alignItems={"center"} mb={"2"} ml={"2"}>
           <Text fontSize={"12px"} fontWeight={"bold"}>
             Filter:
           </Text>

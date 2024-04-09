@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Flex, Image } from "@chakra-ui/react";
+import { Divider, Flex, Image } from "@chakra-ui/react";
 import flowlly_logo from "../../img/logo_full.svg";
 import UserPanel from "../UserPanel";
 import { useStore } from "@/utils/store";
@@ -14,6 +14,8 @@ import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import CreateNewProjectButton from "../Schedule/NewProjectButton";
 import NotificationButton from "../Notifications/NotificationButton";
 import NEW_Menu from "../Menu/Menu";
+import { useMediaQuery } from "@chakra-ui/react";
+import ConfigureDailyUpdate from "../Schedule/ConfigureTaskQueue/ConfigureDailyUpdate";
 
 function NewTopBar() {
   const {
@@ -34,6 +36,7 @@ function NewTopBar() {
     setUserActivities: state.setUserActivities,
   }));
 
+  const [smallScreen] = useMediaQuery("(max-width: 1441px)");
   const queryClient = useQueryClient();
   // const [projects, setProjects] = useState<ProjectEntity[]>([]);
 
@@ -102,27 +105,39 @@ function NewTopBar() {
   return (
     <Flex
       px={1}
-      py={"2"}
+      py={"4"}
       flexDirection={"column"}
       alignItems={"center"}
       justifyContent={"space-between"}
-      bg={"brand.gray"}
+      bg={"#14213D"}
       h={"full"}
       rounded={"xl"}
       className="custom-shadow"
     >
+      {smallScreen ? (
+        <Image
+          src="https://upthcaewktgrqjieqiya.supabase.co/storage/v1/object/public/images/identifyier.svg"
+          alt="logo"
+          w="25%"
+          // transform={"rotate(90deg) "}
+        />
+      ) : (
+        <Image
+          src="https://upthcaewktgrqjieqiya.supabase.co/storage/v1/object/public/images/logo_full.svg"
+          alt="logo"
+          w="80%"
+          // transform={"rotate(90deg) "}
+        />
+      )}
       <Flex alignItems={"center"} flexDirection={"column"}>
         {/* <CreateNewProjectButton /> */}
         <NEW_Menu />
 
         {/* <NotificationButton /> */}
+        <Flex mt={"8"}>
+          <ConfigureDailyUpdate />
+        </Flex>
       </Flex>
-      <Image
-        src="https://upthcaewktgrqjieqiya.supabase.co/storage/v1/object/public/images/logo_full.svg"
-        alt="logo"
-        w="150px"
-        transform={"rotate(90deg) "}
-      />
       <UserPanel />
     </Flex>
   );

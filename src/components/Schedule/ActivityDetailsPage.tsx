@@ -91,6 +91,10 @@ function ActivitiesDetailPage() {
     }
   }, [contingencyPlans]);
 
+  // useEffect(() => {
+  //   console.log("taskToView", taskToView);
+  // }, [taskToView]);
+
   useEffect(() => {
     if (userActivities) {
       if (userActivities.length > 0) {
@@ -588,6 +592,8 @@ function ActivitiesDetailPage() {
                           ? "#FFA841"
                           : taskToView.status === "In Progress"
                           ? "#5F55EE"
+                          : taskToView.status === "Completed"
+                          ? "#26d995"
                           : "brand2.dark"
                       }
                       boxSize={"3"}
@@ -620,7 +626,7 @@ function ActivitiesDetailPage() {
                           <Text> Delete Task</Text>
                         </Button>
                       </Flex>
-                      <AddActivityChildren />
+                      {/* <AddActivityChildren /> */}
                     </>
                   )}
                 </Flex>
@@ -637,6 +643,8 @@ function ActivitiesDetailPage() {
                         ? "#FFA841"
                         : taskToView.status === "In Progress"
                         ? "#5F55EE"
+                        : taskToView.status === "Completed"
+                        ? "#26d995"
                         : "brand2.dark"
                     }
                   >

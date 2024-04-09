@@ -122,7 +122,8 @@ export default function MainLayout({
             h="100vh"
             // direction={{ base: "column", md: "row" }}
             overflow="auto"
-            p={smallScreen ? "0" : "2"}
+            p={smallScreen ? "1" : "2"}
+            bg={"#E5E5E5"}
           >
             {(appView === "login" || appView === "changePassword") && (
               <Flex>{children}</Flex>

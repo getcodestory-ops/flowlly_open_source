@@ -264,7 +264,9 @@ function ScheduleInsights() {
                     : activity.status === "At Risk"
                     ? "#FFA841"
                     : activity.status === "In Progress"
-                    ? "#5F55EE"
+                    ? "#5f55ee"
+                    : activity.status === "Completed"
+                    ? "#26d995"
                     : "brand2.dark"
                 }
                 boxSize={"3"}

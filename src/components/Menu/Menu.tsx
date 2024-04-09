@@ -11,6 +11,7 @@ import { FaFolderOpen } from "react-icons/fa";
 import { LuContact2 } from "react-icons/lu";
 import { GrConnect } from "react-icons/gr";
 import UserPanel from "../UserPanel";
+import { useMediaQuery } from "@chakra-ui/react";
 
 function NEW_Menu() {
   const { setAppView, appView } = useStore((state) => ({
@@ -18,7 +19,7 @@ function NEW_Menu() {
     appView: state.appView,
   }));
   const [settingsView, setSettingsView] = useState<string>("folders");
-
+  const [smallScreen] = useMediaQuery("(max-width: 1441px)");
   const router = useRouter();
   const { projectId } = router.query;
 
@@ -59,7 +60,12 @@ function NEW_Menu() {
         gap="8"
         // className="custom-shadow"
       >
-        <Tooltip label="Daily Reports" aria-label="Daily">
+        <Tooltip
+          label="Daily Reports"
+          aria-label="Daily"
+          bg="white"
+          color="brand.dark"
+        >
           <Button
             mx={"2"}
             size={"sm"}
@@ -67,12 +73,24 @@ function NEW_Menu() {
             onClick={() => {
               setAppView("updates");
             }}
-            _hover={{ bg: "brand.dark", color: "white" }}
+            color={"white"}
+            _hover={{
+              color: "brand.dark",
+              bg: "#E5E5E5",
+            }}
           >
-            <Icon as={BsStars}></Icon>
+            <Icon
+              as={TbReportAnalytics}
+              color={appView === "updates" ? "#14213D" : ""}
+            ></Icon>
           </Button>
         </Tooltip>
-        <Tooltip label="Look Ahead" aria-label="Look Ahead">
+        <Tooltip
+          label="Look Ahead"
+          aria-label="Look Ahead"
+          bg="white"
+          color="brand.dark"
+        >
           <Button
             mx={"2"}
             size={"sm"}
@@ -80,9 +98,16 @@ function NEW_Menu() {
             onClick={() => {
               setAppView("schedule");
             }}
-            _hover={{ bg: "brand.dark", color: "white" }}
+            color={"white"}
+            _hover={{
+              color: "brand.dark",
+              bg: "#E5E5E5",
+            }}
           >
-            <Icon as={FaTasks}></Icon>
+            <Icon
+              as={FaTasks}
+              color={appView === "schedule" ? "#14213D" : ""}
+            ></Icon>
           </Button>
         </Tooltip>
 
@@ -110,7 +135,12 @@ function NEW_Menu() {
           <Icon as={FaFolderOpen} mr={"2"}></Icon>
           Documents
         </Button> */}
-        <Tooltip label="Project Members" aria-label="Members">
+        <Tooltip
+          label="Project Members"
+          aria-label="Members"
+          bg="white"
+          color="brand.dark"
+        >
           <Button
             mx={"2"}
             size={"sm"}
@@ -118,9 +148,16 @@ function NEW_Menu() {
             onClick={() => {
               setAppView("members");
             }}
-            _hover={{ bg: "brand.dark", color: "white" }}
+            color={"white"}
+            _hover={{
+              color: "brand.dark",
+              bg: "#E5E5E5",
+            }}
           >
-            <Icon as={LuContact2}></Icon>
+            <Icon
+              as={LuContact2}
+              color={appView === "members" ? "#14213D" : ""}
+            ></Icon>
           </Button>
         </Tooltip>
 

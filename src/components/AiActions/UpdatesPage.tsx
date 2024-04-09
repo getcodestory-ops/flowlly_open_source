@@ -570,7 +570,7 @@ const UpdatesPage = () => {
           </Text>
           <Flex gap="2">
             <ProcessHistoryButton />
-            <ConfigureDailyUpdate />
+            {/* <ConfigureDailyUpdate /> */}
           </Flex>
         </Flex>
         <Flex alignItems={"center"} mb={"2"}>

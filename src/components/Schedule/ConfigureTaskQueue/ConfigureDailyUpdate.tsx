@@ -29,13 +29,13 @@ const ConfigureDailyUpdate = () => {
       >
         <Button
           mx={"2"}
-          bg={"white"}
-          size={"xs"}
+          size={"sm"}
+          bg={"none"}
+          color={"white"}
           className="custom-shadow"
-          rounded={"full"}
-          _hover={{ bg: "brand.dark", color: "white" }}
+          rounded={"md"}
+          _hover={{ bg: "brand.gray", color: "brand.dark" }}
           cursor={"pointer"}
-          p={"0"}
           onClick={() => setIsOpen(true)}
         >
           <Icon
