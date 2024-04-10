@@ -223,7 +223,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
               </Flex> */}
             </Flex>
             <Flex>
-              <CsvUploadIcon />
+              {/* <CsvUploadIcon /> */}
               <Button
                 size={"xs"}
                 bg={"brand.dark"}
