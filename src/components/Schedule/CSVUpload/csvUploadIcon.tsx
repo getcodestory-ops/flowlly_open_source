@@ -63,21 +63,23 @@ const CsvUploadIcon: React.FC = () => {
         justifyContent={"center"}
         cursor="pointer"
       >
-        <Flex>
-          <Flex alignItems={"center"} px={"2"}>
-            <Icon as={FiUpload} />
+        <Tooltip label="Upload CSV file" aria-label="A tooltip">
+          <Flex>
+            <Flex alignItems={"center"} px={"2"}>
+              <Icon as={FiUpload} />
+            </Flex>
+            <Input
+              type="file"
+              accept=".csv"
+              ref={fileRef}
+              py={1}
+              position="absolute"
+              opacity={0}
+              onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+              cursor={"pointer"}
+            />
           </Flex>
-          <Input
-            type="file"
-            accept=".csv"
-            ref={fileRef}
-            py={1}
-            position="absolute"
-            opacity={0}
-            onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
-            cursor={"pointer"}
-          />
-        </Flex>
+        </Tooltip>
         <Flex>
           {selectedFile !== null ? (
             <Button
