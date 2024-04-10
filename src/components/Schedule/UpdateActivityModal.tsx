@@ -108,6 +108,17 @@ function UpdateActivityModal({
     onClose();
   };
 
+  useEffect(() => {
+    if (activity.start && activity.end) {
+      const startDate = new Date(activity.start);
+      const endDate = new Date(activity.end);
+      setActivity((state) => ({
+        ...state,
+        duration: dateDiffInDays(startDate, endDate),
+      }));
+    }
+  }, [activity.start, activity.end]);
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
       <ModalOverlay />
