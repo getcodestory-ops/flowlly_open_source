@@ -40,6 +40,14 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
     activities: state.userActivities,
     activeProject: state.activeProject,
   }));
+  const [duration, setDuration] = useState(0);
+
+  const calculateDaysBetweenDates = (startDate: Date, endDate: Date) => {
+    // Same calculation logic as before
+    const differenceInMs = endDate.getTime() - startDate.getTime();
+    const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+    return differenceInDays;
+  };
 
   const [activity, setActivity] = useState<CreateNewActivity>({
     name: "",
@@ -51,6 +59,18 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
     cost: 0,
     status: "On Schedule",
   });
+
+  useEffect(() => {
+    if (activity) {
+      const startDate = new Date(activity.start);
+      const endDate = new Date(activity.end);
+      const days = calculateDaysBetweenDates(startDate, endDate);
+      setActivity((state) => ({
+        ...state!,
+        duration: days,
+      }));
+    }
+  }, [activity.start, activity.end]);
 
   useEffect(() => {
     setActivity((state) => ({
@@ -84,8 +104,32 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["activityList"] });
+      setActivity({
+        name: "",
+        description: "",
+        start: dateToday,
+        project_id: activeProject?.project_id,
+        end: dateToday,
+        duration: 0,
+        cost: 0,
+        status: "On Schedule",
+      });
     },
   });
+
+  const handleCancel = () => {
+    onClose();
+    setActivity({
+      name: "",
+      description: "",
+      start: dateToday,
+      project_id: activeProject?.project_id,
+      end: dateToday,
+      duration: 0,
+      cost: 0,
+      status: "On Schedule",
+    });
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
@@ -125,31 +169,6 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
                       setActivity((state) => ({
                         ...state!,
                         name: e.target.value,
-                      }));
-                    }}
-                  />
-                </Flex>
-                <Flex direction={"column"}>
-                  <Text as={"b"} fontSize={"12px"}>
-                    Task Duration in Days
-                  </Text>
-
-                  <Input
-                    shadow={"sm"}
-                    variant={"unstyled"}
-                    p={"2"}
-                    rounded={"md"}
-                    bg={"white"}
-                    size={"sm"}
-                    placeholder="Activity Duration (Days)"
-                    value={activity.duration === 0 ? "" : activity.duration}
-                    type="number"
-                    step={0.01}
-                    onChange={(e) => {
-                      if (!e.target.value) e.target.value = "0";
-                      setActivity((state) => ({
-                        ...state!,
-                        duration: parseFloat(e.target.value) ?? 0,
                       }));
                     }}
                   />
@@ -223,6 +242,36 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
                       }));
                     }}
                   />
+                </Flex>
+                <Flex direction={"column"}>
+                  <Text as={"b"} fontSize={"12px"}>
+                    Task Duration in Days
+                  </Text>
+                  <Flex>
+                    <Text fontSize={"sm"} pl={"2"} my={"2"}>
+                      {activity.duration} days
+                    </Text>
+                  </Flex>
+
+                  {/* <Input
+                    shadow={"sm"}
+                    variant={"unstyled"}
+                    p={"2"}
+                    rounded={"md"}
+                    bg={"white"}
+                    size={"sm"}
+                    placeholder="Activity Duration (Days)"
+                    value={activity.duration === 0 ? "" : activity.duration}
+                    type="number"
+                    step={0.01}
+                    onChange={(e) => {
+                      if (!e.target.value) e.target.value = "0";
+                      setActivity((state) => ({
+                        ...state!,
+                        duration: parseFloat(e.target.value) ?? 0,
+                      }));
+                    }}
+                  /> */}
                 </Flex>
 
                 <Flex direction={"column"}>
@@ -354,7 +403,15 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
               >
                 Save
               </Button>
-              <Button variant="ghost" onClick={onClose}>
+              <Button
+                variant="ghost"
+                // onClick={() => {
+                //   onClose;
+                // }}
+                onClick={() => {
+                  handleCancel();
+                }}
+              >
                 Cancel
               </Button>
             </ModalFooter>

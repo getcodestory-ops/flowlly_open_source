@@ -245,7 +245,9 @@ function ScheduleInsights() {
           py={4}
           pl={"1"}
           minW={"22vw"}
-          bg={activity.id === taskToView.id ? "brand.background" : "white"}
+          bg={activity.id === taskToView.id ? "yellow.100" : "white"}
+          _hover={{ bg: "brand.accent", cursor: "pointer" }}
+          onClick={() => detailsClick(activity.id, activity)}
         >
           {/* <Flex direction={"row"} alignItems={"center"}>
             <Icon

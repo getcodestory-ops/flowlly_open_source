@@ -153,30 +153,6 @@ function UpdateActivityModal({
                   </Flex>
                   <Flex direction={"column"}>
                     <Text as={"b"} fontSize={"12px"}>
-                      Task Duration
-                    </Text>
-                    <Input
-                      shadow={"sm"}
-                      variant={"unstyled"}
-                      p={"2"}
-                      rounded={"md"}
-                      bg={"white"}
-                      size={"sm"}
-                      placeholder="Activity Duration (Days)"
-                      value={activity.duration === 0 ? "" : activity.duration}
-                      type="number"
-                      step={0.01}
-                      onChange={(e) => {
-                        if (!e.target.value) e.target.value = "0";
-                        setActivity((state) => ({
-                          ...state!,
-                          duration: parseFloat(e.target.value) ?? 0,
-                        }));
-                      }}
-                    />
-                  </Flex>
-                  <Flex direction={"column"}>
-                    <Text as={"b"} fontSize={"12px"}>
                       Task Start Date
                     </Text>
                     <Input
@@ -240,6 +216,35 @@ function UpdateActivityModal({
                         }));
                       }}
                     />
+                  </Flex>
+                  <Flex direction={"column"}>
+                    <Text as={"b"} fontSize={"12px"}>
+                      Task Duration
+                    </Text>
+                    <Flex>
+                      <Text fontSize={"sm"} pl={"2"} my={"2"}>
+                        {activity.duration} days
+                      </Text>
+                    </Flex>
+                    {/* <Input
+                      shadow={"sm"}
+                      variant={"unstyled"}
+                      p={"2"}
+                      rounded={"md"}
+                      bg={"white"}
+                      size={"sm"}
+                      placeholder="Activity Duration (Days)"
+                      value={activity.duration === 0 ? "" : activity.duration}
+                      type="number"
+                      step={0.01}
+                      onChange={(e) => {
+                        if (!e.target.value) e.target.value = "0";
+                        setActivity((state) => ({
+                          ...state!,
+                          duration: parseFloat(e.target.value) ?? 0,
+                        }));
+                      }}
+                    /> */}
                   </Flex>
 
                   {/* <Input
