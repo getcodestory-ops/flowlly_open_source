@@ -155,19 +155,23 @@ function UpdateDailyUpdateScheduleModal({
     <Modal isOpen={isOpen} onClose={onClose} size="4xl">
       <ModalOverlay />
       <ModalContent bg="brand.background">
-        <ModalHeader>Configure Daily Update Schedule</ModalHeader>
+        <ModalHeader>Configure Assistant Activities</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Flex flexDirection="row" gap="6">
             <Box flex="1">
-              <Button
-                onClick={() => setEditQueueItem(defaultQueueItem)}
-                mb="4"
-                colorScheme="yellow"
-              >
-                Add New Task Schedule
-              </Button>
-              <Text mb="4">Task Queue</Text>
+              <Flex direction={"column"}>
+                <Button
+                  onClick={() => setEditQueueItem(defaultQueueItem)}
+                  mb="4"
+                  colorScheme="yellow"
+                >
+                  Add New Task Schedule
+                </Button>
+                <Text mb="4" as={"b"}>
+                  Current Activities:
+                </Text>
+              </Flex>
               <Box overflowY="auto" maxH="xs">
                 {taskQueue &&
                   taskQueue.length > 0 &&
@@ -203,33 +207,53 @@ function UpdateDailyUpdateScheduleModal({
             <Box flex="2">
               {editQueueItem && (
                 <Flex flexDirection="column" gap="4">
-                  <Select
-                    onChange={(e) =>
-                      setEditQueueItem({
-                        ...editQueueItem,
-                        task_function: e.target.value,
-                      })
-                    }
-                    value={editQueueItem.task_function}
-                  >
-                    <option value="generate_daily_briefing">
-                      Send Daily Updates
-                    </option>
-                    <option value="process_task_history">
-                      Generate Daily Report
-                    </option>
-                  </Select>
-
-                  <Input
-                    placeholder="Task Name"
-                    value={editQueueItem.task_name}
-                    onChange={(e) =>
-                      setEditQueueItem({
-                        ...editQueueItem,
-                        task_name: e.target.value,
-                      })
-                    }
-                  />
+                  <Flex direction={"column"}>
+                    <Text as={"b"} fontSize={"12px"}>
+                      Coordinator Task
+                    </Text>
+                    <Select
+                      shadow={"sm"}
+                      p={"2"}
+                      rounded={"md"}
+                      bg={"white"}
+                      size={"sm"}
+                      onChange={(e) =>
+                        setEditQueueItem({
+                          ...editQueueItem,
+                          task_function: e.target.value,
+                        })
+                      }
+                      value={editQueueItem.task_function}
+                    >
+                      <option value="generate_daily_briefing">
+                        Send Daily Updates
+                      </option>
+                      <option value="process_task_history">
+                        Generate Daily Report
+                      </option>
+                    </Select>
+                  </Flex>
+                  <Flex direction={"column"}>
+                    <Text as={"b"} fontSize={"12px"}>
+                      Task Name
+                    </Text>
+                    <Input
+                      placeholder="Task Name"
+                      shadow={"sm"}
+                      variant={"unstyled"}
+                      p={"2"}
+                      rounded={"md"}
+                      bg={"white"}
+                      size={"sm"}
+                      value={editQueueItem.task_name}
+                      onChange={(e) =>
+                        setEditQueueItem({
+                          ...editQueueItem,
+                          task_name: e.target.value,
+                        })
+                      }
+                    />
+                  </Flex>
                   <MultiSelect
                     title="Days"
                     options={[
@@ -254,82 +278,121 @@ function UpdateDailyUpdateScheduleModal({
                     onChange={handleTaskOwnerIdsChange}
                   />
                   <Flex flexDirection="column" gap="4">
-                    <Text>Start task from</Text>
-                    <Input
-                      type="date"
-                      value={editQueueItem.run_config.start.split("T")[0]}
-                      onChange={(e) => setStartDateTime(e.target.value)}
-                    />
-                    <Text>Run Task until</Text>
-                    <Input
-                      type="date"
-                      value={editQueueItem.run_config.end?.split("T")[0]}
-                      onChange={(e) => setEndDateTime(e.target.value)}
-                    />
-                    select time zone here
-                    <Box position="relative" ref={ref}>
+                    <Flex direction={"column"}>
+                      <Text as={"b"} fontSize={"12px"}>
+                        Start task from
+                      </Text>
                       <Input
-                        placeholder="Filter Timezones"
-                        value={timezoneFilter}
-                        onChange={(e) => setTimezoneFilter(e.target.value)}
-                        onFocus={() => setShowTimezoneOptions(true)}
+                        shadow={"sm"}
+                        variant={"unstyled"}
+                        p={"2"}
+                        rounded={"md"}
+                        bg={"white"}
+                        size={"sm"}
+                        type="date"
+                        value={editQueueItem.run_config.start.split("T")[0]}
+                        onChange={(e) => setStartDateTime(e.target.value)}
                       />
-                      {showTimezoneOptions && (
-                        <List
-                          spacing={2}
-                          bg="white"
-                          mt={1}
-                          boxShadow="md"
-                          position="absolute"
-                          width="full"
-                          zIndex="dropdown"
-                          maxH="xs"
-                          overflow={"auto"}
-                        >
-                          {filteredTimezones.map((timezone) => (
-                            <ListItem
-                              key={timezone}
-                              p={2}
-                              cursor="pointer"
-                              _hover={{ bg: "gray.100" }}
-                              onClick={() => handleTimezoneChange(timezone)}
-                            >
-                              {timezone}
-                            </ListItem>
-                          ))}
-                          {filteredTimezones.length === 0 && (
-                            <ListItem p={2}>No results found.</ListItem>
-                          )}
-                        </List>
-                      )}
-                    </Box>
-                    <Text>Run times</Text>
-                    <VStack spacing={4} align="start">
-                      <Box>
+                    </Flex>
+                    <Flex direction={"column"}>
+                      <Text as={"b"} fontSize={"12px"}>
+                        Run Task until
+                      </Text>
+                      <Input
+                        shadow={"sm"}
+                        variant={"unstyled"}
+                        p={"2"}
+                        rounded={"md"}
+                        bg={"white"}
+                        size={"sm"}
+                        type="date"
+                        value={editQueueItem.run_config.end?.split("T")[0]}
+                        onChange={(e) => setEndDateTime(e.target.value)}
+                      />
+                    </Flex>
+                    <Flex direction={"column"}>
+                      <Text as={"b"} fontSize={"12px"}>
+                        Time zone
+                      </Text>
+                      <Box position="relative" ref={ref}>
                         <Input
-                          placeholder="HH:MM"
-                          value={timeInput}
-                          onChange={(e) => setTimeInput(e.target.value)}
-                          size="md"
-                          width="auto"
-                          mr={2}
-                          type="time"
+                          shadow={"sm"}
+                          variant={"unstyled"}
+                          p={"2"}
+                          rounded={"md"}
+                          bg={"white"}
+                          size={"sm"}
+                          placeholder="Filter Timezones"
+                          value={timezoneFilter}
+                          onChange={(e) => setTimezoneFilter(e.target.value)}
+                          onFocus={() => setShowTimezoneOptions(true)}
                         />
-                        <Button onClick={handleAddTime} colorScheme="yellow">
-                          Add Time
-                        </Button>
+                        {showTimezoneOptions && (
+                          <List
+                            spacing={2}
+                            bg="white"
+                            mt={1}
+                            boxShadow="md"
+                            position="absolute"
+                            width="full"
+                            zIndex="dropdown"
+                            maxH="xs"
+                            overflow={"auto"}
+                          >
+                            {filteredTimezones.map((timezone) => (
+                              <ListItem
+                                key={timezone}
+                                p={2}
+                                cursor="pointer"
+                                _hover={{ bg: "gray.100" }}
+                                onClick={() => handleTimezoneChange(timezone)}
+                              >
+                                {timezone}
+                              </ListItem>
+                            ))}
+                            {filteredTimezones.length === 0 && (
+                              <ListItem p={2}>No results found.</ListItem>
+                            )}
+                          </List>
+                        )}
                       </Box>
-                      <HStack spacing={2}>
-                        {selectedTimes.map((time, index) => (
-                          <Tag size="lg" key={index} borderRadius="full">
-                            <TagLabel>{time}</TagLabel>
-                            <TagCloseButton
-                              onClick={() => handleRemoveTime(time)}
-                            />
-                          </Tag>
-                        ))}
-                      </HStack>
-                    </VStack>
+                    </Flex>
+                    <Flex direction={"column"}>
+                      <Text as={"b"} fontSize={"12px"}>
+                        Run times
+                      </Text>
+                      <VStack spacing={4} align="start">
+                        <Box>
+                          <Input
+                            shadow={"sm"}
+                            variant={"unstyled"}
+                            p={"2"}
+                            rounded={"md"}
+                            bg={"white"}
+                            size={"sm"}
+                            placeholder="HH:MM"
+                            value={timeInput}
+                            onChange={(e) => setTimeInput(e.target.value)}
+                            width="auto"
+                            mr={2}
+                            type="time"
+                          />
+                          <Button onClick={handleAddTime} colorScheme="yellow">
+                            Add Time
+                          </Button>
+                        </Box>
+                        <HStack spacing={2}>
+                          {selectedTimes.map((time, index) => (
+                            <Tag size="lg" key={index} borderRadius="full">
+                              <TagLabel>{time}</TagLabel>
+                              <TagCloseButton
+                                onClick={() => handleRemoveTime(time)}
+                              />
+                            </Tag>
+                          ))}
+                        </HStack>
+                      </VStack>
+                    </Flex>
                   </Flex>
                 </Flex>
               )}
