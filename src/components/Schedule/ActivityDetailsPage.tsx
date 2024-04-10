@@ -35,6 +35,8 @@ function ActivitiesDetailPage() {
     setTaskDetailsView,
     userActivities,
     members,
+    scheduleDate,
+    setTaskToView,
   } = useStore((state) => ({
     session: state.session,
     taskToView: state.taskToView,
@@ -44,6 +46,8 @@ function ActivitiesDetailPage() {
     setTaskDetailsView: state.setTaskDetailsView,
     userActivities: state.userActivities,
     members: state.members,
+    scheduleDate: state.scheduleDate,
+    setTaskToView: state.setTaskToView,
   }));
 
   type Action = {
@@ -128,6 +132,18 @@ function ActivitiesDetailPage() {
       }
     }
   }, [userActivities]);
+
+  // useEffect(() => {
+  //   console.log("change in date");
+  //   console.log("taskToView", taskToView);
+  //   console.log("userActivities", userActivities);
+  //   const updateTaskToView = userActivities.filter(
+  //     (task) => task.id === taskToView.id
+  //   )[0];
+  //   setTaskToView(updateTaskToView);
+  //   console.log("updateTaskToView", updateTaskToView);
+  //   console.log("taskToView2", taskToView);
+  // }, [scheduleDate]);
 
   // useEffect(() => {
   //   tasks.forEach((task) => {

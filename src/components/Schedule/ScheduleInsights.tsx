@@ -77,7 +77,18 @@ function ScheduleInsights() {
   // useEffect(() => {
   //   console.log("activities", activities);
   //   console.log("members", members);
-  // }, [activities, members]);
+  //   console.log("task to view", taskToView);
+  // }, [activities, members, taskToView]);
+
+  useEffect(() => {
+    if (taskToView.id !== "SCHEDULE") {
+      const updateTaskToView: any = activities.find(
+        (activity) => activity.id === taskToView.id
+      );
+      // console.log("updateTaskToView", updateTaskToView);
+      setTaskToView(updateTaskToView);
+    }
+  }, [activities]);
 
   const countTotalActivities = (activities: any[]) => {
     let count = 0;

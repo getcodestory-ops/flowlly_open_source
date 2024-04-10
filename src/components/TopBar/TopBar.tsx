@@ -26,6 +26,7 @@ function NewTopBar() {
     scheduleDate,
     scheduleProbability,
     setUserActivities,
+    setTaskToView,
   } = useStore((state) => ({
     session: state.session,
     setUserProjects: state.setUserProjects,
@@ -34,6 +35,7 @@ function NewTopBar() {
     scheduleDate: state.scheduleDate,
     scheduleProbability: state.scheduleProbability,
     setUserActivities: state.setUserActivities,
+    setTaskToView: state.setTaskToView,
   }));
 
   const [smallScreen] = useMediaQuery("(max-width: 1441px)");
@@ -46,6 +48,18 @@ function NewTopBar() {
     enabled: !!session?.access_token,
     placeholderData: keepPreviousData,
   });
+
+  const defaultTask = {
+    id: "SCHEDULE",
+    project_id: "parent",
+    name: "No active task",
+    start: "01/02/23",
+    end: "01/02/23",
+    progress: 0,
+    activity_critical: {
+      critical_path: false,
+    },
+  };
 
   const {
     data: activities,
@@ -94,6 +108,10 @@ function NewTopBar() {
       ]);
     }
   }, [activities, isSuccess, setUserActivities]);
+
+  useEffect(() => {
+    setTaskToView(defaultTask);
+  }, [activeProject]);
 
   useEffect(() => {
     if (projects && projects.length > 0) {

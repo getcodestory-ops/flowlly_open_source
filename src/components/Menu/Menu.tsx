@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Flex, Button, Link, Icon, Tooltip } from "@chakra-ui/react";
+import { Flex, Button, Link, Icon, Tooltip, Text } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { useRouter } from "next/router";
 import { FaTasks } from "react-icons/fa";
@@ -60,56 +60,174 @@ function NEW_Menu() {
         gap="8"
         // className="custom-shadow"
       >
-        <Tooltip
-          label="Daily Reports"
-          aria-label="Daily"
-          bg="white"
-          color="brand.dark"
-        >
-          <Button
-            mx={"2"}
-            size={"sm"}
-            bg={appView === "updates" ? "brand.accent" : ""}
-            onClick={() => {
-              setAppView("updates");
-            }}
-            color={"white"}
-            _hover={{
-              color: "brand.dark",
-              bg: "#E5E5E5",
-            }}
-          >
-            <Icon
-              as={TbReportAnalytics}
-              color={appView === "updates" ? "#14213D" : ""}
-            ></Icon>
-          </Button>
-        </Tooltip>
-        <Tooltip
-          label="Look Ahead"
-          aria-label="Look Ahead"
-          bg="white"
-          color="brand.dark"
-        >
-          <Button
-            mx={"2"}
-            size={"sm"}
-            bg={appView === "schedule" ? "brand.accent" : ""}
-            onClick={() => {
-              setAppView("schedule");
-            }}
-            color={"white"}
-            _hover={{
-              color: "brand.dark",
-              bg: "#E5E5E5",
-            }}
-          >
-            <Icon
-              as={FaTasks}
-              color={appView === "schedule" ? "#14213D" : ""}
-            ></Icon>
-          </Button>
-        </Tooltip>
+        {smallScreen ? (
+          <>
+            <Tooltip
+              label="Daily Reports"
+              aria-label="Daily"
+              bg="white"
+              color="brand.dark"
+            >
+              <Button
+                mx={"2"}
+                size={"sm"}
+                bg={appView === "updates" ? "brand.accent" : ""}
+                onClick={() => {
+                  setAppView("updates");
+                }}
+                color={"white"}
+                _hover={{
+                  color: "brand.dark",
+                  bg: "#E5E5E5",
+                }}
+              >
+                <Icon
+                  as={TbReportAnalytics}
+                  color={appView === "updates" ? "brand.dark" : ""}
+                ></Icon>
+              </Button>
+            </Tooltip>
+            <Tooltip
+              label="Look Ahead"
+              aria-label="Look Ahead"
+              bg="white"
+              color="brand.dark"
+            >
+              <Button
+                mx={"2"}
+                size={"sm"}
+                bg={appView === "schedule" ? "brand.accent" : ""}
+                onClick={() => {
+                  setAppView("schedule");
+                }}
+                color={"white"}
+                _hover={{
+                  color: "brand.dark",
+                  bg: "#E5E5E5",
+                }}
+              >
+                <Icon
+                  as={FaTasks}
+                  color={appView === "schedule" ? "brand.dark" : ""}
+                ></Icon>
+              </Button>
+            </Tooltip>
+            <Tooltip
+              label="Project Members"
+              aria-label="Members"
+              bg="white"
+              color="brand.dark"
+            >
+              <Button
+                mx={"2"}
+                size={"sm"}
+                bg={appView === "members" ? "brand.accent" : ""}
+                onClick={() => {
+                  setAppView("members");
+                }}
+                color={"white"}
+                _hover={{
+                  color: "brand.dark",
+                  bg: "#E5E5E5",
+                }}
+              >
+                <Icon
+                  as={LuContact2}
+                  color={appView === "members" ? "brand.dark" : ""}
+                ></Icon>
+              </Button>
+            </Tooltip>
+          </>
+        ) : (
+          <>
+            <Button
+              w={"90%"}
+              mx={"2"}
+              size={"sm"}
+              bg={appView === "updates" ? "brand.accent" : ""}
+              onClick={() => {
+                setAppView("updates");
+              }}
+              color={"white"}
+              _hover={{
+                color: "brand.dark",
+                bg: "#E5E5E5",
+              }}
+              justifyContent={"flex-start"}
+            >
+              <Icon
+                as={TbReportAnalytics}
+                color={appView === "updates" ? "brand.dark" : ""}
+              ></Icon>
+              <Text
+                fontSize={"12px"}
+                color={appView === "updates" ? "brand.dark" : "white"}
+                ml={"2"}
+                fontWeight={"medium"}
+              >
+                Daily Reports
+              </Text>
+            </Button>
+
+            <Button
+              w={"90%"}
+              mx={"2"}
+              size={"sm"}
+              bg={appView === "schedule" ? "brand.accent" : ""}
+              onClick={() => {
+                setAppView("schedule");
+              }}
+              color={"white"}
+              _hover={{
+                color: "brand.dark",
+                bg: "#E5E5E5",
+              }}
+              justifyContent={"flex-start"}
+            >
+              <Icon
+                as={FaTasks}
+                color={appView === "schedule" ? "brand.dark" : ""}
+              ></Icon>
+              <Text
+                fontSize={"12px"}
+                color={appView === "schedule" ? "brand.dark" : "white"}
+                ml={"2"}
+                fontWeight={"medium"}
+              >
+                Schedule
+              </Text>
+            </Button>
+
+            <Button
+              w={"90%"}
+              mx={"2"}
+              size={"sm"}
+              bg={appView === "members" ? "brand.accent" : ""}
+              onClick={() => {
+                setAppView("members");
+              }}
+              color={"white"}
+              _hover={{
+                color: "brand.dark",
+                bg: "#E5E5E5",
+              }}
+              justifyContent={"flex-start"}
+            >
+              <Icon
+                as={LuContact2}
+                color={appView === "members" ? "#14213D" : ""}
+              ></Icon>
+              <Text
+                fontSize={"12px"}
+                color={appView === "members" ? "brand.dark" : "white"}
+                ml={"2"}
+                fontWeight={"medium"}
+              >
+                Members
+              </Text>
+            </Button>
+          </>
+        )}
 
         {/* <Button
           mx={"2"}
@@ -135,31 +253,6 @@ function NEW_Menu() {
           <Icon as={FaFolderOpen} mr={"2"}></Icon>
           Documents
         </Button> */}
-        <Tooltip
-          label="Project Members"
-          aria-label="Members"
-          bg="white"
-          color="brand.dark"
-        >
-          <Button
-            mx={"2"}
-            size={"sm"}
-            bg={appView === "members" ? "brand.accent" : ""}
-            onClick={() => {
-              setAppView("members");
-            }}
-            color={"white"}
-            _hover={{
-              color: "brand.dark",
-              bg: "#E5E5E5",
-            }}
-          >
-            <Icon
-              as={LuContact2}
-              color={appView === "members" ? "#14213D" : ""}
-            ></Icon>
-          </Button>
-        </Tooltip>
 
         {/* <Button
           mx={"2"}
