@@ -35,6 +35,7 @@ import { MemberEntity } from "@/types/members";
 import { timezones } from "./timezones";
 import { MdDeleteOutline } from "react-icons/md";
 import { time } from "console";
+import { type TimeConfig } from "@/types/taskQueue";
 
 function UpdateDailyUpdateScheduleModal({
   isOpen,
@@ -55,7 +56,8 @@ function UpdateDailyUpdateScheduleModal({
   const [timezoneFilter, setTimezoneFilter] = useState("");
   const [showTimezoneOptions, setShowTimezoneOptions] = useState(false);
   const [timeInput, setTimeInput] = useState<string>("");
-  const [selectedTimes, setSelectedTimes] = useState<string[]>(
+  const [deliveryTimeInput, setDeliveryTimeInput] = useState<string>("");
+  const [selectedTimes, setSelectedTimes] = useState<TimeConfig[]>(
     editQueueItem.run_config.time ?? []
   );
   const ref = useRef<HTMLDivElement>(null);
@@ -131,11 +133,24 @@ function UpdateDailyUpdateScheduleModal({
         ...prev,
         run_config: {
           ...prev.run_config,
-          time: [...prev.run_config.time, timeInput],
+          time: [
+            ...prev.run_config.time,
+            { run_time: timeInput, delivery_time: deliveryTimeInput },
+          ],
         },
       }));
-    if (timeInput && !selectedTimes.includes(timeInput)) {
-      setSelectedTimes([...selectedTimes, timeInput]);
+
+    if (
+      timeInput &&
+      !selectedTimes.includes({
+        run_time: timeInput,
+        delivery_time: deliveryTimeInput,
+      })
+    ) {
+      setSelectedTimes([
+        ...selectedTimes,
+        { run_time: timeInput, delivery_time: deliveryTimeInput },
+      ]);
       setTimeInput(""); // Reset input after adding
     }
   };
@@ -145,10 +160,10 @@ function UpdateDailyUpdateScheduleModal({
       ...prev,
       run_config: {
         ...prev.run_config,
-        time: prev.run_config.time.filter((t) => t !== time),
+        time: prev.run_config.time.filter((t) => t.run_time !== time),
       },
     }));
-    setSelectedTimes(selectedTimes.filter((t) => t !== time));
+    setSelectedTimes(selectedTimes.filter((t) => t.run_time !== time));
   };
 
   return (
@@ -217,6 +232,9 @@ function UpdateDailyUpdateScheduleModal({
                     </option>
                     <option value="process_task_history">
                       Generate Daily Report
+                    </option>
+                    <option value="get_project_updates">
+                      Get Project Updates
                     </option>
                   </Select>
 
@@ -303,13 +321,23 @@ function UpdateDailyUpdateScheduleModal({
                         </List>
                       )}
                     </Box>
-                    <Text>Run times</Text>
+                    <Text>Task Execution time : Task Delivery time</Text>
                     <VStack spacing={4} align="start">
                       <Box>
                         <Input
                           placeholder="HH:MM"
                           value={timeInput}
                           onChange={(e) => setTimeInput(e.target.value)}
+                          size="md"
+                          width="auto"
+                          mr={2}
+                          type="time"
+                        />
+
+                        <Input
+                          placeholder="HH:MM"
+                          value={deliveryTimeInput}
+                          onChange={(e) => setDeliveryTimeInput(e.target.value)}
                           size="md"
                           width="auto"
                           mr={2}
@@ -322,9 +350,12 @@ function UpdateDailyUpdateScheduleModal({
                       <HStack spacing={2}>
                         {selectedTimes.map((time, index) => (
                           <Tag size="lg" key={index} borderRadius="full">
-                            <TagLabel>{time}</TagLabel>
+                            <TagLabel>
+                              {time.run_time} :{" "}
+                              {time.delivery_time ?? "Not set"}
+                            </TagLabel>
                             <TagCloseButton
-                              onClick={() => handleRemoveTime(time)}
+                              onClick={() => handleRemoveTime(time.run_time)}
                             />
                           </Tag>
                         ))}
