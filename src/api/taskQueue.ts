@@ -1,5 +1,6 @@
 import { type Session } from "@supabase/supabase-js";
 import { AddTaskQueue, TaskQueue } from "@/types/taskQueue";
+import { Notification } from "@/types/notification";
 import axios from "axios";
 
 export const getTaskQueue = async (
@@ -40,4 +41,18 @@ export const deleteTaskQueue = async (
       Authorization: `Bearer ${session.access_token}`,
     },
   });
+};
+
+export const getDailyMessagesQueue = async (
+  session: Session,
+  project_access_id: string
+): Promise<Notification[]> => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/task_queue/message/${project_access_id}`;
+  const response = await axios.get(url, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  return response.data;
 };
