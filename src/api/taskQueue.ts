@@ -56,3 +56,31 @@ export const getDailyMessagesQueue = async (
 
   return response.data;
 };
+
+export const updateQueueMessage = async (
+  session: Session,
+  project_access_id: string,
+  notification: Notification
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/task_queue/message/${project_access_id}`;
+  const response = await axios.put(url, notification, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  return response.data;
+};
+
+export const deleteQueueMessage = async (
+  session: Session,
+  project_access_id: string,
+  id: string
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/task_queue/message/${project_access_id}/${id}`;
+  await axios.delete(url, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+};

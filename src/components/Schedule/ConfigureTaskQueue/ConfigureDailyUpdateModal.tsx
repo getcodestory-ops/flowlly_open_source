@@ -399,9 +399,12 @@ function UpdateDailyUpdateScheduleModal({
                         <HStack spacing={2}>
                           {selectedTimes.map((time, index) => (
                             <Tag size="lg" key={index} borderRadius="full">
-                              <TagLabel>{time}</TagLabel>
+                              <TagLabel>
+                                {time.run_time} :{" "}
+                                {time.delivery_time ?? "Not set"}
+                              </TagLabel>
                               <TagCloseButton
-                                onClick={() => handleRemoveTime(time)}
+                                onClick={() => handleRemoveTime(time.run_time)}
                               />
                             </Tag>
                           ))}

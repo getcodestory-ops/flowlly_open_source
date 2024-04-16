@@ -1,39 +1,29 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useDailyMessageQueue } from "./useDailyMessageQueue";
 
-import {
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Input,
-  Button,
-  Box,
-  Flex,
-  Textarea,
-  Text,
-} from "@chakra-ui/react";
+import { Button, Flex, Textarea, Text } from "@chakra-ui/react";
 
 function DailyMessageQueue() {
-  const { dailyMessageQueue } = useDailyMessageQueue();
+  const { dailyMessageQueue, updateMessage, deleteMessage } =
+    useDailyMessageQueue();
 
+  const [messages, setMessages] = useState(dailyMessageQueue);
   useEffect(() => {
-    console.log(dailyMessageQueue);
+    setMessages(dailyMessageQueue);
   }, [dailyMessageQueue]);
 
-  //   const updateMessage = (id: string, newMessage: string) => {
-  //     const updatedMessages = messages.map((message) =>
-  //       message.id === id ? { ...message, message: newMessage } : message
-  //     );
-  //     setMessages(updatedMessages);
-  //   };
+  const updateQueue = (id: string, newMessage: string) => {
+    if (!messages) return;
+    const updatedMessages = messages.map((message) =>
+      message.id === id ? { ...message, message: newMessage } : message
+    );
+    setMessages(updatedMessages);
+  };
 
   return (
     <Flex flexDirection={"column"} width="100%" gap="4">
-      {dailyMessageQueue &&
-        dailyMessageQueue.map((message) => (
+      {messages &&
+        messages.map((message) => (
           <Flex
             key={message.id}
             flexDirection={"column"}
@@ -49,18 +39,23 @@ function DailyMessageQueue() {
               value={message.message}
               width={"full"}
               size="xs"
-              rows={20} // Default number of rows
-              //   onChange={(e) =>
-              //     updateMessage(message.id, e.target.value)
-              //   }
+              rows={15} // Default number of rows
+              onChange={(e) => updateQueue(message.id, e.target.value)}
             />
-            <Flex>
+            <Flex gap="2">
               <Button
                 size="xs"
                 colorScheme="yellow"
-                //   onClick={() => updateMessage(message.id, message.message)}
+                onClick={() => updateMessage(message)}
               >
                 Update
+              </Button>
+              <Button
+                size="xs"
+                colorScheme="red"
+                onClick={() => deleteMessage(message.id)}
+              >
+                Reject
               </Button>
             </Flex>
           </Flex>
