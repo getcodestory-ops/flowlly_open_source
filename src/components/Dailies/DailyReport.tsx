@@ -33,6 +33,8 @@ import { getUpdates } from "@/api/update_routes";
 import { UpdateProperties } from "@/types/updates";
 import EditorBlock from "@/components/DocumentEditor/Editor";
 import ConfigureDailyUpdate from "../Schedule/ConfigureTaskQueue/ConfigureDailyUpdate";
+import UpdateViewer from "./UpdateViewer";
+import DailyMessageQueue from "./DailyMessageQueue";
 
 const DailyReports = () => {
   const { documentId, setDocumentId, session, activeProject } = useStore(
@@ -45,10 +47,10 @@ const DailyReports = () => {
   );
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [previewCardContent, setPreviewCardContent] = useState<
-    Record<string, any>
-  >({});
+  const [previewCardContent, setPreviewCardContent] =
+    useState<UpdateProperties | null>(null);
   const [objectView, setObjectView] = useState<string>("content");
+  const [updateType, setUpdateType] = useState<"ACTION" | "MESSAGE">("ACTION");
   const [contextMenu, setContextMenu] = useState({
     isVisible: false,
     x: 0,
@@ -174,70 +176,71 @@ const DailyReports = () => {
         overflowY={"auto"}
         className="custom-scrollbar"
       >
-        <Flex alignItems={"center"} mb={"2"} justifyContent={"space-between"}>
+        <Flex
+          alignItems={"center"}
+          mb={"2"}
+          justifyContent={"space-between"}
+          ml={"2"}
+        >
           <Text fontSize={"14px"} fontWeight={"bold"}>
             Updates
           </Text>
-          <Flex gap="2">
+          <Flex>
             <ProcessHistoryButton />
-            <ConfigureDailyUpdate />
+            {/* <ConfigureDailyUpdate /> */}
           </Flex>
         </Flex>
-        <Flex alignItems={"center"} mb={"2"}>
+        <Flex alignItems={"center"} mb={"2"} ml={"2"}>
           <Text fontSize={"12px"} fontWeight={"bold"}>
             Filter:
           </Text>
           <Select size={"xs"} w={"90px"} className="custom-selector">
-            {/* <option value="all">All</option>
-            <option value="email">Email</option>
-            <option value="message">Message</option>
-            <option value="note">Note</option>
-            <option value="note">File</option> */}
             <option value="daily">Daily</option>
           </Select>
         </Flex>
-        <Flex direction={"column"}>
-          {updates &&
-            updates.length > 0 &&
-            updates.map((update) => (
-              <Flex
-                key={update.id}
-                onClick={() => setPreviewCardContent(update)}
-                onContextMenu={(e: React.MouseEvent<HTMLDivElement>) =>
-                  handleRightClick(e, update)
-                }
-                w="full"
-                mb={"2"}
-                p={"2"}
-                background={"brand.background"}
-                dropShadow={"lg"}
-                cursor={"pointer"}
-                display="flex"
-                flexDirection="column"
-                borderRadius={"md"}
-                _hover={{ bg: "brand.dark", color: "white" }}
-              >
-                {previewCard(update)}
-              </Flex>
-            ))}
-          {contextMenu.isVisible && (
-            <ContextMenu x={contextMenu.x} y={contextMenu.y} />
-          )}
-        </Flex>
+        {previewCardContent && (
+          <Flex direction={"column"}>
+            <UpdateViewer
+              previewCardContent={previewCardContent}
+              setPreviewCardContent={setPreviewCardContent}
+              setUpdateType={setUpdateType}
+            />
+          </Flex>
+        )}
+        {!previewCardContent && (
+          <Flex direction={"column"}>
+            {updates &&
+              updates.length > 0 &&
+              updates.map((update) => (
+                <Flex
+                  key={update.id}
+                  onClick={() => setPreviewCardContent(update)}
+                  onContextMenu={(e: React.MouseEvent<HTMLDivElement>) =>
+                    handleRightClick(e, update)
+                  }
+                  w="full"
+                  mb={"2"}
+                  p={"2"}
+                  background={"brand.background"}
+                  dropShadow={"lg"}
+                  cursor={"pointer"}
+                  display="flex"
+                  flexDirection="column"
+                  borderRadius={"md"}
+                  _hover={{ bg: "brand.dark", color: "white" }}
+                >
+                  {previewCard(update)}
+                </Flex>
+              ))}
+            {contextMenu.isVisible && (
+              <ContextMenu x={contextMenu.x} y={contextMenu.y} />
+            )}
+          </Flex>
+        )}
       </GridItem>
-      <GridItem
-        // bg={"brand.background"}
-        // border={"1px"}
-        // borderColor={"brand.gray"}
-        rounded={"lg"}
-        colSpan={5}
-        h={"full"}
-        overflowY={"scroll"}
-
-        // className="custom-shadow"
-      >
+      <GridItem rounded={"lg"} colSpan={5} h={"full"} overflowY={"scroll"}>
         <Flex h={"full"}>
-          {!Object.keys(previewCardContent).length && (
+          {!previewCardContent && (
             <Flex
               w={"full"}
               h={"full"}
@@ -256,43 +259,19 @@ const DailyReports = () => {
               </Text>
             </Flex>
           )}
-          {Object.keys(previewCardContent).length > 0 &&
-            previewCardContent.update && (
-              <Flex
-                w={"full"}
-                h={"full"}
-                py={"2"}
-                px={"4"}
-                bg={"brand.background"}
-                rounded={"lg"}
-                overflowY={"auto"}
-                className="custom-scrollbar"
-                direction={"column"}
-              >
-                {/* <Flex alignItems={"center"} mb={"2"}>
-                  {previewCardContent.type === "email" && (
-                    <Icon as={MdOutlineEmail} mr={"0.5"} boxSize={"3"} />
-                  )}
-                  {previewCardContent.type === "message" && (
-                    <Icon as={MdOutlineMessage} mr={"0.5"} boxSize={"3"} />
-                  )}
-                  {previewCardContent.type === "note" && (
-                    <Icon as={MdOutlineNote} mr={"0.5"} boxSize={"3"} />
-                  )}
-                  {previewCardContent.type === "file" && (
-                    <Icon
-                      as={MdOutlineInsertDriveFile}
-                      mr={"0.5"}
-                      boxSize={"3"}
-                    />
-                  )}
-                  <Text fontSize={"12px"} fontStyle={"italic"}>
-                    {previewCardContent.type}
-                  </Text>
-                </Flex>
-                <Text fontSize={"14px"} fontWeight={"bold"} mb={"6"}>
-                  {previewCardContent.update.message}
-                </Text> */}
+          {previewCardContent && previewCardContent.update && (
+            <Flex
+              w={"full"}
+              h={"full"}
+              py={"2"}
+              px={"4"}
+              bg={"brand.background"}
+              rounded={"lg"}
+              overflowY={"auto"}
+              className="custom-scrollbar"
+              direction={"column"}
+            >
+              {updateType === "ACTION" && (
                 <Flex>
                   {previewCardContent.document_access_id && (
                     <EditorBlock
@@ -301,8 +280,14 @@ const DailyReports = () => {
                     />
                   )}
                 </Flex>
-              </Flex>
-            )}
+              )}
+              {updateType === "MESSAGE" && (
+                <Flex>
+                  <DailyMessageQueue />
+                </Flex>
+              )}
+            </Flex>
+          )}
         </Flex>
       </GridItem>
     </Grid>

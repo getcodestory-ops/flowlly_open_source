@@ -72,7 +72,10 @@ function ProjectInfoDisplay() {
         >
           <Flex justifyContent={"space-between"}>
             <Flex alignItems={"center"}>
-              <Flex mr={"12"}>
+              <Flex mr={"12"} alignItems={"baseline"}>
+                <Text fontSize={"14px"} fontWeight={"medium"} mr={"2"}>
+                  Project:
+                </Text>
                 {/* <Flex fontSize={"xs"}>PROJECT</Flex> */}
                 {userProjects && userProjects.length > 0 ? (
                   <Menu>
