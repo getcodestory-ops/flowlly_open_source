@@ -23,6 +23,7 @@ function DailyMessageQueue() {
   return (
     <Flex flexDirection={"column"} width="100%" gap="4">
       {messages &&
+        messages.length > 0 &&
         messages.map((message) => (
           <Flex
             key={message.id}

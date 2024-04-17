@@ -7,26 +7,9 @@ import { Task } from "gantt-task-react";
 export const useDeleteActivity = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
-  const {
-    session,
-    activeProject,
-    activities,
-    setTaskToView,
-    setRightPanelView,
-    scheduleProbability,
-    setScheduleProbability,
-    scheduleDate,
-    userActivities,
-  } = useStore((state) => ({
+  const { session, activeProject } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
-    activities: state.userActivities,
-    setTaskToView: state.setTaskToView,
-    setRightPanelView: state.setRightPanelView,
-    scheduleProbability: state.scheduleProbability,
-    setScheduleProbability: state.setScheduleProbability,
-    scheduleDate: state.scheduleDate,
-    userActivities: state.userActivities,
   }));
 
   const { mutate: mutateDeleteActivity, isPending: deletePending } =
