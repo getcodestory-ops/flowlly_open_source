@@ -492,7 +492,7 @@ function ActivitiesDetailPage() {
 
   return (
     <>
-      {userActivities && userActivities.length > 0 && (
+      {userActivities && userActivities.length > 0 && taskToView && (
         <Flex
           direction={"column"}
           // justifyContent={"center"}
@@ -537,7 +537,7 @@ function ActivitiesDetailPage() {
                   <Text>Task Details</Text>
                 </Flex>
               </Button>
-              {taskToView.history && (
+              {taskToView?.history && (
                 <Button
                   bg={`${
                     taskDetailsView === "history" ? "brand.accent" : "white"
@@ -563,8 +563,8 @@ function ActivitiesDetailPage() {
                   </Flex>
                 </Button>
               )}
-              {taskToView.status === "Delayed" ||
-              taskToView.status === "At Risk" ? (
+              {taskToView?.status === "Delayed" ||
+              taskToView?.status === "At Risk" ? (
                 <Button
                   bg={`${
                     taskDetailsView === "impact" ? "brand.accent" : "white"
@@ -615,7 +615,7 @@ function ActivitiesDetailPage() {
                       boxSize={"3"}
                     />
                     <Text as={"b"} fontSize={"14px"}>
-                      {taskToView.name}
+                      {taskToView?.name}
                     </Text>
                   </Flex>
 
