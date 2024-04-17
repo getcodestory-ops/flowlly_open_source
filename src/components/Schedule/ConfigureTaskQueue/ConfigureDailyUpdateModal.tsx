@@ -4,6 +4,7 @@ import {
   Box,
   Flex,
   Button,
+  useToast,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -13,7 +14,6 @@ import {
   ModalCloseButton,
   Input,
   Textarea,
-  useToast,
   Text,
   Select,
   List,
@@ -53,6 +53,7 @@ function UpdateDailyUpdateScheduleModal({
     saveTaskQueue,
     deleteTaskQueueItem,
   } = useConfigureTaskQueue();
+  const toast = useToast();
   const [timezoneFilter, setTimezoneFilter] = useState("");
   const [showTimezoneOptions, setShowTimezoneOptions] = useState(false);
   const [timeInput, setTimeInput] = useState<string>("");
@@ -128,6 +129,18 @@ function UpdateDailyUpdateScheduleModal({
   };
 
   const handleAddTime = () => {
+    if (timeInput && deliveryTimeInput) {
+      if (timeInput > deliveryTimeInput) {
+        toast({
+          title: "Run time should be earlier than delivery time",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+    }
+
     timeInput &&
       setEditQueueItem((prev) => ({
         ...prev,
@@ -152,6 +165,7 @@ function UpdateDailyUpdateScheduleModal({
         { run_time: timeInput, delivery_time: deliveryTimeInput },
       ]);
       setTimeInput(""); // Reset input after adding
+      setDeliveryTimeInput("");
     }
   };
 
@@ -241,11 +255,13 @@ function UpdateDailyUpdateScheduleModal({
                       value={editQueueItem.task_function}
                     >
                       <option value="generate_daily_briefing">
-                        Send Daily Updates
+                        Daily Task Reminder
                       </option>
-                      <option value="process_task_history">
-                        Generate Daily Report
+                      <option value="get_project_updates">
+                        Request Progress Update
                       </option>
+                      <option value="process_task_history">Daily Report</option>
+                      <option value="deliver_notification">Send SMS</option>
                     </Select>
                   </Flex>
                   <Flex direction={"column"}>
@@ -374,8 +390,9 @@ function UpdateDailyUpdateScheduleModal({
                     </Flex>
                     <Flex direction={"column"}>
                       <Text as={"b"} fontSize={"12px"}>
-                        Run times
+                        Run times : Delivery times
                       </Text>
+
                       <VStack spacing={4} align="start">
                         <Box>
                           <Input
@@ -388,6 +405,23 @@ function UpdateDailyUpdateScheduleModal({
                             placeholder="HH:MM"
                             value={timeInput}
                             onChange={(e) => setTimeInput(e.target.value)}
+                            width="auto"
+                            mr={2}
+                            type="time"
+                          />
+                          {": "}
+                          <Input
+                            shadow={"sm"}
+                            variant={"unstyled"}
+                            p={"2"}
+                            rounded={"md"}
+                            bg={"white"}
+                            size={"sm"}
+                            placeholder="HH:MM"
+                            value={deliveryTimeInput}
+                            onChange={(e) =>
+                              setDeliveryTimeInput(e.target.value)
+                            }
                             width="auto"
                             mr={2}
                             type="time"
