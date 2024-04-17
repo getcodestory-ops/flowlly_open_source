@@ -100,7 +100,7 @@ function ResetPassword() {
     });
 
     setIsLoading(false);
-    router.push("/dashboard");
+    router.push("/");
   };
 
   return (
