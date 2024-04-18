@@ -33,16 +33,20 @@ function DailyMessageQueue() {
             p="8"
             borderBottom={"2px solid #E2E8F0"}
           >
-            <Text>Email : {message.action.email ?? ""}</Text>
-            <Text>Phone Number : {message.action.phone ?? ""}</Text>
+            {message.action && (
+              <>
+                <Text>Email : {message.action.email ?? ""}</Text>
+                <Text>Phone Number : {message.action.phone ?? ""}</Text>
 
-            <Textarea
-              value={message.message}
-              width={"full"}
-              size="xs"
-              rows={15} // Default number of rows
-              onChange={(e) => updateQueue(message.id, e.target.value)}
-            />
+                <Textarea
+                  value={message.message}
+                  width={"full"}
+                  size="xs"
+                  rows={15} // Default number of rows
+                  onChange={(e) => updateQueue(message.id, e.target.value)}
+                />
+              </>
+            )}
             <Flex gap="2">
               <Button
                 size="xs"

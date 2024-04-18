@@ -260,8 +260,15 @@ function UpdateDailyUpdateScheduleModal({
                       <option value="get_project_updates">
                         Request Progress Update
                       </option>
-                      <option value="process_task_history">Daily Report</option>
-                      <option value="deliver_notification">Send SMS</option>
+                      <option value="process_task_history">
+                        Update Schedule
+                      </option>
+                      <option value="deliver_notification">
+                        Send Messages
+                      </option>
+                      <option value="generate_daily_report">
+                        Generate Daily Report
+                      </option>
                     </Select>
                   </Flex>
                   <Flex direction={"column"}>
