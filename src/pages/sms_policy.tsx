@@ -30,8 +30,8 @@ export default function Home() {
           <p>
             By completing the SMS/Text Messaging Opt-In Form, you expressly
             consent to receive non-marketing and marketing text messages from
-            Flowlly "AGENCY", including text messages made with an Auto dialer,
-            at the mobile phone number(s) you provide.
+            Flowlly AGENCY, including text messages made with an Auto dialer, at
+            the mobile phone number(s) you provide.
           </p>
           <p>
             You may opt-out of these communications at any time by replying STOP
@@ -61,11 +61,11 @@ export default function Home() {
             applicable service providers, will text message you to provide you
             with information concerning your account activity with AGENCY and
             other AGENCY products, services, and promotions (all of the
-            foregoing the "AGENCY Program").
+            foregoing the AGENCY Program).
           </p>
           <p>
             AGENCY and its service providers may, from time to time, use
-            standard or an automatic telephone dialing system ("Auto dialer") to
+            standard or an automatic telephone dialing system (Auto dialer) to
             deliver text messages to you under the AGENCY Program. You agree
             that you will not use the AGENCY Program for any illegal or unlawful
             purposes.
@@ -115,7 +115,7 @@ export default function Home() {
           <p>
             The AGENCY Program is subject to transmission limitation or
             interruption. You understand and acknowledge that mobile network
-            services are outside of AGENCY's control, and AGENCY is not
+            services are outside of AGENCYs control, and AGENCY is not
             responsible or liable for issues arising therefrom, or the failure
             thereof, including, without limitation, technical, hardware,
             software, electronic, network, telephone or other communications
@@ -127,7 +127,7 @@ export default function Home() {
             of entry information (regardless of cause) or failed, incomplete,
             garbled, jumbled or delayed transmissions which may limit or
             restrict your ability to receive or send a message, including any
-            injury or damage to your or any other person's equipment/wireless
+            injury or damage to your or any other person equipment/wireless
             device relating to or resulting from participating in or using the
             AGENCY Program.
           </p>
@@ -152,12 +152,12 @@ export default function Home() {
           <p>
             You may also opt out by emailing Flowlly at contact@flowlly.com, or
             through the online form available under the member section of
-            Flowlly’s web application.
+            Flowllys web application.
           </p>
           <p>
             You represent that you are the account holder for the mobile
             telephone number(s) that you provide or that you have the account
-            holder's permission to enter the mobile telephone number(s) that you
+            holder permission to enter the mobile telephone number(s) that you
             provide and that you will not initiate messages to the mobile phone
             of any other person or entity.
           </p>
@@ -198,7 +198,7 @@ export default function Home() {
             By participating in the AGENCY Program, you agree to release and
             hold harmless AGENCY and its representatives, agents, successors,
             assigns, employees, officers and directors, from any and all
-            liability, for loss, harm, damage, injury, attorneys' fees, cost or
+            liability, for loss, harm, damage, injury, attorneys fees, cost or
             expense whatsoever including without limitation, property damage,
             personal injury and death that may occur in connection with the
             AGENCY, or your use thereof, and for any claims, matters, or
@@ -220,14 +220,14 @@ export default function Home() {
             from the AGENCY Program, or your use thereof, regardless of the
             theory of recovery, including, without limitation, direct, indirect,
             consequential, incidental or special damages, lost profits, punitive
-            damages, attorney's fees or any damages arising out of or resulting
+            damages, attorneys fees or any damages arising out of or resulting
             from a statutory or regulatory violation, negligence, gross
             negligence, strict liability, tortious conduct, willful misconduct
             or fraud, breach of contract, or breach of warranty.
           </p>
           <p>
             To the extent this damage waiver is contrary to applicable law, your
-            or any third party's maximum recovery for any losses or damages
+            or any third partys maximum recovery for any losses or damages
             whatsoever arising out of or resulting from the AGENCY Program, or
             your use thereof, regardless of the theory of recovery, is $10.00.
           </p>
@@ -238,11 +238,11 @@ export default function Home() {
             ALL DISPUTES, MATTERS, OR CLAIMS BETWEEN YOU AND AGENCY ARISING OUT
             OF OR RELATING IN ANY WAY TO THESE SMS/TEXT MESSAGING TERMS &
             CONDITIONS, ANY TEXT MESSAGES BETWEEN YOU AND AGENCY OR ANYONE
-            ACTING ON YOUR OR AGENCY'S BEHALF, OR THE AGENCY PROGRAM, REGARDLESS
+            ACTING ON YOUR OR AGENCYS BEHALF, OR THE AGENCY PROGRAM, REGARDLESS
             OF THE THEORY OF LIABILITY OR RECOVERY, MUST BE RESOLVED SOLELY BY
             ARBITRATION CONDUCTED EXPEDITIOUSLY IN ACCORDANCE WITH THE AMERICAN
-            ARBITRATION ASSOCIATION CONSUMER ARBITRATION RULES ("AAA RULES") BY
-            A SOLE ARBITRATOR SELECTED BY THE PARTIES TO THE DISPUTE FROM THE
+            ARBITRATION ASSOCIATION CONSUMER ARBITRATION RULES (AAA RULES) BY A
+            SOLE ARBITRATOR SELECTED BY THE PARTIES TO THE DISPUTE FROM THE
             NATIONAL OR STATE OF IOWA PANEL OF ARBITRATORS. ALL DISPUTES,
             MATTERS, OR CLAIMS BETWEEN YOU AND AGENCY INCLUDES, WITHOUT
             LIMITATION, ANY ACTUAL OR ALLEGED STATUTORY OR REGULATORY VIOLATION,
