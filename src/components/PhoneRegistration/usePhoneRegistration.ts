@@ -28,8 +28,12 @@ export const usePhoneRegistration = () => {
   const [editMember, setEditMember] = useState<MemberEntity | null>(null);
   const [Members, setMembers] = useState<any>([]);
   const [addingMember, setAddingMember] = useState(false);
+
   const handleInputChange = (e: any, field: any) => {
     if (field === "enable_sms") {
+      let consent = confirm("review the sms policy and click ok to continue");
+      if (!consent) return;
+
       setNewMember({ ...newMember, [field]: e.target.checked });
       return;
     }
@@ -41,6 +45,8 @@ export const usePhoneRegistration = () => {
       return;
     }
     if (field === "enable_sms") {
+      let consent = confirm("review the sms policy and click ok to continue");
+      if (!consent) return;
       setEditMember({ ...editMember, [field]: e.target.checked });
       return;
     }

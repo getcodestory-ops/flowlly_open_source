@@ -396,9 +396,23 @@ function UpdateDailyUpdateScheduleModal({
                       </Box>
                     </Flex>
                     <Flex direction={"column"}>
-                      <Text as={"b"} fontSize={"12px"}>
-                        Run times : Delivery times
-                      </Text>
+                      <Flex gap="2">
+                        <Text as={"b"} fontSize={"12px"}>
+                          {editQueueItem.task_function ===
+                            "generate_daily_briefing" ||
+                          editQueueItem.task_function === "get_project_updates"
+                            ? "Draft messages"
+                            : "Run task at"}
+                        </Text>
+                        {(editQueueItem.task_function ===
+                          "generate_daily_briefing" ||
+                          editQueueItem.task_function ===
+                            "get_project_updates") && (
+                          <Text as={"b"} fontSize={"12px"}>
+                            : Deliver Message at
+                          </Text>
+                        )}
+                      </Flex>
 
                       <VStack spacing={4} align="start">
                         <Box>
@@ -416,23 +430,30 @@ function UpdateDailyUpdateScheduleModal({
                             mr={2}
                             type="time"
                           />
-                          {": "}
-                          <Input
-                            shadow={"sm"}
-                            variant={"unstyled"}
-                            p={"2"}
-                            rounded={"md"}
-                            bg={"white"}
-                            size={"sm"}
-                            placeholder="HH:MM"
-                            value={deliveryTimeInput}
-                            onChange={(e) =>
-                              setDeliveryTimeInput(e.target.value)
-                            }
-                            width="auto"
-                            mr={2}
-                            type="time"
-                          />
+                          {(editQueueItem.task_function ===
+                            "generate_daily_briefing" ||
+                            editQueueItem.task_function ===
+                              "get_project_updates") && (
+                            <>
+                              ::{" "}
+                              <Input
+                                shadow={"sm"}
+                                variant={"unstyled"}
+                                p={"2"}
+                                rounded={"md"}
+                                bg={"white"}
+                                size={"sm"}
+                                placeholder="HH:MM"
+                                value={deliveryTimeInput}
+                                onChange={(e) =>
+                                  setDeliveryTimeInput(e.target.value)
+                                }
+                                width="auto"
+                                mr={2}
+                                type="time"
+                              />
+                            </>
+                          )}
                           <Button onClick={handleAddTime} colorScheme="yellow">
                             Add Time
                           </Button>
@@ -441,8 +462,7 @@ function UpdateDailyUpdateScheduleModal({
                           {selectedTimes.map((time, index) => (
                             <Tag size="lg" key={index} borderRadius="full">
                               <TagLabel>
-                                {time.run_time} :{" "}
-                                {time.delivery_time ?? "Not set"}
+                                {time.run_time} : {time.delivery_time ?? ""}
                               </TagLabel>
                               <TagCloseButton
                                 onClick={() => handleRemoveTime(time.run_time)}

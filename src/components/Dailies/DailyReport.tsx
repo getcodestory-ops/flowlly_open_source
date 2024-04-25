@@ -5,18 +5,11 @@ import {
   Text,
   Flex,
   useDisclosure,
-  Button,
-  Tooltip,
   Select,
   Icon,
-  Image,
 } from "@chakra-ui/react";
 import {
-  MdOutlinePlayCircleOutline,
-  MdOpenInNew,
   MdOutlineEmail,
-  MdOutlinePeopleAlt,
-  MdOutlineSmsFailed,
   MdOutlineMessage,
   MdOutlineNote,
   MdOutlineInsertDriveFile,
@@ -24,17 +17,15 @@ import {
 } from "react-icons/md";
 
 import { useStore } from "@/utils/store";
-import { IoDocumentTextOutline, IoPlayCircleOutline } from "react-icons/io5";
-import { AiOutlineAlert } from "react-icons/ai";
 import { convertDateToTimeText } from "@/utils/timeSinceLatestSignificantEvent";
 import { useQuery } from "@tanstack/react-query";
 import ProcessHistoryButton from "../Schedule/ProcessHistory/ProcessHistoryButton";
 import { getUpdates } from "@/api/update_routes";
 import { UpdateProperties } from "@/types/updates";
 import EditorBlock from "@/components/DocumentEditor/Editor";
-import ConfigureDailyUpdate from "../Schedule/ConfigureTaskQueue/ConfigureDailyUpdate";
 import UpdateViewer from "./UpdateViewer";
 import DailyMessageQueue from "./DailyMessageQueue";
+import ScheduleImpact from "./ScheduleImpact";
 
 const DailyReports = () => {
   const { documentId, setDocumentId, session, activeProject } = useStore(
@@ -50,7 +41,9 @@ const DailyReports = () => {
   const [previewCardContent, setPreviewCardContent] =
     useState<UpdateProperties | null>(null);
   const [objectView, setObjectView] = useState<string>("content");
-  const [updateType, setUpdateType] = useState<"ACTION" | "MESSAGE">("ACTION");
+  const [updateType, setUpdateType] = useState<"ACTION" | "MESSAGE" | "IMPACT">(
+    "ACTION"
+  );
   const [contextMenu, setContextMenu] = useState({
     isVisible: false,
     x: 0,
@@ -284,6 +277,11 @@ const DailyReports = () => {
               {updateType === "MESSAGE" && (
                 <Flex>
                   <DailyMessageQueue />
+                </Flex>
+              )}
+              {updateType === "IMPACT" && (
+                <Flex>
+                  <ScheduleImpact impactDate={previewCardContent.created_at} />
                 </Flex>
               )}
             </Flex>

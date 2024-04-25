@@ -1,7 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useDailyMessageQueue } from "./useDailyMessageQueue";
 
-import { Button, Flex, Textarea, Text } from "@chakra-ui/react";
+import {
+  Button,
+  Flex,
+  Textarea,
+  Text,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Td,
+  Th,
+  Icon,
+  TableContainer,
+} from "@chakra-ui/react";
+import { FaCheck } from "react-icons/fa";
+import { VscChromeClose } from "react-icons/vsc";
+import { FaHourglassEnd } from "react-icons/fa";
 
 function DailyMessageQueue() {
   const { dailyMessageQueue, updateMessage, deleteMessage } =
@@ -22,49 +38,83 @@ function DailyMessageQueue() {
 
   return (
     <Flex flexDirection={"column"} width="100%" gap="4">
-      {messages &&
-        messages.length > 0 &&
-        messages.map((message) => (
-          <Flex
-            key={message.id}
-            flexDirection={"column"}
-            gap="2"
-            fontSize="xs"
-            p="8"
-            borderBottom={"2px solid #E2E8F0"}
-          >
-            {message.action && (
-              <>
-                <Text>Email : {message.action.email ?? ""}</Text>
-                <Text>Phone Number : {message.action.phone ?? ""}</Text>
+      <TableContainer>
+        <Table variant="simple">
+          <Thead>
+            <Tr>
+              <Th width="20%">Contact</Th>
+              <Th width="80%">Message</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {messages &&
+              messages.length > 0 &&
+              messages.map((message) => (
+                <Tr
+                  key={message.id}
+                  flexDirection={"row"}
+                  gap="2"
+                  fontSize="xs"
+                  p="8"
+                  borderBottom={"2px solid #E2E8F0"}
+                >
+                  <Td>
+                    {message.action && (
+                      <>
+                        <Text>Email : {message.action.email ?? ""}</Text>
+                        <Text>Phone Number : {message.action.phone ?? ""}</Text>
 
-                <Textarea
-                  value={message.message}
-                  width={"full"}
-                  size="xs"
-                  rows={15} // Default number of rows
-                  onChange={(e) => updateQueue(message.id, e.target.value)}
-                />
-              </>
-            )}
-            <Flex gap="2">
-              <Button
-                size="xs"
-                colorScheme="yellow"
-                onClick={() => updateMessage(message)}
-              >
-                Update
-              </Button>
-              <Button
-                size="xs"
-                colorScheme="red"
-                onClick={() => deleteMessage(message.id)}
-              >
-                Reject
-              </Button>
-            </Flex>
-          </Flex>
-        ))}
+                        <Flex gap="2">
+                          {message.status === "Done" ? (
+                            <Icon color={"green.600"} as={FaCheck} />
+                          ) : (
+                            <>
+                              <Icon
+                                as={FaCheck}
+                                onClick={() => updateMessage(message)}
+                                cursor="pointer"
+                              />
+                              <Icon
+                                as={VscChromeClose}
+                                onClick={() => deleteMessage(message.id)}
+                                cursor="pointer"
+                              />
+                            </>
+                          )}
+                        </Flex>
+                      </>
+                    )}
+                  </Td>
+                  <Td>
+                    <Textarea
+                      value={message.message}
+                      width={"full"}
+                      size="xs"
+                      rows={12} // Default number of rows
+                      onChange={(e) => updateQueue(message.id, e.target.value)}
+                    />
+                  </Td>
+
+                  {/* <Td>
+                    <Flex gap="2">
+                      <Icon
+                        as={FaCheck}
+                        onClick={() => updateMessage(message)}
+                        cursor="pointer"
+                      />
+
+                      <Icon
+                        as={VscChromeClose}
+                        onClick={() => deleteMessage(message.id)}
+                        cursor="pointer"
+                      />
+                    </Flex>
+                  </Td> */}
+                </Tr>
+              ))}
+          </Tbody>
+        </Table>
+      </TableContainer>
     </Flex>
   );
 }
