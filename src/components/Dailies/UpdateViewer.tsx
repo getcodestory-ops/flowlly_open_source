@@ -6,7 +6,9 @@ interface UpdateViewerProps {
   setPreviewCardContent: React.Dispatch<
     React.SetStateAction<UpdateProperties | null>
   >;
-  setUpdateType: React.Dispatch<React.SetStateAction<"ACTION" | "MESSAGE">>;
+  setUpdateType: React.Dispatch<
+    React.SetStateAction<"ACTION" | "MESSAGE" | "IMPACT">
+  >;
 }
 
 function UpdateViewer({
@@ -15,7 +17,7 @@ function UpdateViewer({
   setUpdateType,
 }: UpdateViewerProps) {
   return (
-    <Flex flexDirection={"column"} gap="4">
+    <Flex flexDirection={"column"} gap="2">
       <Text
         fontSize={"14px"}
         fontWeight={"bold"}
@@ -25,6 +27,23 @@ function UpdateViewer({
       >
         Home
       </Text>
+
+      <Flex
+        w="full"
+        mb={"2"}
+        p={"2"}
+        fontSize="sm"
+        background={"brand.background"}
+        dropShadow={"lg"}
+        cursor={"pointer"}
+        display="flex"
+        flexDirection="column"
+        borderRadius={"md"}
+        _hover={{ bg: "brand.dark", color: "white" }}
+        onClick={() => setUpdateType("ACTION")}
+      >
+        Daily Report
+      </Flex>
       <Flex
         w="full"
         mb={"2"}
@@ -53,9 +72,9 @@ function UpdateViewer({
         flexDirection="column"
         borderRadius={"md"}
         _hover={{ bg: "brand.dark", color: "white" }}
-        onClick={() => setUpdateType("ACTION")}
+        onClick={() => setUpdateType("IMPACT")}
       >
-        Summary
+        Impact
       </Flex>
     </Flex>
   );
