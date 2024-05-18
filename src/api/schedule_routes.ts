@@ -1,7 +1,6 @@
 import { Session } from "@supabase/supabase-js";
 import axios, { AxiosResponse } from "axios";
 import { ScheduleResponse } from "@/types/agentChats";
-import { Revision } from "@/types/activities";
 
 export const scheduleAgent = async ({
   session,
@@ -84,50 +83,5 @@ export const processDocumentContent = async (
       },
     }
   );
-  return response.data;
-};
-
-export const getScheduleRevisions = async (
-  session: Session,
-  projectId: string,
-  impactDate: string
-) => {
-  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/schedule/revisions/${projectId}/${impactDate}`;
-  const response = await axios.get(url, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${session.access_token}`,
-    },
-  });
-  return response.data;
-};
-
-export const updateActivityRevision = async (
-  session: Session,
-  project_access_id: string,
-  revision: { id: string; revision: Revision }
-) => {
-  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/schedule/revision/${project_access_id}`;
-  const response = await axios.put(url, revision, {
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-    },
-  });
-
-  return response.data;
-};
-
-export const rejectRevision = async (
-  session: Session,
-  project_access_id: string,
-  revisionId: string
-) => {
-  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/schedule/revision/reject/${project_access_id}/${revisionId}`;
-  const response = await axios.delete(url, {
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-    },
-  });
-
   return response.data;
 };

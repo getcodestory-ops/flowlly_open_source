@@ -4,16 +4,11 @@ interface TaskArgs {
   task_owner_ids: string[];
 }
 
-export interface TimeConfig {
-  run_time: string;
-  delivery_time?: string;
-}
-
 interface RunConfig {
   day: number[];
   start: string;
   end?: string;
-  time: TimeConfig[];
+  time: string[];
   time_zone: string;
 }
 
