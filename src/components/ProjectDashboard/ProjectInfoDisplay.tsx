@@ -22,8 +22,6 @@ import { ActivityEntity } from "@/types/activities";
 import { IoShareSocialOutline, IoAddCircleOutline } from "react-icons/io5";
 import checkProjectStatus from "@/utils/checkProjectStatus";
 import ShareProjectModal from "../Schedule/ShareProjectModal";
-import CreateNewProjectButton from "../Schedule/NewProjectButton";
-import UserPanel from "../UserPanel";
 interface TopBarMenuItemsProps {
   taskToView: ActivityEntity;
   renderProjects: number;
@@ -62,22 +60,19 @@ function ProjectInfoDisplay() {
           setShareModal(false);
         }}
       />
-      <Grid w={"full"} templateRows="repeat(1, 1fr)" gap={0}>
+      <Grid w={"full"} templateRows="repeat(2, 1fr)" gap={0}>
         <GridItem
           rowSpan={1}
           bgGradient="linear(brand.gray , white )"
           px={"4"}
-          py={"3"}
+          py={"4"}
           rounded={"2xl"}
         >
           <Flex justifyContent={"space-between"}>
             <Flex alignItems={"center"}>
-              <Flex mr={"12"} alignItems={"baseline"}>
-                <Text fontSize={"14px"} fontWeight={"medium"} mr={"2"}>
-                  Project:
-                </Text>
+              <Flex mr={"12"}>
                 {/* <Flex fontSize={"xs"}>PROJECT</Flex> */}
-                {userProjects && userProjects.length > 0 ? (
+                {userProjects && userProjects.length > 0 && (
                   <Menu>
                     <MenuButton fontSize={"22px"} fontWeight={"bold"}>
                       <Flex alignItems={"center"}>
@@ -104,11 +99,9 @@ function ProjectInfoDisplay() {
                       ))}
                     </MenuList>
                   </Menu>
-                ) : (
-                  <CreateNewProjectButton />
                 )}
               </Flex>
-              {/* <Flex fontSize={"sm"} alignItems={"flex-end"}>
+              <Flex fontSize={"sm"} alignItems={"flex-end"}>
                 <Text mr={"2"}>Status:</Text>
                 {userActivities && userActivities.length > 0 ? (
                   <Text
@@ -126,15 +119,9 @@ function ProjectInfoDisplay() {
                 ) : (
                   <Text fontWeight={"bold"}>No Tasks</Text>
                 )}
-              </Flex> */}
-              {/* <NEW_Menu /> */}
+              </Flex>
             </Flex>
-
             <Flex justifyContent={"space-between"}>
-              {/* <Flex gap="4">
-                <CreateNewProjectButton />
-                <UserPanel />
-              </Flex> */}
               <Flex color={"black"} fontSize={"sm"}>
                 {/* <Tooltip
                   label="Add File"
@@ -200,7 +187,9 @@ function ProjectInfoDisplay() {
             </Flex>
           </Flex>
         </GridItem>
-        {/* <GridItem colSpan={1}></GridItem> */}
+        <GridItem colSpan={1}>
+          <NEW_Menu />
+        </GridItem>
       </Grid>
     </Flex>
   );

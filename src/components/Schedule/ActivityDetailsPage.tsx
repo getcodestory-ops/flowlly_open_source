@@ -35,8 +35,6 @@ function ActivitiesDetailPage() {
     setTaskDetailsView,
     userActivities,
     members,
-    scheduleDate,
-    setTaskToView,
   } = useStore((state) => ({
     session: state.session,
     taskToView: state.taskToView,
@@ -46,8 +44,6 @@ function ActivitiesDetailPage() {
     setTaskDetailsView: state.setTaskDetailsView,
     userActivities: state.userActivities,
     members: state.members,
-    scheduleDate: state.scheduleDate,
-    setTaskToView: state.setTaskToView,
   }));
 
   type Action = {
@@ -95,10 +91,6 @@ function ActivitiesDetailPage() {
     }
   }, [contingencyPlans]);
 
-  // useEffect(() => {
-  //   console.log("taskToView", taskToView);
-  // }, [taskToView]);
-
   useEffect(() => {
     if (userActivities) {
       if (userActivities.length > 0) {
@@ -132,18 +124,6 @@ function ActivitiesDetailPage() {
       }
     }
   }, [userActivities]);
-
-  // useEffect(() => {
-  //   console.log("change in date");
-  //   console.log("taskToView", taskToView);
-  //   console.log("userActivities", userActivities);
-  //   const updateTaskToView = userActivities.filter(
-  //     (task) => task.id === taskToView.id
-  //   )[0];
-  //   setTaskToView(updateTaskToView);
-  //   console.log("updateTaskToView", updateTaskToView);
-  //   console.log("taskToView2", taskToView);
-  // }, [scheduleDate]);
 
   // useEffect(() => {
   //   tasks.forEach((task) => {
@@ -492,7 +472,7 @@ function ActivitiesDetailPage() {
 
   return (
     <>
-      {userActivities && userActivities.length > 0 && taskToView && (
+      {userActivities && userActivities.length > 0 && (
         <Flex
           direction={"column"}
           // justifyContent={"center"}
@@ -537,7 +517,7 @@ function ActivitiesDetailPage() {
                   <Text>Task Details</Text>
                 </Flex>
               </Button>
-              {taskToView?.history && (
+              {taskToView.history && (
                 <Button
                   bg={`${
                     taskDetailsView === "history" ? "brand.accent" : "white"
@@ -563,8 +543,8 @@ function ActivitiesDetailPage() {
                   </Flex>
                 </Button>
               )}
-              {taskToView?.status === "Delayed" ||
-              taskToView?.status === "At Risk" ? (
+              {taskToView.status === "Delayed" ||
+              taskToView.status === "At Risk" ? (
                 <Button
                   bg={`${
                     taskDetailsView === "impact" ? "brand.accent" : "white"
@@ -608,14 +588,12 @@ function ActivitiesDetailPage() {
                           ? "#FFA841"
                           : taskToView.status === "In Progress"
                           ? "#5F55EE"
-                          : taskToView.status === "Completed"
-                          ? "#26d995"
                           : "brand2.dark"
                       }
                       boxSize={"3"}
                     />
                     <Text as={"b"} fontSize={"14px"}>
-                      {taskToView?.name}
+                      {taskToView.name}
                     </Text>
                   </Flex>
 
@@ -642,7 +620,7 @@ function ActivitiesDetailPage() {
                           <Text> Delete Task</Text>
                         </Button>
                       </Flex>
-                      {/* <AddActivityChildren /> */}
+                      <AddActivityChildren />
                     </>
                   )}
                 </Flex>
@@ -659,8 +637,6 @@ function ActivitiesDetailPage() {
                         ? "#FFA841"
                         : taskToView.status === "In Progress"
                         ? "#5F55EE"
-                        : taskToView.status === "Completed"
-                        ? "#26d995"
                         : "brand2.dark"
                     }
                   >

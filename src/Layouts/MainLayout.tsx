@@ -20,7 +20,6 @@ import ProjectSetup from "./ProjectSetup";
 import checkProjectStatus from "@/utils/checkProjectStatus";
 import { useMediaQuery } from "@chakra-ui/react";
 import Integration from "./Integration";
-import DailyReports from "@/components/Dailies/DailyReport";
 
 const queryClient = new QueryClient();
 
@@ -31,7 +30,6 @@ export default function MainLayout({
 }) {
   const router = useRouter();
   const path = router.pathname;
-
   const [smallScreen] = useMediaQuery("(max-width: 1441px)");
   //check if router path has /auth/passwordchange
   //if so, render only the children
@@ -79,24 +77,7 @@ export default function MainLayout({
 
   useEffect(() => {
     async function loginCheck() {
-      console.log(router.query);
-      const { accessToken, refreshToken } = router.query;
-
-      if (accessToken && refreshToken) {
-        if (
-          typeof accessToken === "string" &&
-          typeof refreshToken === "string"
-        ) {
-          console.log("setting session");
-          await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-        }
-      }
-
       const { data } = await supabase.auth.getSession();
-
       if (!data?.session?.user) {
         setAppView("login");
         router.replace("/");
@@ -105,7 +86,7 @@ export default function MainLayout({
         if (path === "/auth/passwordChange") {
           setAppView("changePassword");
         } else {
-          setAppView("schedule");
+          setAppView("updates");
         }
       }
     }
@@ -118,7 +99,7 @@ export default function MainLayout({
       console.log("path", router.pathname);
       setAppView("changePassword");
     } else {
-      setAppView("schedule");
+      setAppView("updates");
     }
   }, [router.pathname]);
 
@@ -140,8 +121,7 @@ export default function MainLayout({
             h="100vh"
             // direction={{ base: "column", md: "row" }}
             overflow="auto"
-            p={smallScreen ? "1" : "2"}
-            bg={"#E5E5E5"}
+            p={smallScreen ? "0" : "18"}
           >
             {(appView === "login" || appView === "changePassword") && (
               <Flex>{children}</Flex>
@@ -153,46 +133,46 @@ export default function MainLayout({
                 templateRows="repeat(16, 1fr)"
                 templateColumns="repeat(14, 1fr)"
                 gap={4}
-                p={2}
+                p={4}
               >
-                <GridItem colSpan={1} rowSpan={16}>
+                <GridItem colSpan={14} rowSpan={1}>
                   <NewTopBar />
                 </GridItem>
 
                 {AiActionsView === "expand" ? (
-                  <GridItem colSpan={14} rowSpan={16}>
+                  <GridItem colSpan={14} rowSpan={15}>
                     <AiActions />
                   </GridItem>
                 ) : (
                   <>
                     <GridItem
-                      colSpan={AiActionsView === "open" ? 13 : 13}
-                      rowSpan={16}
+                      colSpan={AiActionsView === "open" ? 10 : 13}
+                      rowSpan={15}
                     >
                       <Grid
                         h="100%"
-                        templateRows="repeat(15, 1fr)"
-                        templateColumns="repeat(13, 1fr)"
-                        gap={4}
+                        templateRows="repeat(5, 1fr)"
+                        templateColumns="repeat(5, 1fr)"
+                        gap={0}
                         bg={"white"}
                         rounded={"2xl"}
                         boxShadow={"lg"}
                       >
-                        <GridItem rowSpan={1} colSpan={15}>
+                        <GridItem rowSpan={1} colSpan={5}>
                           <ProjectInfoDisplay />
                         </GridItem>
                         {appView === "dashboard" && (
-                          <GridItem rowSpan={15} colSpan={13} px={"2"} pb={"2"}>
+                          <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
                             {<ProjectDashboard />}
                           </GridItem>
                         )}
                         {appView === "schedule" && (
-                          <GridItem rowSpan={15} colSpan={13} px={"4"} pb={"2"}>
+                          <GridItem rowSpan={5} colSpan={5} px={"4"} pb={"2"}>
                             <ScheduleUiView />
                           </GridItem>
                         )}
                         {appView === "notes" && (
-                          <GridItem rowSpan={15} colSpan={13} px={"2"} pb={"2"}>
+                          <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
                             {<NotesPage />}
                           </GridItem>
                         )}
@@ -202,28 +182,28 @@ export default function MainLayout({
                           </GridItem>
                         )} */}
                         {appView === "updates" && (
-                          <GridItem rowSpan={15} colSpan={13} px={"2"} pb={"2"}>
-                            <DailyReports />
+                          <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
+                            <UpdatesPage />
                           </GridItem>
                         )}
                         {(appView === "members" || appView === "folders") && (
-                          <GridItem rowSpan={15} colSpan={13} px={"2"} pb={"2"}>
+                          <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
                             <ProjectSetup />
                           </GridItem>
                         )}
                         {appView === "integrations" && (
-                          <GridItem rowSpan={15} colSpan={13} px={"2"} pb={"2"}>
+                          <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
                             <Integration />
                           </GridItem>
                         )}
                       </Grid>
                     </GridItem>
-                    {/* <GridItem
+                    <GridItem
                       colSpan={AiActionsView === "open" ? 4 : 1}
                       rowSpan={15}
                     >
                       <AiActions />
-                    </GridItem> */}
+                    </GridItem>
                   </>
                 )}
               </Grid>

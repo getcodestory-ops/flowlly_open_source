@@ -182,7 +182,7 @@ function TopBar() {
       <Menu>
         <MenuButton fontSize={"xl"} fontWeight={"black"}>
           <Flex alignItems={"center"}>
-            {taskToView?.name ?? "No Activity"}
+            {taskToView.name ?? "No Activity"}
             <Flex ml={"2"}>
               <IoChevronDownOutline />
             </Flex>
