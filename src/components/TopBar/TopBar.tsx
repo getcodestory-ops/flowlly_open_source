@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Flex, Image } from "@chakra-ui/react";
+import { Divider, Flex, Image } from "@chakra-ui/react";
 import flowlly_logo from "../../img/logo_full.svg";
 import UserPanel from "../UserPanel";
 import { useStore } from "@/utils/store";
@@ -13,6 +13,9 @@ import { getActivities, deleteActivity } from "@/api/activity_routes";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import CreateNewProjectButton from "../Schedule/NewProjectButton";
 import NotificationButton from "../Notifications/NotificationButton";
+import NEW_Menu from "../Menu/Menu";
+import { useMediaQuery } from "@chakra-ui/react";
+import ConfigureDailyUpdate from "../Schedule/ConfigureTaskQueue/ConfigureDailyUpdate";
 
 function NewTopBar() {
   const {
@@ -23,6 +26,7 @@ function NewTopBar() {
     scheduleDate,
     scheduleProbability,
     setUserActivities,
+    setTaskToView,
   } = useStore((state) => ({
     session: state.session,
     setUserProjects: state.setUserProjects,
@@ -31,8 +35,10 @@ function NewTopBar() {
     scheduleDate: state.scheduleDate,
     scheduleProbability: state.scheduleProbability,
     setUserActivities: state.setUserActivities,
+    setTaskToView: state.setTaskToView,
   }));
 
+  const [smallScreen] = useMediaQuery("(max-width: 1441px)");
   const queryClient = useQueryClient();
   // const [projects, setProjects] = useState<ProjectEntity[]>([]);
 
@@ -42,6 +48,18 @@ function NewTopBar() {
     enabled: !!session?.access_token,
     placeholderData: keepPreviousData,
   });
+
+  const defaultTask = {
+    id: "SCHEDULE",
+    project_id: "parent",
+    name: "No active task",
+    start: "01/02/23",
+    end: "01/02/23",
+    progress: 0,
+    activity_critical: {
+      critical_path: false,
+    },
+  };
 
   const {
     data: activities,
@@ -92,6 +110,10 @@ function NewTopBar() {
   }, [activities, isSuccess, setUserActivities]);
 
   useEffect(() => {
+    setTaskToView(defaultTask);
+  }, [activeProject]);
+
+  useEffect(() => {
     if (projects && projects.length > 0) {
       setUserProjects(projects);
       setActiveProject(projects[0]);
@@ -100,26 +122,41 @@ function NewTopBar() {
 
   return (
     <Flex
-      px={4}
-      py={"3"}
+      px={1}
+      py={"4"}
+      flexDirection={"column"}
       alignItems={"center"}
-      bg={"brand.gray"}
-      h={"full"}
       justifyContent={"space-between"}
+      bg={"#14213D"}
+      h={"full"}
       rounded={"xl"}
       className="custom-shadow"
     >
-      <Image
-        src="https://upthcaewktgrqjieqiya.supabase.co/storage/v1/object/public/images/logo_full.svg"
-        alt="logo"
-        width="150px"
-      />
+      {smallScreen ? (
+        <Image
+          src="https://upthcaewktgrqjieqiya.supabase.co/storage/v1/object/public/images/identifyier.svg"
+          alt="logo"
+          w="25%"
+          // transform={"rotate(90deg) "}
+        />
+      ) : (
+        <Image
+          src="https://upthcaewktgrqjieqiya.supabase.co/storage/v1/object/public/images/logo_full.svg"
+          alt="logo"
+          w="80%"
+          // transform={"rotate(90deg) "}
+        />
+      )}
+      <Flex alignItems={"center"} flexDirection={"column"}>
+        {/* <CreateNewProjectButton /> */}
+        <NEW_Menu />
 
-      <Flex alignItems={"center"} gap="2">
-        <CreateNewProjectButton />
-        <UserPanel />
-        <NotificationButton />
+        {/* <NotificationButton /> */}
+        <Flex mt={"8"}>
+          <ConfigureDailyUpdate />
+        </Flex>
       </Flex>
+      <UserPanel />
     </Flex>
   );
 }
