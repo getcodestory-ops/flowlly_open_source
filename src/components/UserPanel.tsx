@@ -47,7 +47,7 @@ const UserPanel = () => {
   };
 
   return (
-    <Flex ml="auto" display="flex" alignItems="center">
+    <Flex display="flex" alignItems="center">
       {user && (
         <Menu>
           <Tooltip
@@ -65,8 +65,8 @@ const UserPanel = () => {
             >
               <Avatar
                 name={user.email}
-                bg={"brand.dark"}
-                color="white"
+                bg={"brand.accent"}
+                color="#14213D"
                 w={"30px"}
                 h={"30px"}
               />

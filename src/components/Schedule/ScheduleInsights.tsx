@@ -5,18 +5,13 @@ import {
   Box,
   Icon,
   Text,
-  useToast,
   Tooltip,
   Select,
 } from "@chakra-ui/react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { BiSolidCircle } from "react-icons/bi";
 import { MdHistoryToggleOff, MdInfoOutline } from "react-icons/md";
-import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
 import { AiOutlineAlert } from "react-icons/ai";
-import { PiBank } from "react-icons/pi";
-import { GiConsoleController } from "react-icons/gi";
 
 interface OwnerDetails {
   initials: string;
@@ -26,8 +21,6 @@ interface OwnerDetails {
 
 function ScheduleInsights() {
   const {
-    session,
-    activeProject,
     activities,
     setRightPanelView,
     setTaskToView,
@@ -35,14 +28,9 @@ function ScheduleInsights() {
     taskDetailsView,
     filterView,
     setFilterView,
-    scheduleDate,
-    scheduleProbability,
-    setScheduleProbability,
     taskToView,
     members,
   } = useStore((state) => ({
-    session: state.session,
-    activeProject: state.activeProject,
     activities: state.userActivities,
     setRightPanelView: state.setRightPanelView,
     setTaskToView: state.setTaskToView,
@@ -50,34 +38,28 @@ function ScheduleInsights() {
     taskDetailsView: state.taskDetailsView,
     filterView: state.filterView,
     setFilterView: state.setFilterView,
-    scheduleDate: state.scheduleDate,
-    scheduleProbability: state.scheduleProbability,
-    setScheduleProbability: state.setScheduleProbability,
     taskToView: state.taskToView,
     members: state.members,
   }));
-  const [view, setView] = useState<string>("master");
+
   const [openHistory, setOpenHistory] = useState<string>("");
-  const { isOpen, onClose, onOpen } = useScheduleUpdate();
-  const [taskView, setTaskView] = useState<string>("");
+
   const [countOfActivities, setCountOfActivities] = useState<number>(0);
   const [countOfDelayed, setCountOfDelayed] = useState<number>(0);
   const [countOfAtRisk, setCountOfAtRisk] = useState<number>(0);
   const [countOfInProgress, setCountOfInProgress] = useState<number>(0);
   const [countOfCompleted, setCountOfCompleted] = useState<number>(0);
   const [countOfOnSchedule, setCountOfOnSchedule] = useState<number>(0);
-  // const [filteredView, setFilteredView] = useState<string>("none");
-  const [sliderValue, setSliderValue] = useState(scheduleProbability * 100);
-  const [showTooltip, setShowTooltip] = useState(false);
 
-  // useEffect(() => {
-  //   setTaskToView(activities[0]);
-  // }, [activeProject]);
-
-  // useEffect(() => {
-  //   console.log("activities", activities);
-  //   console.log("members", members);
-  // }, [activities, members]);
+  useEffect(() => {
+    if (taskToView.id !== "SCHEDULE") {
+      const updateTaskToView: any = activities.find(
+        (activity) => activity.id === taskToView.id
+      );
+      // console.log("updateTaskToView", updateTaskToView);
+      setTaskToView(updateTaskToView);
+    }
+  }, [activities]);
 
   const countTotalActivities = (activities: any[]) => {
     let count = 0;
@@ -137,18 +119,6 @@ function ScheduleInsights() {
     setCountOfOnSchedule(count);
   };
 
-  useEffect(() => {
-    // console.log("activities", activities);
-    if (activities) {
-      countTotalActivities(activities);
-      countDelayedActivities(activities);
-      countAtRiskActivities(activities);
-      countInProgressActivities(activities);
-      countCompletedActivities(activities);
-      countOnScheduleActivities(activities);
-    }
-  }, [activities]);
-
   function extractOwnerDetails(activity: any, members: any): OwnerDetails[] {
     // Check if owners exist
     if (!activity.owner) {
@@ -177,7 +147,7 @@ function ScheduleInsights() {
 
   const activitiesCard = () => {
     // console.log("activities", activities);
-    if (!activities) return null;
+    if (!activities || !activities.length) return null;
     const sortedActivities = activities.slice().sort((a, b) => {
       return new Date(a.start).getTime() - new Date(b.start).getTime();
     });
@@ -225,135 +195,101 @@ function ScheduleInsights() {
           return true;
         }
       })
-      .map((activity) => (
-        <Box
-          key={activity.id}
-          // my={4}
-          borderBottom={"2px"}
-          borderBottomColor={"brand.background"}
-          py={4}
-          pl={"1"}
-          minW={"22vw"}
-          bg={activity.id === taskToView.id ? "brand.background" : "white"}
-        >
-          {/* <Flex direction={"row"} alignItems={"center"}>
-            <Icon
-              as={BiSolidCircle}
-              color={
-                activity.status === "Delayed"
-                  ? "#FF4141"
-                  : activity.status === "At Risk"
-                  ? "#FFA841"
-                  : activity.status === "In Progress"
-                  ? "#5F55EE"
-                  : "brand2.dark"
-              }
-              boxSize={"3"}
-            />
-            <Text fontWeight={"bold"} fontSize={"14px"} ml={2}>
-              {activity.name}
-            </Text>
-          </Flex> */}
-          <Flex direction={"row"} justifyContent={"space-between"}>
-            <Flex width={"85%"}>
-              <Icon
-                as={BiSolidCircle}
-                color={
-                  activity.status === "Delayed"
-                    ? "#FF4141"
-                    : activity.status === "At Risk"
-                    ? "#FFA841"
-                    : activity.status === "In Progress"
-                    ? "#5F55EE"
-                    : "brand2.dark"
-                }
-                boxSize={"3"}
-              />
-              <Text fontWeight={"bold"} fontSize={"14px"} ml={2}>
-                {activity.name}
-              </Text>
-            </Flex>
-            <Flex>
-              {extractOwnerDetails(activity, members).map((owner, index) => (
-                <Tooltip
-                  label={owner?.firstName + " " + owner?.lastName}
-                  aria-label="A tooltip"
-                  bg="white"
-                  color="brand.dark"
-                  key={`${index}-details`}
-                >
-                  <Flex
-                    key={index}
-                    bg={"brand.dark"}
-                    color={"white"}
-                    rounded={"full"}
-                    fontSize={"8px"}
-                    fontWeight={"bold"}
-                    mr={1}
-                    mt={"2"}
-                    w={"18px"}
-                    h={"18px"}
-                    alignItems={"center"}
-                    justifyContent={"center"}
+      .map((activity) => {
+        if (!activity) return null;
+        return (
+          <Box
+            key={activity.id}
+            // my={4}
+            borderBottom={"2px"}
+            borderBottomColor={"brand.background"}
+            py={4}
+            pl={"1"}
+            minW={"22vw"}
+            bg={activity.id === taskToView?.id ? "yellow.100" : "white"}
+            _hover={{ bg: "brand.accent", cursor: "pointer" }}
+            onClick={() => detailsClick(activity.id, activity)}
+          >
+            <Flex direction={"row"} justifyContent={"space-between"}>
+              <Flex width={"85%"}>
+                <Icon
+                  as={BiSolidCircle}
+                  color={
+                    activity.status === "Delayed"
+                      ? "#FF4141"
+                      : activity.status === "At Risk"
+                      ? "#FFA841"
+                      : activity.status === "In Progress"
+                      ? "#5f55ee"
+                      : activity.status === "Completed"
+                      ? "#26d995"
+                      : "brand2.dark"
+                  }
+                  boxSize={"3"}
+                />
+                <Text fontWeight={"bold"} fontSize={"14px"} ml={2}>
+                  {activity.name}
+                </Text>
+              </Flex>
+              <Flex>
+                {extractOwnerDetails(activity, members).map((owner, index) => (
+                  <Tooltip
+                    label={owner?.firstName + " " + owner?.lastName}
+                    aria-label="A tooltip"
+                    bg="white"
+                    color="brand.dark"
+                    key={`${index}-details`}
                   >
-                    {owner?.initials}
-                  </Flex>
-                </Tooltip>
-              ))}
+                    <Flex
+                      key={index}
+                      bg={"brand.dark"}
+                      color={"white"}
+                      rounded={"full"}
+                      fontSize={"8px"}
+                      fontWeight={"bold"}
+                      mr={1}
+                      mt={"2"}
+                      w={"18px"}
+                      h={"18px"}
+                      alignItems={"center"}
+                      justifyContent={"center"}
+                    >
+                      {owner?.initials}
+                    </Flex>
+                  </Tooltip>
+                ))}
+              </Flex>
             </Flex>
-          </Flex>
-          <Flex mr={5} paddingLeft={6}>
-            <Text as={"i"} fontSize={"12px"}>
-              Status:
-            </Text>
-            <Text fontSize={"12px"} ml={1} fontWeight={"semibold"}>
-              {activity.status}
-            </Text>
-          </Flex>
+            <Flex mr={5} paddingLeft={6}>
+              <Text as={"i"} fontSize={"12px"}>
+                Status:
+              </Text>
+              <Text fontSize={"12px"} ml={1} fontWeight={"semibold"}>
+                {activity.status}
+              </Text>
+            </Flex>
 
-          <Flex direction={"row"} paddingLeft={6} mt={"2"}>
-            <Flex mr={5} direction={"column"}>
-              <Text as={"i"} fontSize={"10px"}>
-                Start Date:
-              </Text>
-              <Text fontSize={"12px"} ml={1} fontWeight={"semibold"}>
-                {activity.start}
-              </Text>
+            <Flex direction={"row"} paddingLeft={6} mt={"2"}>
+              <Flex mr={5} direction={"column"}>
+                <Text as={"i"} fontSize={"10px"}>
+                  Start Date:
+                </Text>
+                <Text fontSize={"12px"} ml={1} fontWeight={"semibold"}>
+                  {activity.start}
+                </Text>
+              </Flex>
+              <Flex direction={"column"}>
+                <Text as={"i"} fontSize={"10px"}>
+                  End Date:
+                </Text>
+                <Text fontSize={"12px"} ml={1} fontWeight={"semibold"}>
+                  {activity.end}
+                </Text>
+              </Flex>
             </Flex>
-            <Flex direction={"column"}>
-              <Text as={"i"} fontSize={"10px"}>
-                End Date:
-              </Text>
-              <Text fontSize={"12px"} ml={1} fontWeight={"semibold"}>
-                {activity.end}
-              </Text>
-            </Flex>
-          </Flex>
-          <Flex direction={"row"} paddingLeft={6} mt={2}>
-            <Tooltip
-              label="Task Details"
-              aria-label="A tooltip"
-              bg={"white"}
-              color={"brand.dark"}
-            >
-              <Button
-                p={0}
-                mr={2}
-                cursor={"pointer"}
-                bg={`${
-                  taskDetailsView === "details" && openHistory === activity.id
-                    ? "brand.accent"
-                    : "brand2.mid"
-                }`}
-                _hover={{ bg: "brand.dark", color: "white" }}
-                onClick={() => detailsClick(activity.id, activity)}
-              >
-                <Icon as={MdInfoOutline} />
-              </Button>
-            </Tooltip>
-            {activity.history !== null ? (
+            <Flex direction={"row"} paddingLeft={6} mt={2}>
               <Tooltip
-                label="Task History"
+                label="Task Details"
                 aria-label="A tooltip"
                 bg={"white"}
                 color={"brand.dark"}
@@ -363,43 +299,83 @@ function ScheduleInsights() {
                   mr={2}
                   cursor={"pointer"}
                   bg={`${
-                    taskDetailsView === "history" && openHistory === activity.id
+                    taskDetailsView === "details" && openHistory === activity.id
                       ? "brand.accent"
                       : "brand2.mid"
                   }`}
                   _hover={{ bg: "brand.dark", color: "white" }}
-                  onClick={() => historyClick(activity.id, activity)}
+                  onClick={() => detailsClick(activity.id, activity)}
                 >
-                  <Icon as={MdHistoryToggleOff} />
+                  <Icon as={MdInfoOutline} />
                 </Button>
               </Tooltip>
-            ) : null}
-            {activity.status === "Delayed" || activity.status === "At Risk" ? (
-              <Tooltip
-                label="Delay Impact"
-                aria-label="A tooltip"
-                bg={"white"}
-                color={"brand.dark"}
-              >
-                <Button
-                  p={0}
-                  cursor={"pointer"}
-                  bg={`${
-                    openHistory === activity.id && taskDetailsView === "impact"
-                      ? "brand.accent"
-                      : "brand2.mid"
-                  }`}
-                  _hover={{ bg: "brand.dark", color: "white" }}
-                  onClick={() => impactClick(activity.id, activity)}
+              {activity.history !== null ? (
+                <Tooltip
+                  label="Task History"
+                  aria-label="A tooltip"
+                  bg={"white"}
+                  color={"brand.dark"}
                 >
-                  <Icon as={AiOutlineAlert} />
-                </Button>
-              </Tooltip>
-            ) : null}
-          </Flex>
-        </Box>
-      ));
+                  <Button
+                    p={0}
+                    mr={2}
+                    cursor={"pointer"}
+                    bg={`${
+                      taskDetailsView === "history" &&
+                      openHistory === activity.id
+                        ? "brand.accent"
+                        : "brand2.mid"
+                    }`}
+                    _hover={{ bg: "brand.dark", color: "white" }}
+                    onClick={() => historyClick(activity.id, activity)}
+                  >
+                    <Icon as={MdHistoryToggleOff} />
+                  </Button>
+                </Tooltip>
+              ) : null}
+              {activity.status === "Delayed" ||
+              activity.status === "At Risk" ? (
+                <Tooltip
+                  label="Delay Impact"
+                  aria-label="A tooltip"
+                  bg={"white"}
+                  color={"brand.dark"}
+                >
+                  <Button
+                    p={0}
+                    cursor={"pointer"}
+                    bg={`${
+                      openHistory === activity.id &&
+                      taskDetailsView === "impact"
+                        ? "brand.accent"
+                        : "brand2.mid"
+                    }`}
+                    _hover={{ bg: "brand.dark", color: "white" }}
+                    onClick={() => impactClick(activity.id, activity)}
+                  >
+                    <Icon as={AiOutlineAlert} />
+                  </Button>
+                </Tooltip>
+              ) : null}
+            </Flex>
+          </Box>
+        );
+      });
   };
+
+  useEffect(() => {
+    // console.log("activities", activities);
+    if (activities) {
+      countTotalActivities(activities);
+      countDelayedActivities(activities);
+      countAtRiskActivities(activities);
+      countInProgressActivities(activities);
+      countCompletedActivities(activities);
+      countOnScheduleActivities(activities);
+      extractOwnerDetails(activities, members);
+      activitiesCard();
+    }
+  }, [activities]);
 
   // const quickDataViewCard = (name: string, value: number) => {
   const quickDataViewCard = () => {

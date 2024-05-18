@@ -38,7 +38,7 @@ function KanbanBoard() {
     setEditOpen(true);
   };
   useEffect(() => {
-    if (modifyTask && modifyTask.id !== taskToView.id) {
+    if (modifyTask && modifyTask.id !== taskToView?.id) {
       setEditOpen(true);
     }
   }, [modifyTask]);

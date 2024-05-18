@@ -51,7 +51,7 @@ function DocumentList({ setNoteTitle, folderView }: DocumentListProps) {
       return getDocuments(
         session,
         activeProject.project_id,
-        taskToView.id === "SCHEDULE" ? undefined : taskToView.id,
+        taskToView?.id === "SCHEDULE" ? undefined : taskToView.id,
         folderView ? undefined : selectedContext?.id
       );
     },
