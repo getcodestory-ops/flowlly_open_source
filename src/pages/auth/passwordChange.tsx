@@ -31,9 +31,6 @@ function ResetPassword() {
     async function loginCheck() {
       const { token_hash } = router.query;
 
-      if (!token_hash) {
-        router.replace("/");
-      }
       if (typeof token_hash === "string") {
         const { data: userSession, error } = await supabase.auth.verifyOtp({
           type: "email",
@@ -51,11 +48,11 @@ function ResetPassword() {
 
       const { data } = await supabase.auth.getSession();
 
-      // if (!data?.session?.user) {
-      //   router.replace("/");
-      // } else {
-      //   setSessionToken(data?.session);
-      // }
+      if (!data?.session?.user) {
+        router.replace("/");
+      } else {
+        setSessionToken(data?.session);
+      }
     }
     loginCheck();
   }, [router]);

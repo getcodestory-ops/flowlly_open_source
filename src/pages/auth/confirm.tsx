@@ -46,19 +46,19 @@ function ResetPassword() {
         if (session) {
           const { access_token, refresh_token } = session;
           await supabase.auth.setSession({ access_token, refresh_token });
+          setSessionToken(session);
         }
-      }
-
-      const { data } = await supabase.auth.getSession();
-
-      if (!data?.session?.user) {
-        router.replace("/");
-      } else {
-        setSessionToken(data?.session);
       }
     }
     loginCheck();
   }, [router]);
+
+  useEffect(() => {
+    if (sessionToken) {
+      setAppView("schedule");
+      router.replace("/");
+    }
+  }, [sessionToken]);
 
   return (
     <Flex
