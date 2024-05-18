@@ -51,11 +51,11 @@ function ResetPassword() {
 
       const { data } = await supabase.auth.getSession();
 
-      // if (!data?.session?.user) {
-      //   router.replace("/");
-      // } else {
-      //   setSessionToken(data?.session);
-      // }
+      if (!token_hash && !data?.session?.user) {
+        router.replace("/");
+      } else {
+        setSessionToken(data?.session);
+      }
     }
     loginCheck();
   }, [router]);
