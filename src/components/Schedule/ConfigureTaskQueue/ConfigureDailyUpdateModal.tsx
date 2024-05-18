@@ -4,7 +4,6 @@ import {
   Box,
   Flex,
   Button,
-  useToast,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -14,6 +13,7 @@ import {
   ModalCloseButton,
   Input,
   Textarea,
+  useToast,
   Text,
   Select,
   List,
@@ -35,7 +35,6 @@ import { MemberEntity } from "@/types/members";
 import { timezones } from "./timezones";
 import { MdDeleteOutline } from "react-icons/md";
 import { time } from "console";
-import { type TimeConfig } from "@/types/taskQueue";
 
 function UpdateDailyUpdateScheduleModal({
   isOpen,
@@ -53,12 +52,10 @@ function UpdateDailyUpdateScheduleModal({
     saveTaskQueue,
     deleteTaskQueueItem,
   } = useConfigureTaskQueue();
-  const toast = useToast();
   const [timezoneFilter, setTimezoneFilter] = useState("");
   const [showTimezoneOptions, setShowTimezoneOptions] = useState(false);
   const [timeInput, setTimeInput] = useState<string>("");
-  const [deliveryTimeInput, setDeliveryTimeInput] = useState<string>("");
-  const [selectedTimes, setSelectedTimes] = useState<TimeConfig[]>(
+  const [selectedTimes, setSelectedTimes] = useState<string[]>(
     editQueueItem.run_config.time ?? []
   );
   const ref = useRef<HTMLDivElement>(null);
@@ -129,43 +126,17 @@ function UpdateDailyUpdateScheduleModal({
   };
 
   const handleAddTime = () => {
-    if (timeInput && deliveryTimeInput) {
-      if (timeInput > deliveryTimeInput) {
-        toast({
-          title: "Run time should be earlier than delivery time",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-        return;
-      }
-    }
-
     timeInput &&
       setEditQueueItem((prev) => ({
         ...prev,
         run_config: {
           ...prev.run_config,
-          time: [
-            ...prev.run_config.time,
-            { run_time: timeInput, delivery_time: deliveryTimeInput },
-          ],
+          time: [...prev.run_config.time, timeInput],
         },
       }));
-
-    if (
-      timeInput &&
-      !selectedTimes.includes({
-        run_time: timeInput,
-        delivery_time: deliveryTimeInput,
-      })
-    ) {
-      setSelectedTimes([
-        ...selectedTimes,
-        { run_time: timeInput, delivery_time: deliveryTimeInput },
-      ]);
+    if (timeInput && !selectedTimes.includes(timeInput)) {
+      setSelectedTimes([...selectedTimes, timeInput]);
       setTimeInput(""); // Reset input after adding
-      setDeliveryTimeInput("");
     }
   };
 
@@ -174,33 +145,29 @@ function UpdateDailyUpdateScheduleModal({
       ...prev,
       run_config: {
         ...prev.run_config,
-        time: prev.run_config.time.filter((t) => t.run_time !== time),
+        time: prev.run_config.time.filter((t) => t !== time),
       },
     }));
-    setSelectedTimes(selectedTimes.filter((t) => t.run_time !== time));
+    setSelectedTimes(selectedTimes.filter((t) => t !== time));
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="4xl">
       <ModalOverlay />
       <ModalContent bg="brand.background">
-        <ModalHeader>Configure Assistant Activities</ModalHeader>
+        <ModalHeader>Configure Daily Update Schedule</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Flex flexDirection="row" gap="6">
             <Box flex="1">
-              <Flex direction={"column"}>
-                <Button
-                  onClick={() => setEditQueueItem(defaultQueueItem)}
-                  mb="4"
-                  colorScheme="yellow"
-                >
-                  Add New Task Schedule
-                </Button>
-                <Text mb="4" as={"b"}>
-                  Current Activities:
-                </Text>
-              </Flex>
+              <Button
+                onClick={() => setEditQueueItem(defaultQueueItem)}
+                mb="4"
+                colorScheme="yellow"
+              >
+                Add New Task Schedule
+              </Button>
+              <Text mb="4">Task Queue</Text>
               <Box overflowY="auto" maxH="xs">
                 {taskQueue &&
                   taskQueue.length > 0 &&
@@ -236,62 +203,33 @@ function UpdateDailyUpdateScheduleModal({
             <Box flex="2">
               {editQueueItem && (
                 <Flex flexDirection="column" gap="4">
-                  <Flex direction={"column"}>
-                    <Text as={"b"} fontSize={"12px"}>
-                      Coordinator Task
-                    </Text>
-                    <Select
-                      shadow={"sm"}
-                      p={"2"}
-                      rounded={"md"}
-                      bg={"white"}
-                      size={"sm"}
-                      onChange={(e) =>
-                        setEditQueueItem({
-                          ...editQueueItem,
-                          task_function: e.target.value,
-                        })
-                      }
-                      value={editQueueItem.task_function}
-                    >
-                      <option value="generate_daily_briefing">
-                        Daily Task Reminder
-                      </option>
-                      <option value="get_project_updates">
-                        Request Progress Update
-                      </option>
-                      <option value="process_task_history">
-                        Update Schedule
-                      </option>
-                      <option value="deliver_notification">
-                        Send Messages
-                      </option>
-                      <option value="generate_daily_report">
-                        Generate Daily Report
-                      </option>
-                    </Select>
-                  </Flex>
-                  <Flex direction={"column"}>
-                    <Text as={"b"} fontSize={"12px"}>
-                      Task Name
-                    </Text>
-                    <Input
-                      placeholder="Task Name"
-                      shadow={"sm"}
-                      variant={"unstyled"}
-                      p={"2"}
-                      rounded={"md"}
-                      bg={"white"}
-                      size={"sm"}
-                      value={editQueueItem.task_name}
-                      onChange={(e) =>
-                        setEditQueueItem({
-                          ...editQueueItem,
-                          task_name: e.target.value,
-                        })
-                      }
-                    />
-                  </Flex>
+                  <Select
+                    onChange={(e) =>
+                      setEditQueueItem({
+                        ...editQueueItem,
+                        task_function: e.target.value,
+                      })
+                    }
+                    value={editQueueItem.task_function}
+                  >
+                    <option value="generate_daily_briefing">
+                      Send Daily Updates
+                    </option>
+                    <option value="process_task_history">
+                      Generate Daily Report
+                    </option>
+                  </Select>
+
+                  <Input
+                    placeholder="Task Name"
+                    value={editQueueItem.task_name}
+                    onChange={(e) =>
+                      setEditQueueItem({
+                        ...editQueueItem,
+                        task_name: e.target.value,
+                      })
+                    }
+                  />
                   <MultiSelect
                     title="Days"
                     options={[
@@ -316,162 +254,82 @@ function UpdateDailyUpdateScheduleModal({
                     onChange={handleTaskOwnerIdsChange}
                   />
                   <Flex flexDirection="column" gap="4">
-                    <Flex direction={"column"}>
-                      <Text as={"b"} fontSize={"12px"}>
-                        Start task from
-                      </Text>
+                    <Text>Start task from</Text>
+                    <Input
+                      type="date"
+                      value={editQueueItem.run_config.start.split("T")[0]}
+                      onChange={(e) => setStartDateTime(e.target.value)}
+                    />
+                    <Text>Run Task until</Text>
+                    <Input
+                      type="date"
+                      value={editQueueItem.run_config.end?.split("T")[0]}
+                      onChange={(e) => setEndDateTime(e.target.value)}
+                    />
+                    select time zone here
+                    <Box position="relative" ref={ref}>
                       <Input
-                        shadow={"sm"}
-                        variant={"unstyled"}
-                        p={"2"}
-                        rounded={"md"}
-                        bg={"white"}
-                        size={"sm"}
-                        type="date"
-                        value={editQueueItem.run_config.start.split("T")[0]}
-                        onChange={(e) => setStartDateTime(e.target.value)}
+                        placeholder="Filter Timezones"
+                        value={timezoneFilter}
+                        onChange={(e) => setTimezoneFilter(e.target.value)}
+                        onFocus={() => setShowTimezoneOptions(true)}
                       />
-                    </Flex>
-                    <Flex direction={"column"}>
-                      <Text as={"b"} fontSize={"12px"}>
-                        Run Task until
-                      </Text>
-                      <Input
-                        shadow={"sm"}
-                        variant={"unstyled"}
-                        p={"2"}
-                        rounded={"md"}
-                        bg={"white"}
-                        size={"sm"}
-                        type="date"
-                        value={editQueueItem.run_config.end?.split("T")[0]}
-                        onChange={(e) => setEndDateTime(e.target.value)}
-                      />
-                    </Flex>
-                    <Flex direction={"column"}>
-                      <Text as={"b"} fontSize={"12px"}>
-                        Time zone
-                      </Text>
-                      <Box position="relative" ref={ref}>
-                        <Input
-                          shadow={"sm"}
-                          variant={"unstyled"}
-                          p={"2"}
-                          rounded={"md"}
-                          bg={"white"}
-                          size={"sm"}
-                          placeholder="Filter Timezones"
-                          value={timezoneFilter}
-                          onChange={(e) => setTimezoneFilter(e.target.value)}
-                          onFocus={() => setShowTimezoneOptions(true)}
-                        />
-                        {showTimezoneOptions && (
-                          <List
-                            spacing={2}
-                            bg="white"
-                            mt={1}
-                            boxShadow="md"
-                            position="absolute"
-                            width="full"
-                            zIndex="dropdown"
-                            maxH="xs"
-                            overflow={"auto"}
-                          >
-                            {filteredTimezones.map((timezone) => (
-                              <ListItem
-                                key={timezone}
-                                p={2}
-                                cursor="pointer"
-                                _hover={{ bg: "gray.100" }}
-                                onClick={() => handleTimezoneChange(timezone)}
-                              >
-                                {timezone}
-                              </ListItem>
-                            ))}
-                            {filteredTimezones.length === 0 && (
-                              <ListItem p={2}>No results found.</ListItem>
-                            )}
-                          </List>
-                        )}
-                      </Box>
-                    </Flex>
-                    <Flex direction={"column"}>
-                      <Flex gap="2">
-                        <Text as={"b"} fontSize={"12px"}>
-                          {editQueueItem.task_function ===
-                            "generate_daily_briefing" ||
-                          editQueueItem.task_function === "get_project_updates"
-                            ? "Draft messages"
-                            : "Run task at"}
-                        </Text>
-                        {(editQueueItem.task_function ===
-                          "generate_daily_briefing" ||
-                          editQueueItem.task_function ===
-                            "get_project_updates") && (
-                          <Text as={"b"} fontSize={"12px"}>
-                            : Deliver Message at
-                          </Text>
-                        )}
-                      </Flex>
-
-                      <VStack spacing={4} align="start">
-                        <Box>
-                          <Input
-                            shadow={"sm"}
-                            variant={"unstyled"}
-                            p={"2"}
-                            rounded={"md"}
-                            bg={"white"}
-                            size={"sm"}
-                            placeholder="HH:MM"
-                            value={timeInput}
-                            onChange={(e) => setTimeInput(e.target.value)}
-                            width="auto"
-                            mr={2}
-                            type="time"
-                          />
-                          {(editQueueItem.task_function ===
-                            "generate_daily_briefing" ||
-                            editQueueItem.task_function ===
-                              "get_project_updates") && (
-                            <>
-                              ::{" "}
-                              <Input
-                                shadow={"sm"}
-                                variant={"unstyled"}
-                                p={"2"}
-                                rounded={"md"}
-                                bg={"white"}
-                                size={"sm"}
-                                placeholder="HH:MM"
-                                value={deliveryTimeInput}
-                                onChange={(e) =>
-                                  setDeliveryTimeInput(e.target.value)
-                                }
-                                width="auto"
-                                mr={2}
-                                type="time"
-                              />
-                            </>
-                          )}
-                          <Button onClick={handleAddTime} colorScheme="yellow">
-                            Add Time
-                          </Button>
-                        </Box>
-                        <HStack spacing={2}>
-                          {selectedTimes.map((time, index) => (
-                            <Tag size="lg" key={index} borderRadius="full">
-                              <TagLabel>
-                                {time.run_time} : {time.delivery_time ?? ""}
-                              </TagLabel>
-                              <TagCloseButton
-                                onClick={() => handleRemoveTime(time.run_time)}
-                              />
-                            </Tag>
+                      {showTimezoneOptions && (
+                        <List
+                          spacing={2}
+                          bg="white"
+                          mt={1}
+                          boxShadow="md"
+                          position="absolute"
+                          width="full"
+                          zIndex="dropdown"
+                          maxH="xs"
+                          overflow={"auto"}
+                        >
+                          {filteredTimezones.map((timezone) => (
+                            <ListItem
+                              key={timezone}
+                              p={2}
+                              cursor="pointer"
+                              _hover={{ bg: "gray.100" }}
+                              onClick={() => handleTimezoneChange(timezone)}
+                            >
+                              {timezone}
+                            </ListItem>
                           ))}
-                        </HStack>
-                      </VStack>
-                    </Flex>
+                          {filteredTimezones.length === 0 && (
+                            <ListItem p={2}>No results found.</ListItem>
+                          )}
+                        </List>
+                      )}
+                    </Box>
+                    <Text>Run times</Text>
+                    <VStack spacing={4} align="start">
+                      <Box>
+                        <Input
+                          placeholder="HH:MM"
+                          value={timeInput}
+                          onChange={(e) => setTimeInput(e.target.value)}
+                          size="md"
+                          width="auto"
+                          mr={2}
+                          type="time"
+                        />
+                        <Button onClick={handleAddTime} colorScheme="yellow">
+                          Add Time
+                        </Button>
+                      </Box>
+                      <HStack spacing={2}>
+                        {selectedTimes.map((time, index) => (
+                          <Tag size="lg" key={index} borderRadius="full">
+                            <TagLabel>{time}</TagLabel>
+                            <TagCloseButton
+                              onClick={() => handleRemoveTime(time)}
+                            />
+                          </Tag>
+                        ))}
+                      </HStack>
+                    </VStack>
                   </Flex>
                 </Flex>
               )}

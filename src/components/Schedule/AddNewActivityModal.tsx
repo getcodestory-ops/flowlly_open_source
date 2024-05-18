@@ -15,7 +15,6 @@ import {
   useToast,
   Select,
   Divider,
-  Text,
 } from "@chakra-ui/react";
 import MultiSelect from "../MultiSelect/MultiSelect";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -40,14 +39,6 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
     activities: state.userActivities,
     activeProject: state.activeProject,
   }));
-  const [duration, setDuration] = useState(0);
-
-  const calculateDaysBetweenDates = (startDate: Date, endDate: Date) => {
-    // Same calculation logic as before
-    const differenceInMs = endDate.getTime() - startDate.getTime();
-    const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-    return differenceInDays;
-  };
 
   const [activity, setActivity] = useState<CreateNewActivity>({
     name: "",
@@ -59,18 +50,6 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
     cost: 0,
     status: "On Schedule",
   });
-
-  useEffect(() => {
-    if (activity) {
-      const startDate = new Date(activity.start);
-      const endDate = new Date(activity.end);
-      const days = calculateDaysBetweenDates(startDate, endDate);
-      setActivity((state) => ({
-        ...state!,
-        duration: days,
-      }));
-    }
-  }, [activity.start, activity.end]);
 
   useEffect(() => {
     setActivity((state) => ({
@@ -104,37 +83,13 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["activityList"] });
-      setActivity({
-        name: "",
-        description: "",
-        start: dateToday,
-        project_id: activeProject?.project_id,
-        end: dateToday,
-        duration: 0,
-        cost: 0,
-        status: "On Schedule",
-      });
     },
   });
-
-  const handleCancel = () => {
-    onClose();
-    setActivity({
-      name: "",
-      description: "",
-      start: dateToday,
-      project_id: activeProject?.project_id,
-      end: dateToday,
-      duration: 0,
-      cost: 0,
-      status: "On Schedule",
-    });
-  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
       <ModalOverlay />
-      <ModalContent bg={"brand.background"}>
+      <ModalContent>
         {!activeProject && (
           <>
             <ModalHeader> No Project Selected </ModalHeader>
@@ -147,157 +102,90 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
         )}
         {activeProject && (
           <>
-            <ModalHeader>Create New Task</ModalHeader>
+            <ModalHeader>Create New Activity</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              <Flex mb={4} gap={4} flexDirection={"column"}>
-                <Flex direction={"column"}>
-                  <Text as={"b"} fontSize={"12px"}>
-                    Task Name
-                  </Text>
-                  <Input
-                    placeholder="Task Name"
-                    shadow={"sm"}
-                    variant={"unstyled"}
-                    p={"2"}
-                    rounded={"md"}
-                    bg={"white"}
-                    size={"sm"}
-                    required
-                    value={activity?.name}
-                    onChange={(e) => {
-                      setActivity((state) => ({
-                        ...state!,
-                        name: e.target.value,
-                      }));
-                    }}
-                  />
-                </Flex>
+              <Flex mb={4} gap={8} flexDirection={"column"}>
+                <Input
+                  placeholder="Activity Name"
+                  required
+                  value={activity?.name}
+                  onChange={(e) => {
+                    setActivity((state) => ({
+                      ...state!,
+                      name: e.target.value,
+                    }));
+                  }}
+                />
+                <Input
+                  placeholder="Activity Duration (Days)"
+                  value={activity.duration === 0 ? "" : activity.duration}
+                  type="number"
+                  step={0.01}
+                  onChange={(e) => {
+                    if (!e.target.value) e.target.value = "0";
+                    setActivity((state) => ({
+                      ...state!,
+                      duration: parseFloat(e.target.value) ?? 0,
+                    }));
+                  }}
+                />
+                <Input
+                  placeholder="Start Date"
+                  type="date"
+                  value={activity.start}
+                  onChange={(e) => {
+                    if (e.target.value > activity.end) {
+                      return toast({
+                        title: "Invalid date range",
+                        description: "Start date cannot be after end date",
+                        status: "error",
+                        duration: 9000,
 
-                <Flex direction={"column"}>
-                  <Text as={"b"} fontSize={"12px"}>
-                    Task Start Date
-                  </Text>
+                        isClosable: true,
+                      });
+                    }
 
-                  <Input
-                    shadow={"sm"}
-                    variant={"unstyled"}
-                    p={"2"}
-                    rounded={"md"}
-                    bg={"white"}
-                    size={"sm"}
-                    placeholder="Start Date"
-                    type="date"
-                    value={activity.start}
-                    onChange={(e) => {
-                      if (e.target.value > activity.end) {
-                        return toast({
-                          title: "Invalid date range",
-                          description: "Start date cannot be after end date",
-                          status: "error",
-                          duration: 9000,
+                    setActivity((state) => ({
+                      ...state!,
+                      start: e.target.value,
+                    }));
+                  }}
+                />
+                <Input
+                  placeholder="End Date"
+                  type="date"
+                  value={activity ? activity.end : ""}
+                  onChange={(e) => {
+                    if (e.target.value < activity.start) {
+                      return toast({
+                        title: "Invalid date range",
+                        description: "Start date cannot be after end date",
+                        status: "error",
+                        duration: 9000,
 
-                          isClosable: true,
-                        });
-                      }
+                        isClosable: true,
+                      });
+                    }
 
-                      setActivity((state) => ({
-                        ...state!,
-                        start: e.target.value,
-                      }));
-                    }}
-                  />
-                </Flex>
-
-                <Flex direction={"column"}>
-                  <Text as={"b"} fontSize={"12px"}>
-                    Task End Date
-                  </Text>
-
-                  <Input
-                    shadow={"sm"}
-                    variant={"unstyled"}
-                    p={"2"}
-                    rounded={"md"}
-                    bg={"white"}
-                    size={"sm"}
-                    placeholder="End Date"
-                    type="date"
-                    value={activity ? activity.end : ""}
-                    onChange={(e) => {
-                      if (e.target.value < activity.start) {
-                        return toast({
-                          title: "Invalid date range",
-                          description: "Start date cannot be after end date",
-                          status: "error",
-                          duration: 9000,
-
-                          isClosable: true,
-                        });
-                      }
-
-                      setActivity((state) => ({
-                        ...state!,
-                        end: e.target.value,
-                      }));
-                    }}
-                  />
-                </Flex>
-                <Flex direction={"column"}>
-                  <Text as={"b"} fontSize={"12px"}>
-                    Task Duration in Days
-                  </Text>
-                  <Flex>
-                    <Text fontSize={"sm"} pl={"2"} my={"2"}>
-                      {activity.duration} days
-                    </Text>
-                  </Flex>
-
-                  {/* <Input
-                    shadow={"sm"}
-                    variant={"unstyled"}
-                    p={"2"}
-                    rounded={"md"}
-                    bg={"white"}
-                    size={"sm"}
-                    placeholder="Activity Duration (Days)"
-                    value={activity.duration === 0 ? "" : activity.duration}
-                    type="number"
-                    step={0.01}
-                    onChange={(e) => {
-                      if (!e.target.value) e.target.value = "0";
-                      setActivity((state) => ({
-                        ...state!,
-                        duration: parseFloat(e.target.value) ?? 0,
-                      }));
-                    }}
-                  /> */}
-                </Flex>
-
-                <Flex direction={"column"}>
-                  <Text as={"b"} fontSize={"12px"}>
-                    Task Cost
-                  </Text>
-
-                  <Input
-                    shadow={"sm"}
-                    variant={"unstyled"}
-                    p={"2"}
-                    rounded={"md"}
-                    bg={"white"}
-                    size={"sm"}
-                    placeholder="Cost"
-                    value={activity.cost === 0 ? "" : activity.cost}
-                    type={activity.cost ? "number" : "text"}
-                    onChange={(e) => {
-                      if (!e.target.value) e.target.value = "0";
-                      setActivity((state) => ({
-                        ...state!,
-                        cost: parseFloat(e.target.value),
-                      }));
-                    }}
-                  />
-                </Flex>
+                    setActivity((state) => ({
+                      ...state!,
+                      end: e.target.value,
+                    }));
+                  }}
+                />
+                <Input
+                  placeholder="Cost"
+                  value={activity.cost === 0 ? "" : activity.cost}
+                  type={activity.cost ? "number" : "text"}
+                  onChange={(e) => {
+                    if (!e.target.value) e.target.value = "0";
+                    setActivity((state) => ({
+                      ...state!,
+                      cost: parseFloat(e.target.value),
+                    }));
+                  }}
+                />
                 {/* owner selection based on member  */}
                 <Divider my="4" />
                 <Flex gap="8">
@@ -369,28 +257,16 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
               }}
             /> */}
               </Flex>
-              <Flex direction={"column"}>
-                <Text as={"b"} fontSize={"12px"}>
-                  Task Description
-                </Text>
-
-                <Textarea
-                  shadow={"sm"}
-                  variant={"unstyled"}
-                  p={"2"}
-                  rounded={"md"}
-                  bg={"white"}
-                  size={"sm"}
-                  placeholder="Task Description"
-                  value={activity?.description}
-                  onChange={(e) =>
-                    setActivity((state) => ({
-                      ...state!,
-                      description: e.target.value,
-                    }))
-                  }
-                />
-              </Flex>
+              <Textarea
+                placeholder="Project Description"
+                value={activity?.description}
+                onChange={(e) =>
+                  setActivity((state) => ({
+                    ...state!,
+                    description: e.target.value,
+                  }))
+                }
+              />
             </ModalBody>{" "}
             <ModalFooter>
               <Button
@@ -403,15 +279,7 @@ function AddNewActivityModal({ isOpen, onClose }: AddNewActivityModalProps) {
               >
                 Save
               </Button>
-              <Button
-                variant="ghost"
-                // onClick={() => {
-                //   onClose;
-                // }}
-                onClick={() => {
-                  handleCancel();
-                }}
-              >
+              <Button variant="ghost" onClick={onClose}>
                 Cancel
               </Button>
             </ModalFooter>

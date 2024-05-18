@@ -57,7 +57,7 @@ function CreateNewDocument({
         session!,
         activeProject.project_id,
         title,
-        taskToView?.id === "SCHEDULE" ? undefined : taskToView?.id,
+        taskToView.id === "SCHEDULE" ? undefined : taskToView.id,
         folderView ? undefined : selectedContext?.id
       );
     },

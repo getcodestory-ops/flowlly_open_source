@@ -131,10 +131,10 @@ const ScheduleGanttInterface = () => {
     mutate({ session, projectId: activeProject.project_id });
   };
 
-  // useEffect(() => {
-  //   console.log("activities", activities);
-  //   console.log("userActivities", userActivities);
-  // }, [activities, userActivities]);
+  useEffect(() => {
+    console.log("activities", activities);
+    console.log("userActivities", userActivities);
+  }, [activities, userActivities]);
 
   useEffect(() => {
     if (activities) {

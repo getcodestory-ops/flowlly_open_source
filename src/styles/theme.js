@@ -1,7 +1,6 @@
 const colors = {
   brand: {
-    // dark: "#222831",
-    dark: "#14213D",
+    dark: "#222831",
     mid: "#393E46",
     light: "#EEEEEE",
     accent: "#FFD369",
@@ -9,8 +8,7 @@ const colors = {
     background: "#F9F9F9",
   },
   brand2: {
-    // dark: "#222831",
-    dark: "#14213D",
+    dark: "#222831",
     mid: "#F1F2F4",
     light: "#FFFFFF",
     accent: "#FFD369",

@@ -18,7 +18,6 @@ import {
   Icon,
   Heading,
   Box,
-  Tooltip,
 } from "@chakra-ui/react";
 import { CreateNewActivity } from "@/types/activities";
 import { useCSVUploader } from "./useCsvUpload";
@@ -50,47 +49,41 @@ const CsvUploadIcon: React.FC = () => {
     <Flex direction={"column"}>
       <Flex
         border="1px solid"
-        borderRadius={"lg"}
+        borderRadius={"md"}
         align={"center"}
         position={"relative"}
-        // gap={2}
+        gap={2}
         height={selectedFile ? "" : 6}
         color="brand.light"
         bg={"brand.dark"}
         _hover={selectedFile ? {} : { bg: "brand.light", color: "white" }}
-        direction={"row"}
+        direction={"column"}
         alignItems={"center"}
         justifyContent={"center"}
         cursor="pointer"
       >
-        <Tooltip label="Upload CSV file" aria-label="A tooltip">
+        <Flex height={"6"} width={"12"}>
           <Flex>
-            <Flex alignItems={"center"} px={"2"}>
-              <Icon as={FiUpload} />
-            </Flex>
-            <Input
-              type="file"
-              accept=".csv"
-              ref={fileRef}
-              py={1}
-              position="absolute"
-              opacity={0}
-              onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
-              cursor={"pointer"}
-            />
+            <Icon as={FiUpload} ml="4" my="2" />
           </Flex>
-        </Tooltip>
-        <Flex>
+          <Input
+            type="file"
+            accept=".csv"
+            ref={fileRef}
+            py={1}
+            position="absolute"
+            opacity={0}
+            onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+            cursor={"pointer"}
+          />
+        </Flex>
+        <Box>
           {selectedFile !== null ? (
-            <Button
-              onClick={handleCsvFileHeaderCheck}
-              size="xs"
-              bg={"brand.accent"}
-            >
+            <Button onClick={handleCsvFileHeaderCheck} size="xs">
               process
             </Button>
           ) : null}
-        </Flex>
+        </Box>
       </Flex>
 
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
