@@ -31,6 +31,7 @@ export default function MainLayout({
 }) {
   const router = useRouter();
   const path = router.pathname;
+
   const [smallScreen] = useMediaQuery("(max-width: 1441px)");
   //check if router path has /auth/passwordchange
   //if so, render only the children
@@ -78,7 +79,24 @@ export default function MainLayout({
 
   useEffect(() => {
     async function loginCheck() {
+      console.log(router.query);
+      const { accessToken, refreshToken } = router.query;
+
+      if (accessToken && refreshToken) {
+        if (
+          typeof accessToken === "string" &&
+          typeof refreshToken === "string"
+        ) {
+          console.log("setting session");
+          await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+        }
+      }
+
       const { data } = await supabase.auth.getSession();
+
       if (!data?.session?.user) {
         setAppView("login");
         router.replace("/");
