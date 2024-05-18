@@ -216,21 +216,24 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
         </GridItem>
         <GridItem rowSpan={1} colSpan={1}>
           <Flex justifyContent={"space-between"}>
-            <Flex>
+            <Flex mr={"6"}>
               <CustomDatePicker />
-              <Flex ml={"4"}>
+              {/* <Flex ml={"4"}>
                 <ProbabilitySelector />
-              </Flex>
+              </Flex> */}
             </Flex>
-            <CsvUploadIcon />
-            <Button
-              size={"xs"}
-              bg={"brand.dark"}
-              color={"white"}
-              onClick={handleAddActivity}
-            >
-              + Add Task
-            </Button>
+            <Flex>
+              <CsvUploadIcon />
+              <Button
+                size={"xs"}
+                bg={"brand.dark"}
+                color={"white"}
+                onClick={handleAddActivity}
+                ml={"2"}
+              >
+                + Add Task
+              </Button>
+            </Flex>
           </Flex>
         </GridItem>
         <GridItem rowSpan={9} colSpan={2}>

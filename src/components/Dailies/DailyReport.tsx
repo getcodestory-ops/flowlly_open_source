@@ -5,18 +5,11 @@ import {
   Text,
   Flex,
   useDisclosure,
-  Button,
-  Tooltip,
   Select,
   Icon,
-  Image,
 } from "@chakra-ui/react";
 import {
-  MdOutlinePlayCircleOutline,
-  MdOpenInNew,
   MdOutlineEmail,
-  MdOutlinePeopleAlt,
-  MdOutlineSmsFailed,
   MdOutlineMessage,
   MdOutlineNote,
   MdOutlineInsertDriveFile,
@@ -24,17 +17,17 @@ import {
 } from "react-icons/md";
 
 import { useStore } from "@/utils/store";
-import { IoDocumentTextOutline, IoPlayCircleOutline } from "react-icons/io5";
-import { AiOutlineAlert } from "react-icons/ai";
 import { convertDateToTimeText } from "@/utils/timeSinceLatestSignificantEvent";
 import { useQuery } from "@tanstack/react-query";
 import ProcessHistoryButton from "../Schedule/ProcessHistory/ProcessHistoryButton";
 import { getUpdates } from "@/api/update_routes";
 import { UpdateProperties } from "@/types/updates";
 import EditorBlock from "@/components/DocumentEditor/Editor";
-import ConfigureDailyUpdate from "../Schedule/ConfigureTaskQueue/ConfigureDailyUpdate";
+import UpdateViewer from "./UpdateViewer";
+import DailyMessageQueue from "./DailyMessageQueue";
+import ScheduleImpact from "./ScheduleImpact";
 
-const UpdatesPage = () => {
+const DailyReports = () => {
   const { documentId, setDocumentId, session, activeProject } = useStore(
     (state) => ({
       documentId: state.documentId,
@@ -45,10 +38,12 @@ const UpdatesPage = () => {
   );
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [previewCardContent, setPreviewCardContent] = useState<
-    Record<string, any>
-  >({});
+  const [previewCardContent, setPreviewCardContent] =
+    useState<UpdateProperties | null>(null);
   const [objectView, setObjectView] = useState<string>("content");
+  const [updateType, setUpdateType] = useState<"ACTION" | "MESSAGE" | "IMPACT">(
+    "ACTION"
+  );
   const [contextMenu, setContextMenu] = useState({
     isVisible: false,
     x: 0,
@@ -132,6 +127,9 @@ const UpdatesPage = () => {
             {update?.type === "file" && (
               <Icon as={MdOutlineInsertDriveFile} mr={"0.5"} boxSize={"3"} />
             )}
+            {update?.type === "daily" && (
+              <Icon as={MdOutlineInsertDriveFile} mr={"0.5"} boxSize={"3"} />
+            )}
             <Text fontSize={"10px"} fontStyle={"italic"}>
               {update.type}
             </Text>
@@ -166,71 +164,76 @@ const UpdatesPage = () => {
   return (
     <Grid templateColumns="repeat(6, 1fr)" gap={4} w="full" h={"full"}>
       <GridItem
-        colSpan={2}
+        colSpan={1}
         h="full"
         overflowY={"auto"}
         className="custom-scrollbar"
       >
-        <Flex alignItems={"center"} mb={"2"} justifyContent={"space-between"}>
+        <Flex
+          alignItems={"center"}
+          mb={"2"}
+          justifyContent={"space-between"}
+          ml={"2"}
+        >
           <Text fontSize={"14px"} fontWeight={"bold"}>
             Updates
           </Text>
-          <Flex gap="2">
+          <Flex>
             <ProcessHistoryButton />
             {/* <ConfigureDailyUpdate /> */}
           </Flex>
         </Flex>
-        <Flex alignItems={"center"} mb={"2"}>
+        <Flex alignItems={"center"} mb={"2"} ml={"2"}>
           <Text fontSize={"12px"} fontWeight={"bold"}>
             Filter:
           </Text>
           <Select size={"xs"} w={"90px"} className="custom-selector">
-            <option value="all">All</option>
-            <option value="email">Email</option>
-            <option value="message">Message</option>
-            <option value="note">Note</option>
-            <option value="note">File</option>
+            <option value="daily">Daily</option>
           </Select>
         </Flex>
-        <Flex direction={"column"}>
-          {updates &&
-            updates.length > 0 &&
-            updates.map((update) => (
-              <Flex
-                key={update.id}
-                onClick={() => setPreviewCardContent(update)}
-                onContextMenu={(e: React.MouseEvent<HTMLDivElement>) =>
-                  handleRightClick(e, update)
-                }
-                w="full"
-                mb={"2"}
-                p={"2"}
-                background={"brand.background"}
-                dropShadow={"lg"}
-                cursor={"pointer"}
-                display="flex"
-                flexDirection="column"
-                borderRadius={"md"}
-                _hover={{ bg: "brand.dark", color: "white" }}
-              >
-                {previewCard(update)}
-              </Flex>
-            ))}
-          {contextMenu.isVisible && (
-            <ContextMenu x={contextMenu.x} y={contextMenu.y} />
-          )}
-        </Flex>
+        {previewCardContent && (
+          <Flex direction={"column"}>
+            <UpdateViewer
+              previewCardContent={previewCardContent}
+              setPreviewCardContent={setPreviewCardContent}
+              setUpdateType={setUpdateType}
+            />
+          </Flex>
+        )}
+        {!previewCardContent && (
+          <Flex direction={"column"}>
+            {updates &&
+              updates.length > 0 &&
+              updates.map((update) => (
+                <Flex
+                  key={update.id}
+                  onClick={() => setPreviewCardContent(update)}
+                  onContextMenu={(e: React.MouseEvent<HTMLDivElement>) =>
+                    handleRightClick(e, update)
+                  }
+                  w="full"
+                  mb={"2"}
+                  p={"2"}
+                  background={"brand.background"}
+                  dropShadow={"lg"}
+                  cursor={"pointer"}
+                  display="flex"
+                  flexDirection="column"
+                  borderRadius={"md"}
+                  _hover={{ bg: "brand.dark", color: "white" }}
+                >
+                  {previewCard(update)}
+                </Flex>
+              ))}
+            {contextMenu.isVisible && (
+              <ContextMenu x={contextMenu.x} y={contextMenu.y} />
+            )}
+          </Flex>
+        )}
       </GridItem>
-      <GridItem
-        rounded={"lg"}
-        colSpan={4}
-        h={"full"}
-        overflowY={"scroll"}
-
-        // className="custom-shadow"
-      >
+      <GridItem rounded={"lg"} colSpan={5} h={"full"} overflowY={"scroll"}>
         <Flex h={"full"}>
-          {!Object.keys(previewCardContent).length && (
+          {!previewCardContent && (
             <Flex
               w={"full"}
               h={"full"}
@@ -245,23 +248,23 @@ const UpdatesPage = () => {
               alignItems={"center"}
             >
               <Text fontSize={"36px"} color={"gray.300"} fontWeight={"black"}>
-                Select Update from the list
+                Select Daily from the list
               </Text>
             </Flex>
           )}
-          {Object.keys(previewCardContent).length > 0 &&
-            previewCardContent.update && (
-              <Flex
-                w={"full"}
-                h={"full"}
-                py={"2"}
-                px={"4"}
-                bg={"brand.background"}
-                rounded={"lg"}
-                overflowY={"auto"}
-                className="custom-scrollbar"
-                direction={"column"}
-              >
+          {previewCardContent && previewCardContent.update && (
+            <Flex
+              w={"full"}
+              h={"full"}
+              py={"2"}
+              px={"4"}
+              bg={"brand.background"}
+              rounded={"lg"}
+              overflowY={"auto"}
+              className="custom-scrollbar"
+              direction={"column"}
+            >
+              {updateType === "ACTION" && (
                 <Flex>
                   {previewCardContent.document_access_id && (
                     <EditorBlock
@@ -270,12 +273,23 @@ const UpdatesPage = () => {
                     />
                   )}
                 </Flex>
-              </Flex>
-            )}
+              )}
+              {updateType === "MESSAGE" && (
+                <Flex>
+                  <DailyMessageQueue />
+                </Flex>
+              )}
+              {updateType === "IMPACT" && (
+                <Flex>
+                  <ScheduleImpact impactDate={previewCardContent.created_at} />
+                </Flex>
+              )}
+            </Flex>
+          )}
         </Flex>
       </GridItem>
     </Grid>
   );
 };
 
-export default UpdatesPage;
+export default DailyReports;

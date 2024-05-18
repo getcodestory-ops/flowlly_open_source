@@ -83,8 +83,6 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
 
   useEffect(() => {
     if (revisions) {
-      // console.log("revisions", revisions);
-
       // Reset impactfulRevisions to an empty array
       setImpactfulRevisions([]);
 
@@ -289,7 +287,7 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
     <Flex alignItems={"center"}>
       <Flex mr={"0.5"}>
         <Text fontSize={"xs"} fontWeight={"bold"}>
-          Events:
+          Impactful Events:
         </Text>
       </Flex>
       <Flex direction={"column"} position={"relative"} fontSize={"xs"}>
