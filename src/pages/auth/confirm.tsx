@@ -16,6 +16,7 @@ import supabase from "@/utils/supabaseClient";
 import checkAdminRights from "@/utils/checkAdminRights";
 import { Session } from "@supabase/supabase-js";
 import { useStore } from "@/utils/store";
+import { type EmailOtpType } from "@supabase/supabase-js";
 
 function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -45,83 +46,19 @@ function ResetPassword() {
         if (session) {
           const { access_token, refresh_token } = session;
           await supabase.auth.setSession({ access_token, refresh_token });
-          setSessionToken(session);
         }
       }
 
       const { data } = await supabase.auth.getSession();
 
-      // if (!data?.session?.user) {
-      //   router.replace("/");
-      // } else {
-      //   setSessionToken(data?.session);
-      // }
+      if (!data?.session?.user) {
+        router.replace("/");
+      } else {
+        setSessionToken(data?.session);
+      }
     }
     loginCheck();
   }, [router]);
-
-  useEffect(() => {
-    async function getAdminRights() {
-      if (!sessionToken?.user.id) return;
-      const adminRights = await checkAdminRights(sessionToken?.user.id);
-      setAdminRights(adminRights);
-    }
-    getAdminRights();
-  }, [sessionToken?.user]);
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsLoading(true);
-
-    if (!hasAdminRights) {
-      toast({
-        title: "You dont have admin rights to change password",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-      setIsLoading(false);
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-      setIsLoading(false);
-      return;
-    }
-
-    const { error } = await supabase.auth.updateUser({
-      password,
-    });
-
-    if (error) {
-      toast({
-        title: "Error resetting password",
-        description: error.message,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-      setIsLoading(false);
-      setAppView("updates");
-      return;
-    }
-
-    toast({
-      title: "Password reset successfully",
-      status: "success",
-      duration: 5000,
-      isClosable: true,
-    });
-
-    setIsLoading(false);
-    router.push("/");
-  };
 
   return (
     <Flex
@@ -169,34 +106,7 @@ function ResetPassword() {
             textColor="white"
           >
             <Box p={6} borderRadius="md">
-              <Heading mb={6}>Lets setup a new password !</Heading>
-              <form onSubmit={handleSubmit}>
-                <FormControl id="password" isRequired>
-                  <FormLabel>Password</FormLabel>
-                  <Input
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                  />
-                </FormControl>
-                <FormControl id="confirmPassword" isRequired mt={4}>
-                  <FormLabel>Confirm Password</FormLabel>
-                  <Input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(event) => setConfirmPassword(event.target.value)}
-                  />
-                </FormControl>
-                <Button
-                  type="submit"
-                  colorScheme="gray"
-                  textColor="black"
-                  isLoading={isLoading}
-                  mt={4}
-                >
-                  Set Password
-                </Button>
-              </form>
+              <Heading mb={6}>Securely logging you in</Heading>
             </Box>
           </Box>
         </Center>
