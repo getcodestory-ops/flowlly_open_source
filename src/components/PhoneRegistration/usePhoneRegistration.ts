@@ -13,6 +13,7 @@ import {
 } from "@/api/membersRoutes";
 import { useToast } from "@chakra-ui/react";
 import { MemberEntity } from "@/types/members";
+import { useDisclosure } from "@chakra-ui/react";
 
 export const usePhoneRegistration = () => {
   const queryClient = useQueryClient();
@@ -29,10 +30,10 @@ export const usePhoneRegistration = () => {
   const [Members, setMembers] = useState<any>([]);
   const [addingMember, setAddingMember] = useState(false);
 
-  const handleInputChange = (e: any, field: any) => {
+  const handleInputChange = (e: any, field: any, modalOpen?: () => void) => {
     if (field === "enable_sms") {
-      let consent = confirm("review the sms policy and click ok to continue");
-      if (!consent) return;
+      // // let consent = confirm("Review the sms policy  and click ok to continue");
+      // if (!consent) return;
 
       setNewMember({ ...newMember, [field]: e.target.checked });
       return;
@@ -40,13 +41,16 @@ export const usePhoneRegistration = () => {
     setNewMember({ ...newMember, [field]: e.target.value });
   };
 
-  const handleMemberEdit = (e: any, field: any) => {
+  const handleMemberEdit = (e: any, field: string, modalOpen?: () => void) => {
     if (!editMember) {
       return;
     }
     if (field === "enable_sms") {
-      let consent = confirm("review the sms policy and click ok to continue");
-      if (!consent) return;
+      if (modalOpen) {
+        modalOpen();
+      }
+      // let consent = confirm("review the sms policy and click ok to continue");
+      // if (!consent) return;
       setEditMember({ ...editMember, [field]: e.target.checked });
       return;
     }

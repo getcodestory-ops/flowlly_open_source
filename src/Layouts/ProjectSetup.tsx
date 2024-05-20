@@ -32,6 +32,9 @@ import { MdOutlineDeleteOutline } from "react-icons/md";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import ProjectChats from "@/components/ProjectChats/ProjectChats";
 import { usePhoneRegistration } from "@/components/PhoneRegistration/usePhoneRegistration";
+import ConsentModal from "@/components/PhoneRegistration/ConsentModal";
+import { useDisclosure } from "@chakra-ui/react";
+import { on } from "events";
 
 function ProjectSetup({ settingView }: { settingView?: string }) {
   const { activeProject, appView, setAppView } = useStore((state) => ({
@@ -39,6 +42,7 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
     appView: state.appView,
     setAppView: state.setAppView,
   }));
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [settingsView, setSettingsView] = useState<string>("folders");
 
   const {
@@ -89,6 +93,7 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
 
     return (
       <Flex direction={"column"} pt={"4"} overflow={"auto"}>
+        <ConsentModal isOpen={isOpen} onOpen={onOpen} onClose={onClose} />
         <Flex>
           <Button
             size={"xs"}
@@ -151,7 +156,9 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                     <input
                       type="checkbox"
                       checked={newMember.enable_sms}
-                      onChange={(e) => handleInputChange(e, "enable_sms")}
+                      onChange={(e) =>
+                        handleInputChange(e, "enable_sms", onOpen)
+                      }
                     />
                   </Td>
                   <Td>
@@ -266,7 +273,9 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                         <input
                           type="checkbox"
                           checked={editMember.enable_sms}
-                          onChange={(e) => handleMemberEdit(e, "enable_sms")}
+                          onChange={(e) =>
+                            handleMemberEdit(e, "enable_sms", onOpen)
+                          }
                         />
                       </Td>
                       <Td>
