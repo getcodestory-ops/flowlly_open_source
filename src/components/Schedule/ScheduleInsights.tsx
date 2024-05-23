@@ -157,6 +157,7 @@ function ScheduleInsights() {
       // console.log("activity", activity);
       setTaskToView(activity);
       setTaskDetailsView("history");
+
       setRightPanelView("task");
       setOpenHistory(id);
     };
@@ -309,7 +310,7 @@ function ScheduleInsights() {
                   <Icon as={MdInfoOutline} />
                 </Button>
               </Tooltip>
-              {activity.history !== null ? (
+              {/* {activity.history !== null ? (
                 <Tooltip
                   label="Task History"
                   aria-label="A tooltip"
@@ -332,8 +333,8 @@ function ScheduleInsights() {
                     <Icon as={MdHistoryToggleOff} />
                   </Button>
                 </Tooltip>
-              ) : null}
-              {activity.status === "Delayed" ||
+              ) : null} */}
+              {/* {activity.status === "Delayed" ||
               activity.status === "At Risk" ? (
                 <Tooltip
                   label="Delay Impact"
@@ -356,7 +357,7 @@ function ScheduleInsights() {
                     <Icon as={AiOutlineAlert} />
                   </Button>
                 </Tooltip>
-              ) : null}
+              ) : null} */}
             </Flex>
           </Box>
         );

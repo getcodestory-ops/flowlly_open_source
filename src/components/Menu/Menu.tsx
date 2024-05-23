@@ -138,6 +138,27 @@ function NEW_Menu() {
                 ></Icon>
               </Button>
             </Tooltip>
+
+            <Button
+              w={"90%"}
+              mx={"2"}
+              size={"sm"}
+              bg={appView === "integrations" ? "brand.accent" : ""}
+              onClick={() => {
+                setAppView("integrations");
+              }}
+              color={"white"}
+              _hover={{
+                color: "brand.dark",
+                bg: "#E5E5E5",
+              }}
+              justifyContent={"flex-start"}
+            >
+              <Icon
+                as={FaPlug}
+                color={appView === "integrations" ? "brand.dark" : "white"}
+              ></Icon>
+            </Button>
           </>
         ) : (
           <>
@@ -227,6 +248,34 @@ function NEW_Menu() {
                 Members
               </Text>
             </Button>
+            <Button
+              w={"90%"}
+              mx={"2"}
+              size={"sm"}
+              bg={appView === "integrations" ? "brand.accent" : ""}
+              onClick={() => {
+                setAppView("integrations");
+              }}
+              color={"white"}
+              _hover={{
+                color: "brand.dark",
+                bg: "#E5E5E5",
+              }}
+              justifyContent={"flex-start"}
+            >
+              <Icon
+                as={FaPlug}
+                color={appView === "integrations" ? "brand.dark" : "white"}
+              ></Icon>
+              <Text
+                fontSize={"12px"}
+                color={appView === "integrations" ? "brand.dark" : "white"}
+                ml={"2"}
+                fontWeight={"medium"}
+              >
+                Integration
+              </Text>
+            </Button>
           </>
         )}
 
@@ -254,35 +303,6 @@ function NEW_Menu() {
           <Icon as={FaFolderOpen} mr={"2"}></Icon>
           Documents
         </Button> */}
-
-        <Button
-          w={"90%"}
-          mx={"2"}
-          size={"sm"}
-          bg={appView === "integrations" ? "brand.accent" : ""}
-          onClick={() => {
-            setAppView("integrations");
-          }}
-          color={"white"}
-          _hover={{
-            color: "brand.dark",
-            bg: "#E5E5E5",
-          }}
-          justifyContent={"flex-start"}
-        >
-          <Icon
-            as={FaPlug}
-            color={appView === "integrations" ? "brand.dark" : "white"}
-          ></Icon>
-          <Text
-            fontSize={"12px"}
-            color={appView === "integrations" ? "brand.dark" : "white"}
-            ml={"2"}
-            fontWeight={"medium"}
-          >
-            Integration
-          </Text>
-        </Button>
 
         {/* <Button
         size={"sm"}

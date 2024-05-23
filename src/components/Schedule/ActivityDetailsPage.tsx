@@ -230,12 +230,12 @@ function ActivitiesDetailPage() {
             </Text>
             <Text fontWeight={"semibold"}>{taskToView.duration} days</Text>
           </Flex>
-          <Flex direction={"column"}>
+          {/* <Flex direction={"column"}>
             <Text as={"i"} mr={"2"}>
               Progress:
             </Text>
             <Text fontWeight={"semibold"}>{taskToView.progress}%</Text>
-          </Flex>
+          </Flex> */}
         </Flex>
         <Flex direction={"column"} mt={"4"}>
           <Text as={"i"} mr={"2"}>
@@ -271,7 +271,7 @@ function ActivitiesDetailPage() {
               : "This task has no description"}
           </Text>
         </Flex>
-        <Flex direction={"column"} mt={"4"}>
+        {/* <Flex direction={"column"} mt={"4"}>
           <Text as={"i"} mr={"2"}>
             Task Estimated Cost:
           </Text>
@@ -281,8 +281,8 @@ function ActivitiesDetailPage() {
           >
             {taskToView.cost ? taskToView.cost : "No estimated cost assigned"}
           </Text>
-        </Flex>
-        <Flex direction={"column"} mt={"4"}>
+        </Flex> */}
+        {/* <Flex direction={"column"} mt={"4"}>
           <Text as={"i"} mr={"2"}>
             Task Resources:
           </Text>
@@ -300,7 +300,7 @@ function ActivitiesDetailPage() {
               ? taskToView.resources
               : "No resources assigned"}
           </Text>
-        </Flex>
+        </Flex> */}
       </Flex>
     );
   };
