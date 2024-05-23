@@ -32,7 +32,6 @@ import {
   getContexualAnswer,
 } from "@/utils/getAiAnswers";
 import ChatComponent from "../ChatInput/ChatComponet";
-import { NestBlockButton } from "@blocknote/react";
 
 function AiActions() {
   const [chatInput, setChatInput] = useState("");
