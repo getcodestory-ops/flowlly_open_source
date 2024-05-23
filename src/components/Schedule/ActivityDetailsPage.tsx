@@ -368,40 +368,42 @@ function ActivitiesDetailPage() {
                   pt={"4"}
                   pl={"10"}
                 >
-                  <Flex>
-                    <Text as={"i"} mr={"2"}>
-                      Date:
-                    </Text>
-                    <Text as={"b"}>{history.created_at}</Text>
-                  </Flex>
-                  <Flex>
-                    <Text as={"i"} mr={"2"}>
-                      Action Type:
-                    </Text>
-                    <Text as={"b"}>Daily Update</Text>
-                  </Flex>
-                  <Flex>
-                    <Text as={"i"} mr={"2"}>
-                      Impact on Schedule:
-                    </Text>
-                    <Text as={"b"}>{history.severity}</Text>
-                  </Flex>
+                  {history && (
+                    <>
+                      <Flex>
+                        <Text as={"i"} mr={"2"}>
+                          Date:
+                        </Text>
+                        <Text as={"b"}>{history.created_at ?? ""}</Text>
+                      </Flex>
+                      <Flex>
+                        <Text as={"i"} mr={"2"}>
+                          Action Type:
+                        </Text>
+                        <Text as={"b"}>Daily Update</Text>
+                      </Flex>
+                      <Flex>
+                        <Text as={"i"} mr={"2"}>
+                          Impact on Schedule:
+                        </Text>
+                        <Text as={"b"}>{history.severity ?? ""}</Text>
+                      </Flex>
 
-                  <Flex>
-                    <Text as={"i"} mr={"2"}>
-                      Sent By:
-                    </Text>
-                    <Text as={"b"}>XXXXX</Text>
-                  </Flex>
-                  <Flex direction={"column"}>
-                    <Text as={"i"} mr={"2"}>
-                      Message:
-                    </Text>
-                    <Text as={"b"}>
-                      {history.message ?? history.impact ?? ""}
-                    </Text>
-                  </Flex>
-                  {/* <Flex>
+                      <Flex>
+                        <Text as={"i"} mr={"2"}>
+                          Sent By:
+                        </Text>
+                        <Text as={"b"}>XXXXX</Text>
+                      </Flex>
+                      <Flex direction={"column"}>
+                        <Text as={"i"} mr={"2"}>
+                          Message:
+                        </Text>
+                        <Text as={"b"}>
+                          {history.message ?? history.impact ?? ""}
+                        </Text>
+                      </Flex>
+                      {/* <Flex>
                     <Text fontSize={"sm"} as={"i"} mr={"2"}>
                       Analysis:
                     </Text>
@@ -409,6 +411,8 @@ function ActivitiesDetailPage() {
                       {history.impact}
                     </Text>
                   </Flex> */}
+                    </>
+                  )}
                 </Flex>
               ))}
         </Flex>

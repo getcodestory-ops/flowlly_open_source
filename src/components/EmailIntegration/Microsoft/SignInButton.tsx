@@ -73,9 +73,6 @@ const IntegrateMicrosoft = () => {
 
   return (
     <Flex flexDirection={"column"} gap="4" w="full">
-      <Heading size="msmd" w="full" textAlign={"center"} color="yellow.500">
-        Integrate app with external services
-      </Heading>
       <Flex>
         <Button
           color="inherit"

@@ -12,6 +12,7 @@ import { LuContact2 } from "react-icons/lu";
 import { GrConnect } from "react-icons/gr";
 import UserPanel from "../UserPanel";
 import { useMediaQuery } from "@chakra-ui/react";
+import { FaPlug } from "react-icons/fa";
 
 function NEW_Menu() {
   const { setAppView, appView } = useStore((state) => ({
@@ -254,18 +255,34 @@ function NEW_Menu() {
           Documents
         </Button> */}
 
-        {/* <Button
+        <Button
+          w={"90%"}
           mx={"2"}
           size={"sm"}
-          bg={appView === "integrations" ? "brand.accent" : "white"}
+          bg={appView === "integrations" ? "brand.accent" : ""}
           onClick={() => {
             setAppView("integrations");
           }}
-          _hover={{ bg: "brand.dark", color: "white" }}
+          color={"white"}
+          _hover={{
+            color: "brand.dark",
+            bg: "#E5E5E5",
+          }}
+          justifyContent={"flex-start"}
         >
-          <Icon as={GrConnect} mr={"2"}></Icon>
-          Integration
-        </Button> */}
+          <Icon
+            as={FaPlug}
+            color={appView === "integrations" ? "brand.dark" : "white"}
+          ></Icon>
+          <Text
+            fontSize={"12px"}
+            color={appView === "integrations" ? "brand.dark" : "white"}
+            ml={"2"}
+            fontWeight={"medium"}
+          >
+            Integration
+          </Text>
+        </Button>
 
         {/* <Button
         size={"sm"}

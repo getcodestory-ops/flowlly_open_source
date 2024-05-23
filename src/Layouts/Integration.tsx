@@ -2,6 +2,7 @@ import React from "react";
 import { Flex } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import IntegrateMicrosoft from "@/components/EmailIntegration/Microsoft/SignInButton";
+import IntegrateProcore from "@/components/ProcoreIntegration/SignInButton";
 
 function Integration({ settingView }: { settingView?: string }) {
   const { activeProject, appView, setAppView } = useStore((state) => ({
@@ -24,8 +25,9 @@ function Integration({ settingView }: { settingView?: string }) {
           <Flex direction={"column"} justifyContent={"space-between"}>
             <Flex className="menu" gap="4"></Flex>
           </Flex>
-          <Flex>
+          <Flex flexDirection={"column"} gap="4">
             <IntegrateMicrosoft />
+            <IntegrateProcore />
           </Flex>
         </Flex>
       ) : (
