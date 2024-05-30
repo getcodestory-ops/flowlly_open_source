@@ -340,7 +340,7 @@ function UpdateActivityModal({
                   </Select> */}
                 </Flex>
                 <Flex direction={"column"}>
-                  <Text as={"b"} fontSize={"12px"}>
+                  {/* <Text as={"b"} fontSize={"12px"}>
                     Select task status
                   </Text>
                   <Select
@@ -361,7 +361,7 @@ function UpdateActivityModal({
                     <option value={"In Progress"}>In Progress</option>
                     <option value={"At Risk"}>At Risk</option>
                     <option value={"Delayed"}>Delayed</option>
-                  </Select>
+                  </Select> */}
                   <Flex direction={"column"} mt={"2"}>
                     {/* <Text as={"b"} fontSize={"12px"}>
                       Reason for update

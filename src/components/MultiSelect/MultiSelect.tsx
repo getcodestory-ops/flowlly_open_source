@@ -12,6 +12,7 @@ import {
   Badge,
   Icon,
   IconButton,
+  Box,
 } from "@chakra-ui/react";
 import { BiCaretDown } from "react-icons/bi";
 import { IoFunnel, IoClose } from "react-icons/io5";
@@ -55,7 +56,7 @@ const MultiSelect = ({
   }, [existingSelection]);
 
   return (
-    <Flex direction={"column"}>
+    <Flex direction={"column"} overflow="scroll" maxHeight={"64"}>
       <Flex gap="4" align={"center"}>
         <Menu closeOnSelect={false}>
           <MenuButton
@@ -74,60 +75,72 @@ const MultiSelect = ({
             </Flex>
           </MenuButton>
           <MenuList minWidth="xs" maxW={"sm"}>
-            <MenuOptionGroup
-              value={selectedOptions ?? []}
-              onChange={handleOptionSelect}
-              type="checkbox"
+            <Box
+              maxHeight={"64"}
+              overflowY={"scroll"}
+              className="custom-scrollbar"
             >
-              <Flex direction={"column"} gap="2" px="4" py="2">
-                <Flex justify={"space-between"} align="center">
-                  <Flex gap="2" align={"center"}>
-                    <Icon as={IoFunnel} />
-                    <Text size="md" noOfLines={1} fontWeight={"medium"}>
-                      {title}
-                    </Text>
-                  </Flex>
-                  <Flex flexShrink={0} gap="2">
-                    <Button
-                      size="xs"
-                      variant="link"
-                      colorScheme="yellow"
-                      onClick={() =>
-                        handleOptionSelect(options.map((o) => o.id))
-                      }
-                    >
-                      Select All
-                    </Button>
+              <MenuOptionGroup
+                value={selectedOptions ?? []}
+                onChange={handleOptionSelect}
+                type="checkbox"
+              >
+                <Flex
+                  direction={"column"}
+                  gap="2"
+                  px="4"
+                  py="2"
+                  overflow={"scroll"}
+                >
+                  <Flex justify={"space-between"} align="center">
+                    <Flex gap="2" align={"center"}>
+                      <Icon as={IoFunnel} />
+                      <Text size="md" noOfLines={1} fontWeight={"medium"}>
+                        {title}
+                      </Text>
+                    </Flex>
+                    <Flex flexShrink={0} gap="2">
+                      <Button
+                        size="xs"
+                        variant="link"
+                        colorScheme="yellow"
+                        onClick={() =>
+                          handleOptionSelect(options.map((o) => o.id))
+                        }
+                      >
+                        Select All
+                      </Button>
 
-                    <Button
-                      size="xs"
-                      variant="link"
-                      colorScheme="yellow"
-                      onClick={handleClear}
-                    >
-                      Clear
-                    </Button>
+                      <Button
+                        size="xs"
+                        variant="link"
+                        colorScheme="yellow"
+                        onClick={handleClear}
+                      >
+                        Clear
+                      </Button>
+                    </Flex>
                   </Flex>
                 </Flex>
-              </Flex>
 
-              <Divider />
+                <Divider />
 
-              {options &&
-                options.length > 0 &&
-                options.map((activities, index) => (
-                  // <Flex>{option.label ?? index}</Flex>
-                  <MenuItemOption
-                    key={`option_${activities.id ?? index}`}
-                    value={activities.id ?? index}
-                    _focus={{ bg: "yellow.100" }}
-                    _hover={{ bg: "yellow.100" }}
-                    transition={"background 0.3s ease"}
-                  >
-                    {activities.label ?? index}
-                  </MenuItemOption>
-                ))}
-            </MenuOptionGroup>
+                {options &&
+                  options.length > 0 &&
+                  options.map((activities, index) => (
+                    // <Flex>{option.label ?? index}</Flex>
+                    <MenuItemOption
+                      key={`option_${activities.id ?? index}`}
+                      value={activities.id ?? index}
+                      _focus={{ bg: "yellow.100" }}
+                      _hover={{ bg: "yellow.100" }}
+                      transition={"background 0.3s ease"}
+                    >
+                      {activities.label ?? index}
+                    </MenuItemOption>
+                  ))}
+              </MenuOptionGroup>
+            </Box>
           </MenuList>
         </Menu>
 
