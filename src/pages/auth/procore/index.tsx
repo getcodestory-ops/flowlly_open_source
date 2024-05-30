@@ -19,13 +19,17 @@ export default function Home() {
     code: string
   ) => {
     console.log(session, project_access_id);
-    const url = `${serverUrl}/integrate/procore/${project_access_id}?code=${code}`;
+    const url = `${serverUrl}/integrate/procore/${project_access_id}`;
     const headers = {
       Authorization: `Bearer ${session.access_token}`,
     };
     axios
-      .post(url, {
-        headers: headers,
+      .get(url, {
+        params: { code: code },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
       })
       .then((response) => {
         toast({
@@ -35,6 +39,7 @@ export default function Home() {
           duration: 4000,
           isClosable: true,
         });
+        router.push("/");
       })
       .catch((error) => {
         toast({
@@ -70,67 +75,6 @@ export default function Home() {
     }
     loginCheck();
   }, [state, code]);
-
-  //   const postData = async (
-  //     session: Session,
-  //     project_access_id: string,
-  //     code: string
-  //   ) => {
-  //     console.log(session, project_access_id);
-  //     const url = `http://localhost:8004/integrate/procore/${project_access_id}?code=${code}`;
-  //     const headers = {
-  //       Authorization: `Bearer ${session.access_token}`,
-  //     };
-  //     axios
-  //       .post(url, {
-  //         headers: headers,
-  //       })
-  //       .then((response) => {
-  //         console.log("Success:", response.data);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error:", error);
-  //       });
-  //   };
-
-  //   useEffect(() => {
-  //     const sessionStr = localStorage.getItem("session");
-  //     const activeProjectStr = localStorage.getItem("activeProject");
-
-  //     if (sessionStr !== null) {
-  //       try {
-  //         const session = JSON.parse(sessionStr);
-  //         setSession(session);
-  //       } catch (error) {
-  //         console.error("Error parsing session:", error);
-  //       }
-  //     }
-
-  //     if (activeProjectStr !== null) {
-  //       try {
-  //         const activeProject = JSON.parse(activeProjectStr);
-  //         setActiveProject(activeProject);
-  //       } catch (error) {
-  //         console.error("Error parsing activeProject:", error);
-  //       }
-  //     }
-  //   }, [setSession, setActiveProject]);
-
-  //   // console.log(session,activeProject)
-
-  //   async function fetchToken(code: any) {
-  //     if (!session || !activeProject) {
-  //       console.log("Either session or project is not valid !");
-  //       return Promise.reject("Either session or project is not valid !");
-  //     }
-  //     return postData(session!, activeProject?.project_id, code);
-  //   }
-  //   const router = useRouter();
-  //   const { code } = router.query;
-  //   useEffect(() => {
-  //     console.log(code);
-  //     if (code) fetchToken(code);
-  //   }, [code]);
 
   return (
     <>

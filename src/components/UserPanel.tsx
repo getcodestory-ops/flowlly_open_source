@@ -76,10 +76,9 @@ const UserPanel = () => {
             <MenuItem>{user.email}</MenuItem>
             <MenuItem
               onClick={() => {
-
                 // setAppView("changePassword");
 
-                router.push("/auth/passwordChange");
+                router.push("/auth/changePassword");
               }}
             >
               Change Password

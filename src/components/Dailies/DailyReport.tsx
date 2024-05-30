@@ -7,6 +7,7 @@ import {
   useDisclosure,
   Select,
   Icon,
+  Button,
 } from "@chakra-ui/react";
 import {
   MdOutlineEmail,
@@ -26,8 +27,11 @@ import EditorBlock from "@/components/DocumentEditor/Editor";
 import UpdateViewer from "./UpdateViewer";
 import DailyMessageQueue from "./DailyMessageQueue";
 import ScheduleImpact from "./ScheduleImpact";
+import { useScheduleSync } from "@/components/Schedule/SyncSchedule/useScheduleWithProcore";
 
 const DailyReports = () => {
+  const { syncImpact } = useScheduleSync();
+
   const { documentId, setDocumentId, session, activeProject } = useStore(
     (state) => ({
       documentId: state.documentId,
@@ -50,6 +54,7 @@ const DailyReports = () => {
     y: 0,
     id: "",
   });
+
   const {
     data: updates,
     isLoading,
@@ -280,7 +285,16 @@ const DailyReports = () => {
                 </Flex>
               )}
               {updateType === "IMPACT" && (
-                <Flex>
+                <Flex flexDirection="column">
+                  <Flex justifyContent={"right"}>
+                    <Button
+                      size="xs"
+                      colorScheme="yellow"
+                      onClick={() => syncImpact(previewCardContent.created_at)}
+                    >
+                      Sync to procore
+                    </Button>
+                  </Flex>
                   <ScheduleImpact impactDate={previewCardContent.created_at} />
                 </Flex>
               )}

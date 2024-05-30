@@ -1,5 +1,5 @@
 import { UpdateProperties } from "@/types/updates";
-import { Flex, Text } from "@chakra-ui/react";
+import { Button, Flex, Text } from "@chakra-ui/react";
 
 interface UpdateViewerProps {
   previewCardContent: Record<string, any>;
@@ -37,7 +37,8 @@ function UpdateViewer({
         dropShadow={"lg"}
         cursor={"pointer"}
         display="flex"
-        flexDirection="column"
+        flexDirection="row"
+        justifyContent={"space-between"}
         borderRadius={"md"}
         _hover={{ bg: "brand.dark", color: "white" }}
         onClick={() => setUpdateType("ACTION")}

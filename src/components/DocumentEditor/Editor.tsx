@@ -1,6 +1,5 @@
 import React, { memo, useEffect, useRef, useState, useCallback } from "react";
 import { IoIosSave } from "react-icons/io";
-import { FcProcess } from "react-icons/fc";
 import { TbAnalyzeFilled } from "react-icons/tb";
 import UploadVoiceModal from "@/components/VoiceComponent/UploadVoiceModal";
 import {
@@ -13,6 +12,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useContentSave } from "./useContentSave";
+import { useSyncProcore } from "../ProcoreIntegration/useDailyReportSync";
 import { IoShareSocialOutline } from "react-icons/io5";
 import { useStore } from "@/utils/store";
 import {
@@ -44,6 +44,7 @@ const EditorBlock = ({
   const holder = "editorjs-container";
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const { ref, processDoc, data, onSubmit, content } = useContentSave(id);
+  const { syncProcore } = useSyncProcore(id);
 
   useEffect(() => {
     if (typeof window !== "undefined") setIsMounted(true);
@@ -146,6 +147,32 @@ const EditorBlock = ({
         )}
         <Flex>
           {appView === "notes" && <UploadVoiceModal />}
+
+          <Tooltip label="Sync to Procore" bg="white" color="brand.dark">
+            <Button
+              mx={"2"}
+              boxShadow={"lg"}
+              cursor={"pointer"}
+              size={"sm"}
+              bg={"white"}
+              // position="absolute"
+              // zIndex={"overlay"}
+              // top="32"
+              onClick={() => syncProcore()}
+              _hover={{ bg: "brand.dark", color: "white" }}
+
+              // transform={"translateX(-200%)"}
+            >
+              <Icon
+                as={TbAnalyzeFilled}
+                _hover={{
+                  transform: "rotate(360deg)",
+
+                  transition: "transform 0.5s ease-in-out",
+                }}
+              />
+            </Button>
+          </Tooltip>
 
           <Tooltip label="AI Note Analysis" bg="white" color="brand.dark">
             <Button

@@ -1,5 +1,5 @@
 import { BlockNoteEditor } from "@blocknote/core";
-// import { BlockNoteView, useBlockNote } from "@blocknote/react";
+// import { BlockNoteView, useBlockNote } from "yar/react";
 import "@blocknote/core/style.css";
 import { Button, Flex } from "@chakra-ui/react";
 

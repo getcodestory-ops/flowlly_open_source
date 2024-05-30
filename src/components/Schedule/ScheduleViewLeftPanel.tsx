@@ -50,6 +50,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import AddNewActivityModal from "./AddNewActivityModal";
 import CsvUploadIcon from "./CSVUpload/csvUploadIcon";
 import { getMembers } from "@/api/membersRoutes";
+import { useScheduleSync } from "./SyncSchedule/useScheduleWithProcore";
 
 function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   const {
@@ -77,6 +78,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
   const onOpen = () => setIsOpen(true);
+  const { syncSchedule } = useScheduleSync();
 
   const queryClient = useQueryClient();
 
@@ -194,7 +196,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
                 Gantt
               </Text>
             </Flex>
-            <Flex
+            {/* <Flex
               alignItems={"center"}
               mr={"4"}
               border={"1px"}
@@ -211,7 +213,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
               <Text fontSize={"xs"} fontWeight={"bold"} ml={"2"}>
                 Kanban
               </Text>
-            </Flex>
+            </Flex> */}
           </Flex>
         </GridItem>
         <GridItem rowSpan={1} colSpan={1}>
@@ -233,6 +235,15 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
               >
                 + Add Task
               </Button>
+              <Button
+                size={"xs"}
+                bg={"brand.dark"}
+                color={"white"}
+                onClick={() => syncSchedule()}
+                ml={"2"}
+              >
+                Sync Procore
+              </Button>
             </Flex>
           </Flex>
         </GridItem>
@@ -250,7 +261,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
               </GridItem>
             </Grid>
           )}
-          {userActivities && userActivities.length > 0 && view === "kanban" && (
+          {/* {userActivities && userActivities.length > 0 && view === "kanban" && (
             <Grid h="full" templateColumns="repeat(1, 1fr)" gap={4}>
               <GridItem
                 colSpan={1}
@@ -264,7 +275,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
                 </Flex>
               </GridItem>
             </Grid>
-          )}
+          )} */}
 
           {view === "tasks" && (
             <Grid h="full" templateColumns="repeat(3, 1fr)" gap={4}>

@@ -70,3 +70,41 @@ export const deleteProject = async (session: Session, project_id: string) => {
   });
   return response;
 };
+
+export const syncScheduleProcore = async (
+  session: Session,
+  projectId: string
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/integrate/procore/sync_schedule/${projectId}`;
+
+  const response = await axios.get(
+    url,
+
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+export const syncScheduleImpact = async (
+  session: Session,
+  projectId: string,
+  impactDate: string
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/sync/procore/impact_update/${projectId}`;
+
+  const response = await axios.get(url, {
+    params: {
+      impact_date: impactDate,
+    },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+  return response.data;
+};

@@ -71,6 +71,30 @@ export const getDocumentContent = async (
   return response.data;
 };
 
+export const syncDocumentProcore = async (
+  session: Session,
+  projectId: string,
+  documentId: string
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/document/sync/procore`;
+
+  const response = await axios.get(
+    url,
+
+    {
+      params: {
+        document_id: documentId,
+        project_access_id: projectId,
+      },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
 export const updateDocumentContent = async (
   session: Session,
   documentId: string,
