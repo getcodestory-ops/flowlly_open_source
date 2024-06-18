@@ -13,6 +13,8 @@ export interface CreateNewProjectEntity {
   name: string;
   description?: string;
   project_type?: string;
+  project_number?: string;
+  address?: string;
 }
 
 export interface ShareProjectEntity {

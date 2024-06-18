@@ -38,6 +38,7 @@ import { FaTasks } from "react-icons/fa";
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { IoChevronDownOutline } from "react-icons/io5";
 import ScheduleGanttInterface from "./ScheduleGanttInterface";
+import ScheduleSummaryView from "./ScheduleSummaryView";
 import CustomDatePicker from "../DatePicker/DatePicker";
 import ProbabilitySelector from "../ProbabilitySelector";
 import CreateContingency from "./CreateContingency/CreateContingency";
@@ -151,6 +152,23 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
               px={"2"}
               py={"0.5"}
               rounded={"lg"}
+              bg={`${view === "summary" ? "brand2.accent" : "white"}`}
+              _hover={{ bg: "brand.dark", color: "white" }}
+              cursor={"pointer"}
+              onClick={() => setView("summary")}
+            >
+              <Icon as={FaTasks} />
+              <Text ml={"2"} fontSize={"xs"} fontWeight={"bold"}>
+                At a glance
+              </Text>
+            </Flex>
+            <Flex
+              alignItems={"center"}
+              mr={"4"}
+              border={"1px"}
+              px={"2"}
+              py={"0.5"}
+              rounded={"lg"}
               bg={`${view === "tasks" ? "brand2.accent" : "white"}`}
               _hover={{ bg: "brand.dark", color: "white" }}
               cursor={"pointer"}
@@ -257,6 +275,19 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
               >
                 <Flex w={"full"}>
                   <ScheduleGanttInterface />
+                </Flex>
+              </GridItem>
+            </Grid>
+          )}
+          {view === "summary" && (
+            <Grid h="full" templateColumns="repeat(1, 1fr)" gap={4}>
+              <GridItem
+                colSpan={1}
+                overflow={"auto"}
+                className="custom-scrollbar"
+              >
+                <Flex w={"full"}>
+                  <ScheduleSummaryView />
                 </Flex>
               </GridItem>
             </Grid>

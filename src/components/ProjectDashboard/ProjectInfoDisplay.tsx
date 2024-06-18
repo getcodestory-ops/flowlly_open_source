@@ -77,7 +77,8 @@ function ProjectInfoDisplay() {
                   Project:
                 </Text>
                 {/* <Flex fontSize={"xs"}>PROJECT</Flex> */}
-                {userProjects && userProjects.length > 0 ? (
+
+                {userProjects && userProjects.length > 0 && (
                   <Menu>
                     <MenuButton fontSize={"22px"} fontWeight={"bold"}>
                       <Flex alignItems={"center"}>
@@ -104,99 +105,11 @@ function ProjectInfoDisplay() {
                       ))}
                     </MenuList>
                   </Menu>
-                ) : (
-                  <CreateNewProjectButton />
                 )}
               </Flex>
-              {/* <Flex fontSize={"sm"} alignItems={"flex-end"}>
-                <Text mr={"2"}>Status:</Text>
-                {userActivities && userActivities.length > 0 ? (
-                  <Text
-                    fontWeight={"bold"}
-                    color={
-                      projectStatus === "Delayed"
-                        ? "red.400"
-                        : projectStatus === "At Risk"
-                        ? "orange.200"
-                        : "brand.dark"
-                    }
-                  >
-                    {projectStatus}
-                  </Text>
-                ) : (
-                  <Text fontWeight={"bold"}>No Tasks</Text>
-                )}
-              </Flex> */}
-              {/* <NEW_Menu /> */}
             </Flex>
-
-            <Flex justifyContent={"space-between"}>
-              {/* <Flex gap="4">
-                <CreateNewProjectButton />
-                <UserPanel />
-              </Flex> */}
-              <Flex color={"black"} fontSize={"sm"}>
-                {/* <Tooltip
-                  label="Add File"
-                  aria-label="A tooltip"
-                  bg="white"
-                  color="brand.dark"
-                >
-                  <Button
-                    p={"1"}
-                    size={"sm"}
-                    bg={"white"}
-                    rounded={"full"}
-                    className="custom-shadow"
-                    _hover={{ bg: "brand.dark", color: "white" }}
-                    cursor={"pointer"}
-                  >
-                    <Icon as={IoAddCircleOutline} boxSize={"5"} />
-                  </Button>
-                </Tooltip> */}
-
-                {/* <Tooltip
-                  label="Share Project"
-                  aria-label="A tooltip"
-                  bg="white"
-                  color="brand.dark"
-                >
-                  <Button
-                    p={"1"}
-                    mx={"2"}
-                    bg={"white"}
-                    size={"sm"}
-                    className="custom-shadow"
-                    rounded={"full"}
-                    _hover={{ bg: "brand.dark", color: "white" }}
-                    cursor={"pointer"}
-                    onClick={() => setShareModal(true)}
-                  >
-                    <Icon as={IoShareSocialOutline} boxSize={"5"} />
-                  </Button>
-                </Tooltip> */}
-                {/* <Tooltip
-                  label="Project Settings"
-                  aria-label="A tooltip"
-                  bg={"white"}
-                  color="brand.dark"
-                >
-                  <Button
-                    bg={
-                      appView === "projectSettings" ? "brand.accent" : "white"
-                    }
-                    p={"1"}
-                    size={"sm"}
-                    rounded={"full"}
-                    cursor={"pointer"}
-                    _hover={{ bg: "brand.dark", color: "white" }}
-                    className="custom-shadow"
-                    onClick={() => setAppView("projectSettings")}
-                  >
-                    <Icon as={MdOutlineSettings} boxSize={"5"} />
-                  </Button>
-                </Tooltip> */}
-              </Flex>
+            <Flex>
+              <CreateNewProjectButton />
             </Flex>
           </Flex>
         </GridItem>

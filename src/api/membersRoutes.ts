@@ -28,6 +28,7 @@ export const createNewMemberEntry = async (
     skills: string;
     active: boolean;
     enable_sms: boolean;
+    language?: string;
   }
 ) => {
   const response = await fetch(

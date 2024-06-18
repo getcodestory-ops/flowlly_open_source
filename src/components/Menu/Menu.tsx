@@ -64,31 +64,6 @@ function NEW_Menu() {
         {smallScreen ? (
           <>
             <Tooltip
-              label="Daily Reports"
-              aria-label="Daily"
-              bg="white"
-              color="brand.dark"
-            >
-              <Button
-                mx={"2"}
-                size={"sm"}
-                bg={appView === "updates" ? "brand.accent" : ""}
-                onClick={() => {
-                  setAppView("updates");
-                }}
-                color={"white"}
-                _hover={{
-                  color: "brand.dark",
-                  bg: "#E5E5E5",
-                }}
-              >
-                <Icon
-                  as={TbReportAnalytics}
-                  color={appView === "updates" ? "brand.dark" : ""}
-                ></Icon>
-              </Button>
-            </Tooltip>
-            <Tooltip
               label="Look Ahead"
               aria-label="Look Ahead"
               bg="white"
@@ -113,6 +88,32 @@ function NEW_Menu() {
                 ></Icon>
               </Button>
             </Tooltip>
+            <Tooltip
+              label="Daily Reports"
+              aria-label="Daily"
+              bg="white"
+              color="brand.dark"
+            >
+              <Button
+                mx={"2"}
+                size={"sm"}
+                bg={appView === "updates" ? "brand.accent" : ""}
+                onClick={() => {
+                  setAppView("updates");
+                }}
+                color={"white"}
+                _hover={{
+                  color: "brand.dark",
+                  bg: "#E5E5E5",
+                }}
+              >
+                <Icon
+                  as={TbReportAnalytics}
+                  color={appView === "updates" ? "brand.dark" : ""}
+                ></Icon>
+              </Button>
+            </Tooltip>
+
             <Tooltip
               label="Project Members"
               aria-label="Members"
@@ -162,13 +163,13 @@ function NEW_Menu() {
           </>
         ) : (
           <>
-            <Button
+            {/* <Button
               w={"90%"}
               mx={"2"}
               size={"sm"}
-              bg={appView === "updates" ? "brand.accent" : ""}
+              bg={appView === "dashboard" ? "brand.accent" : ""}
               onClick={() => {
-                setAppView("updates");
+                setAppView("dashboard");
               }}
               color={"white"}
               _hover={{
@@ -178,19 +179,18 @@ function NEW_Menu() {
               justifyContent={"flex-start"}
             >
               <Icon
-                as={TbReportAnalytics}
-                color={appView === "updates" ? "brand.dark" : ""}
+                as={FaTasks}
+                color={appView === "dashboard" ? "brand.dark" : ""}
               ></Icon>
               <Text
                 fontSize={"12px"}
-                color={appView === "updates" ? "brand.dark" : "white"}
+                color={appView === "dashboard" ? "brand.dark" : "white"}
                 ml={"2"}
                 fontWeight={"medium"}
               >
-                Daily Reports
+                Dashboard
               </Text>
-            </Button>
-
+            </Button> */}
             <Button
               w={"90%"}
               mx={"2"}
@@ -217,6 +217,34 @@ function NEW_Menu() {
                 fontWeight={"medium"}
               >
                 Schedule
+              </Text>
+            </Button>
+            <Button
+              w={"90%"}
+              mx={"2"}
+              size={"sm"}
+              bg={appView === "updates" ? "brand.accent" : ""}
+              onClick={() => {
+                setAppView("updates");
+              }}
+              color={"white"}
+              _hover={{
+                color: "brand.dark",
+                bg: "#E5E5E5",
+              }}
+              justifyContent={"flex-start"}
+            >
+              <Icon
+                as={TbReportAnalytics}
+                color={appView === "updates" ? "brand.dark" : ""}
+              ></Icon>
+              <Text
+                fontSize={"12px"}
+                color={appView === "updates" ? "brand.dark" : "white"}
+                ml={"2"}
+                fontWeight={"medium"}
+              >
+                Daily Reports
               </Text>
             </Button>
 

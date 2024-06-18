@@ -115,6 +115,7 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                 <Th>Phone Number</Th>
                 <Th>Enroll IN SMS</Th>
                 <Th>Role</Th>
+                <Th>Language</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -170,6 +171,14 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                     />
                   </Td>
                   <Td>
+                    <input
+                      type="text"
+                      placeholder="Language"
+                      value={newMember.language}
+                      onChange={(e) => handleInputChange(e, "language")}
+                    />
+                  </Td>
+                  <Td>
                     <Icon
                       as={FiSave}
                       onClick={handleSaveMember}
@@ -208,6 +217,7 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                         )}
                       </Td>
                       <Td>{member.role}</Td>
+                      <Td>{member?.language ?? "English"}</Td>
                       <Td>
                         <Flex>
                           <Flex
@@ -284,6 +294,14 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                           placeholder="Role"
                           value={editMember.role}
                           onChange={(e) => handleMemberEdit(e, "role")}
+                        />
+                      </Td>
+                      <Td>
+                        <input
+                          type="text"
+                          placeholder="Language"
+                          value={newMember.language}
+                          onChange={(e) => handleInputChange(e, "language")}
                         />
                       </Td>
                       <Td>

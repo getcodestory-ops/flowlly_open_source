@@ -13,14 +13,14 @@ const CreateNewProjectButton = () => {
     <Flex alignItems="center" width="full">
       <Button
         bg={"brand.dark"}
-        // leftIcon={<Icon as={FiPlus} />}
+        leftIcon={<Icon as={FiPlus} />}
         _hover={{ bg: "brand.accent", color: "brand.dark" }}
         onClick={onOpen}
         size={"xs"}
         color={"white"}
         py={"4"}
       >
-        New Project
+        Project
       </Button>
       <AddNewProjectModal isOpen={isOpen} onClose={onClose} />
     </Flex>

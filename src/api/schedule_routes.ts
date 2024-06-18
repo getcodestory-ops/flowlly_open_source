@@ -33,6 +33,20 @@ export const scheduleAgent = async ({
   return response.data;
 };
 
+export const getScheduleSummary = async (
+  session: Session,
+  projectId: string
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/schedule/summary/daily/${projectId}`;
+  const response = await axios.get(url, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+  return response.data;
+};
+
 export const getTaskStatus = async (
   session: Session,
   currentTaskId: string

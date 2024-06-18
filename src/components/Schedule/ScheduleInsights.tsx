@@ -7,6 +7,7 @@ import {
   Text,
   Tooltip,
   Select,
+  Input,
 } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { BiSolidCircle } from "react-icons/bi";
@@ -50,6 +51,9 @@ function ScheduleInsights() {
   const [countOfInProgress, setCountOfInProgress] = useState<number>(0);
   const [countOfCompleted, setCountOfCompleted] = useState<number>(0);
   const [countOfOnSchedule, setCountOfOnSchedule] = useState<number>(0);
+  const [selectedUser, setSelectedUser] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     if (taskToView.id !== "SCHEDULE") {
@@ -180,6 +184,13 @@ function ScheduleInsights() {
       setOpenHistory(id);
     };
 
+    const handleActivityDate = (activity: any) => {
+      if (startDate == "" && endDate == "") return true;
+      else if (startDate == "") return activity.end <= endDate;
+      else if (endDate == "") return activity.start >= startDate;
+      else return activity.start >= startDate && activity.end <= endDate;
+    };
+
     return sortedActivities
       .filter((activity: any) => {
         if (filterView === "Delayed") {
@@ -192,6 +203,11 @@ function ScheduleInsights() {
           return activity.status === "In Progress";
         } else if (filterView === "Completed") {
           return activity.status === "Completed";
+        } else if (filterView === "Users") {
+          if (activity.owner !== null)
+            return activity.owner.includes(selectedUser);
+        } else if (filterView === "Dates") {
+          return handleActivityDate(activity);
         } else {
           return true;
         }
@@ -380,19 +396,72 @@ function ScheduleInsights() {
 
   // const quickDataViewCard = (name: string, value: number) => {
   const quickDataViewCard = () => {
+    const handleStartDateChange = (date: any) => {
+      setStartDate(date);
+    };
+
+    // Function to handle end date selection
+    const handleEndDateChange = (date: any) => {
+      setEndDate(date);
+    };
+
+    const handleUserChange = (e: any) => {
+      setSelectedUser(e.target.value);
+    };
     return (
-      <Select
-        size={"xs"}
-        className="custom-selector"
-        onChange={(e: any) => setFilterView(e.target.value)}
-      >
-        <option value="All">All Tasks {countOfActivities}</option>
-        <option value="Delayed">Delayed {countOfDelayed}</option>
-        <option value="At Risk">At Risk {countOfAtRisk}</option>
-        <option value="In Progress">In Progress {countOfInProgress}</option>
-        <option value="Completed">Completed {countOfCompleted}</option>
-        <option value="On Schedule">On Schedule {countOfOnSchedule}</option>
-      </Select>
+      <Flex justifyItems="center">
+        <Flex>
+          <Select
+            size={"xs"}
+            className="custom-selector"
+            onChange={(e: any) => setFilterView(e.target.value)}
+          >
+            <option value="Users">Users</option>
+            <option value="Dates">Dates</option>
+            <option value="All">All Tasks {countOfActivities}</option>
+            <option value="Delayed">Delayed {countOfDelayed}</option>
+            <option value="At Risk">At Risk {countOfAtRisk}</option>
+            <option value="In Progress">In Progress {countOfInProgress}</option>
+            <option value="Completed">Completed {countOfCompleted}</option>
+            <option value="On Schedule">On Schedule {countOfOnSchedule}</option>
+          </Select>
+        </Flex>
+        {filterView === "Users" && (
+          <Flex direction="row" alignItems="flex-end">
+            <Select
+              size="xs"
+              borderRadius={"md"}
+              className="user-dropdown"
+              value={selectedUser}
+              onChange={handleUserChange}
+            >
+              {members.map((member: any) => (
+                <option key={member.id} value={member.id}>
+                  {member.first_name + " " + member.last_name}
+                </option>
+              ))}
+            </Select>
+          </Flex>
+        )}
+        {filterView === "Dates" && (
+          <Flex gap="2">
+            <Input
+              size="xs"
+              type="date"
+              borderRadius={"md"}
+              value={startDate}
+              onChange={(e) => handleStartDateChange(e.target.value)}
+            />
+            <Input
+              size="xs"
+              type="date"
+              borderRadius={"md"}
+              value={endDate}
+              onChange={(e) => handleEndDateChange(e.target.value)}
+            />
+          </Flex>
+        )}
+      </Flex>
     );
   };
 

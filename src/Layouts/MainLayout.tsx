@@ -183,7 +183,7 @@ export default function MainLayout({
                         </GridItem>
                         {appView === "dashboard" && (
                           <GridItem rowSpan={15} colSpan={13} px={"2"} pb={"2"}>
-                            {<ProjectDashboard />}
+                            {/* {<ProjectDashboard />} */}
                           </GridItem>
                         )}
                         {appView === "schedule" && (

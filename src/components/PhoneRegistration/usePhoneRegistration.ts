@@ -25,6 +25,7 @@ export const usePhoneRegistration = () => {
     phone: "",
     role: "",
     enable_sms: false,
+    language: "",
   });
   const [editMember, setEditMember] = useState<MemberEntity | null>(null);
   const [Members, setMembers] = useState<any>([]);
@@ -38,6 +39,7 @@ export const usePhoneRegistration = () => {
       setNewMember({ ...newMember, [field]: e.target.checked });
       return;
     }
+    // console.log("field", field, e.target.value);
     setNewMember({ ...newMember, [field]: e.target.value });
   };
 
@@ -51,9 +53,12 @@ export const usePhoneRegistration = () => {
       }
       // let consent = confirm("review the sms policy and click ok to continue");
       // if (!consent) return;
+
       setEditMember({ ...editMember, [field]: e.target.checked });
+      console.log(editMember);
       return;
     }
+
     setEditMember({ ...editMember, [field]: e.target.value });
   };
 
@@ -297,6 +302,7 @@ export const usePhoneRegistration = () => {
         phone: "",
         role: "",
         enable_sms: false,
+        language: "English",
       });
       setAddingMember(false);
       queryClient.invalidateQueries({ queryKey: ["memberList"] });
@@ -320,6 +326,7 @@ export const usePhoneRegistration = () => {
         project_id: activeProject?.project_id,
         responsibilities: "",
         skills: "",
+
         active: true,
       };
 
