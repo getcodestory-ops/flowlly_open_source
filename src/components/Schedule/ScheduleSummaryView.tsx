@@ -148,7 +148,7 @@ function ScheduleSummaryView() {
       </Modal>
       <GridItem colSpan={6}>
         <Flex direction="column">
-          <Text fontWeight={"bold"}>Today's Schedule</Text>
+          <Text fontWeight={"bold"}>Today`&#39;`s Schedule</Text>
 
           <Flex justifyContent={"right"}></Flex>
           {isLoading && (
