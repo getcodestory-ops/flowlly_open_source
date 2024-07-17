@@ -10,8 +10,6 @@ import { AiOutlineAlert } from "react-icons/ai";
 import { useStore } from "@/utils/store";
 import { BiSolidCircle } from "react-icons/bi";
 import ActivityEditView from "./ActivityEditView";
-import { Task } from "gantt-task-react";
-import AddActivityChildren from "./AddActivityChildren/AddActivityChildren";
 import { activityEntityToTask } from "@/utils/activityEntityToTask";
 import { getActivityContingencyPlan } from "@/api/activity_routes";
 import {
@@ -21,6 +19,7 @@ import {
 } from "@tanstack/react-query";
 import UpdateActivityModal from "./UpdateActivityModal";
 import { ActivityEntity } from "@/types/activities";
+import EditScheduleThroughNotes from "./EditScheduleThroughNote/EditScheduleThroughNote";
 import { useDeleteActivity } from "@/utils/useDeleteActivity";
 
 function ActivitiesDetailPage() {
@@ -29,14 +28,11 @@ function ActivitiesDetailPage() {
   const {
     session,
     taskToView,
-    setRightPanelView,
     activeProject,
     taskDetailsView,
     setTaskDetailsView,
     userActivities,
     members,
-    scheduleDate,
-    setTaskToView,
   } = useStore((state) => ({
     session: state.session,
     taskToView: state.taskToView,
@@ -56,7 +52,6 @@ function ActivitiesDetailPage() {
     contingency_plan: string;
   };
 
-  const queryClient = useQueryClient();
   const [editOpen, setEditOpen] = useState<boolean>(false);
   const [modifyTask, setModifyTask] = useState<ActivityEntity>();
   const [editTask, setEditTask] = useState<boolean>(false);
@@ -95,10 +90,6 @@ function ActivitiesDetailPage() {
     }
   }, [contingencyPlans]);
 
-  // useEffect(() => {
-  //   console.log("taskToView", taskToView);
-  // }, [taskToView]);
-
   useEffect(() => {
     if (userActivities) {
       if (userActivities.length > 0) {
@@ -132,26 +123,6 @@ function ActivitiesDetailPage() {
       }
     }
   }, [userActivities]);
-
-  // useEffect(() => {
-  //   console.log("change in date");
-  //   console.log("taskToView", taskToView);
-  //   console.log("userActivities", userActivities);
-  //   const updateTaskToView = userActivities.filter(
-  //     (task) => task.id === taskToView.id
-  //   )[0];
-  //   setTaskToView(updateTaskToView);
-  //   console.log("updateTaskToView", updateTaskToView);
-  //   console.log("taskToView2", taskToView);
-  // }, [scheduleDate]);
-
-  // useEffect(() => {
-  //   tasks.forEach((task) => {
-  //     if (task.id === taskToView.id) {
-  //       setModifyTask(task);
-  //     }
-  //   });
-  // }, [tasks, taskToView]);
 
   const actionsCard = () => {
     let elements = []; // Initialize an empty array
@@ -268,8 +239,11 @@ function ActivitiesDetailPage() {
           >
             {taskToView && taskToView.description
               ? taskToView.description
-              : "This task has no description"}
+              : "This task has no description.."}
           </Text>
+        </Flex>
+        <Flex direction={"column"} mt={"4"}>
+          <EditScheduleThroughNotes activityName={taskToView.name} />
         </Flex>
         {/* <Flex direction={"column"} mt={"4"}>
           <Text as={"i"} mr={"2"}>
@@ -503,7 +477,6 @@ function ActivitiesDetailPage() {
           w={"full"}
           px={"8"}
           py={"2"}
-          // bg={"brand.gray"}
           rounded={"lg"}
           bg={"brand.background"}
         >
@@ -530,13 +503,7 @@ function ActivitiesDetailPage() {
                 border={"1px"}
                 borderColor={"brand.dark"}
               >
-                <Flex
-                  // borderBottom={`${taskView === "details" ? "4px" : "2px"}`}
-                  // borderBottomColor={`${
-                  //   taskView === "details" ? "brand.accent" : "brand.light"
-                  // }`}
-                  alignItems={"center"}
-                >
+                <Flex alignItems={"center"}>
                   <Icon as={MdInfoOutline} mr={"2"} />
                   <Text>Task Details</Text>
                 </Flex>
@@ -554,14 +521,7 @@ function ActivitiesDetailPage() {
                   border={"1px"}
                   borderColor={"brand.dark"}
                 >
-                  <Flex
-                    // borderBottom={`${taskView === "history" ? "4px" : "2px"}`}
-                    // borderBottomColor={`${
-                    //   taskView === "history" ? "brand.accent" : "brand.light"
-                    // }`}
-
-                    alignItems={"center"}
-                  >
+                  <Flex alignItems={"center"}>
                     <Icon as={MdHistoryToggleOff} mr={"2"} />
                     <Text>Task History</Text>
                   </Flex>
@@ -580,14 +540,7 @@ function ActivitiesDetailPage() {
                   border={"1px"}
                   borderColor={"brand.dark"}
                 >
-                  <Flex
-                    // borderBottom={`${taskView === "impact" ? "4px" : "2px"}`}
-                    // borderBottomColor={`${
-                    //   taskView === "impact" ? "brand.accent" : "brand.light"
-                    // }`}
-
-                    alignItems={"center"}
-                  >
+                  <Flex alignItems={"center"}>
                     <Icon as={AiOutlineAlert} mr={"2"} />
                     <Text>Delay Impact</Text>
                   </Flex>

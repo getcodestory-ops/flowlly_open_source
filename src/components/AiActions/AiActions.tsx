@@ -181,7 +181,7 @@ function AiActions() {
   };
 
   return (
-    <>
+    <Flex w="full" h="full">
       {AiActionsView === "open" && <ChatComponent />}
       {AiActionsView === "close" && (
         <Flex
@@ -347,7 +347,7 @@ function AiActions() {
             </Grid> */}
         </Grid>
       )}
-    </>
+    </Flex>
   );
 }
 

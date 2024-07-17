@@ -47,6 +47,25 @@ export const getScheduleSummary = async (
   return response.data;
 };
 
+export const updateScheduleViaNotes = async (
+  session: Session,
+  projectId: string,
+  notes: string
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/schedule/update/notes/${projectId}`;
+  const response = await axios.put(
+    url,
+    { notes: notes },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
 export const getTaskStatus = async (
   session: Session,
   currentTaskId: string
@@ -108,6 +127,22 @@ export const getScheduleRevisions = async (
 ) => {
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/schedule/revisions/${projectId}/${impactDate}`;
   const response = await axios.get(url, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+  return response.data;
+};
+
+export const getScheduleRevisionsById = async (
+  session: Session,
+  projectId: string,
+  ids: string[]
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/schedule/revisionsId/${projectId}`;
+  const response = await axios.get(url, {
+    params: { listIds: ids },
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${session.access_token}`,

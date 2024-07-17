@@ -40,6 +40,11 @@ export const usePhoneRegistration = () => {
       return;
     }
     // console.log("field", field, e.target.value);
+    if (field === "phone") {
+      setNewMember({ ...newMember, [field]: e });
+      return;
+    }
+
     setNewMember({ ...newMember, [field]: e.target.value });
   };
 
@@ -56,6 +61,10 @@ export const usePhoneRegistration = () => {
 
       setEditMember({ ...editMember, [field]: e.target.checked });
       console.log(editMember);
+      return;
+    }
+    if (field === "phone") {
+      setEditMember({ ...editMember, [field]: e });
       return;
     }
 

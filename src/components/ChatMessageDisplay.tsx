@@ -130,11 +130,12 @@
 // export default ChatMessageDisplay;
 
 import React, { useRef, useEffect, useState } from "react";
-import { Box, Flex, Icon, Spinner } from "@chakra-ui/react";
+import { Box, Flex, Icon, Mark, Spinner } from "@chakra-ui/react";
 import ContextDisplay from "./ContextDisplay";
 import { useStore } from "@/utils/store";
 import { IoChatboxEllipses } from "react-icons/io5";
 import { ChatHistory } from "@/types/chat";
+import MarkdownRenderer from "./Markdown/MarkdownRenderer";
 
 function ChatMessageDisplay() {
   const chatBoxRef = useRef<HTMLDivElement>(null);
@@ -234,18 +235,10 @@ function ChatMessageDisplay() {
                         </div>
                       ) : (
                         <Box fontSize="lg" lineHeight="1.5">
-                          {message?.body.assistant
-                            ?.split("/n")
-                            .map((line: string, i: number) => (
-                              <Box
-                                key={i}
-                                mb="2"
-                                whiteSpace="pre-line"
-                                fontSize={"sm"}
-                              >
-                                {line}
-                              </Box>
-                            ))}
+                          <MarkdownRenderer
+                            content={message.body.assistant}
+                            collapse={true}
+                          />
                         </Box>
                       )}
                     </Box>

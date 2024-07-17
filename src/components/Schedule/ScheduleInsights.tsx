@@ -217,10 +217,11 @@ function ScheduleInsights() {
         return (
           <Box
             key={activity.id}
+            borderRadius={"lg"}
             // my={4}
             borderBottom={"2px"}
             borderBottomColor={"brand.background"}
-            py={4}
+            p={4}
             pl={"1"}
             minW={"22vw"}
             bg={activity.id === taskToView?.id ? "yellow.100" : "white"}
@@ -277,35 +278,37 @@ function ScheduleInsights() {
                 ))}
               </Flex>
             </Flex>
-            <Flex mr={5} paddingLeft={6}>
-              <Text as={"i"} fontSize={"12px"}>
-                Status:
-              </Text>
-              <Text fontSize={"12px"} ml={1} fontWeight={"semibold"}>
-                {activity.status}
-              </Text>
-            </Flex>
-
-            <Flex direction={"row"} paddingLeft={6} mt={"2"}>
-              <Flex mr={5} direction={"column"}>
-                <Text as={"i"} fontSize={"10px"}>
-                  Start Date:
+            <Flex>
+              <Flex mr={5} paddingLeft={6}>
+                <Text as={"i"} fontSize={"12px"}>
+                  Status:
                 </Text>
                 <Text fontSize={"12px"} ml={1} fontWeight={"semibold"}>
-                  {activity.start}
+                  {activity.status}
                 </Text>
               </Flex>
-              <Flex direction={"column"}>
-                <Text as={"i"} fontSize={"10px"}>
-                  End Date:
-                </Text>
-                <Text fontSize={"12px"} ml={1} fontWeight={"semibold"}>
-                  {activity.end}
-                </Text>
+
+              <Flex direction={"row"} paddingLeft={6}>
+                <Flex mr={5}>
+                  <Text as={"i"} fontSize={"10px"}>
+                    Start Date:
+                  </Text>
+                  <Text fontSize={"12px"} ml={1} fontWeight={"semibold"}>
+                    {activity.start}
+                  </Text>
+                </Flex>
+                <Flex>
+                  <Text as={"i"} fontSize={"10px"}>
+                    End Date:
+                  </Text>
+                  <Text fontSize={"12px"} ml={1} fontWeight={"semibold"}>
+                    {activity.end}
+                  </Text>
+                </Flex>
               </Flex>
             </Flex>
             <Flex direction={"row"} paddingLeft={6} mt={2}>
-              <Tooltip
+              {/* <Tooltip
                 label="Task Details"
                 aria-label="A tooltip"
                 bg={"white"}
@@ -325,7 +328,7 @@ function ScheduleInsights() {
                 >
                   <Icon as={MdInfoOutline} />
                 </Button>
-              </Tooltip>
+              </Tooltip> */}
               {/* {activity.history !== null ? (
                 <Tooltip
                   label="Task History"

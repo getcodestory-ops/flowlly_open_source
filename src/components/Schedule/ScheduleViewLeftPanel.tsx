@@ -35,6 +35,7 @@ import RightPanel from "@/components/Schedule/ScheduleViewRightPanel";
 import { PiKanban } from "react-icons/pi";
 import { LuGanttChart } from "react-icons/lu";
 import { FaTasks } from "react-icons/fa";
+import { GrView } from "react-icons/gr";
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { IoChevronDownOutline } from "react-icons/io5";
 import ScheduleGanttInterface from "./ScheduleGanttInterface";
@@ -135,33 +136,16 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   };
 
   return (
-    <>
-      <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
+    <Flex w="full" height="full">
       <Grid
-        h={"full"}
         templateRows="repeat(10, 1fr)"
         templateColumns="repeat(2, 1fr)"
         gap={4}
+        p="4"
       >
+        <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
         <GridItem rowSpan={1} colSpan={1}>
           <Flex borderColor={"brand2.mid"}>
-            <Flex
-              alignItems={"center"}
-              mr={"4"}
-              border={"1px"}
-              px={"2"}
-              py={"0.5"}
-              rounded={"lg"}
-              bg={`${view === "summary" ? "brand2.accent" : "white"}`}
-              _hover={{ bg: "brand.dark", color: "white" }}
-              cursor={"pointer"}
-              onClick={() => setView("summary")}
-            >
-              <Icon as={FaTasks} />
-              <Text ml={"2"} fontSize={"xs"} fontWeight={"bold"}>
-                At a glance
-              </Text>
-            </Flex>
             <Flex
               alignItems={"center"}
               mr={"4"}
@@ -179,23 +163,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
                 List
               </Text>
             </Flex>
-            {/* <Flex alignItems={"center"} mr={"4"}>
-              <Button
-                p={"0.5"}
-                size={"sm"}
-                border={"2px"}
-                rounded={"lg"}
-                mr={"0.5"}
-                bg={`${view === "tasks" ? "brand2.accent" : "white"}`}
-                _hover={{ bg: "brand.dark", color: "white" }}
-                onClick={() => setView("tasks")}
-              >
-                <Icon as={FaTasks} />
-              </Button>
-              <Text fontSize={"xs"} fontWeight={"bold"}>
-                List
-              </Text>
-            </Flex> */}
+
             <Flex
               alignItems={"center"}
               mr={"4"}
@@ -214,33 +182,12 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
                 Gantt
               </Text>
             </Flex>
-            {/* <Flex
-              alignItems={"center"}
-              mr={"4"}
-              border={"1px"}
-              px={"2"}
-              py={"0.5"}
-              rounded={"lg"}
-              bg={`${view === "kanban" ? "brand2.accent" : "white"}`}
-              _hover={{ bg: "brand.dark", color: "white" }}
-              cursor={"pointer"}
-              onClick={() => setView("kanban")}
-            >
-              <Icon as={PiKanban} boxSize={"5"} />
-
-              <Text fontSize={"xs"} fontWeight={"bold"} ml={"2"}>
-                Kanban
-              </Text>
-            </Flex> */}
           </Flex>
         </GridItem>
         <GridItem rowSpan={1} colSpan={1}>
           <Flex justifyContent={"space-between"}>
             <Flex mr={"6"}>
               <CustomDatePicker />
-              {/* <Flex ml={"4"}>
-                <ProbabilitySelector />
-              </Flex> */}
             </Flex>
             <Flex>
               <CsvUploadIcon />
@@ -279,34 +226,6 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
               </GridItem>
             </Grid>
           )}
-          {view === "summary" && (
-            <Grid h="full" templateColumns="repeat(1, 1fr)" gap={4}>
-              <GridItem
-                colSpan={1}
-                overflow={"auto"}
-                className="custom-scrollbar"
-              >
-                <Flex w={"full"}>
-                  <ScheduleSummaryView />
-                </Flex>
-              </GridItem>
-            </Grid>
-          )}
-          {/* {userActivities && userActivities.length > 0 && view === "kanban" && (
-            <Grid h="full" templateColumns="repeat(1, 1fr)" gap={4}>
-              <GridItem
-                colSpan={1}
-                overflow={"auto"}
-                className="custom-scrollbar"
-              >
-                <Flex w={"full"}>
-                  <DndProvider backend={HTML5Backend}>
-                    <KanbanBoard />
-                  </DndProvider>
-                </Flex>
-              </GridItem>
-            </Grid>
-          )} */}
 
           {view === "tasks" && (
             <Grid h="full" templateColumns="repeat(3, 1fr)" gap={4}>
@@ -332,7 +251,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
           )}
         </GridItem>
       </Grid>
-    </>
+    </Flex>
   );
 }
 

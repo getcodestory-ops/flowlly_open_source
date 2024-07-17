@@ -34,7 +34,8 @@ import ProjectChats from "@/components/ProjectChats/ProjectChats";
 import { usePhoneRegistration } from "@/components/PhoneRegistration/usePhoneRegistration";
 import ConsentModal from "@/components/PhoneRegistration/ConsentModal";
 import { useDisclosure } from "@chakra-ui/react";
-import { on } from "events";
+import PhoneInput, { isPossiblePhoneNumber } from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 
 function ProjectSetup({ settingView }: { settingView?: string }) {
   const { activeProject, appView, setAppView } = useStore((state) => ({
@@ -146,9 +147,9 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                     />
                   </Td>
                   <Td>
-                    <input
-                      type="text"
-                      placeholder="Phone Number"
+                    <PhoneInput
+                      international
+                      defaultCountry="US"
                       value={newMember.phone}
                       onChange={(e) => handleInputChange(e, "phone")}
                     />
@@ -271,9 +272,9 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                         />
                       </Td>
                       <Td>
-                        <input
-                          type="text"
-                          placeholder="Phone Number"
+                        <PhoneInput
+                          international
+                          defaultCountry="US"
                           value={editMember.phone}
                           onChange={(e) => handleMemberEdit(e, "phone")}
                         />

@@ -31,7 +31,7 @@ import AssistantChatSelector from "../Schedule/AssistantChatSelector";
 
 function ChatComponent() {
   const [chatInput, setChatInput] = useState("");
-  const [chatType, setChatType] = useState<string>("search");
+  const [chatType, setChatType] = useState<string>("schedule");
   const {
     AiActionsView,
     setAiActionsView,
@@ -143,226 +143,99 @@ function ChatComponent() {
   return (
     <Grid
       h={"full"}
-      templateRows="repeat(8, 1fr)"
       bgGradient="linear(brand.gray 5%, white 30% )"
       rounded={"2xl"}
       boxShadow={"lg"}
       visibility={AiActionsView === "open" ? "visible" : "hidden"}
     >
-      {!folderList || folderList.length === 0 ? (
-        <>
-          <GridItem rowSpan={1} pt={"4"} px={"4"}>
+      <GridItem rowSpan={1} px={"4"} pt={"4"}>
+        <Flex direction={"column"}>
+          {/* <Flex direction={"column"} h={"full"} justifyContent={"flex-end"}> */}
+          <Flex alignItems={"center"} mb={"2"} justifyContent={"space-between"}>
             <Flex fontSize={"22px"} fontWeight={"bold"}>
               AI Actions
             </Flex>
-          </GridItem>
-          <GridItem rowSpan={7}>
-            <Flex justifyContent={"center"} px={"10"}>
-              <Text fontSize={"28"} fontWeight={"bold"} color={"gray.400"}>
-                To start using AI Actions, go to project settings, add a new
-                folder and upload a document.
-              </Text>
-            </Flex>
-          </GridItem>
-        </>
-      ) : (
-        <>
-          <GridItem rowSpan={1} px={"4"} pt={"4"}>
-            <Flex direction={"column"} h={"full"}>
-              {/* <Flex direction={"column"} h={"full"} justifyContent={"flex-end"}> */}
-              <Flex
-                alignItems={"center"}
-                mb={"2"}
-                justifyContent={"space-between"}
+            <Flex alignItems={"center"}>
+              <Flex mr={"4"}>
+                {chatType == "search" && <SearchMemory />}
+                {chatType == "schedule" && <AssistantChatSelector />}
+              </Flex>
+
+              <Tooltip
+                label="Collapse"
+                aria-label="A tooltip"
+                bg="white"
+                color="brand.dark"
               >
-                <Flex fontSize={"22px"} fontWeight={"bold"}>
-                  AI Actions
-                </Flex>
-                <Flex alignItems={"center"}>
-                  <Flex mr={"4"}>
-                    {chatType == "search" && <SearchMemory />}
-                    {chatType == "schedule" && <AssistantChatSelector />}
-                  </Flex>
-                  {/* <Button
-                    bg={"white"}
-                    boxShadow={"md"}
-                    p={0}
-                    size={"sm"}
-                    onClick={() => setAiActionsView("expand")}
-                    rounded={"full"}
-                    _hover={{ bg: "brand.dark", color: "white" }}
-                  >
-                    <Icon
-                      as={TbLayoutSidebarRightExpand}
-                      fontWeight={"light"}
-                    />
-                  </Button> */}
-                  <Tooltip
-                    label="Collapse"
-                    aria-label="A tooltip"
-                    bg="white"
-                    color="brand.dark"
-                  >
-                    <Button
-                      bg={"white"}
-                      boxShadow={"md"}
-                      p={0}
-                      size={"sm"}
-                      onClick={() => setAiActionsView("close")}
-                      rounded={"full"}
-                      _hover={{ bg: "brand.dark", color: "white" }}
-                    >
-                      <Icon
-                        as={TbLayoutSidebarLeftExpand}
-                        fontWeight={"light"}
-                      />
-                    </Button>
-                  </Tooltip>
-                </Flex>
-              </Flex>
-              <Flex mt={"6"}>
-                <Select
-                  mr={"2"}
-                  size={"sm"}
+                <Button
                   bg={"white"}
-                  border={"white"}
-                  rounded={"lg"}
-                  value={chatType}
-                  onChange={(e) => setChatType(e.target.value)}
-                  className="custom-selector"
+                  boxShadow={"md"}
+                  p={0}
+                  size={"sm"}
+                  onClick={() => setAiActionsView("close")}
+                  rounded={"full"}
+                  _hover={{ bg: "brand.dark", color: "white" }}
                 >
-                  <option value="search">Search</option>
-                  {/* <option value="analyze">Analyze Document</option>
-                  <option value="email">Draft Email</option> */}
-                  <option value="schedule">Daily updates</option>
-                </Select>
-                {folderList && folderList.length > 0 && (
-                  <Select
-                    size={"sm"}
-                    bg={"white"}
-                    border={"white"}
-                    rounded={"lg"}
-                    placeholder={"Folder or File"}
-                    className="custom-selector"
-                    value={selectedContext?.id}
-                    onChange={(e) =>
-                      setSelectedContext(
-                        folderList.filter(
-                          (folder) => folder.id === e.target.value
-                        )?.[0] ?? null
-                      )
-                    }
-                  >
-                    {folderList.map((folder) => (
-                      <option key={folder.id} value={folder.id}>
-                        {folder.name}
-                      </option>
-                    ))}
-                  </Select>
-                )}
-              </Flex>
+                  <Icon as={TbLayoutSidebarLeftExpand} fontWeight={"light"} />
+                </Button>
+              </Tooltip>
             </Flex>
-          </GridItem>
-
-          <GridItem
-            rowSpan={7}
-            display="flex"
-            flexDirection="column"
-            // justifyContent="end"
-            px={"2"}
-          >
-            {chatType === "schedule" && (
-              <Grid templateRows="repeat(10, 1fr)" gap={"2"} h={"full"}>
-                <AssistantChatInterface />
-              </Grid>
-            )}
-            {chatType === "search" && (
-              <Grid templateRows="repeat(10, 1fr)" gap={"2"} h={"full"}>
-                <GridItem rowSpan={9} px={"4"} overflowY={"auto"}>
-                  <ChatMessageDisplay />
-                </GridItem>
-                <GridItem
-                  rowSpan={1}
-                  px={"4"}
-                  display="flex"
-                  flexDirection="column"
-                  justifyContent="flex-end"
-                  py={"2"}
-                >
-                  <Flex
-                    justifyContent={"center"}
-                    bg={"brand.background"}
-                    p={"2"}
-                    rounded={"xl"}
-                  >
-                    <Input
-                      size={"sm"}
-                      border={"white"}
-                      rounded={"lg"}
-                      placeholder={"Flowlly help me ..."}
-                      className="custom-selector"
-                      value={chatInput}
-                      onChange={(e) => setChatInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          handleChatSubmit();
-                        }
-                      }}
-                    ></Input>
-
-                    <Button
-                      rounded={"full"}
-                      bg={"white"}
-                      _hover={{ bg: "brand.dark", color: "white" }}
-                      onClick={() => {
-                        handleChatSubmit();
-                      }}
-                    >
-                      <Icon as={BsSend} fontSize={"22px"}></Icon>
-                    </Button>
-                  </Flex>
-                </GridItem>
-              </Grid>
-            )}
-            {/* <Flex w="inherit" overflow={"contain"}>
-              <ChatMessageDisplay />
-            </Flex>
-            <Flex
-              alignItems={"center"}
-              bg={"brand.background"}
-              p={"2"}
-              rounded={"xl"}
+          </Flex>
+          <Flex mt={"6"}>
+            <Select
+              mr={"2"}
+              size={"sm"}
+              bg={"white"}
+              border={"white"}
+              rounded={"lg"}
+              value={chatType}
+              onChange={(e) => setChatType(e.target.value)}
+              className="custom-selector"
             >
-              <Input
+              <option value="search">Search</option>
+              <option value="schedule">Ai agent</option>
+            </Select>
+            {folderList && folderList.length > 0 && (
+              <Select
                 size={"sm"}
+                bg={"white"}
                 border={"white"}
                 rounded={"lg"}
-                placeholder={"Flowlly help me ..."}
+                placeholder={"Folder or File"}
                 className="custom-selector"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleChatSubmit();
-                  }
-                }}
-              ></Input>
-
-              <Button
-                rounded={"full"}
-                bg={"white"}
-                _hover={{ bg: "brand.dark", color: "white" }}
-                onClick={() => {
-                  handleChatSubmit();
-                }}
+                value={selectedContext?.id}
+                onChange={(e) =>
+                  setSelectedContext(
+                    folderList.filter(
+                      (folder) => folder.id === e.target.value
+                    )?.[0] ?? null
+                  )
+                }
               >
-                <Icon as={BsSend} fontSize={"22px"}></Icon>
-              </Button>
-            </Flex> */}
-          </GridItem>
-        </>
-      )}
+                {folderList.map((folder) => (
+                  <option key={folder.id} value={folder.id}>
+                    {folder.name}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Flex>
+        </Flex>
+      </GridItem>
+
+      <GridItem
+        rowSpan={7}
+        flexDirection="column"
+        px={"2"}
+        overflow={"auto"}
+        className="custom-scrollbar"
+      >
+        {chatType === "schedule" && (
+          <Grid templateRows="repeat(10, 1fr)" gap={"2"}>
+            <AssistantChatInterface />
+          </Grid>
+        )}
+      </GridItem>
     </Grid>
   );
 }

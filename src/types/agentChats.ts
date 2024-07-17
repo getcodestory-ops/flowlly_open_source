@@ -1,3 +1,11 @@
+interface UpdateScheduleContent {
+  name?: string;
+  reason?: string;
+  impact_on_start_date?: number;
+  impact_on_end_date?: number;
+  revision_id?: string;
+}
+
 export interface AgentChat {
   id: string;
   created_at: string;
@@ -5,7 +13,7 @@ export interface AgentChat {
   sender: string;
   receiver: string;
   message: {
-    content?: string | null;
+    content?: string | null | UpdateScheduleContent[];
     name?: string;
     role: string;
     function_call?: {

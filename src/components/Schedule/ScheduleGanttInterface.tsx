@@ -1,5 +1,10 @@
 import React, { useState, useEffect, use } from "react";
-import { Task, ViewMode, Gantt } from "gantt-task-react";
+// import { Task, ViewMode } from "gantt-task-react";
+import { Gantt } from "@/components/Schedule/gantt-task-react-main/src/components/gantt/gantt";
+import {
+  Task,
+  ViewMode,
+} from "@/components/Schedule/gantt-task-react-main/src/types/public-types";
 import { ViewSwitcher } from "./view-switcher";
 import {
   Icon,
@@ -275,7 +280,7 @@ const ScheduleGanttInterface = () => {
   }, [modifyTask]);
 
   return (
-    <Flex direction={"column"}>
+    <Flex direction={"column"} w="full">
       <Flex direction={"column"}>
         <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
         {modifyTask && (
@@ -324,9 +329,9 @@ const ScheduleGanttInterface = () => {
         className="Wrapper"
         flexDir={"column"}
         backgroundColor="white"
-        // overflow={"auto"}
-        // overscrollBehaviorY={"contain"}
-        // w={"50%"}
+        overflow={"hidden"}
+        overscrollBehaviorY={"contain"}
+        w={"full"}
       >
         <Gantt
           tasks={tasks}
@@ -338,7 +343,7 @@ const ScheduleGanttInterface = () => {
           onClick={handleClick}
           onSelect={handleSelect}
           onExpanderClick={handleExpanderClick}
-          listCellWidth={isChecked ? "150px" : ""}
+          listCellWidth={isChecked ? "120px" : ""}
           rowHeight={fontSize * 3}
           columnWidth={columnWidth}
           fontSize={`${fontSize}px`}

@@ -13,6 +13,7 @@ import { useStore } from "@/utils/store";
 import { BsSend } from "react-icons/bs";
 import { IoChatboxEllipses } from "react-icons/io5";
 import UpdateTaskForm from "../ChatInput/Forms/UpdateTaskForm";
+import MarkdownRenderer from "../Markdown/MarkdownRenderer";
 
 function AssistantChatInterface() {
   const lastMessageRef = useRef<HTMLDivElement>(null);
@@ -41,13 +42,8 @@ function AssistantChatInterface() {
 
   return (
     <>
-      <GridItem rowSpan={9} px={"4"} overflowY={"auto"}>
-        <Box
-          overflowY="auto"
-          width="full"
-          // height="60vh"
-          fontSize={"xs"}
-        >
+      <GridItem rowSpan={9} px={"4"}>
+        <Box overflowY="auto" width="full" fontSize={"xs"}>
           {chats &&
             chats.length > 0 &&
             chats?.map((history, index) => (
@@ -73,7 +69,16 @@ function AssistantChatInterface() {
                         {history.sender}
                       </Text>
                     </Flex>
-                    <Text whiteSpace="pre-wrap">{history.message.content}</Text>
+                    {history.message.content &&
+                      typeof history.message.content === "string" && (
+                        <MarkdownRenderer
+                          content={history.message.content}
+                          collapse={true}
+                        />
+                        // <Text whiteSpace="pre-wrap">
+                        //   {history.message.content}
+                        // </Text>
+                      )}
                   </Flex>
                 </Flex>
                 <Flex px="8">

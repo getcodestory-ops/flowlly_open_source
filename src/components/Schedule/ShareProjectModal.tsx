@@ -97,7 +97,7 @@ function ShareProjectModal({
     <Modal isOpen={isShareOpen} onClose={shareModalClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Share Project</ModalHeader>
+        <ModalHeader>Share Project - {activeProject?.name}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Box mb={4}>

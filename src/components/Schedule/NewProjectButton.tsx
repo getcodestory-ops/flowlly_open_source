@@ -10,17 +10,16 @@ const CreateNewProjectButton = () => {
   const onOpen = () => setIsOpen(true);
 
   return (
-    <Flex alignItems="center" width="full">
+    <Flex alignItems="center">
       <Button
         bg={"brand.dark"}
         leftIcon={<Icon as={FiPlus} />}
         _hover={{ bg: "brand.accent", color: "brand.dark" }}
         onClick={onOpen}
-        size={"xs"}
         color={"white"}
-        py={"4"}
+        size="sm"
       >
-        Project
+        Add New Project
       </Button>
       <AddNewProjectModal isOpen={isOpen} onClose={onClose} />
     </Flex>

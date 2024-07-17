@@ -25,10 +25,10 @@ function UpdateViewer({
         as={"u"}
         onClick={() => setPreviewCardContent(null)}
       >
-        Home
+        Back
       </Text>
 
-      <Flex
+      {/* <Flex
         w="full"
         mb={"2"}
         p={"2"}
@@ -76,7 +76,7 @@ function UpdateViewer({
         onClick={() => setUpdateType("IMPACT")}
       >
         Impact
-      </Flex>
+      </Flex> */}
     </Flex>
   );
 }

@@ -23,6 +23,7 @@ import { FaBackward } from "react-icons/fa";
 import { getActivities, deleteActivity } from "@/api/activity_routes";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import { ActivityEntity } from "@/types/activities";
+
 function TopBar() {
   const toast = useToast();
 

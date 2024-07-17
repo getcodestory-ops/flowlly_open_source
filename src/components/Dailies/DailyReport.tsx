@@ -118,7 +118,7 @@ const DailyReports = () => {
         // alignItems={"center"}
         direction={"column"}
       >
-        <Flex alignItems={"center"} justifyContent={"space-between"}>
+        <Flex alignItems={"center"} justifyContent={"space-between"} gap="4">
           <Flex alignItems={"center"}>
             {update?.type === "email" && (
               <Icon as={MdOutlineEmail} mr={"0.5"} boxSize={"3"} />
@@ -140,7 +140,11 @@ const DailyReports = () => {
             </Text>
           </Flex>
           <Flex>
-            <Flex fontSize={"10px"}>
+            <Flex
+              fontSize={"10px"}
+              alignItems={"center"}
+              justifyContent={"space-between"}
+            >
               {convertDateToTimeText(update.created_at)}
             </Flex>
             <Icon as={MdFiberNew} color={"purple.400"} boxSize={"5"} ml={"2"} />
@@ -167,35 +171,13 @@ const DailyReports = () => {
   };
 
   return (
-    <Grid templateColumns="repeat(6, 1fr)" gap={4} w="full" h={"full"}>
+    <Grid templateColumns="repeat(6, 1fr)" gap={4} w="full">
       <GridItem
-        colSpan={1}
+        colSpan={6}
         h="full"
         overflowY={"auto"}
         className="custom-scrollbar"
       >
-        <Flex
-          alignItems={"center"}
-          mb={"2"}
-          justifyContent={"space-between"}
-          ml={"2"}
-        >
-          <Text fontSize={"14px"} fontWeight={"bold"}>
-            Updates
-          </Text>
-          <Flex>
-            <ProcessHistoryButton />
-            {/* <ConfigureDailyUpdate /> */}
-          </Flex>
-        </Flex>
-        <Flex alignItems={"center"} mb={"2"} ml={"2"}>
-          <Text fontSize={"12px"} fontWeight={"bold"}>
-            Filter:
-          </Text>
-          <Select size={"xs"} w={"90px"} className="custom-selector">
-            <option value="daily">Daily</option>
-          </Select>
-        </Flex>
         {previewCardContent && (
           <Flex direction={"column"}>
             <UpdateViewer
@@ -205,103 +187,183 @@ const DailyReports = () => {
             />
           </Flex>
         )}
+
         {!previewCardContent && (
-          <Flex direction={"column"}>
-            {updates &&
-              updates.length > 0 &&
-              updates.map((update) => (
-                <Flex
-                  key={update.id}
-                  onClick={() => setPreviewCardContent(update)}
-                  onContextMenu={(e: React.MouseEvent<HTMLDivElement>) =>
-                    handleRightClick(e, update)
-                  }
-                  w="full"
-                  mb={"2"}
-                  p={"2"}
-                  background={"brand.background"}
-                  dropShadow={"lg"}
-                  cursor={"pointer"}
-                  display="flex"
-                  flexDirection="column"
-                  borderRadius={"md"}
-                  _hover={{ bg: "brand.dark", color: "white" }}
-                >
-                  {previewCard(update)}
-                </Flex>
-              ))}
+          <Flex gap="2" flexDir={"column"}>
+            <Flex
+              alignItems={"center"}
+              mb={"2"}
+              justifyContent={"space-between"}
+              ml={"2"}
+            >
+              <Text fontSize={"14px"} fontWeight={"bold"}>
+                My Notes
+              </Text>
+            </Flex>
+            <Flex gap="2">
+              {updates &&
+                updates.length > 0 &&
+                updates.map((update) => (
+                  <Flex
+                    key={update.id}
+                    onClick={() => {
+                      setPreviewCardContent(update);
+                      setUpdateType("ACTION");
+                    }}
+                    onContextMenu={(e: React.MouseEvent<HTMLDivElement>) =>
+                      handleRightClick(e, update)
+                    }
+                    mb={"2"}
+                    p={"4"}
+                    background={"brand.background"}
+                    dropShadow={"lg"}
+                    cursor={"pointer"}
+                    display="flex"
+                    flexDirection="column"
+                    borderRadius={"md"}
+                    _hover={{ bg: "brand.dark", color: "white" }}
+                  >
+                    {previewCard(update)}
+                  </Flex>
+                ))}
+            </Flex>
+            <Flex
+              alignItems={"center"}
+              mb={"2"}
+              justifyContent={"space-between"}
+              ml={"2"}
+            >
+              <Text fontSize={"14px"} fontWeight={"bold"}>
+                Daily Reports
+              </Text>
+            </Flex>
+            <Flex gap="2">
+              {updates &&
+                updates.length > 0 &&
+                updates.map((update) => (
+                  <Flex
+                    key={update.id}
+                    onClick={() => {
+                      setPreviewCardContent(update);
+                      setUpdateType("ACTION");
+                    }}
+                    onContextMenu={(e: React.MouseEvent<HTMLDivElement>) =>
+                      handleRightClick(e, update)
+                    }
+                    mb={"2"}
+                    p={"4"}
+                    background={"brand.background"}
+                    dropShadow={"lg"}
+                    cursor={"pointer"}
+                    display="flex"
+                    flexDirection="column"
+                    borderRadius={"md"}
+                    _hover={{ bg: "brand.dark", color: "white" }}
+                  >
+                    {previewCard(update)}
+                  </Flex>
+                ))}
+            </Flex>
             {contextMenu.isVisible && (
               <ContextMenu x={contextMenu.x} y={contextMenu.y} />
             )}
+
+            <Flex flexDir={"column"}>
+              <Flex
+                alignItems={"center"}
+                mb={"2"}
+                justifyContent={"space-between"}
+                ml={"2"}
+              >
+                <Text fontSize={"14px"} fontWeight={"bold"}>
+                  Schedule Impact Analysis
+                </Text>
+              </Flex>
+              <Flex gap="2">
+                {updates &&
+                  updates.length > 0 &&
+                  updates.map((update) => (
+                    <Flex
+                      key={update.id}
+                      onClick={() => {
+                        setPreviewCardContent(update);
+                        setUpdateType("IMPACT");
+                      }}
+                      onContextMenu={(e: React.MouseEvent<HTMLDivElement>) =>
+                        handleRightClick(e, update)
+                      }
+                      mb={"2"}
+                      p={"4"}
+                      background={"brand.background"}
+                      dropShadow={"lg"}
+                      cursor={"pointer"}
+                      display="flex"
+                      flexDirection="column"
+                      borderRadius={"md"}
+                      _hover={{ bg: "brand.dark", color: "white" }}
+                    >
+                      {previewCard(update)}
+                    </Flex>
+                  ))}
+              </Flex>
+              {contextMenu.isVisible && (
+                <ContextMenu x={contextMenu.x} y={contextMenu.y} />
+              )}
+            </Flex>
           </Flex>
         )}
       </GridItem>
-      <GridItem rounded={"lg"} colSpan={5} h={"full"} overflowY={"scroll"}>
-        <Flex h={"full"}>
-          {!previewCardContent && (
-            <Flex
-              w={"full"}
-              h={"full"}
-              py={"2"}
-              px={"4"}
-              bg={"brand.background"}
-              rounded={"lg"}
-              overflowY={"auto"}
-              className="custom-scrollbar"
-              direction={"column"}
-              justifyContent={"center"}
-              alignItems={"center"}
-            >
-              <Text fontSize={"36px"} color={"gray.300"} fontWeight={"black"}>
-                Select Daily from the list
-              </Text>
-            </Flex>
-          )}
-          {previewCardContent && previewCardContent.update && (
-            <Flex
-              w={"full"}
-              h={"full"}
-              py={"2"}
-              px={"4"}
-              bg={"brand.background"}
-              rounded={"lg"}
-              overflowY={"auto"}
-              className="custom-scrollbar"
-              direction={"column"}
-            >
-              {updateType === "ACTION" && (
-                <Flex>
-                  {previewCardContent.document_access_id && (
-                    <EditorBlock
-                      id={previewCardContent.document_access_id}
-                      previewCardContent={previewCardContent}
-                    />
-                  )}
+      {previewCardContent && previewCardContent.update && (
+        <GridItem
+          rounded={"lg"}
+          colSpan={6}
+          h="full"
+          overflowY={"scroll"}
+          className="custom-scrollbar"
+        >
+          <Flex
+            w={"full"}
+            py={"2"}
+            px={"4"}
+            bg={"brand.background"}
+            rounded={"lg"}
+            overflowY={"auto"}
+            className="custom-scrollbar"
+            direction={"column"}
+            h="full"
+          >
+            {updateType === "ACTION" && (
+              <Flex h="80vh" overflow={"scroll"}>
+                {previewCardContent.document_access_id && (
+                  <EditorBlock
+                    id={previewCardContent.document_access_id}
+                    previewCardContent={previewCardContent}
+                  />
+                )}
+              </Flex>
+            )}
+            {updateType === "MESSAGE" && (
+              <Flex>
+                <DailyMessageQueue />
+              </Flex>
+            )}
+            {updateType === "IMPACT" && (
+              <Flex flexDirection="column" h="80vh" overflow={"scroll"}>
+                <Flex justifyContent={"right"}>
+                  <Button
+                    size="xs"
+                    colorScheme="yellow"
+                    onClick={() => syncImpact(previewCardContent.created_at)}
+                  >
+                    Sync to procore
+                  </Button>
                 </Flex>
-              )}
-              {updateType === "MESSAGE" && (
-                <Flex>
-                  <DailyMessageQueue />
-                </Flex>
-              )}
-              {updateType === "IMPACT" && (
-                <Flex flexDirection="column">
-                  <Flex justifyContent={"right"}>
-                    <Button
-                      size="xs"
-                      colorScheme="yellow"
-                      onClick={() => syncImpact(previewCardContent.created_at)}
-                    >
-                      Sync to procore
-                    </Button>
-                  </Flex>
-                  <ScheduleImpact impactDate={previewCardContent.created_at} />
-                </Flex>
-              )}
-            </Flex>
-          )}
-        </Flex>
-      </GridItem>
+                <ScheduleImpact impactDate={previewCardContent.created_at} />
+              </Flex>
+            )}
+          </Flex>
+        </GridItem>
+      )}
     </Grid>
   );
 };

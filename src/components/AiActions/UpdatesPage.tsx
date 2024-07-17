@@ -173,7 +173,7 @@ const UpdatesPage = () => {
       >
         <Flex alignItems={"center"} mb={"2"} justifyContent={"space-between"}>
           <Text fontSize={"14px"} fontWeight={"bold"}>
-            Updates
+            Reports
           </Text>
           <Flex gap="2">
             <ProcessHistoryButton />

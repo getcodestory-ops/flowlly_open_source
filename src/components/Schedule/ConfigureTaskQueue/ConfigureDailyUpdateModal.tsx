@@ -181,7 +181,7 @@ function UpdateDailyUpdateScheduleModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="4xl">
+    <Modal isOpen={isOpen} onClose={onClose} size="full">
       <ModalOverlay />
       <ModalContent bg="brand.background">
         <ModalHeader>Configure Assistant Activities</ModalHeader>

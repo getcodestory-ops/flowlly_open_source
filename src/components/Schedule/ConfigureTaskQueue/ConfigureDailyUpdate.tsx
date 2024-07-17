@@ -1,4 +1,4 @@
-import { Button, useToast, Tooltip, Icon, Text } from "@chakra-ui/react";
+import { Button, useToast, Tooltip, Icon, Text, Flex } from "@chakra-ui/react";
 import { processMessageHistory } from "@/api/analysis_routes";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
@@ -15,6 +15,7 @@ const ConfigureDailyUpdate = () => {
   const activeProject = useStore((state) => state.activeProject);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [smallScreen] = useMediaQuery("(max-width: 1441px)");
+  const [hovered, setHovered] = useState<boolean>(false);
 
   const onClose = () => setIsOpen(false);
 
@@ -23,8 +24,8 @@ const ConfigureDailyUpdate = () => {
       {isOpen && (
         <UpdateDailyUpdateScheduleModal isOpen={isOpen} onClose={onClose} />
       )}
-      {smallScreen ? (
-        <>
+      {!hovered ? (
+        <Flex>
           <Tooltip
             label="Configure Daily Update Schedule"
             aria-label="A tooltip"
@@ -35,7 +36,6 @@ const ConfigureDailyUpdate = () => {
               mx={"2"}
               size={"sm"}
               bg={"none"}
-              color={"white"}
               className="custom-shadow"
               rounded={"md"}
               _hover={{ bg: "brand.gray", color: "brand.dark" }}
@@ -52,9 +52,9 @@ const ConfigureDailyUpdate = () => {
               />
             </Button>
           </Tooltip>
-        </>
+        </Flex>
       ) : (
-        <>
+        <Flex>
           <Button
             mx={"2"}
             size={"sm"}
@@ -83,7 +83,7 @@ const ConfigureDailyUpdate = () => {
               Configuration
             </Text>
           </Button>
-        </>
+        </Flex>
       )}
     </>
   );
