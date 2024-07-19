@@ -14,4 +14,5 @@ export interface MemberEntity {
   phone_registration?: { phone_number: string }[];
   enable_sms?: boolean;
   owner?: string[];
+  language?: string;
 }

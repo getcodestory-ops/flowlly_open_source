@@ -11,6 +11,7 @@ import {
   ModalCloseButton,
   Input,
   Textarea,
+  Flex,
 } from "@chakra-ui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
@@ -28,6 +29,9 @@ function AddNewProjectModal({ isOpen, onClose }: AddNewProjectModalProps) {
 
   const [projectName, setProjectName] = useState<string>("");
   const [projectDescription, setProjectDescription] = useState<string>("");
+  const [projectNumber, setProjectNumber] = useState<string>("");
+  const [address, setAddress] = useState<string>("");
+
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -35,6 +39,8 @@ function AddNewProjectModal({ isOpen, onClose }: AddNewProjectModalProps) {
       createProject(session!, {
         name: projectName,
         description: projectDescription,
+        project_number: projectNumber,
+        address: address,
       }),
     onError: (error) => {
       console.log(error);
@@ -46,7 +52,7 @@ function AddNewProjectModal({ isOpen, onClose }: AddNewProjectModalProps) {
   });
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size={"4xl"}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Create New Project</ModalHeader>
@@ -61,11 +67,25 @@ function AddNewProjectModal({ isOpen, onClose }: AddNewProjectModalProps) {
               }}
             />
           </Box>
-          <Textarea
-            placeholder="Project Description"
-            value={projectDescription}
-            onChange={(e) => setProjectDescription(e.target.value)}
-          />
+          <Flex mb="4" gap="4" flexDirection={"column"}>
+            <Textarea
+              placeholder="Project Description"
+              value={projectDescription}
+              onChange={(e) => setProjectDescription(e.target.value)}
+            />
+            <Input
+              placeholder="Project Number"
+              value={projectNumber}
+              onChange={(e) => {
+                setProjectNumber(e.target.value);
+              }}
+            />
+            <Textarea
+              placeholder="Address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+          </Flex>
         </ModalBody>
 
         <ModalFooter>

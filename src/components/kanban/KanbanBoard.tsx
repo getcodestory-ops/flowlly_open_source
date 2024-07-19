@@ -3,12 +3,7 @@ import { Flex } from "@chakra-ui/react";
 import KanbanLane from "./KanbanLane";
 import { useStore } from "@/utils/store";
 import { ActivityEntity } from "@/types/activities";
-import { GiConsoleController } from "react-icons/gi";
-import { useScheduleUpdate } from "../Agent/useAgentFunctions";
 import UpdateActivityModal from "../Schedule/UpdateActivityModal";
-import { Task } from "gantt-task-react";
-import { activityEntityToTask } from "@/utils/activityEntityToTask";
-import { getStartEndDateForProject, initTasks } from "../Schedule/helper";
 
 function KanbanBoard() {
   const { userActivities, setUserActivities, taskToView } = useStore(
@@ -38,7 +33,7 @@ function KanbanBoard() {
     setEditOpen(true);
   };
   useEffect(() => {
-    if (modifyTask && modifyTask.id !== taskToView.id) {
+    if (modifyTask && modifyTask.id !== taskToView?.id) {
       setEditOpen(true);
     }
   }, [modifyTask]);

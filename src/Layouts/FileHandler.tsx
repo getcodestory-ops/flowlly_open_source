@@ -263,7 +263,7 @@ function FileHandler() {
   return (
     <Flex direction={"column"} maxHeight="75vh" width="full">
       <Stack direction="row" justify="space-between" mb={2}>
-        <Stack justify="start" width="full">
+        <Stack justify="start">
           <Button
             color="brand.dark"
             size="sm"
@@ -315,7 +315,7 @@ function FileHandler() {
         ))} */}
         <Accordion
           allowToggle
-          width="100%"
+          width="50%"
           overflowY="auto"
           mt="2"
           color="brand.dark"

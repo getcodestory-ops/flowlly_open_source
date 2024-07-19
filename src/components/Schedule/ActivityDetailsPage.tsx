@@ -10,8 +10,6 @@ import { AiOutlineAlert } from "react-icons/ai";
 import { useStore } from "@/utils/store";
 import { BiSolidCircle } from "react-icons/bi";
 import ActivityEditView from "./ActivityEditView";
-import { Task } from "gantt-task-react";
-import AddActivityChildren from "./AddActivityChildren/AddActivityChildren";
 import { activityEntityToTask } from "@/utils/activityEntityToTask";
 import { getActivityContingencyPlan } from "@/api/activity_routes";
 import {
@@ -21,6 +19,7 @@ import {
 } from "@tanstack/react-query";
 import UpdateActivityModal from "./UpdateActivityModal";
 import { ActivityEntity } from "@/types/activities";
+import EditScheduleThroughNotes from "./EditScheduleThroughNote/EditScheduleThroughNote";
 import { useDeleteActivity } from "@/utils/useDeleteActivity";
 
 function ActivitiesDetailPage() {
@@ -29,7 +28,6 @@ function ActivitiesDetailPage() {
   const {
     session,
     taskToView,
-    setRightPanelView,
     activeProject,
     taskDetailsView,
     setTaskDetailsView,
@@ -44,6 +42,8 @@ function ActivitiesDetailPage() {
     setTaskDetailsView: state.setTaskDetailsView,
     userActivities: state.userActivities,
     members: state.members,
+    scheduleDate: state.scheduleDate,
+    setTaskToView: state.setTaskToView,
   }));
 
   type Action = {
@@ -52,7 +52,6 @@ function ActivitiesDetailPage() {
     contingency_plan: string;
   };
 
-  const queryClient = useQueryClient();
   const [editOpen, setEditOpen] = useState<boolean>(false);
   const [modifyTask, setModifyTask] = useState<ActivityEntity>();
   const [editTask, setEditTask] = useState<boolean>(false);
@@ -124,14 +123,6 @@ function ActivitiesDetailPage() {
       }
     }
   }, [userActivities]);
-
-  // useEffect(() => {
-  //   tasks.forEach((task) => {
-  //     if (task.id === taskToView.id) {
-  //       setModifyTask(task);
-  //     }
-  //   });
-  // }, [tasks, taskToView]);
 
   const actionsCard = () => {
     let elements = []; // Initialize an empty array
@@ -210,12 +201,12 @@ function ActivitiesDetailPage() {
             </Text>
             <Text fontWeight={"semibold"}>{taskToView.duration} days</Text>
           </Flex>
-          <Flex direction={"column"}>
+          {/* <Flex direction={"column"}>
             <Text as={"i"} mr={"2"}>
               Progress:
             </Text>
             <Text fontWeight={"semibold"}>{taskToView.progress}%</Text>
-          </Flex>
+          </Flex> */}
         </Flex>
         <Flex direction={"column"} mt={"4"}>
           <Text as={"i"} mr={"2"}>
@@ -248,10 +239,13 @@ function ActivitiesDetailPage() {
           >
             {taskToView && taskToView.description
               ? taskToView.description
-              : "This task has no description"}
+              : "This task has no description.."}
           </Text>
         </Flex>
         <Flex direction={"column"} mt={"4"}>
+          <EditScheduleThroughNotes activityName={taskToView.name} />
+        </Flex>
+        {/* <Flex direction={"column"} mt={"4"}>
           <Text as={"i"} mr={"2"}>
             Task Estimated Cost:
           </Text>
@@ -261,8 +255,8 @@ function ActivitiesDetailPage() {
           >
             {taskToView.cost ? taskToView.cost : "No estimated cost assigned"}
           </Text>
-        </Flex>
-        <Flex direction={"column"} mt={"4"}>
+        </Flex> */}
+        {/* <Flex direction={"column"} mt={"4"}>
           <Text as={"i"} mr={"2"}>
             Task Resources:
           </Text>
@@ -280,7 +274,7 @@ function ActivitiesDetailPage() {
               ? taskToView.resources
               : "No resources assigned"}
           </Text>
-        </Flex>
+        </Flex> */}
       </Flex>
     );
   };
@@ -348,40 +342,42 @@ function ActivitiesDetailPage() {
                   pt={"4"}
                   pl={"10"}
                 >
-                  <Flex>
-                    <Text as={"i"} mr={"2"}>
-                      Date:
-                    </Text>
-                    <Text as={"b"}>{history.created_at}</Text>
-                  </Flex>
-                  <Flex>
-                    <Text as={"i"} mr={"2"}>
-                      Action Type:
-                    </Text>
-                    <Text as={"b"}>Daily Update</Text>
-                  </Flex>
-                  <Flex>
-                    <Text as={"i"} mr={"2"}>
-                      Impact on Schedule:
-                    </Text>
-                    <Text as={"b"}>{history.severity}</Text>
-                  </Flex>
+                  {history && (
+                    <>
+                      <Flex>
+                        <Text as={"i"} mr={"2"}>
+                          Date:
+                        </Text>
+                        <Text as={"b"}>{history.created_at ?? ""}</Text>
+                      </Flex>
+                      <Flex>
+                        <Text as={"i"} mr={"2"}>
+                          Action Type:
+                        </Text>
+                        <Text as={"b"}>Daily Update</Text>
+                      </Flex>
+                      <Flex>
+                        <Text as={"i"} mr={"2"}>
+                          Impact on Schedule:
+                        </Text>
+                        <Text as={"b"}>{history.severity ?? ""}</Text>
+                      </Flex>
 
-                  <Flex>
-                    <Text as={"i"} mr={"2"}>
-                      Sent By:
-                    </Text>
-                    <Text as={"b"}>XXXXX</Text>
-                  </Flex>
-                  <Flex direction={"column"}>
-                    <Text as={"i"} mr={"2"}>
-                      Message:
-                    </Text>
-                    <Text as={"b"}>
-                      {history.message ?? history.impact ?? ""}
-                    </Text>
-                  </Flex>
-                  {/* <Flex>
+                      <Flex>
+                        <Text as={"i"} mr={"2"}>
+                          Sent By:
+                        </Text>
+                        <Text as={"b"}>XXXXX</Text>
+                      </Flex>
+                      <Flex direction={"column"}>
+                        <Text as={"i"} mr={"2"}>
+                          Message:
+                        </Text>
+                        <Text as={"b"}>
+                          {history.message ?? history.impact ?? ""}
+                        </Text>
+                      </Flex>
+                      {/* <Flex>
                     <Text fontSize={"sm"} as={"i"} mr={"2"}>
                       Analysis:
                     </Text>
@@ -389,6 +385,8 @@ function ActivitiesDetailPage() {
                       {history.impact}
                     </Text>
                   </Flex> */}
+                    </>
+                  )}
                 </Flex>
               ))}
         </Flex>
@@ -472,14 +470,13 @@ function ActivitiesDetailPage() {
 
   return (
     <>
-      {userActivities && userActivities.length > 0 && (
+      {userActivities && userActivities.length > 0 && taskToView && (
         <Flex
           direction={"column"}
           // justifyContent={"center"}
           w={"full"}
           px={"8"}
           py={"2"}
-          // bg={"brand.gray"}
           rounded={"lg"}
           bg={"brand.background"}
         >
@@ -506,18 +503,12 @@ function ActivitiesDetailPage() {
                 border={"1px"}
                 borderColor={"brand.dark"}
               >
-                <Flex
-                  // borderBottom={`${taskView === "details" ? "4px" : "2px"}`}
-                  // borderBottomColor={`${
-                  //   taskView === "details" ? "brand.accent" : "brand.light"
-                  // }`}
-                  alignItems={"center"}
-                >
+                <Flex alignItems={"center"}>
                   <Icon as={MdInfoOutline} mr={"2"} />
                   <Text>Task Details</Text>
                 </Flex>
               </Button>
-              {taskToView.history && (
+              {taskToView?.history && (
                 <Button
                   bg={`${
                     taskDetailsView === "history" ? "brand.accent" : "white"
@@ -530,21 +521,14 @@ function ActivitiesDetailPage() {
                   border={"1px"}
                   borderColor={"brand.dark"}
                 >
-                  <Flex
-                    // borderBottom={`${taskView === "history" ? "4px" : "2px"}`}
-                    // borderBottomColor={`${
-                    //   taskView === "history" ? "brand.accent" : "brand.light"
-                    // }`}
-
-                    alignItems={"center"}
-                  >
+                  <Flex alignItems={"center"}>
                     <Icon as={MdHistoryToggleOff} mr={"2"} />
                     <Text>Task History</Text>
                   </Flex>
                 </Button>
               )}
-              {taskToView.status === "Delayed" ||
-              taskToView.status === "At Risk" ? (
+              {taskToView?.status === "Delayed" ||
+              taskToView?.status === "At Risk" ? (
                 <Button
                   bg={`${
                     taskDetailsView === "impact" ? "brand.accent" : "white"
@@ -556,14 +540,7 @@ function ActivitiesDetailPage() {
                   border={"1px"}
                   borderColor={"brand.dark"}
                 >
-                  <Flex
-                    // borderBottom={`${taskView === "impact" ? "4px" : "2px"}`}
-                    // borderBottomColor={`${
-                    //   taskView === "impact" ? "brand.accent" : "brand.light"
-                    // }`}
-
-                    alignItems={"center"}
-                  >
+                  <Flex alignItems={"center"}>
                     <Icon as={AiOutlineAlert} mr={"2"} />
                     <Text>Delay Impact</Text>
                   </Flex>
@@ -588,12 +565,14 @@ function ActivitiesDetailPage() {
                           ? "#FFA841"
                           : taskToView.status === "In Progress"
                           ? "#5F55EE"
+                          : taskToView.status === "Completed"
+                          ? "#26d995"
                           : "brand2.dark"
                       }
                       boxSize={"3"}
                     />
                     <Text as={"b"} fontSize={"14px"}>
-                      {taskToView.name}
+                      {taskToView?.name}
                     </Text>
                   </Flex>
 
@@ -620,7 +599,7 @@ function ActivitiesDetailPage() {
                           <Text> Delete Task</Text>
                         </Button>
                       </Flex>
-                      <AddActivityChildren />
+                      {/* <AddActivityChildren /> */}
                     </>
                   )}
                 </Flex>
@@ -637,6 +616,8 @@ function ActivitiesDetailPage() {
                         ? "#FFA841"
                         : taskToView.status === "In Progress"
                         ? "#5F55EE"
+                        : taskToView.status === "Completed"
+                        ? "#26d995"
                         : "brand2.dark"
                     }
                   >

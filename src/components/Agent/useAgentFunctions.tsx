@@ -17,8 +17,7 @@ export function useScheduleUpdate() {
   const selectedContext = useStore((state) => state.selectedContext);
   const activeProject = useStore((state) => state.activeProject);
   const activeChatEntity = useStore((state) => state.activeChatEntity);
-  const [agentResponse, setAgentResponse] =
-    useState<AgentInterfaceProps | null>(null);
+
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
   const onOpen = () => setIsOpen(true);
@@ -83,7 +82,7 @@ export function useScheduleUpdate() {
   });
 
   const { data: chats, isLoading } = useQuery({
-    queryKey: ["agentChats", session, activeChatEntity.id],
+    queryKey: ["agentChats", session, activeChatEntity?.id],
     queryFn: () => {
       if (!session) {
         toast({
@@ -121,29 +120,18 @@ export function useScheduleUpdate() {
 
       return getAgentChats(session, activeChatEntity.id);
     },
-    enabled: !!session && !!activeChatEntity.id,
+    enabled: !!session && !!activeChatEntity?.id,
   });
 
-  useEffect(() => {
-    if (!chats) return;
-    setAgentResponse({ agent_history: chats.map((chat) => chat.message) });
-  }, [chats]);
-
   const handleChatSubmit = async () => {
-    console.log("submitted");
-    if (
-      !session ||
-      !selectedContext ||
-      !activeProject ||
-      !activeChatEntity.id ||
-      !selectedContext.id
-    )
+    if (!session || !activeProject || !activeChatEntity.id) {
       return;
+    }
 
     mutate({
       session,
       agentTask: chatInput,
-      brainId: selectedContext.id,
+      brainId: selectedContext?.id ?? null,
       chatId: activeChatEntity.id,
       projectId: activeProject?.project_id,
     });

@@ -1,20 +1,15 @@
-import React, { useEffect } from "react";
-import { Flex, Image } from "@chakra-ui/react";
-import flowlly_logo from "../../img/logo_full.svg";
+import React, { useEffect, useState } from "react";
+import { Flex } from "@chakra-ui/react";
 import UserPanel from "../UserPanel";
 import { useStore } from "@/utils/store";
-import {
-  useQuery,
-  useQueryClient,
-  keepPreviousData,
-} from "@tanstack/react-query";
-import { getProjects, deleteProject } from "@/api/projectRoutes";
-import { getActivities, deleteActivity } from "@/api/activity_routes";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { getProjects } from "@/api/projectRoutes";
+import { getActivities } from "@/api/activity_routes";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
-import CreateNewProjectButton from "../Schedule/NewProjectButton";
-import NotificationButton from "../Notifications/NotificationButton";
 
-function NewTopBar() {
+import MenuDrawer from "../Menu/Menu";
+
+function SideMenuPanel() {
   const {
     session,
     setUserProjects,
@@ -23,6 +18,7 @@ function NewTopBar() {
     scheduleDate,
     scheduleProbability,
     setUserActivities,
+    setTaskToView,
   } = useStore((state) => ({
     session: state.session,
     setUserProjects: state.setUserProjects,
@@ -31,23 +27,31 @@ function NewTopBar() {
     scheduleDate: state.scheduleDate,
     scheduleProbability: state.scheduleProbability,
     setUserActivities: state.setUserActivities,
+    setTaskToView: state.setTaskToView,
   }));
 
-  const queryClient = useQueryClient();
-  // const [projects, setProjects] = useState<ProjectEntity[]>([]);
+  const [hovered, setHovered] = useState<boolean>(false);
 
-  const { data: projects, isLoading } = useQuery({
+  const { data: projects } = useQuery({
     queryKey: ["initialProjectList", session],
     queryFn: () => getProjects(session!, "SCHEDULE"),
     enabled: !!session?.access_token,
     placeholderData: keepPreviousData,
   });
 
-  const {
-    data: activities,
-    isLoading: isLoadingActivities,
-    isSuccess,
-  } = useQuery({
+  const defaultTask = {
+    id: "SCHEDULE",
+    project_id: "parent",
+    name: "No active task",
+    start: "01/02/23",
+    end: "01/02/23",
+    progress: 0,
+    activity_critical: {
+      critical_path: false,
+    },
+  };
+
+  const { data: activities, isSuccess } = useQuery({
     queryKey: [
       "activityList",
       session,
@@ -92,6 +96,10 @@ function NewTopBar() {
   }, [activities, isSuccess, setUserActivities]);
 
   useEffect(() => {
+    setTaskToView(defaultTask);
+  }, [activeProject]);
+
+  useEffect(() => {
     if (projects && projects.length > 0) {
       setUserProjects(projects);
       setActiveProject(projects[0]);
@@ -100,28 +108,31 @@ function NewTopBar() {
 
   return (
     <Flex
-      px={4}
-      py={"3"}
+      px={1}
+      py={"4"}
+      flexDirection={"column"}
       alignItems={"center"}
-      bg={"brand.gray"}
-      h={"full"}
       justifyContent={"space-between"}
+      bg={"brand.light"}
+      h={"full"}
       rounded={"xl"}
       className="custom-shadow"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      <Image
-        src="https://upthcaewktgrqjieqiya.supabase.co/storage/v1/object/public/images/logo_full.svg"
-        alt="logo"
-        width="150px"
-      />
-
-      <Flex alignItems={"center"} gap="2">
-        <CreateNewProjectButton />
+      <Flex alignItems={"center"} flexDirection={"column"}>
+        <MenuDrawer hovered={hovered} />
+      </Flex>
+      <Flex
+        flexDir="column"
+        justifyContent={"center"}
+        alignItems={"center"}
+        gap="4"
+      >
         <UserPanel />
-        <NotificationButton />
       </Flex>
     </Flex>
   );
 }
 
-export default NewTopBar;
+export default SideMenuPanel;

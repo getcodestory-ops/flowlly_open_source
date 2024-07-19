@@ -23,6 +23,7 @@ import { FaBackward } from "react-icons/fa";
 import { getActivities, deleteActivity } from "@/api/activity_routes";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import { ActivityEntity } from "@/types/activities";
+
 function TopBar() {
   const toast = useToast();
 
@@ -182,7 +183,7 @@ function TopBar() {
       <Menu>
         <MenuButton fontSize={"xl"} fontWeight={"black"}>
           <Flex alignItems={"center"}>
-            {taskToView.name ?? "No Activity"}
+            {taskToView?.name ?? "No Activity"}
             <Flex ml={"2"}>
               <IoChevronDownOutline />
             </Flex>

@@ -1,144 +1,174 @@
 import React, { useState, useEffect } from "react";
-import { Flex, Button, Link, Icon } from "@chakra-ui/react";
+import { Flex, Button, Icon, Tooltip, Text } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
-import { useRouter } from "next/router";
-import { FaTasks } from "react-icons/fa";
-import { CgNotes } from "react-icons/cg";
 import { TbReportAnalytics } from "react-icons/tb";
-import { GoDependabot } from "react-icons/go";
-import { BsStars } from "react-icons/bs";
-import { FaFolderOpen } from "react-icons/fa";
+import { FaRegBuilding } from "react-icons/fa";
 import { LuContact2 } from "react-icons/lu";
-import { GrConnect } from "react-icons/gr";
+import { IoChatboxEllipsesOutline } from "react-icons/io5";
+import { AiOutlineCalendar } from "react-icons/ai";
+import { BiPlug } from "react-icons/bi";
+import UpdateDailyUpdateScheduleModal from "../Schedule/ConfigureTaskQueue/ConfigureDailyUpdateModal";
+import { MdOutlineSchedule } from "react-icons/md";
+import { VscGraph } from "react-icons/vsc";
+import MenuButton, { MenuButtonProps } from "./MenuButton";
 
-function NEW_Menu() {
+function MenuDrawer({ hovered }: { hovered?: boolean }) {
   const { setAppView, appView } = useStore((state) => ({
     setAppView: state.setAppView,
     appView: state.appView,
   }));
-  const [settingsView, setSettingsView] = useState<string>("folders");
 
-  const router = useRouter();
-  const { projectId } = router.query;
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const onClose = () => setIsOpen(false);
+
+  const MenuItems: MenuButtonProps[] = [
+    {
+      label: "Projects",
+      icon: FaRegBuilding,
+      fnKey: "project",
+      onClickFn: setAppView,
+      expanded: hovered,
+      activeKey: appView,
+    },
+    {
+      label: "Dashboard",
+      icon: VscGraph,
+      fnKey: "dashboard",
+      onClickFn: setAppView,
+      expanded: hovered,
+      activeKey: appView,
+    },
+    {
+      label: "Schedule",
+      icon: AiOutlineCalendar,
+      fnKey: "schedule",
+      onClickFn: setAppView,
+      expanded: hovered,
+      activeKey: appView,
+    },
+    {
+      label: "Agent",
+      icon: IoChatboxEllipsesOutline,
+      fnKey: "agent",
+      onClickFn: setAppView,
+      expanded: hovered,
+      activeKey: appView,
+    },
+    {
+      label: "Documents",
+      icon: TbReportAnalytics,
+      fnKey: "updates",
+      onClickFn: setAppView,
+      expanded: hovered,
+      activeKey: appView,
+    },
+    {
+      label: "Members",
+      icon: LuContact2,
+      fnKey: "members",
+      onClickFn: setAppView,
+      expanded: hovered,
+      activeKey: appView,
+    },
+    {
+      label: "Integration",
+      icon: BiPlug,
+      fnKey: "integrations",
+      onClickFn: setAppView,
+      expanded: hovered,
+      activeKey: appView,
+    },
+  ];
 
   useEffect(() => {
-    if (router.pathname === "/dashboard") {
-      setAppView("dashboard");
+    if (appView === "projectSettings") {
+      setIsOpen(true);
     }
-    if (router.pathname === "/brain") {
-      setAppView("search");
-    }
-    if (router.pathname === "/schedule") {
-      setAppView("schedule");
-    }
-    if (router.pathname === "/meeting") {
-      setAppView("meeting");
-    }
-    if (router.pathname === "/documents") {
-      setAppView("documentEditor");
-    }
-    if (router.pathname === "/projects") {
-      setAppView("projectSettings");
-    }
-  }, [router.pathname, setAppView]);
+  }, [appView]);
 
   return (
-    <Flex px={"2"}>
-      <Flex
-        justifyContent={"space-between"}
-        // px={"4"}
-        bg={"white"}
-        py={"1"}
-        rounded={"lg"}
-        fontWeight={"semibold"}
-        fontSize={"14px"}
-        className="custom-shadow"
-      >
-        <Button
-          mx={"2"}
-          size={"sm"}
-          bg={appView === "updates" ? "brand.accent" : "white"}
-          onClick={() => {
-            setAppView("updates");
-          }}
-          _hover={{ bg: "brand.dark", color: "white" }}
-        >
-          <Icon as={BsStars} mr={"2"}></Icon>
-          Updates
-        </Button>
-        <Button
-          mx={"2"}
-          size={"sm"}
-          bg={appView === "schedule" ? "brand.accent" : "white"}
-          onClick={() => {
-            setAppView("schedule");
-          }}
-          _hover={{ bg: "brand.dark", color: "white" }}
-        >
-          <Icon as={FaTasks} mr={"2"}></Icon>
-          Tasks
-        </Button>
-        <Button
-          mx={"2"}
-          size={"sm"}
-          bg={appView === "notes" ? "brand.accent" : "white"}
-          onClick={() => {
-            setAppView("notes");
-          }}
-          _hover={{ bg: "brand.dark", color: "white" }}
-        >
-          <Icon as={CgNotes} mr={"2"}></Icon>
-          Notes
-        </Button>
-        <Button
-          mx={"2"}
-          size={"sm"}
-          bg={appView === "folders" ? "brand.accent" : "white"}
-          onClick={() => {
-            setAppView("folders");
-          }}
-          _hover={{ bg: "brand.dark", color: "white" }}
-        >
-          <Icon as={FaFolderOpen} mr={"2"}></Icon>
-          Documents
-        </Button>
-        <Button
-          mx={"2"}
-          size={"sm"}
-          bg={appView === "members" ? "brand.accent" : "white"}
-          onClick={() => {
-            setAppView("members");
-          }}
-          _hover={{ bg: "brand.dark", color: "white" }}
-        >
-          <Icon as={LuContact2} mr={"2"}></Icon>
-          Members
-        </Button>
-        <Button
-          mx={"2"}
-          size={"sm"}
-          bg={appView === "integrations" ? "brand.accent" : "white"}
-          onClick={() => {
-            setAppView("integrations");
-          }}
-          _hover={{ bg: "brand.dark", color: "white" }}
-        >
-          <Icon as={GrConnect} mr={"2"}></Icon>
-          Integration
-        </Button>
+    <Flex
+      justifyContent={"space-between"}
+      alignContent={"start"}
+      alignItems={"start"}
+      flexDirection="column"
+      py={"1"}
+      rounded={"lg"}
+      fontWeight={"semibold"}
+      fontSize={"14px"}
+      gap="8"
+    >
+      {isOpen && (
+        <UpdateDailyUpdateScheduleModal isOpen={isOpen} onClose={onClose} />
+      )}
 
-        {/* <Button
-        size={"sm"}
-        bg={"white"}
-        onClick={() => {
-          setAppView("scenarios");
-        }}
-      >
-        Scenarios
-      </Button> */}
-      </Flex>
+      {MenuItems.map((item) => (
+        <MenuButton
+          key={item.label}
+          label={item.label}
+          icon={item.icon}
+          fnKey={item.fnKey}
+          onClickFn={item.onClickFn}
+          expanded={item.expanded}
+          activeKey={item.activeKey}
+        />
+      ))}
+
+      {!hovered ? (
+        <Flex flexDir="column" gap="8">
+          <Tooltip
+            label="Configure Daily Update Schedule"
+            aria-label="A tooltip"
+            bg="white"
+            color="brand.dark"
+          >
+            <Button
+              mx={"2"}
+              size={"sm"}
+              bg={"none"}
+              rounded={"md"}
+              _hover={{ bg: "brand.gray", color: "brand.dark" }}
+              cursor={"pointer"}
+              onClick={() => setIsOpen(true)}
+            >
+              <Icon
+                as={MdOutlineSchedule}
+                boxSize={"4"}
+                _hover={{
+                  transform: "rotate(360deg)",
+                  transition: "transform 0.5s ease-in-out",
+                }}
+              />
+            </Button>
+          </Tooltip>
+        </Flex>
+      ) : (
+        <Flex flexDir="column" gap="8">
+          <Button
+            mx={"2"}
+            size={"sm"}
+            bg={"none"}
+            rounded={"md"}
+            _hover={{ bg: "brand.gray", color: "brand.dark" }}
+            cursor={"pointer"}
+            onClick={() => setIsOpen(true)}
+          >
+            <Icon
+              as={MdOutlineSchedule}
+              boxSize={"4"}
+              _hover={{
+                transform: "rotate(360deg)",
+                transition: "transform 0.5s ease-in-out",
+              }}
+            />
+            <Text fontSize={"12px"} ml={"2"} fontWeight={"medium"}>
+              Configuration
+            </Text>
+          </Button>
+        </Flex>
+      )}
     </Flex>
   );
 }
 
-export default NEW_Menu;
+export default MenuDrawer;

@@ -29,15 +29,39 @@ function ResetPassword() {
 
   useEffect(() => {
     async function loginCheck() {
+      const { token_hash } = router.query;
+
+      if (!token_hash) {
+        router.replace("/");
+      }
+      if (typeof token_hash === "string") {
+        const { data: userSession, error } = await supabase.auth.verifyOtp({
+          type: "email",
+          token_hash,
+        });
+
+        const { user, session } = userSession;
+
+        if (session) {
+          const { access_token, refresh_token } = session;
+          await supabase.auth.setSession({ access_token, refresh_token });
+          setSessionToken(session);
+        }
+      }
+
       const { data } = await supabase.auth.getSession();
 
-      if (!data?.session?.user) {
+      if (!token_hash && !data?.session?.user) {
         router.replace("/");
       } else {
         setSessionToken(data?.session);
       }
     }
-    loginCheck();
+    // loginCheck();
+    const { token_hash } = router.query;
+    if (token_hash) {
+      loginCheck();
+    }
   }, [router]);
 
   useEffect(() => {
@@ -100,7 +124,7 @@ function ResetPassword() {
     });
 
     setIsLoading(false);
-    router.push("/dashboard");
+    router.push("/");
   };
 
   return (

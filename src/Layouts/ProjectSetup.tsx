@@ -32,6 +32,10 @@ import { MdOutlineDeleteOutline } from "react-icons/md";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import ProjectChats from "@/components/ProjectChats/ProjectChats";
 import { usePhoneRegistration } from "@/components/PhoneRegistration/usePhoneRegistration";
+import ConsentModal from "@/components/PhoneRegistration/ConsentModal";
+import { useDisclosure } from "@chakra-ui/react";
+import PhoneInput, { isPossiblePhoneNumber } from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 
 function ProjectSetup({ settingView }: { settingView?: string }) {
   const { activeProject, appView, setAppView } = useStore((state) => ({
@@ -39,6 +43,7 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
     appView: state.appView,
     setAppView: state.setAppView,
   }));
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [settingsView, setSettingsView] = useState<string>("folders");
 
   const {
@@ -89,6 +94,7 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
 
     return (
       <Flex direction={"column"} pt={"4"} overflow={"auto"}>
+        <ConsentModal isOpen={isOpen} onOpen={onOpen} onClose={onClose} />
         <Flex>
           <Button
             size={"xs"}
@@ -110,6 +116,7 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                 <Th>Phone Number</Th>
                 <Th>Enroll IN SMS</Th>
                 <Th>Role</Th>
+                <Th>Language</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -140,9 +147,9 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                     />
                   </Td>
                   <Td>
-                    <input
-                      type="text"
-                      placeholder="Phone Number"
+                    <PhoneInput
+                      international
+                      defaultCountry="US"
                       value={newMember.phone}
                       onChange={(e) => handleInputChange(e, "phone")}
                     />
@@ -151,7 +158,9 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                     <input
                       type="checkbox"
                       checked={newMember.enable_sms}
-                      onChange={(e) => handleInputChange(e, "enable_sms")}
+                      onChange={(e) =>
+                        handleInputChange(e, "enable_sms", onOpen)
+                      }
                     />
                   </Td>
                   <Td>
@@ -160,6 +169,14 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                       placeholder="Role"
                       value={newMember.role}
                       onChange={(e) => handleInputChange(e, "role")}
+                    />
+                  </Td>
+                  <Td>
+                    <input
+                      type="text"
+                      placeholder="Language"
+                      value={newMember.language}
+                      onChange={(e) => handleInputChange(e, "language")}
                     />
                   </Td>
                   <Td>
@@ -201,6 +218,7 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                         )}
                       </Td>
                       <Td>{member.role}</Td>
+                      <Td>{member?.language ?? "English"}</Td>
                       <Td>
                         <Flex>
                           <Flex
@@ -254,9 +272,9 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                         />
                       </Td>
                       <Td>
-                        <input
-                          type="text"
-                          placeholder="Phone Number"
+                        <PhoneInput
+                          international
+                          defaultCountry="US"
                           value={editMember.phone}
                           onChange={(e) => handleMemberEdit(e, "phone")}
                         />
@@ -266,7 +284,9 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                         <input
                           type="checkbox"
                           checked={editMember.enable_sms}
-                          onChange={(e) => handleMemberEdit(e, "enable_sms")}
+                          onChange={(e) =>
+                            handleMemberEdit(e, "enable_sms", onOpen)
+                          }
                         />
                       </Td>
                       <Td>
@@ -275,6 +295,14 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
                           placeholder="Role"
                           value={editMember.role}
                           onChange={(e) => handleMemberEdit(e, "role")}
+                        />
+                      </Td>
+                      <Td>
+                        <input
+                          type="text"
+                          placeholder="Language"
+                          value={newMember.language}
+                          onChange={(e) => handleInputChange(e, "language")}
                         />
                       </Td>
                       <Td>

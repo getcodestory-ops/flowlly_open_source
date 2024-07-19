@@ -1,25 +1,21 @@
-import React, { use, useEffect, useRef, useState } from "react";
-import { Box, Flex, Grid, GridItem } from "@chakra-ui/react";
-import SidePanel from "@/Layouts/SidePanel";
+import React, { useEffect, useRef } from "react";
+import { Flex, Grid, GridItem } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import TopBar from "@/components/TopBar/index";
-import NewTopBar from "@/components/TopBar/TopBar";
-import ProjectInfoDisplay from "@/components/ProjectDashboard/ProjectInfoDisplay";
+import SideMenuPanel from "@/components/TopBar/TopBar";
 import AiActions from "@/components/AiActions/AiActions";
-import ProjectDashboard from "./ProjectDashboard";
 import ScheduleUiView from "@/components/Schedule/ScheduleViewLeftPanel";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import DocumentList from "@/components/DocumentEditor/DocumentList";
 import supabase from "@/utils/supabaseClient";
 import NotesPage from "@/components/Notes/NotesPage";
-import ReportsPage from "@/components/AiActions/ReportsPage";
-import UpdatesPage from "@/components/AiActions/UpdatesPage";
 import ProjectSetup from "./ProjectSetup";
 import checkProjectStatus from "@/utils/checkProjectStatus";
-import { useMediaQuery } from "@chakra-ui/react";
 import Integration from "./Integration";
+import DocumentModule from "@/components/Dailies/DocumentModule";
+import ProjectBoard from "@/components/ProjectDashboard/ProjectDashboard";
+import ProjectInfoDisplay from "@/components/ProjectDashboard/ProjectInfoDisplay";
+import ScheduleSummaryView from "@/components/Schedule/ScheduleSummaryView";
 
 const queryClient = new QueryClient();
 
@@ -30,29 +26,20 @@ export default function MainLayout({
 }) {
   const router = useRouter();
   const path = router.pathname;
-  const [smallScreen] = useMediaQuery("(max-width: 1441px)");
-  //check if router path has /auth/passwordchange
-  //if so, render only the children
 
   const {
     setSessionToken,
-    userProjects,
     appView,
     setAppView,
-    AiActionsView,
     userActivities,
     setProjectStatus,
   } = useStore((state) => ({
     setSessionToken: state.setSession,
-    userProjects: state.userProjects,
     appView: state.appView,
     setAppView: state.setAppView,
-    AiActionsView: state.AiActionsView,
     userActivities: state.userActivities,
     setProjectStatus: state.setProjectStatus,
   }));
-
-  const [settingsView, setSettingsView] = useState<string>("folders");
 
   useEffect(() => {
     // console.log("userActivities", userActivities);
@@ -64,8 +51,6 @@ export default function MainLayout({
   const checkScrolling = (element: HTMLElement) => {
     const vertical = element.scrollHeight > element.clientHeight;
     const horizontal = element.scrollWidth > element.clientWidth;
-    // console.log(`Vertical scrolling needed: ${vertical}`);
-    // console.log(`Horizontal scrolling needed: ${horizontal}`);
   };
 
   useEffect(() => {
@@ -77,7 +62,24 @@ export default function MainLayout({
 
   useEffect(() => {
     async function loginCheck() {
+      console.log(router.query);
+      const { accessToken, refreshToken } = router.query;
+
+      if (accessToken && refreshToken) {
+        if (
+          typeof accessToken === "string" &&
+          typeof refreshToken === "string"
+        ) {
+          console.log("setting session");
+          await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+        }
+      }
+
       const { data } = await supabase.auth.getSession();
+
       if (!data?.session?.user) {
         setAppView("login");
         router.replace("/");
@@ -86,7 +88,7 @@ export default function MainLayout({
         if (path === "/auth/passwordChange") {
           setAppView("changePassword");
         } else {
-          setAppView("updates");
+          setAppView("dashboard");
         }
       }
     }
@@ -99,7 +101,7 @@ export default function MainLayout({
       console.log("path", router.pathname);
       setAppView("changePassword");
     } else {
-      setAppView("updates");
+      setAppView("dashboard");
     }
   }, [router.pathname]);
 
@@ -116,97 +118,77 @@ export default function MainLayout({
       </Head>
       <main>
         <QueryClientProvider client={queryClient}>
-          <Flex
-            w="100vw"
-            h="100vh"
-            // direction={{ base: "column", md: "row" }}
-            overflow="auto"
-            p={smallScreen ? "0" : "18"}
-          >
+          <Flex w="100vw" h="100vh" bg={"#E5E5E5"} overflow="auto">
             {(appView === "login" || appView === "changePassword") && (
               <Flex>{children}</Flex>
             )}
 
             {appView !== "login" && appView !== "changePassword" && (
-              <Grid
-                w={"full"}
-                templateRows="repeat(16, 1fr)"
-                templateColumns="repeat(14, 1fr)"
-                gap={4}
-                p={4}
-              >
-                <GridItem colSpan={14} rowSpan={1}>
-                  <NewTopBar />
-                </GridItem>
+              <Flex width="full" flexDir="column" h="100vh" w="100vw">
+                <Flex p="2" bg="brand.dark" w="full" zIndex="2" px="4">
+                  <ProjectInfoDisplay />
+                </Flex>
+                <Flex gap="2" p="1" w="full" flexGrow={1} overflow="auto">
+                  <Flex width="60px" zIndex={1}>
+                    <SideMenuPanel />
+                  </Flex>
 
-                {AiActionsView === "expand" ? (
-                  <GridItem colSpan={14} rowSpan={15}>
-                    <AiActions />
-                  </GridItem>
-                ) : (
-                  <>
-                    <GridItem
-                      colSpan={AiActionsView === "open" ? 10 : 13}
-                      rowSpan={15}
+                  <Flex flexGrow={1} overflow={"auto"}>
+                    <Grid
+                      h="full"
+                      w="full"
+                      templateRows="repeat(15, 1fr)"
+                      templateColumns="repeat(13, 1fr)"
+                      gap={4}
+                      bg={"white"}
+                      rounded={"2xl"}
+                      boxShadow={"lg"}
                     >
-                      <Grid
-                        h="100%"
-                        templateRows="repeat(5, 1fr)"
-                        templateColumns="repeat(5, 1fr)"
-                        gap={0}
-                        bg={"white"}
-                        rounded={"2xl"}
-                        boxShadow={"lg"}
-                      >
-                        <GridItem rowSpan={1} colSpan={5}>
-                          <ProjectInfoDisplay />
+                      {appView === "dashboard" && (
+                        <GridItem rowSpan={15} colSpan={13}>
+                          {<ScheduleSummaryView />}
                         </GridItem>
-                        {appView === "dashboard" && (
-                          <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
-                            {<ProjectDashboard />}
-                          </GridItem>
-                        )}
-                        {appView === "schedule" && (
-                          <GridItem rowSpan={5} colSpan={5} px={"4"} pb={"2"}>
-                            <ScheduleUiView />
-                          </GridItem>
-                        )}
-                        {appView === "notes" && (
-                          <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
-                            {<NotesPage />}
-                          </GridItem>
-                        )}
-                        {/* {appView === "reports" && (
-                          <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
-                            {<ReportsPage />}
-                          </GridItem>
-                        )} */}
-                        {appView === "updates" && (
-                          <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
-                            <UpdatesPage />
-                          </GridItem>
-                        )}
-                        {(appView === "members" || appView === "folders") && (
-                          <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
-                            <ProjectSetup />
-                          </GridItem>
-                        )}
-                        {appView === "integrations" && (
-                          <GridItem rowSpan={5} colSpan={5} px={"2"} pb={"2"}>
-                            <Integration />
-                          </GridItem>
-                        )}
-                      </Grid>
-                    </GridItem>
-                    <GridItem
-                      colSpan={AiActionsView === "open" ? 4 : 1}
-                      rowSpan={15}
-                    >
-                      <AiActions />
-                    </GridItem>
-                  </>
-                )}
-              </Grid>
+                      )}
+                      {appView === "schedule" && (
+                        <GridItem rowSpan={15} colSpan={13}>
+                          <ScheduleUiView />
+                        </GridItem>
+                      )}
+                      {appView === "notes" && (
+                        <GridItem rowSpan={15} colSpan={13}>
+                          {<NotesPage />}
+                        </GridItem>
+                      )}
+                      {appView === "agent" && (
+                        <GridItem rowSpan={15} colSpan={13}>
+                          <AiActions />
+                        </GridItem>
+                      )}
+
+                      {appView === "updates" && (
+                        <GridItem rowSpan={15} colSpan={13}>
+                          <DocumentModule />
+                        </GridItem>
+                      )}
+                      {appView === "project" && (
+                        <GridItem rowSpan={15} colSpan={13} h="full">
+                          <ProjectBoard />
+                        </GridItem>
+                      )}
+                      {(appView === "members" || appView === "folders") && (
+                        <GridItem rowSpan={15} colSpan={13}>
+                          <ProjectSetup />
+                        </GridItem>
+                      )}
+                      {appView === "integrations" && (
+                        <GridItem rowSpan={15} colSpan={13}>
+                          <Integration />
+                        </GridItem>
+                      )}
+                    </Grid>
+                  </Flex>
+                </Flex>
+              </Flex>
             )}
           </Flex>
         </QueryClientProvider>

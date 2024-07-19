@@ -108,6 +108,17 @@ function UpdateActivityModal({
     onClose();
   };
 
+  useEffect(() => {
+    if (activity.start && activity.end) {
+      const startDate = new Date(activity.start);
+      const endDate = new Date(activity.end);
+      setActivity((state) => ({
+        ...state,
+        duration: dateDiffInDays(startDate, endDate),
+      }));
+    }
+  }, [activity.start, activity.end]);
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
       <ModalOverlay />
@@ -147,30 +158,6 @@ function UpdateActivityModal({
                         setActivity((state) => ({
                           ...state!,
                           name: e.target.value,
-                        }));
-                      }}
-                    />
-                  </Flex>
-                  <Flex direction={"column"}>
-                    <Text as={"b"} fontSize={"12px"}>
-                      Task Duration
-                    </Text>
-                    <Input
-                      shadow={"sm"}
-                      variant={"unstyled"}
-                      p={"2"}
-                      rounded={"md"}
-                      bg={"white"}
-                      size={"sm"}
-                      placeholder="Activity Duration (Days)"
-                      value={activity.duration === 0 ? "" : activity.duration}
-                      type="number"
-                      step={0.01}
-                      onChange={(e) => {
-                        if (!e.target.value) e.target.value = "0";
-                        setActivity((state) => ({
-                          ...state!,
-                          duration: parseFloat(e.target.value) ?? 0,
                         }));
                       }}
                     />
@@ -240,6 +227,35 @@ function UpdateActivityModal({
                         }));
                       }}
                     />
+                  </Flex>
+                  <Flex direction={"column"}>
+                    <Text as={"b"} fontSize={"12px"}>
+                      Task Duration
+                    </Text>
+                    <Flex>
+                      <Text fontSize={"sm"} pl={"2"} my={"2"}>
+                        {activity.duration} days
+                      </Text>
+                    </Flex>
+                    {/* <Input
+                      shadow={"sm"}
+                      variant={"unstyled"}
+                      p={"2"}
+                      rounded={"md"}
+                      bg={"white"}
+                      size={"sm"}
+                      placeholder="Activity Duration (Days)"
+                      value={activity.duration === 0 ? "" : activity.duration}
+                      type="number"
+                      step={0.01}
+                      onChange={(e) => {
+                        if (!e.target.value) e.target.value = "0";
+                        setActivity((state) => ({
+                          ...state!,
+                          duration: parseFloat(e.target.value) ?? 0,
+                        }));
+                      }}
+                    /> */}
                   </Flex>
 
                   {/* <Input
@@ -324,7 +340,7 @@ function UpdateActivityModal({
                   </Select> */}
                 </Flex>
                 <Flex direction={"column"}>
-                  <Text as={"b"} fontSize={"12px"}>
+                  {/* <Text as={"b"} fontSize={"12px"}>
                     Select task status
                   </Text>
                   <Select
@@ -345,7 +361,7 @@ function UpdateActivityModal({
                     <option value={"In Progress"}>In Progress</option>
                     <option value={"At Risk"}>At Risk</option>
                     <option value={"Delayed"}>Delayed</option>
-                  </Select>
+                  </Select> */}
                   <Flex direction={"column"} mt={"2"}>
                     {/* <Text as={"b"} fontSize={"12px"}>
                       Reason for update

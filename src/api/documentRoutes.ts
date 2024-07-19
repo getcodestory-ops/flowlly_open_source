@@ -1,4 +1,4 @@
-import { DocumentEntity } from "@/types/document";
+import { DocumentEntity, StorageEntity } from "@/types/document";
 import { type Session } from "@supabase/supabase-js";
 import axios from "axios";
 
@@ -52,6 +52,26 @@ export const getDocuments = async (
   return response.data;
 };
 
+export const getcontainerEntities = async (
+  session: Session,
+  projectId: string,
+  type_of: string
+): Promise<StorageEntity[]> => {
+  const query = {
+    type_of: type_of,
+  };
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/container/${projectId}`;
+
+  const response = await axios.get(url, {
+    params: query,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+  return response.data;
+};
+
 export const getDocumentContent = async (
   session: Session,
   documentId: string,
@@ -68,6 +88,30 @@ export const getDocumentContent = async (
       Authorization: `Bearer ${session.access_token}`,
     },
   });
+  return response.data;
+};
+
+export const syncDocumentProcore = async (
+  session: Session,
+  projectId: string,
+  documentId: string
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/document/sync/procore`;
+
+  const response = await axios.get(
+    url,
+
+    {
+      params: {
+        document_id: documentId,
+        project_access_id: projectId,
+      },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    }
+  );
   return response.data;
 };
 
