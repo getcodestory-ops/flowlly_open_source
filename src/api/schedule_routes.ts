@@ -12,7 +12,7 @@ export const scheduleAgent = async ({
 }: {
   session: Session;
   agentTask: string;
-  brainId: string;
+  brainId: string | null;
   chatId: string;
   projectId: string;
 }) => {

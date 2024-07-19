@@ -82,7 +82,7 @@ export function useScheduleUpdate() {
   });
 
   const { data: chats, isLoading } = useQuery({
-    queryKey: ["agentChats", session, activeChatEntity.id],
+    queryKey: ["agentChats", session, activeChatEntity?.id],
     queryFn: () => {
       if (!session) {
         toast({
@@ -120,24 +120,18 @@ export function useScheduleUpdate() {
 
       return getAgentChats(session, activeChatEntity.id);
     },
-    enabled: !!session && !!activeChatEntity.id,
+    enabled: !!session && !!activeChatEntity?.id,
   });
 
   const handleChatSubmit = async () => {
-    console.log("submitted");
-    if (
-      !session ||
-      !selectedContext ||
-      !activeProject ||
-      !activeChatEntity.id ||
-      !selectedContext.id
-    )
+    if (!session || !activeProject || !activeChatEntity.id) {
       return;
+    }
 
     mutate({
       session,
       agentTask: chatInput,
-      brainId: selectedContext.id,
+      brainId: selectedContext?.id ?? null,
       chatId: activeChatEntity.id,
       projectId: activeProject?.project_id,
     });

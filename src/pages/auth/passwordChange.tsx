@@ -57,7 +57,11 @@ function ResetPassword() {
         setSessionToken(data?.session);
       }
     }
-    loginCheck();
+    // loginCheck();
+    const { token_hash } = router.query;
+    if (token_hash) {
+      loginCheck();
+    }
   }, [router]);
 
   useEffect(() => {

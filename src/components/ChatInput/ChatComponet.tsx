@@ -6,26 +6,18 @@ import {
   Button,
   Icon,
   Select,
-  Input,
   Tooltip,
-  Text,
 } from "@chakra-ui/react";
 import SearchMemory from "@/Layouts/SearchMemory";
-import ChatMessageDisplay from "../ChatMessageDisplay";
-import {
-  TbLayoutSidebarLeftExpand,
-  TbLayoutSidebarRightExpand,
-} from "react-icons/tb";
+import { TbLayoutSidebarLeftExpand } from "react-icons/tb";
 import { useStore } from "@/utils/store";
 import { getFirstFiveWords } from "@/utils/getFirstWords";
 import { createNewChatSession, getChatHistory } from "@/api/chatRoutes";
 import {
   getContext,
-  getAnswer,
   updateContext,
   getContexualAnswer,
 } from "@/utils/getAiAnswers";
-import { BsSend } from "react-icons/bs";
 import AssistantChatInterface from "../Schedule/AssistantChatInterface";
 import AssistantChatSelector from "../Schedule/AssistantChatSelector";
 
@@ -143,6 +135,7 @@ function ChatComponent() {
   return (
     <Grid
       h={"full"}
+      w="full"
       bgGradient="linear(brand.gray 5%, white 30% )"
       rounded={"2xl"}
       boxShadow={"lg"}
@@ -160,8 +153,34 @@ function ChatComponent() {
                 {chatType == "search" && <SearchMemory />}
                 {chatType == "schedule" && <AssistantChatSelector />}
               </Flex>
+              <Flex>
+                {folderList && folderList.length > 0 && (
+                  <Select
+                    size={"xs"}
+                    bg={"white"}
+                    border={"white"}
+                    rounded={"lg"}
+                    placeholder={"Folder or File"}
+                    className="custom-selector"
+                    value={selectedContext?.id}
+                    onChange={(e) =>
+                      setSelectedContext(
+                        folderList.filter(
+                          (folder) => folder.id === e.target.value
+                        )?.[0] ?? null
+                      )
+                    }
+                  >
+                    {folderList.map((folder) => (
+                      <option key={folder.id} value={folder.id}>
+                        {folder.name}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              </Flex>
 
-              <Tooltip
+              {/* <Tooltip
                 label="Collapse"
                 aria-label="A tooltip"
                 bg="white"
@@ -178,47 +197,8 @@ function ChatComponent() {
                 >
                   <Icon as={TbLayoutSidebarLeftExpand} fontWeight={"light"} />
                 </Button>
-              </Tooltip>
+              </Tooltip> */}
             </Flex>
-          </Flex>
-          <Flex mt={"6"}>
-            <Select
-              mr={"2"}
-              size={"sm"}
-              bg={"white"}
-              border={"white"}
-              rounded={"lg"}
-              value={chatType}
-              onChange={(e) => setChatType(e.target.value)}
-              className="custom-selector"
-            >
-              <option value="search">Search</option>
-              <option value="schedule">Ai agent</option>
-            </Select>
-            {folderList && folderList.length > 0 && (
-              <Select
-                size={"sm"}
-                bg={"white"}
-                border={"white"}
-                rounded={"lg"}
-                placeholder={"Folder or File"}
-                className="custom-selector"
-                value={selectedContext?.id}
-                onChange={(e) =>
-                  setSelectedContext(
-                    folderList.filter(
-                      (folder) => folder.id === e.target.value
-                    )?.[0] ?? null
-                  )
-                }
-              >
-                {folderList.map((folder) => (
-                  <option key={folder.id} value={folder.id}>
-                    {folder.name}
-                  </option>
-                ))}
-              </Select>
-            )}
           </Flex>
         </Flex>
       </GridItem>
@@ -229,9 +209,11 @@ function ChatComponent() {
         px={"2"}
         overflow={"auto"}
         className="custom-scrollbar"
+        h="full"
+        w="full"
       >
         {chatType === "schedule" && (
-          <Grid templateRows="repeat(10, 1fr)" gap={"2"}>
+          <Grid templateRows="repeat(10, 1fr)" gap={"2"} h="full">
             <AssistantChatInterface />
           </Grid>
         )}

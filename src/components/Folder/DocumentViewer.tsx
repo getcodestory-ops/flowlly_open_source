@@ -141,7 +141,15 @@ function DocumentViewer() {
           </Flex>
         </Flex>
       </GridItem>
-      <GridItem colSpan={7} bg="white" borderRadius={"lg"} p="4" h="full">
+      <GridItem
+        colSpan={7}
+        bg="white"
+        borderRadius={"lg"}
+        p="4"
+        h="full"
+        overflow={"auto"}
+        className="custom-scrollbar"
+      >
         {documentViewer === "Reports" ? (
           <DailyReports />
         ) : (

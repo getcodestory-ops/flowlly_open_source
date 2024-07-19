@@ -1,15 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Flex,
-  Box,
   Icon,
-  useToast,
-  Input,
-  Heading,
-  Stack,
-  Collapse,
-  useBreakpointValue,
   Menu,
   MenuButton,
   MenuList,
@@ -18,60 +11,25 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
-import { FiPlus, FiTrash } from "react-icons/fi";
-import { AiOutlinePlus } from "react-icons/ai";
-import { ImFilesEmpty } from "react-icons/im";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { getProjects, deleteProject } from "@/api/projectRoutes";
+import { FiPlus } from "react-icons/fi";
+import { useQuery } from "@tanstack/react-query";
 import { getAgentChatEntities } from "@/api/agentRoutes";
-import { ProjectEntity } from "@/types/projects";
 import AddNewChatEntity from "./AddNewChatEntity";
-import FileHandler from "@/Layouts/FileHandler";
-import { BiConversation } from "react-icons/bi";
 import { IoChevronDown } from "react-icons/io5";
 import { BsChatLeftDots } from "react-icons/bs";
 
 const AssistantChatSelector = () => {
-  const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
   const onOpen = () => setIsOpen(true);
-  const [folderView, setFolderView] = useState(false);
-  const onFolder = () => {
-    setFolderView(!folderView);
-    if (conversationView) {
-      setConversationView(false);
-    }
-  };
-  const [conversationView, setConversationView] = useState(false);
-  const onConversation = () => {
-    setConversationView(!conversationView);
-    if (folderView) {
-      setFolderView(false);
-    }
-  };
 
-  const {
-    session,
-    activeProject,
-    setActiveProject,
-    activeChatEntity,
-    setActiveChatEntity,
-  } = useStore((state) => ({
-    session: state.session,
-    activeProject: state.activeProject,
-    setActiveProject: state.setActiveProject,
-    activeChatEntity: state.activeChatEntity,
-    setActiveChatEntity: state.setActiveChatEntity,
-  }));
-
-  const queryClient = useQueryClient();
-
-  const { data: projects, isLoading } = useQuery({
-    queryKey: ["projectList", session],
-    queryFn: () => getProjects(session!),
-    enabled: !!session?.access_token,
-  });
+  const { session, activeProject, activeChatEntity, setActiveChatEntity } =
+    useStore((state) => ({
+      session: state.session,
+      activeProject: state.activeProject,
+      activeChatEntity: state.activeChatEntity,
+      setActiveChatEntity: state.setActiveChatEntity,
+    }));
 
   const { data: chatEntitities, isLoading: chatsLoading } = useQuery({
     queryKey: ["chatEntityList", session, activeProject],
@@ -84,39 +42,14 @@ const AssistantChatSelector = () => {
     enabled: !!session?.access_token,
   });
 
-  const mutation = useMutation({
-    mutationFn: () => deleteProject(session!, activeProject!.project_id),
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projectList"] });
-      toast({
-        title: "Success",
-        description: "Project deleted successfully",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
-    },
-  });
+  useEffect(() => {
+    if (chatEntitities && chatEntitities.length > 0) {
+      setActiveChatEntity(chatEntitities[chatEntitities.length - 1]);
+    }
+  }, [chatEntitities, setActiveChatEntity]);
 
   return (
-    <Flex
-      flexDirection={"column"}
-      borderColor={"gray.200"}
-      // position={"absolute"}
-      // mx="32"
-      // top="28"
-      // zIndex={"overlay"}
-      fontSize={"xs"}
-    >
+    <Flex flexDirection={"column"} borderColor={"gray.200"} fontSize={"xs"}>
       <Menu>
         <MenuButton
           as={Button}
