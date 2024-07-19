@@ -47,6 +47,16 @@ function ResetPassword() {
           await supabase.auth.setSession({ access_token, refresh_token });
           setSessionToken(session);
         }
+        if (error) {
+          toast({
+            title: "Error",
+            description: error.message,
+            status: "error",
+            duration: 9000,
+            isClosable: true,
+          });
+          router.replace("/");
+        }
       }
 
       const { data } = await supabase.auth.getSession();

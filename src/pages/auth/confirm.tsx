@@ -41,6 +41,17 @@ function ResetPassword() {
           token_hash,
         });
 
+        if (error) {
+          toast({
+            title: "Error",
+            description: error.message,
+            status: "error",
+            duration: 9000,
+            isClosable: true,
+          });
+          router.replace("/");
+        }
+
         const { user, session } = userSession;
 
         if (session) {
