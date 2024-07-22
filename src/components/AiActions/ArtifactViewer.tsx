@@ -24,7 +24,6 @@ function ArtifactViewer({ antartifact }: { antartifact: Antartifact }) {
           gap="4"
           p="2"
           borderRadius={"lg"}
-          bg="brand.light"
         >
           {antartifact.result ? (
             <>
