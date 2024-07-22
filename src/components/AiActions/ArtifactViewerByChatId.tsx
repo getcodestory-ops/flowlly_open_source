@@ -4,7 +4,7 @@ import { Antartifact } from "@/types/agentChats";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
 
-function ArtifactViewer({ antartifact }: { antartifact: Antartifact }) {
+function ArtifactViewerByChatId({ antartifact }: { antartifact: Antartifact }) {
   const tags = [
     "schedule_update",
     "schedule_addition",
@@ -120,4 +120,4 @@ function ArtifactViewer({ antartifact }: { antartifact: Antartifact }) {
       return <Flex>Viewer</Flex>;
   }
 }
-export default ArtifactViewer;
+export default ArtifactViewerByChatId;

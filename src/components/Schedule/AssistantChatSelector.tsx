@@ -82,31 +82,38 @@ const AssistantChatSelector = () => {
             </Flex>
           </MenuItem>
           <MenuDivider />
-          {chatEntitities &&
-            chatEntitities.map((chatEntity, index) => (
-              <MenuItem
-                key={`chat-${chatEntity.id}-index-${index}`}
-                onClick={() => setActiveChatEntity(chatEntity)}
-                _hover={{ bg: "gray.100" }}
-              >
-                <Flex
-                  alignItems={"center"}
-                  w="full"
-                  justifyContent={"space-between"}
+          <Flex
+            flexDir="column"
+            maxH="60vh"
+            overflow={"auto"}
+            className="custom-scrollbar"
+          >
+            {chatEntitities &&
+              chatEntitities.map((chatEntity, index) => (
+                <MenuItem
+                  key={`chat-${chatEntity.id}-index-${index}`}
+                  onClick={() => setActiveChatEntity(chatEntity)}
+                  _hover={{ bg: "gray.100" }}
                 >
-                  <Flex alignItems={"center"}>
-                    <Icon as={BsChatLeftDots} mr={4} />
-                    <Text
-                      fontWeight={
-                        chatEntity.id === activeChatEntity?.id ? "bold" : ""
-                      }
-                    >
-                      {chatEntity.chat_name}
-                    </Text>
+                  <Flex
+                    alignItems={"center"}
+                    w="full"
+                    justifyContent={"space-between"}
+                  >
+                    <Flex alignItems={"center"}>
+                      <Icon as={BsChatLeftDots} mr={4} />
+                      <Text
+                        fontWeight={
+                          chatEntity.id === activeChatEntity?.id ? "bold" : ""
+                        }
+                      >
+                        {chatEntity.chat_name}
+                      </Text>
+                    </Flex>
                   </Flex>
-                </Flex>
-              </MenuItem>
-            ))}
+                </MenuItem>
+              ))}
+          </Flex>
         </MenuList>
       </Menu>
     </Flex>
