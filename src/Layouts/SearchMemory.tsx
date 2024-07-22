@@ -119,6 +119,7 @@ const SearchMemory = () => {
       // mx="32"
       // top="28"
       // zIndex={"overlay"}
+
       fontSize={"xs"}
     >
       <Menu>
