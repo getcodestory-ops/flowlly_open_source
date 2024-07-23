@@ -3,11 +3,13 @@ import { Flex } from "@chakra-ui/react";
 import { AgentMessage } from "@/types/agentChats";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
 import ArtifactViewer from "./ArtifactViewer";
+import { useStore } from "@/utils/store";
 /**
  * Represents the props for the AgentMessageInteractiveView component.
  */
 
 function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
+  const sessionToken = useStore((state) => state.session);
   return (
     <Flex flexDir="column">
       {message.response ? (
@@ -21,7 +23,10 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
       )}
       {message.antartifact && message.antartifact.attributes?.type && (
         <Flex>
-          <ArtifactViewer antartifact={message.antartifact} />
+          <ArtifactViewer
+            antartifact={message.antartifact}
+            sessionToken={sessionToken}
+          />
         </Flex>
       )}
     </Flex>

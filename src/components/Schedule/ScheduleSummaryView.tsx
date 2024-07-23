@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   Flex,
   Tooltip,
@@ -16,6 +16,7 @@ import {
   ModalFooter,
   useToast,
   Box,
+  useMediaQuery,
 } from "@chakra-ui/react";
 import {
   getScheduleSummary,
@@ -26,16 +27,20 @@ import { FaPencilAlt } from "react-icons/fa";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { useStore } from "@/utils/store";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import MarkDownDisplay from "../Markdown/MarkDownDisplay";
 import ScheduleNotifications from "../Notifications/ScheduleNotifications";
 import MediaRecorderButton from "../ChatInput/MediaRecorderButton";
+import ContentEditor from "../DocumentEditor/ContentEditor";
+import MarkDownDisplay from "../Markdown/MarkDownDisplay";
+import DashboardXMLViewer from "../ProjectDashboard/DashboardViewer";
 
 function ScheduleSummaryView() {
   const session = useStore((state) => state.session);
+  const [smallScreen] = useMediaQuery("(max-width: 1441px)");
   const activeProject = useStore((state) => state.activeProject);
 
   const [activeEdit, setActiveEdit] = useState(true);
   const [content, setContent] = useState("");
+  const [summaryContent, setSummaryContent] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const toast = useToast();
 
@@ -48,6 +53,12 @@ function ScheduleSummaryView() {
     },
     enabled: !!session,
   });
+
+  useEffect(() => {
+    if (data?.data) {
+      setSummaryContent(data?.data);
+    }
+  }, [data]);
 
   const { data: notifications } = useQuery({
     queryKey: ["projectNotification", activeProject, session],
@@ -106,7 +117,7 @@ function ScheduleSummaryView() {
   }, [notifications]);
 
   return (
-    <Grid templateColumns="repeat(8, 1fr)" gap="4" p="4">
+    <Grid templateColumns="repeat(8, 1fr)" gap="4" p="4" h="full" w="full">
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} size="4xl">
         <ModalOverlay />
         {data?.data && (
@@ -146,10 +157,8 @@ function ScheduleSummaryView() {
           </ModalContent>
         )}
       </Modal>
-      <GridItem colSpan={6}>
+      <GridItem colSpan={smallScreen ? 8 : 6} overflow="auto">
         <Flex direction="column">
-          <Text fontWeight={"bold"}>Today&#39;s Schedule</Text>
-
           <Flex justifyContent={"right"}></Flex>
           {isLoading && (
             <Flex gap="2">
@@ -172,21 +181,42 @@ function ScheduleSummaryView() {
 
           {data?.data && (
             <Flex p="4">
-              <MarkDownDisplay content={data?.data} />
+              {/* <MarkDownDisplay content={summaryContent} /> */}
+              <DashboardXMLViewer input={data?.data} />
             </Flex>
           )}
         </Flex>
-        <MediaRecorderButton />
-        <Tooltip label="Edit schedule using notes">
-          <Button size="xs" onClick={() => setIsOpen(true)}>
-            {isPending
-              ? "Note submitted Successfully!"
-              : "Submit your note or progress"}
-            <Icon as={FaPencilAlt} ml="2" />
-          </Button>
-        </Tooltip>
+        <Flex
+          alignItems={"center"}
+          justifyContent={"center"}
+          position="sticky"
+          bottom="0"
+          bg="white"
+          p="2"
+        >
+          <Flex
+            gap="2"
+            bg="brand.light"
+            p="2"
+            borderRadius={"lg"}
+            alignItems={"center"}
+            flexDir={smallScreen ? "column" : "row"}
+          >
+            <Text fontWeight={"bold"}>Submit Project updates </Text>
+            <MediaRecorderButton />
+            <Tooltip label="Edit schedule using notes">
+              <Button
+                leftIcon={<FaPencilAlt />}
+                onClick={() => setIsOpen(true)}
+                colorScheme="green"
+              >
+                {isPending ? "Note submitted Successfully!" : "Text note"}
+              </Button>
+            </Tooltip>
+          </Flex>
+        </Flex>
       </GridItem>
-      <GridItem colSpan={2}>
+      <GridItem colSpan={smallScreen ? 8 : 2} hidden={smallScreen}>
         <ScheduleNotifications />
       </GridItem>
     </Grid>

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useLayoutEffect } from "react";
 import {
   Flex,
   Button,
@@ -16,7 +16,8 @@ import UpdateTaskForm from "../ChatInput/Forms/UpdateTaskForm";
 import AgentMessageInteractiveView from "../AiActions/AgentMessageInteractiveView";
 
 function AssistantChatInterface() {
-  const lastMessageRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
   const {
     chats,
     isPending,
@@ -34,16 +35,48 @@ function AssistantChatInterface() {
     activeChatEntity: state.activeChatEntity,
   }));
 
-  //create a method to focus last element of chats array by auto scrolling to the bottom of the chat box
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      const scrollHeight = chatContainerRef.current.scrollHeight;
+      const height = chatContainerRef.current.clientHeight;
+      const maxScrollTop = scrollHeight - height;
+      chatContainerRef.current.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
+    }
+  };
+
+  useLayoutEffect(() => {
+    scrollToBottom();
+  }, [chats]);
+
   useEffect(() => {
-    if (!lastMessageRef) return;
-    lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+    return () => clearTimeout(timer);
   }, [chats]);
 
   return (
     <>
       <GridItem rowSpan={9} px={"4"} overflow="auto">
-        <Box overflowY="auto" width="full" fontSize={"xs"}>
+        <Box
+          ref={chatContainerRef}
+          overflowY="auto"
+          width="full"
+          fontSize={"xs"}
+          maxHeight="calc(100vh - 200px)"
+          css={{
+            "&::-webkit-scrollbar": {
+              width: "4px",
+            },
+            "&::-webkit-scrollbar-track": {
+              width: "6px",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              background: "gray",
+              borderRadius: "24px",
+            },
+          }}
+        >
           {chats &&
             chats.length > 0 &&
             chats?.map((history, index) => (
