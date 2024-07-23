@@ -76,6 +76,34 @@ function Viewer() {
       );
       if (chatData && chatData.message && chatData.message.antartifact) {
         setChatData(chatData.message.antartifact);
+        if (!chatData.message.antartifact.result) {
+          let retries = 0;
+          const maxRetries = 6;
+          const retryInterval = 20000;
+
+          const retry = setInterval(async () => {
+            retries++;
+            const updatedChatData = await getAgentChatHistoryItem(
+              sessionToken,
+              chatHistoryId
+            );
+            if (
+              updatedChatData &&
+              updatedChatData.message &&
+              updatedChatData.message.antartifact
+            ) {
+              setChatData(updatedChatData.message.antartifact);
+              if (
+                updatedChatData.message.antartifact.result ||
+                retries >= maxRetries
+              ) {
+                clearInterval(retry);
+              }
+            } else if (retries >= maxRetries) {
+              clearInterval(retry);
+            }
+          }, retryInterval);
+        }
       }
     }
     const { chatHistoryId } = router.query;
@@ -109,8 +137,11 @@ function Viewer() {
               color="white"
               overflow="scroll"
             >
-              {chatData && chatData.result && (
-                <ArtifactViewer antartifact={chatData} />
+              {chatData && (
+                <ArtifactViewer
+                  antartifact={chatData}
+                  sessionToken={sessionToken}
+                />
               )}
             </Box>
           </Center>

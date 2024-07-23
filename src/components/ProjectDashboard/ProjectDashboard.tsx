@@ -1,22 +1,59 @@
 import React, { useState } from "react";
-import { Flex, Grid, GridItem, Icon, useToast } from "@chakra-ui/react";
+import {
+  Flex,
+  Grid,
+  GridItem,
+  Icon,
+  IconButton,
+  useToast,
+  Tooltip,
+} from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import ShareProjectModal from "../Schedule/ShareProjectModal";
 import CreateNewProjectButton from "../Schedule/NewProjectButton";
-import { IoArrowBack } from "react-icons/io5";
+import { IoArrowBack, IoArchiveOutline } from "react-icons/io5";
 import { CiShare2 } from "react-icons/ci";
+import { deleteProject } from "@/api/projectRoutes";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
 function ProjectBoard() {
   const [isShareOpen, setShareModal] = useState<boolean>(false);
   const [subProjectMenu, setSubProjectMenu] = useState<boolean>(false);
   const toast = useToast();
-  const { userProjects, activeProject, setActiveProject } = useStore(
+  const queryClient = useQueryClient();
+  const { userProjects, activeProject, setActiveProject, session } = useStore(
     (state) => ({
       userProjects: state.userProjects,
       activeProject: state.activeProject,
       setActiveProject: state.setActiveProject,
+      session: state.session,
     })
   );
+
+  const mutation = useMutation({
+    mutationFn: () => deleteProject(session!, activeProject!.project_id),
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["initialProjectList"],
+      });
+      toast({
+        title: "Success",
+        description: "Project Unassigned successfully",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    },
+  });
 
   return (
     <Flex
@@ -26,6 +63,7 @@ function ProjectBoard() {
       bg="brand.light"
       p="4"
       borderRadius={"lg"}
+      alignItems="start"
     >
       <ShareProjectModal
         isShareOpen={isShareOpen}
@@ -36,7 +74,7 @@ function ProjectBoard() {
       <Grid w={"full"} templateColumns="repeat(4, 1fr)" gap={2}>
         {!subProjectMenu && userProjects && userProjects.length > 0 && (
           <>
-            <GridItem colSpan={4} p="2" rounded={"2xl"}>
+            <GridItem colSpan={4} p="2" rounded={"2xl"} height="50px">
               <CreateNewProjectButton />
             </GridItem>
             {userProjects.map((project, index) => (
@@ -65,12 +103,23 @@ function ProjectBoard() {
                 cursor="pointer"
               >
                 <Flex alignItems={"center"}>{project.name}</Flex>
-                <Flex p="2">
-                  <Icon
+                <Flex p="2" gap="4">
+                  <IconButton
                     as={CiShare2}
+                    size="xs"
+                    colorScheme="green"
+                    aria-label="share"
                     cursor="pointer"
                     onClick={() => setShareModal(true)}
-                  ></Icon>
+                  />
+                  <IconButton
+                    size="xs"
+                    colorScheme="green"
+                    aria-label="archive"
+                    as={IoArchiveOutline}
+                    cursor="pointer"
+                    onClick={() => mutation.mutate()}
+                  />
                 </Flex>
               </GridItem>
             ))}

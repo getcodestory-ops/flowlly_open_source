@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Flex } from "@chakra-ui/react";
+import { Flex, useMediaQuery } from "@chakra-ui/react";
 import UserPanel from "../UserPanel";
 import { useStore } from "@/utils/store";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
@@ -31,12 +31,12 @@ function SideMenuPanel() {
   }));
 
   const [hovered, setHovered] = useState<boolean>(false);
+  const [smallScreen] = useMediaQuery("(max-width: 1441px)");
 
   const { data: projects } = useQuery({
     queryKey: ["initialProjectList", session],
     queryFn: () => getProjects(session!, "SCHEDULE"),
     enabled: !!session?.access_token,
-    placeholderData: keepPreviousData,
   });
 
   const defaultTask = {
