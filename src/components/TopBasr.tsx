@@ -23,6 +23,7 @@ import { FaBackward } from "react-icons/fa";
 import { getActivities, deleteActivity } from "@/api/activity_routes";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import { ActivityEntity } from "@/types/activities";
+import NotificationButton from "./Notifications/NotificationButton";
 
 function TopBar() {
   const toast = useToast();
@@ -204,7 +205,9 @@ function TopBar() {
             ))}
         </MenuList>
       </Menu>
-      <Flex></Flex>
+      <Flex>
+        <NotificationButton />
+      </Flex>
     </Flex>
   );
 }

@@ -25,9 +25,13 @@ import { Session } from "@supabase/supabase-js";
 const EmailModal = ({
   content,
   sessionToken,
+  editor,
+  subject = "Minutes of the Meeting",
 }: {
-  content: string;
+  content?: string;
   sessionToken?: Session;
+  editor?: any;
+  subject?: string;
 }) => {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -49,7 +53,19 @@ const EmailModal = ({
     console.log("Distributing emailsa", emails, sessionToken);
     if (!sessionToken || emails.length === 0) return;
     console.log("Distributing emails", emails);
-    distributeEmails(sessionToken, content, emails);
+    if (content) distributeEmails(sessionToken, content, emails, subject);
+    else if (editor)
+      distributeEmails(sessionToken, editor.getHTML(), emails, subject);
+    else {
+      toast({
+        title: "Error",
+        description: "No content found to send",
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+      });
+      return;
+    }
     toast({
       title: "Emails sent",
       description: "The minutes of the meeting have been sent to the emails",
@@ -70,7 +86,7 @@ const EmailModal = ({
         m="2"
         p="2"
       >
-        Distribute Minutes of the Meeting
+        Distribute {subject}
       </Button>
 
       <Modal isOpen={isOpen} onClose={onClose} size={"xl"}>

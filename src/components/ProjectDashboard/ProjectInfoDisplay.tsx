@@ -13,6 +13,7 @@ import { useStore } from "@/utils/store";
 import { FaRegBuilding } from "react-icons/fa";
 import ShareProjectModal from "../Schedule/ShareProjectModal";
 import { FaCheck } from "react-icons/fa6";
+import NotificationButton from "../Notifications/NotificationButton";
 
 function ProjectInfoDisplay() {
   const [isShareOpen, setShareModal] = useState<boolean>(false);
@@ -29,13 +30,13 @@ function ProjectInfoDisplay() {
   }, [activeProject?.name]);
 
   return (
-    <Flex>
-      <ShareProjectModal
+    <Flex justifyContent="space-between" gap="8" w="full">
+      {/* <ShareProjectModal
         isShareOpen={isShareOpen}
         shareModalClose={() => {
           setShareModal(false);
         }}
-      />
+      /> */}
 
       <Flex color="white" gap="6">
         <Flex w="150px">
@@ -85,6 +86,9 @@ function ProjectInfoDisplay() {
             )}
           </Flex>
         </Flex>
+      </Flex>
+      <Flex mr="8">
+        <NotificationButton />
       </Flex>
     </Flex>
   );

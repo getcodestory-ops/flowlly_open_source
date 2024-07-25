@@ -19,7 +19,7 @@ interface StorageResourceEntity {
   sha: string;
 }
 
-interface ContainerResources {
+export interface ContainerResources {
   storage_resources?: StorageResourceEntity;
 }
 

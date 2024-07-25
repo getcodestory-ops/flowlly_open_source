@@ -9,9 +9,10 @@ import { useToast } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import type { OutputData } from "@editorjs/editorjs";
 import type EditorJS from "@editorjs/editorjs";
+import { jsonToHtml } from "@/utils/jsonToHtml";
 
 export const useContentSave = (id?: string | string[]) => {
-  const [data, setData] = useState<OutputData>();
+  const [content, setContent] = useState<string | null>(null);
   const ref = useRef<EditorJS>();
   const toast = useToast();
   const { session, activeProject } = useStore((state) => ({
@@ -19,12 +20,7 @@ export const useContentSave = (id?: string | string[]) => {
     activeProject: state.activeProject,
   }));
 
-  const {
-    data: content,
-    isLoading,
-    isSuccess,
-    error,
-  } = useQuery({
+  const { data, isLoading, isSuccess, error } = useQuery({
     queryKey: ["documentContent", session, id, activeProject],
     queryFn: () => {
       if (!session || typeof id !== "string" || !activeProject) {
@@ -35,6 +31,7 @@ export const useContentSave = (id?: string | string[]) => {
     },
 
     enabled: !!session?.access_token && !!id && !!activeProject,
+    placeholderData: " Loading...",
   });
 
   useEffect(() => {
@@ -46,94 +43,81 @@ export const useContentSave = (id?: string | string[]) => {
         duration: 4000,
         isClosable: true,
       });
-    console.log(error);
   }, [error]);
 
   useEffect(() => {
-    console.log("content", content);
     if (isLoading) {
-      setData({
-        blocks: [
-          { data: { text: "loading..." }, id: "HVVp3toaI3", type: "paragraph" },
-        ],
-      });
-      return;
+      console.log("loading...");
     }
-    if (content && isSuccess) {
-      setData(content);
+    if (data && isSuccess) {
+      console.log("success!");
+      if (typeof data === "string") setContent(data);
+      else if (data.blocks) setContent(jsonToHtml(data.blocks));
     } else {
-      setData({ blocks: [] });
+      console.log("no content found!");
     }
-  }, [content, isLoading, isSuccess]);
+  }, [data, isLoading, isSuccess]);
 
   //save document
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: OutputData) => {
+    mutationFn: (content: string) => {
       if (!session || typeof id !== "string")
         return Promise.reject(
           "Session not found or document id is not correct !"
         );
-      return updateDocumentContent(session, id, data);
+      return updateDocumentContent(session, id, content);
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: "something went wrong",
+        description: "Could not save the document !",
         status: "error",
         duration: 4000,
         isClosable: true,
       });
     },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: `Document saved successfully !`,
-        status: "success",
-        duration: 4000,
-        isClosable: true,
-        position: "bottom-right",
-      });
-    },
   });
 
-  async function onSubmit() {
-    const blocks = await ref.current?.save();
-
-    if (!blocks) return;
-    mutate(blocks);
+  async function onSubmit(contentData: string) {
+    mutate(contentData);
   }
 
-  // process document
+  // const { mutate: processDoc, isPending: docPending } = useMutation({
+  //   mutationFn: () => {
+  //     if (!session || typeof id !== "string" || !activeProject)
+  //       return Promise.reject(
+  //         "Session not found or document id is not correct !"
+  //       );
+  //     return processDocumentContent(session, activeProject.project_id, id);
+  //   },
+  //   onError: (error) => {
+  //     toast({
+  //       title: "Error",
+  //       description: error.message,
+  //       status: "error",
+  //       duration: 4000,
+  //       isClosable: true,
+  //     });
+  //   },
+  //   onSuccess: () => {
+  //     toast({
+  //       title: "Success",
+  //       description: `Document Processed successfully !`,
+  //       status: "success",
+  //       duration: 4000,
+  //       isClosable: true,
+  //       position: "bottom-right",
+  //     });
+  //   },
+  // });
 
-  const { mutate: processDoc, isPending: docPending } = useMutation({
-    mutationFn: () => {
-      if (!session || typeof id !== "string" || !activeProject)
-        return Promise.reject(
-          "Session not found or document id is not correct !"
-        );
-      return processDocumentContent(session, activeProject.project_id, id);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        status: "error",
-        duration: 4000,
-        isClosable: true,
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: `Document Processed successfully !`,
-        status: "success",
-        duration: 4000,
-        isClosable: true,
-        position: "bottom-right",
-      });
-    },
-  });
-
-  return { ref, processDoc, data, mutate, onSubmit, content };
+  return {
+    ref,
+    data,
+    onSubmit,
+    content,
+    setContent,
+    isLoading,
+  };
 };

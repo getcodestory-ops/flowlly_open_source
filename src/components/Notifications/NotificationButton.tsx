@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
   Box,
+  Flex,
   Button,
   Modal,
   ModalOverlay,
@@ -14,6 +15,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { FiBell } from "react-icons/fi";
+import ScheduleNotifications from "./ScheduleNotifications";
 
 function NotificationButton() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -25,7 +27,8 @@ function NotificationButton() {
     <>
       <IconButton
         icon={<FiBell />}
-        variant="outline"
+        size="xs"
+        variant="solid"
         onClick={onOpen}
         aria-label="Notifications"
         borderRadius={"50%"}
@@ -33,24 +36,14 @@ function NotificationButton() {
 
       <Modal isOpen={isOpen} onClose={onClose} size={"2xl"} isCentered={false}>
         <ModalOverlay />
-        <ModalContent
-          marginTop="8rem" // Adjust top margin to position from the top
+        <ModalContent // Adjust top margin to position from the top
           marginRight="1rem" // Adjust right margin to position from the right
-          marginLeft="auto" // Automatically adjust the left margin
-          marginBottom="auto"
+          marginLeft="auto"
+          backgroundColor="brand.light"
         >
-          <ModalHeader>Notifications</ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
-            {notifications.length ? (
-              notifications.map((notification, index) => (
-                <Box key={index} p={2} borderBottomWidth="1px">
-                  <Text>{notification.message}</Text>
-                </Box>
-              ))
-            ) : (
-              <Text>No new notifications.</Text>
-            )}
+          <ModalBody maxH={"50vh"} overflow="auto">
+            <ScheduleNotifications />
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="yellow" mr={3} onClick={onClose}>
