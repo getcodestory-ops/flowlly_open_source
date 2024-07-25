@@ -29,11 +29,6 @@ function MinutesMeetingArtifact({
       {antartifact.result ? (
         <Flex flexDir="column">
           <ContentEditor content={antartifact.result} setContent={setContent} />
-          <Flex>
-            {content && sessionToken && (
-              <EmailModal content={content} sessionToken={sessionToken} />
-            )}
-          </Flex>
         </Flex>
       ) : (
         <>

@@ -1,5 +1,6 @@
 import { UpdateProperties } from "@/types/updates";
-import { Button, Flex, Text } from "@chakra-ui/react";
+import { IconButton, Flex, Text } from "@chakra-ui/react";
+import { IoMdArrowRoundBack } from "react-icons/io";
 
 interface UpdateViewerProps {
   previewCardContent: Record<string, any>;
@@ -18,65 +19,12 @@ function UpdateViewer({
 }: UpdateViewerProps) {
   return (
     <Flex flexDirection={"column"} gap="2">
-      <Text
-        fontSize={"14px"}
-        fontWeight={"bold"}
-        cursor="pointer"
-        as={"u"}
+      <IconButton
+        aria-label="Back"
+        size="sm"
+        icon={<IoMdArrowRoundBack />}
         onClick={() => setPreviewCardContent(null)}
-      >
-        Back
-      </Text>
-
-      {/* <Flex
-        w="full"
-        mb={"2"}
-        p={"2"}
-        fontSize="sm"
-        background={"brand.background"}
-        dropShadow={"lg"}
-        cursor={"pointer"}
-        display="flex"
-        flexDirection="row"
-        justifyContent={"space-between"}
-        borderRadius={"md"}
-        _hover={{ bg: "brand.dark", color: "white" }}
-        onClick={() => setUpdateType("ACTION")}
-      >
-        Daily Report
-      </Flex>
-      <Flex
-        w="full"
-        mb={"2"}
-        p={"2"}
-        fontSize="sm"
-        background={"brand.background"}
-        dropShadow={"lg"}
-        cursor={"pointer"}
-        display="flex"
-        flexDirection="column"
-        borderRadius={"md"}
-        _hover={{ bg: "brand.dark", color: "white" }}
-        onClick={() => setUpdateType("MESSAGE")}
-      >
-        Messages
-      </Flex>
-      <Flex
-        w="full"
-        mb={"2"}
-        p={"2"}
-        fontSize="sm"
-        background={"brand.background"}
-        dropShadow={"lg"}
-        cursor={"pointer"}
-        display="flex"
-        flexDirection="column"
-        borderRadius={"md"}
-        _hover={{ bg: "brand.dark", color: "white" }}
-        onClick={() => setUpdateType("IMPACT")}
-      >
-        Impact
-      </Flex> */}
+      />
     </Flex>
   );
 }

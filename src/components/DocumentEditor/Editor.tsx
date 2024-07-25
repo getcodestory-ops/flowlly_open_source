@@ -1,31 +1,10 @@
-import React, { memo, useEffect, useRef, useState, useCallback } from "react";
-import { IoIosSave } from "react-icons/io";
-import { TbAnalyzeFilled } from "react-icons/tb";
-import UploadVoiceModal from "@/components/VoiceComponent/UploadVoiceModal";
-import {
-  Flex,
-  Button,
-  Tooltip,
-  Icon,
-  Grid,
-  GridItem,
-  Text,
-} from "@chakra-ui/react";
+import React, { useEffect, useState } from "react";
+
+import { Flex, Text, Spinner, HStack } from "@chakra-ui/react";
 import { useContentSave } from "./useContentSave";
-import { useSyncProcore } from "../ProcoreIntegration/useDailyReportSync";
-import { IoShareSocialOutline } from "react-icons/io5";
 import { useStore } from "@/utils/store";
-import {
-  MdOutlinePlayCircleOutline,
-  MdOpenInNew,
-  MdOutlineEmail,
-  MdOutlinePeopleAlt,
-  MdOutlineSmsFailed,
-  MdOutlineMessage,
-  MdOutlineNote,
-  MdOutlineInsertDriveFile,
-  MdFiberNew,
-} from "react-icons/md";
+
+import ContentEditor from "./ContentEditor";
 
 interface EditorBlockProps {
   previewCardContent?: any;
@@ -33,71 +12,20 @@ interface EditorBlockProps {
   noteTitle?: string;
 }
 
-const EditorBlock = ({
-  previewCardContent,
-  id,
-  noteTitle,
-}: EditorBlockProps) => {
-  const { appView } = useStore((state) => ({
-    appView: state.appView,
-  }));
-  const holder = "editorjs-container";
-  const [isMounted, setIsMounted] = useState<boolean>(false);
-  const { ref, processDoc, data, onSubmit, content } = useContentSave(id);
-  const { syncProcore } = useSyncProcore(id);
+const EditorBlock = ({ id }: EditorBlockProps) => {
+  const { content, isLoading, onSubmit } = useContentSave(id);
+  const [key, setKey] = useState(0);
 
   useEffect(() => {
-    if (typeof window !== "undefined") setIsMounted(true);
-  }, []);
-
-  const initializeEditor = useCallback(async () => {
-    // if (ref.current) {
-    //   // If there's an existing instance, destroy it before creating a new one
-    //   //ref.current?.destroy();
-    //   ref.current = undefined;
-    // }
-
-    const EditorJs = (await import("@editorjs/editorjs")).default;
-    const EDITOR_JS_TOOLS = (await import("./constants")).EDITOR_JS_TOOLS;
-
-    if (!ref.current) {
-      const editor = new EditorJs({
-        inlineToolbar: true,
-        holder: holder,
-        onReady() {
-          ref.current = editor;
-        },
-        tools: EDITOR_JS_TOOLS,
-        data,
-        placeholder: "Start writing your document here...",
-      });
-      onchange;
-      ref.current = editor;
-    }
-  }, [ref, data]);
-
-  useEffect(() => {
-    const init = async () => {
-      await initializeEditor();
-    };
-    if (isMounted) {
-      init();
-
-      return () => {
-        if (ref.current && ref.current?.destroy) {
-          ref.current?.destroy();
-          ref.current = undefined;
-        }
-      };
-    }
-  }, [ref, isMounted, initializeEditor]);
+    setKey(key + 1);
+  }, [id, content]);
 
   return (
     <Flex
       p={"2"}
       w="full"
       h="full"
-      overflowY={"scroll"}
+      overflowY={"auto"}
       sx={{
         "&::-webkit-scrollbar": {
           width: "0px",
@@ -106,167 +34,295 @@ const EditorBlock = ({
         },
       }}
       flexDirection={"column"}
-      // alignItems={"flex-end"}
     >
-      <Flex
-        alignItems={"center"}
-        justifyContent={
-          previewCardContent || noteTitle ? "space-between" : "flex-end"
-        }
-      >
-        {previewCardContent && (
-          <Flex direction={"column"}>
-            <Flex alignItems={"center"} mb={"2"}>
-              {previewCardContent.type === "email" && (
-                <Icon as={MdOutlineEmail} mr={"0.5"} boxSize={"3"} />
-              )}
-              {previewCardContent.type === "message" && (
-                <Icon as={MdOutlineMessage} mr={"0.5"} boxSize={"3"} />
-              )}
-              {previewCardContent.type === "note" && (
-                <Icon as={MdOutlineNote} mr={"0.5"} boxSize={"3"} />
-              )}
-              {previewCardContent.type === "file" && (
-                <Icon as={MdOutlineInsertDriveFile} mr={"0.5"} boxSize={"3"} />
-              )}
-              <Text fontSize={"12px"} fontStyle={"italic"}>
-                {previewCardContent.type}
-              </Text>
-            </Flex>
-            <Text fontSize={"14px"} fontWeight={"bold"} mb={"6"}>
-              {previewCardContent.update.message}
-            </Text>
-          </Flex>
-        )}
-        {noteTitle && (
-          <Flex ml={"4"}>
-            <Text fontSize={"14px"} fontWeight={"bold"}>
-              {noteTitle}
-            </Text>
-          </Flex>
-        )}
-        <Flex>
-          {appView === "notes" && <UploadVoiceModal />}
-
-          <Tooltip label="Sync to Procore" bg="white" color="brand.dark">
-            <Button
-              mx={"2"}
-              boxShadow={"lg"}
-              cursor={"pointer"}
-              size={"sm"}
-              bg={"white"}
-              // position="absolute"
-              // zIndex={"overlay"}
-              // top="32"
-              onClick={() => syncProcore()}
-              _hover={{ bg: "brand.dark", color: "white" }}
-
-              // transform={"translateX(-200%)"}
-            >
-              <Icon
-                as={TbAnalyzeFilled}
-                _hover={{
-                  transform: "rotate(360deg)",
-
-                  transition: "transform 0.5s ease-in-out",
-                }}
-              />
-            </Button>
-          </Tooltip>
-
-          <Tooltip label="AI Note Analysis" bg="white" color="brand.dark">
-            <Button
-              mx={"2"}
-              boxShadow={"lg"}
-              cursor={"pointer"}
-              size={"sm"}
-              bg={"white"}
-              // position="absolute"
-              // zIndex={"overlay"}
-              // top="32"
-              onClick={() => processDoc()}
-              _hover={{ bg: "brand.dark", color: "white" }}
-
-              // transform={"translateX(-200%)"}
-            >
-              <Icon
-                as={TbAnalyzeFilled}
-                _hover={{
-                  transform: "rotate(360deg)",
-
-                  transition: "transform 0.5s ease-in-out",
-                }}
-              />
-            </Button>
-          </Tooltip>
-          <Tooltip label="Save note" bg="white" color="brand.dark">
-            <Button
-              onClick={() => onSubmit()}
-              mr={"2"}
-              cursor={"pointer"}
-              size={"sm"}
-              bg={"white"}
-              boxShadow={"lg"}
-              _hover={{ bg: "brand.dark", color: "white" }}
-              ml={"2"}
-              // top="32"
-              // position={"absolute"}
-              // zIndex={"overlay"}
-            >
-              <IoIosSave />
-            </Button>
-          </Tooltip>
-          {/* <Tooltip label="Share note" bg="white" color="brand.dark">
-          <Button
-            // onClick={() => onSubmit()}
-            cursor={"pointer"}
-            size={"sm"}
-            bg={"white"}
-            boxShadow={"lg"}
-            _hover={{ bg: "brand.dark", color: "white" }}
-            // top="32"
-            // position={"absolute"}
-            // zIndex={"overlay"}
-          >
-            <IoShareSocialOutline />
-          </Button>
-        </Tooltip> */}
-        </Flex>
-      </Flex>
-
-      <Flex
-        w="full"
-        sx={{
-          h1: {
-            fontSize: "4xl",
-            fontWeight: "bold",
-          },
-          h2: {
-            fontSize: "3xl",
-            fontWeight: "bold",
-          },
-          h3: {
-            fontSize: "2xl",
-            fontWeight: "bold",
-          },
-          h4: {
-            fontSize: "xl",
-            fontWeight: "bold",
-          },
-          h5: {
-            fontSize: "lg",
-            fontWeight: "bold",
-          },
-          h6: {
-            fontSize: "md",
-            fontWeight: "bold",
-          },
-        }}
-      >
-        <div id={holder} style={{ width: "100%" }} />
-      </Flex>
+      {content && !isLoading && (
+        <ContentEditor
+          key={key}
+          content={content}
+          saveFunction={onSubmit}
+          documentType="Daily Report"
+        />
+      )}
+      {isLoading && (
+        <HStack gap="4">
+          <Spinner size="sm" /> <Text>Loading...</Text>
+        </HStack>
+      )}
     </Flex>
   );
 };
 
-export default memo(EditorBlock);
+export default EditorBlock;
+
+// import React, { memo, useEffect, useRef, useState, useCallback } from "react";
+// import { IoIosSave } from "react-icons/io";
+// import { TbAnalyzeFilled } from "react-icons/tb";
+// import UploadVoiceModal from "@/components/VoiceComponent/UploadVoiceModal";
+// import {
+//   Flex,
+//   Button,
+//   Tooltip,
+//   Icon,
+//   Grid,
+//   GridItem,
+//   Text,
+// } from "@chakra-ui/react";
+// import { useContentSave } from "./useContentSave";
+// import { useSyncProcore } from "../ProcoreIntegration/useDailyReportSync";
+// import { IoShareSocialOutline } from "react-icons/io5";
+// import { useStore } from "@/utils/store";
+// import {
+//   MdOutlinePlayCircleOutline,
+//   MdOpenInNew,
+//   MdOutlineEmail,
+//   MdOutlinePeopleAlt,
+//   MdOutlineSmsFailed,
+//   MdOutlineMessage,
+//   MdOutlineNote,
+//   MdOutlineInsertDriveFile,
+//   MdFiberNew,
+// } from "react-icons/md";
+
+// interface EditorBlockProps {
+//   previewCardContent?: any;
+//   id?: string | string[];
+//   noteTitle?: string;
+// }
+
+// const EditorBlock = ({
+//   previewCardContent,
+//   id,
+//   noteTitle,
+// }: EditorBlockProps) => {
+//   const { appView } = useStore((state) => ({
+//     appView: state.appView,
+//   }));
+//   const holder = "editorjs-container";
+//   const [isMounted, setIsMounted] = useState<boolean>(false);
+//   const { ref, processDoc, data, onSubmit, content } = useContentSave(id);
+//   const { syncProcore } = useSyncProcore(id);
+
+//   useEffect(() => {
+//     if (typeof window !== "undefined") setIsMounted(true);
+//   }, []);
+
+//   const initializeEditor = useCallback(async () => {
+//     // if (ref.current) {
+//     //   // If there's an existing instance, destroy it before creating a new one
+//     //   //ref.current?.destroy();
+//     //   ref.current = undefined;
+//     // }
+
+//     const EditorJs = (await import("@editorjs/editorjs")).default;
+//     const EDITOR_JS_TOOLS = (await import("./constants")).EDITOR_JS_TOOLS;
+
+//     if (!ref.current) {
+//       const editor = new EditorJs({
+//         inlineToolbar: true,
+//         holder: holder,
+//         onReady() {
+//           ref.current = editor;
+//         },
+//         tools: EDITOR_JS_TOOLS,
+//         data,
+//         placeholder: "Start writing your document here...",
+//       });
+//       onchange;
+//       ref.current = editor;
+//     }
+//   }, [ref, data]);
+
+//   useEffect(() => {
+//     const init = async () => {
+//       await initializeEditor();
+//     };
+//     if (isMounted) {
+//       init();
+
+//       return () => {
+//         if (ref.current && ref.current?.destroy) {
+//           ref.current?.destroy();
+//           ref.current = undefined;
+//         }
+//       };
+//     }
+//   }, [ref, isMounted, initializeEditor]);
+
+//   return (
+//     <Flex
+//       p={"2"}
+//       w="full"
+//       h="full"
+//       overflowY={"scroll"}
+//       sx={{
+//         "&::-webkit-scrollbar": {
+//           width: "0px",
+//           borderRadius: "0px",
+//           backgroundColor: `rgba(0, 0, 0, 0.01)`,
+//         },
+//       }}
+//       flexDirection={"column"}
+//       // alignItems={"flex-end"}
+//     >
+//       <Flex
+//         alignItems={"center"}
+//         justifyContent={
+//           previewCardContent || noteTitle ? "space-between" : "flex-end"
+//         }
+//       >
+//         {previewCardContent && (
+//           <Flex direction={"column"}>
+//             <Flex alignItems={"center"} mb={"2"}>
+//               {previewCardContent.type === "email" && (
+//                 <Icon as={MdOutlineEmail} mr={"0.5"} boxSize={"3"} />
+//               )}
+//               {previewCardContent.type === "message" && (
+//                 <Icon as={MdOutlineMessage} mr={"0.5"} boxSize={"3"} />
+//               )}
+//               {previewCardContent.type === "note" && (
+//                 <Icon as={MdOutlineNote} mr={"0.5"} boxSize={"3"} />
+//               )}
+//               {previewCardContent.type === "file" && (
+//                 <Icon as={MdOutlineInsertDriveFile} mr={"0.5"} boxSize={"3"} />
+//               )}
+//               <Text fontSize={"12px"} fontStyle={"italic"}>
+//                 {previewCardContent.type}
+//               </Text>
+//             </Flex>
+//             <Text fontSize={"14px"} fontWeight={"bold"} mb={"6"}>
+//               {previewCardContent.update.message}
+//             </Text>
+//           </Flex>
+//         )}
+//         {noteTitle && (
+//           <Flex ml={"4"}>
+//             <Text fontSize={"14px"} fontWeight={"bold"}>
+//               {noteTitle}
+//             </Text>
+//           </Flex>
+//         )}
+//         <Flex>
+//           {appView === "notes" && <UploadVoiceModal />}
+
+//           <Tooltip label="Sync to Procore" bg="white" color="brand.dark">
+//             <Button
+//               mx={"2"}
+//               boxShadow={"lg"}
+//               cursor={"pointer"}
+//               size={"sm"}
+//               bg={"white"}
+//               // position="absolute"
+//               // zIndex={"overlay"}
+//               // top="32"
+//               onClick={() => syncProcore()}
+//               _hover={{ bg: "brand.dark", color: "white" }}
+
+//               // transform={"translateX(-200%)"}
+//             >
+//               <Icon
+//                 as={TbAnalyzeFilled}
+//                 _hover={{
+//                   transform: "rotate(360deg)",
+
+//                   transition: "transform 0.5s ease-in-out",
+//                 }}
+//               />
+//             </Button>
+//           </Tooltip>
+
+//           <Tooltip label="AI Note Analysis" bg="white" color="brand.dark">
+//             <Button
+//               mx={"2"}
+//               boxShadow={"lg"}
+//               cursor={"pointer"}
+//               size={"sm"}
+//               bg={"white"}
+//               // position="absolute"
+//               // zIndex={"overlay"}
+//               // top="32"
+//               onClick={() => processDoc()}
+//               _hover={{ bg: "brand.dark", color: "white" }}
+
+//               // transform={"translateX(-200%)"}
+//             >
+//               <Icon
+//                 as={TbAnalyzeFilled}
+//                 _hover={{
+//                   transform: "rotate(360deg)",
+
+//                   transition: "transform 0.5s ease-in-out",
+//                 }}
+//               />
+//             </Button>
+//           </Tooltip>
+//           <Tooltip label="Save note" bg="white" color="brand.dark">
+//             <Button
+//               onClick={() => onSubmit()}
+//               mr={"2"}
+//               cursor={"pointer"}
+//               size={"sm"}
+//               bg={"white"}
+//               boxShadow={"lg"}
+//               _hover={{ bg: "brand.dark", color: "white" }}
+//               ml={"2"}
+//               // top="32"
+//               // position={"absolute"}
+//               // zIndex={"overlay"}
+//             >
+//               <IoIosSave />
+//             </Button>
+//           </Tooltip>
+//           {/* <Tooltip label="Share note" bg="white" color="brand.dark">
+//           <Button
+//             // onClick={() => onSubmit()}
+//             cursor={"pointer"}
+//             size={"sm"}
+//             bg={"white"}
+//             boxShadow={"lg"}
+//             _hover={{ bg: "brand.dark", color: "white" }}
+//             // top="32"
+//             // position={"absolute"}
+//             // zIndex={"overlay"}
+//           >
+//             <IoShareSocialOutline />
+//           </Button>
+//         </Tooltip> */}
+//         </Flex>
+//       </Flex>
+
+//       <Flex
+//         w="full"
+//         sx={{
+//           h1: {
+//             fontSize: "4xl",
+//             fontWeight: "bold",
+//           },
+//           h2: {
+//             fontSize: "3xl",
+//             fontWeight: "bold",
+//           },
+//           h3: {
+//             fontSize: "2xl",
+//             fontWeight: "bold",
+//           },
+//           h4: {
+//             fontSize: "xl",
+//             fontWeight: "bold",
+//           },
+//           h5: {
+//             fontSize: "lg",
+//             fontWeight: "bold",
+//           },
+//           h6: {
+//             fontSize: "md",
+//             fontWeight: "bold",
+//           },
+//         }}
+//       >
+//         <div id={holder} style={{ width: "100%" }} />
+//       </Flex>
+//     </Flex>
+//   );
+// };
+
+// export default memo(EditorBlock);

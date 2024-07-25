@@ -113,6 +113,14 @@ a {
   all: revert;
 }
 
+.ProseMirror {
+  padding: 20px !important;
+}
+
+.ProseMirror-focused {
+  outline: none;
+}
+
 /* .Wrapper {
 } */
 .ViewContainer {

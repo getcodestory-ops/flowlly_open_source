@@ -121,13 +121,15 @@ export const getAgentChatHistoryItem = async (
 export const distributeEmails = async (
   session: Session,
   emailHtml: string,
-  emails: string[]
+  emails: string[],
+  subject: string
 ): Promise<AgentChat> => {
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/task/distribute_email`;
 
   const data = {
     email_html: emailHtml,
     email_list: emails,
+    subject: subject,
   };
 
   const response = await axios.post(url, data, {

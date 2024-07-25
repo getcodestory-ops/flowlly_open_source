@@ -32,7 +32,7 @@ import { useConfigureTaskQueue } from "./useCofigureTaskQueue";
 import { AddTaskQueue } from "@/types/taskQueue";
 import MultiSelect from "@/components/MultiSelect/MultiSelect";
 import { MemberEntity } from "@/types/members";
-import { timezones } from "./timezones";
+import { timezones } from "@/utils/timezones";
 import { MdDeleteOutline } from "react-icons/md";
 import { time } from "console";
 import { type TimeConfig } from "@/types/taskQueue";

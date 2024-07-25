@@ -171,10 +171,17 @@ const DailyReports = () => {
   };
 
   return (
-    <Grid templateColumns="repeat(6, 1fr)" gap={4} w="full">
+    <Grid
+      templateColumns="repeat(6, 1fr)"
+      w="full"
+      h="full"
+      gap="2"
+      display="flex"
+      flexDirection={"column"}
+    >
       <GridItem
         colSpan={6}
-        h="full"
+        display="flex"
         overflowY={"auto"}
         className="custom-scrollbar"
       >
@@ -317,28 +324,25 @@ const DailyReports = () => {
         <GridItem
           rounded={"lg"}
           colSpan={6}
+          display={"flex"}
+          flexGrow={1}
           h="full"
           overflowY={"scroll"}
           className="custom-scrollbar"
         >
           <Flex
             w={"full"}
-            py={"2"}
-            px={"4"}
+            h="full"
             bg={"brand.background"}
             rounded={"lg"}
             overflowY={"auto"}
             className="custom-scrollbar"
             direction={"column"}
-            h="full"
           >
             {updateType === "ACTION" && (
-              <Flex h="80vh" overflow={"scroll"}>
+              <Flex overflow={"scroll"} w="full">
                 {previewCardContent.document_access_id && (
-                  <EditorBlock
-                    id={previewCardContent.document_access_id}
-                    previewCardContent={previewCardContent}
-                  />
+                  <EditorBlock id={previewCardContent.document_access_id} />
                 )}
               </Flex>
             )}

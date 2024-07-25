@@ -1,3 +1,9 @@
+export interface ProjectMetadata {
+  timezone?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
 export interface ProjectEntity {
   project_id: string;
   name: string;
@@ -7,6 +13,9 @@ export interface ProjectEntity {
   last_update: string;
   project_type?: string;
   project: ProjectEntity[];
+  project_number?: string;
+  address?: string;
+  metadata?: ProjectMetadata;
 }
 
 export interface CreateNewProjectEntity {
@@ -15,6 +24,7 @@ export interface CreateNewProjectEntity {
   project_type?: string;
   project_number?: string;
   address?: string;
+  metadata?: ProjectMetadata;
 }
 
 export interface ShareProjectEntity {

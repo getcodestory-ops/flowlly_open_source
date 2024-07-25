@@ -1,54 +1,47 @@
 import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import UnderLine from "@tiptap/extension-underline";
+import TextAlign from "@tiptap/extension-text-align";
+import ImageResize from "tiptap-extension-resize-image";
 import { Markdown } from "tiptap-markdown";
-import { Flex, Button } from "@chakra-ui/react";
-import { useEffect, useCallback } from "react";
-import htmlToPdfmake from "html-to-pdfmake";
-import { TDocumentDefinitions } from "pdfmake/interfaces";
-import pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "pdfmake/build/vfs_fonts";
-import { FaFileDownload } from "react-icons/fa";
-
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+import { Button, Flex } from "@chakra-ui/react";
+import Toolbar from "./ToolBar";
 
 interface EditorBlockProps {
-  content: string;
-  setContent: (content: string) => void;
+  content: string | any;
+  setContent?: (content: string) => void;
+  saveFunction?: (contentData: string) => void;
+  documentType?: string;
 }
 
-const ContentEditor = ({ content, setContent }: EditorBlockProps) => {
+const ContentEditor = ({
+  content,
+  setContent,
+  saveFunction,
+  documentType = "Minutes of the meeting",
+}: EditorBlockProps) => {
   const editor = useEditor({
-    extensions: [StarterKit as any, Markdown],
+    extensions: [
+      StarterKit as any,
+      Markdown,
+      UnderLine,
+      ImageResize,
+      TextAlign,
+    ],
     content: content,
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      setContent(editor.getHTML());
+      if (setContent) setContent(editor.getHTML());
     },
   });
-
-  const exportPdf = useCallback(() => {
-    if (editor) {
-      const htmlContent = editor.getHTML();
-      const pdfContent = htmlToPdfmake(htmlContent);
-
-      const documentDefinition: TDocumentDefinitions = {
-        content: pdfContent,
-      };
-
-      pdfMake.createPdf(documentDefinition).download("minutes.pdf");
-    }
-  }, [editor]);
-
-  useEffect(() => {
-    if (editor) {
-      setContent(editor.getHTML());
-    }
-  }, [content, editor]);
 
   return (
     <Flex
       w="full"
+      h="full"
       p="2"
+      flexDir="column"
+      overflowY="auto"
       sx={{
         h1: {
           fontSize: "4xl",
@@ -56,25 +49,22 @@ const ContentEditor = ({ content, setContent }: EditorBlockProps) => {
         },
         h2: {
           fontSize: "3xl",
-          marginLeft: "0.25rem",
+
           marginTop: "2rem",
         },
         h3: {
           fontSize: "2xl",
-          marginLeft: "0.75rem",
+
           marginTop: "1.5rem",
         },
         h4: {
           fontSize: "xl",
-          marginLeft: "0.75rem",
         },
         h5: {
           fontSize: "lg",
-          marginLeft: "1rem",
         },
         h6: {
           fontSize: "md",
-          marginLeft: "1.25rem",
         },
         p: {
           fontSize: "sm",
@@ -90,37 +80,32 @@ const ContentEditor = ({ content, setContent }: EditorBlockProps) => {
     >
       {editor && (
         <>
+          <Toolbar
+            editor={editor}
+            saveFunction={saveFunction}
+            documentType={documentType}
+          />
           <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-            <Button
-              size="sm"
-              onClick={() => editor.chain().focus().toggleMark("bold").run()}
-              colorScheme={editor.isActive("bold") ? "blue" : "gray"}
-            >
-              Bold
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => editor.chain().focus().toggleMark("italic").run()}
-              colorScheme={editor.isActive("italic") ? "blue" : "gray"}
-            >
-              Italic
-            </Button>
-            {/* Add more buttons for other formatting options as needed */}
-          </BubbleMenu>
-          <Flex flexDir="column">
-            <Flex justifyContent={"flex-end"}>
+            <Flex gap="2">
               <Button
-                leftIcon={<FaFileDownload />}
-                onClick={exportPdf}
                 size="sm"
-                colorScheme="green"
+                onClick={() => editor.chain().focus().toggleMark("bold").run()}
+                colorScheme={editor.isActive("bold") ? "blue" : "gray"}
               >
-                Export to PDF
+                Bold
+              </Button>
+              <Button
+                size="sm"
+                onClick={() =>
+                  editor.chain().focus().toggleMark("italic").run()
+                }
+                colorScheme={editor.isActive("italic") ? "blue" : "gray"}
+              >
+                Italic
               </Button>
             </Flex>
-
-            <EditorContent editor={editor} />
-          </Flex>
+          </BubbleMenu>
+          <EditorContent editor={editor} />
         </>
       )}
     </Flex>
