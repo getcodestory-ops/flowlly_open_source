@@ -5,7 +5,6 @@ import {
   Tooltip,
   Select,
   Divider,
-  Icon,
   Text,
   Box,
   Spinner,
@@ -16,10 +15,7 @@ import {
   FaUnderline,
   FaListUl,
   FaListOl,
-  FaQuoteRight,
   FaCode,
-  FaLink,
-  FaImage,
   FaUndo,
   FaRedo,
 } from "react-icons/fa";
@@ -31,8 +27,6 @@ import { TDocumentDefinitions } from "pdfmake/interfaces";
 import useDebounce from "@/utils/useDebounce";
 import EmailModal from "../AiActions/EmailModal";
 import { useStore } from "@/utils/store";
-import { FaFile } from "react-icons/fa";
-import { FaF } from "react-icons/fa6";
 
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
@@ -47,10 +41,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
   saveFunction,
   documentType,
 }) => {
-  if (!editor) {
-    return null;
-  }
-
   const [saveStatus, setSaveStatus] = useState("Saved");
   const sessionToken = useStore((state) => state.session);
 
@@ -86,6 +76,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
     }
   }, [editor]);
 
+  if (!editor) {
+    return null;
+  }
   return (
     <Box position="sticky" top={0} zIndex={10} bg="white">
       <HStack
