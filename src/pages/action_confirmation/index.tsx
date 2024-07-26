@@ -2,6 +2,7 @@ import Head from "next/head";
 import LoginPage from "@/Layouts/OldMainLayout";
 import FormPage from "@/components/ChatInput/Forms/FormPage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 const queryClient = new QueryClient();
 
 export default function Home() {
