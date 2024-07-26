@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Flex, Grid, GridItem } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -32,12 +32,14 @@ export default function MainLayout({
     appView,
     setAppView,
     userActivities,
+
     setProjectStatus,
   } = useStore((state) => ({
     setSessionToken: state.setSession,
     appView: state.appView,
     setAppView: state.setAppView,
     userActivities: state.userActivities,
+
     setProjectStatus: state.setProjectStatus,
   }));
 
@@ -104,6 +106,10 @@ export default function MainLayout({
       setAppView("dashboard");
     }
   }, [router.pathname]);
+
+  // useEffect(() => {
+  //   useStore.persist.rehydrate();
+  // }, []);
 
   return (
     <>

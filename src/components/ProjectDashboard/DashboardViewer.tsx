@@ -17,6 +17,7 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
+  Flex,
 } from "@chakra-ui/react";
 import {
   BarChart,
@@ -124,9 +125,9 @@ const BarChartContent: React.FC<{ data: string }> = ({ data }) => {
   try {
     // Remove any leading/trailing whitespace and parse the JSON string
     data = `{ "datasets": ${data.trim()} }`;
-    console.log(data);
+    // console.log(data);
     const parsedData = JSON.parse(data);
-    console.log(data.trim());
+    // console.log(data.trim());
 
     // if (
     //   !parsedData.datasets ||
@@ -207,8 +208,10 @@ const WeatherForecast: React.FC<{}> = ({}) => {
           {activeProject?.address ?? ""}
         </Heading>
       </CardHeader>
-      <CardBody>
-        <iframe scrolling="NO" src={url} width="100%" height="400"></iframe>
+      <CardBody mx="auto">
+        <Flex>
+          <iframe scrolling="NO" src={url} width="100%" height="400"></iframe>
+        </Flex>
         <Box h="full" w="full" position="absolute" top={0}></Box>
       </CardBody>
     </Card>

@@ -4,6 +4,8 @@ import { ProjectEntity } from "@/types/projects";
 import { AgentChatEntity } from "@/types/agentChats";
 import { ActivityEntity } from "@/types/activities";
 import { MemberEntity } from "./members";
+import { persist } from "zustand/middleware";
+import { immer } from "zustand/middleware/immer";
 
 export type SidePanelExtension =
   | "fileExplorer"
@@ -54,6 +56,7 @@ export type AppView =
 
 export type State = {
   session: Session | null;
+  hasHydrated: boolean;
   appView: AppView;
   hasAdminRights: boolean;
   userProjects: ProjectEntity[];
@@ -85,6 +88,8 @@ export type State = {
   AiActionsView: "open" | "close" | "extend" | any;
   projectStatus: string;
   setSession: (session: Session | null) => void;
+
+  setHasHydrated: (state: boolean) => void;
   setAppView: (appView: AppView) => void;
   setUserProjects: (userProjects: ProjectEntity[]) => void;
   setUserActivities: (userActivities: ActivityEntity[]) => void;
