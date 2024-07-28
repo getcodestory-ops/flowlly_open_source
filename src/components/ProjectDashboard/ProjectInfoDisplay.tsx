@@ -14,7 +14,6 @@ import { FaRegBuilding } from "react-icons/fa";
 
 import { FaCheck } from "react-icons/fa6";
 import NotificationButton from "../Notifications/NotificationButton";
-import { useStoreHydrated } from "@/utils/store";
 
 function ProjectInfoDisplay() {
   const { userProjects, activeProject, setActiveProject } = useStore(

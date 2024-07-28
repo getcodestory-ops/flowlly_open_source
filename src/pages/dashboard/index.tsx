@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDateRangePicker } from "@/components/ProjectDashboard/components/DateRangePicker";
 import { MainNav } from "@/components/MainNav/MainNav";
 import { Search } from "@/components/ProjectDashboard/components/Search";
-import TeamSwitcher from "@/components/ProjectDashboard/components/TeamSwitcher";
+import ProjectSwitcher from "@/components/ProjectDashboard/components/ProjectSwitcher";
 import { UserNav } from "@/components/ProjectDashboard/components/UserNav";
 import Sidebar from "@/components/Layout/Sidebar";
 
@@ -44,7 +44,7 @@ export default function DashboardPage() {
       <div className="hidden flex-col md:flex">
         <div className="border-b">
           <div className="flex h-16 items-center px-4">
-            <TeamSwitcher />
+            <ProjectSwitcher />
             <MainNav className="mx-6" />
             <div className="ml-auto flex items-center space-x-4">
               <Search />

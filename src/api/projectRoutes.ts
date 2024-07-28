@@ -9,7 +9,7 @@ import {
 export const getProjects = async (
   session: Session,
   project_type: string = "SCHEDULE"
-) => {
+): Promise<ProjectEntity[]> => {
   if (!session.access_token) return [];
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/projects`;
   try {
