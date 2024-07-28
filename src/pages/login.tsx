@@ -18,18 +18,18 @@ function Login() {
   const [sessionToken, setSessionToken] = useState<Session | null>();
   const router = useRouter();
 
-  const handleLogin = async (email: string, password: string) => {
-    useEffect(() => {
-      async function loginCheck() {
-        const { data } = await supabase.auth.getSession();
+  useEffect(() => {
+    async function loginCheck() {
+      const { data } = await supabase.auth.getSession();
 
-        if (data?.session?.user) {
-          setSessionToken(data?.session);
-        }
+      if (data?.session?.user) {
+        setSessionToken(data?.session);
       }
-      loginCheck();
-    }, [router]);
+    }
+    loginCheck();
+  }, [router]);
 
+  const handleLogin = async (email: string, password: string) => {
     const { data: user, error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
