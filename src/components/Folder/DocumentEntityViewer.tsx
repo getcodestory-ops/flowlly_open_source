@@ -72,6 +72,7 @@ const FilePreview: React.FC<{ resource: ContainerResources }> = ({
         );
       case ".mp3":
       case ".ogg":
+      case ".wav":
         return (
           <Box
             display="flex"

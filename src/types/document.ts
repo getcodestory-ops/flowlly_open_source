@@ -9,6 +9,12 @@ enum StorageType {
   Media = "media",
 }
 
+enum AccessRole {
+  admin = "admin",
+  viewer = "viewer",
+  editor = "editor",
+}
+
 interface StorageResourceEntity {
   id: string;
   created_at?: string;
