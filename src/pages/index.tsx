@@ -1,5 +1,5 @@
 import Head from "next/head";
-import LoginPage from "@/Layouts/OldMainLayout";
+import LoginPage from "@/Layouts/LoginPage";
 import MainLayout from "@/Layouts/MainLayout";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 
