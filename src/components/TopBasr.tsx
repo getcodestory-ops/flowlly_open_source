@@ -155,7 +155,7 @@ function TopBar() {
         as={FaBackward}
         cursor={"pointer"}
         onClick={() => {
-          setActiveProject(projects[0]);
+          projects?.length && setActiveProject(projects[0]);
         }}
       />
       <Menu>

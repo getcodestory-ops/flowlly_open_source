@@ -81,7 +81,7 @@ const EmailModal = ({
       <Button
         leftIcon={<IoMdSend />}
         onClick={onOpen}
-        colorScheme="green"
+        colorScheme="blue"
         size="sm"
         m="2"
         p="2"

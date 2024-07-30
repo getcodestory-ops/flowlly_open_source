@@ -32,7 +32,9 @@ const FilePreview: React.FC<{ resource: ContainerResources }> = ({
   const [hover, setHover] = useState(false);
 
   const formattedDate = created_at
-    ? new Date(created_at).toLocaleDateString()
+    ? new Date(created_at).toDateString() +
+      " " +
+      new Date(created_at).toLocaleTimeString()
     : "Date unknown";
 
   const renderPreview = () => {
