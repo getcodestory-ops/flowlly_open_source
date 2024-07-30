@@ -15,7 +15,9 @@ import { MainNav } from "@/components/MainNav/MainNav";
 import { Search } from "@/components/ProjectDashboard/components/Search";
 import ProjectSwitcher from "@/components/ProjectDashboard/components/ProjectSwitcher";
 import { UserNav } from "@/components/ProjectDashboard/components/UserNav";
-import Sidebar from "@/components/Layout/Sidebar";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -24,7 +26,7 @@ export const metadata: Metadata = {
 
 export default function DashboardPage() {
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <div className="md:hidden">
         <Image
           src="/examples/dashboard-light.png"
@@ -204,6 +206,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </>
+    </QueryClientProvider>
   );
 }

@@ -19,6 +19,7 @@ import { Antartifact } from "@/types/agentChats";
 import ArtifactViewer from "@/components/AiActions/ArtifactViewer";
 import colors from "../../styles/theme";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
+
 const theme = extendTheme({
   colors,
   styles: {
