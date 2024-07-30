@@ -17,6 +17,30 @@ import { Session } from "@supabase/supabase-js";
 import { getAgentChatHistoryItem } from "@/api/agentRoutes";
 import { Antartifact } from "@/types/agentChats";
 import ArtifactViewer from "@/components/AiActions/ArtifactViewer";
+import colors from "../../styles/theme";
+import { ChakraProvider, extendTheme } from "@chakra-ui/react";
+
+const theme = extendTheme({
+  colors,
+  styles: {
+    global: {
+      "&::-webkit-scrollbar": {
+        width: "10px",
+      },
+      "&::-webkit-scrollbar-track": {
+        backgroundColor: "transparent", // This hides the track
+      },
+      "&::-webkit-scrollbar-thumb": {
+        backgroundColor: "#888", // Change this color for your desired thumb color
+        borderRadius: "5px",
+      },
+      "&::-webkit-scrollbar-thumb:hover": {
+        backgroundColor: "#555",
+      },
+      scrollbarWidth: "none", // This will hide the scrollbar for Firefox
+    },
+  },
+});
 
 function Viewer() {
   const [password, setPassword] = useState("");
@@ -113,114 +137,116 @@ function Viewer() {
   }, [router, sessionToken]);
 
   return (
-    <Flex
-      height="100vh"
-      justifyContent={"center"}
-      alignItems="center"
-      width="100vw"
-      bg="brand.dark"
-    >
-      {sessionToken && (
-        <Flex w={"100vw"}>
-          <Center
-            p="2"
-            width="full"
-            height="100vh"
-            display="flex"
-            alignItems="center"
-            flexDirection="column"
-          >
-            <Box
-              p={6}
-              borderRadius={8}
+    <ChakraProvider theme={theme}>
+      <Flex
+        height="100vh"
+        justifyContent={"center"}
+        alignItems="center"
+        width="100vw"
+        bg="brand.dark"
+      >
+        {sessionToken && (
+          <Flex w={"100vw"}>
+            <Center
+              p="2"
               width="full"
-              color="white"
-              overflow="scroll"
+              height="100vh"
+              display="flex"
+              alignItems="center"
+              flexDirection="column"
             >
-              {chatData && (
-                <ArtifactViewer
-                  antartifact={chatData}
-                  sessionToken={sessionToken}
-                />
-              )}
-            </Box>
-          </Center>
-        </Flex>
-      )}
-      {!sessionToken && (
-        <Flex w={"100vw"}>
-          <Center
-            p="2"
-            width="full"
-            height="100vh"
-            bg="brand.dark"
-            display="flex"
-            alignItems="center"
-            flexDirection="column"
-          >
-            <Box p={6} borderRadius={8} width="full">
-              <Heading
-                size="xl"
-                mb={4}
-                textAlign="center"
-                fontWeight="bold"
-                letterSpacing="tight"
-                color="brand.accent"
-                display="flex"
-                alignItems="center"
-                flexDirection="column"
+              <Box
+                p={6}
+                borderRadius={8}
+                width="full"
+                color="white"
+                overflow="scroll"
               >
-                <Image
-                  src="https://qfktimnmlcnfowxuoune.supabase.co/storage/v1/object/public/logos/logo_full.svg"
-                  alt="logo"
-                  w={60}
-                  mb={4}
-                />
-                AI Project Management Assistant
-              </Heading>
-            </Box>
-            <Box
-              p={8}
-              backgroundColor="brand.mid"
-              borderRadius="md"
-              width="sm"
-              m="8"
-              textColor="white"
+                {chatData && (
+                  <ArtifactViewer
+                    antartifact={chatData}
+                    sessionToken={sessionToken}
+                  />
+                )}
+              </Box>
+            </Center>
+          </Flex>
+        )}
+        {!sessionToken && (
+          <Flex w={"100vw"}>
+            <Center
+              p="2"
+              width="full"
+              height="100vh"
+              bg="brand.dark"
+              display="flex"
+              alignItems="center"
+              flexDirection="column"
             >
-              <FormControl id="email" mb="4">
-                <FormLabel>Email address</FormLabel>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </FormControl>
-              <FormControl id="password" mb="4">
-                <FormLabel>Password</FormLabel>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onKeyUp={(e) => {
-                    if (e.key === "Enter") {
-                      handleLogin(email, password);
-                    }
-                  }}
-                />
-                <Button
-                  colorScheme="gray"
-                  textColor="black"
-                  onClick={() => handleLogin(email, password)}
-                  mt={4}
+              <Box p={6} borderRadius={8} width="full">
+                <Heading
+                  size="xl"
+                  mb={4}
+                  textAlign="center"
+                  fontWeight="bold"
+                  letterSpacing="tight"
+                  color="brand.accent"
+                  display="flex"
+                  alignItems="center"
+                  flexDirection="column"
                 >
-                  Login with Email
-                </Button>
-              </FormControl>
-            </Box>
-          </Center>
-        </Flex>
-      )}
-    </Flex>
+                  <Image
+                    src="https://qfktimnmlcnfowxuoune.supabase.co/storage/v1/object/public/logos/logo_full.svg"
+                    alt="logo"
+                    w={60}
+                    mb={4}
+                  />
+                  AI Project Management Assistant
+                </Heading>
+              </Box>
+              <Box
+                p={8}
+                backgroundColor="brand.mid"
+                borderRadius="md"
+                width="sm"
+                m="8"
+                textColor="white"
+              >
+                <FormControl id="email" mb="4">
+                  <FormLabel>Email address</FormLabel>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </FormControl>
+                <FormControl id="password" mb="4">
+                  <FormLabel>Password</FormLabel>
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyUp={(e) => {
+                      if (e.key === "Enter") {
+                        handleLogin(email, password);
+                      }
+                    }}
+                  />
+                  <Button
+                    colorScheme="gray"
+                    textColor="black"
+                    onClick={() => handleLogin(email, password)}
+                    mt={4}
+                  >
+                    Login with Email
+                  </Button>
+                </FormControl>
+              </Box>
+            </Center>
+          </Flex>
+        )}
+      </Flex>
+    </ChakraProvider>
   );
 }
 

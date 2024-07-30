@@ -29,8 +29,6 @@ import { useStore } from "@/utils/store";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import ScheduleNotifications from "../Notifications/ScheduleNotifications";
 import MediaRecorderButton from "../ChatInput/MediaRecorderButton";
-import ContentEditor from "../DocumentEditor/ContentEditor";
-import MarkDownDisplay from "../Markdown/MarkDownDisplay";
 import DashboardXMLViewer from "../ProjectDashboard/DashboardViewer";
 
 function ScheduleSummaryView() {
@@ -111,10 +109,6 @@ function ScheduleSummaryView() {
       });
     }
   }, [isSuccess]);
-
-  useEffect(() => {
-    console.log("notifications", notifications);
-  }, [notifications]);
 
   return (
     <Grid templateColumns="repeat(8, 1fr)" gap="4" p="4" h="full" w="full">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   Flex,
   Icon,
@@ -11,12 +11,11 @@ import {
 import { FaChevronDown } from "react-icons/fa";
 import { useStore } from "@/utils/store";
 import { FaRegBuilding } from "react-icons/fa";
-import ShareProjectModal from "../Schedule/ShareProjectModal";
+
 import { FaCheck } from "react-icons/fa6";
 import NotificationButton from "../Notifications/NotificationButton";
 
 function ProjectInfoDisplay() {
-  const [isShareOpen, setShareModal] = useState<boolean>(false);
   const { userProjects, activeProject, setActiveProject } = useStore(
     (state) => ({
       userProjects: state.userProjects,
@@ -25,19 +24,8 @@ function ProjectInfoDisplay() {
     })
   );
 
-  useEffect(() => {
-    console.log("activeProject", activeProject?.name);
-  }, [activeProject?.name]);
-
   return (
     <Flex justifyContent="space-between" gap="8" w="full">
-      {/* <ShareProjectModal
-        isShareOpen={isShareOpen}
-        shareModalClose={() => {
-          setShareModal(false);
-        }}
-      /> */}
-
       <Flex color="white" gap="6">
         <Flex w="150px">
           <Image

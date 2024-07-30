@@ -78,7 +78,7 @@ const UserPanel = () => {
               onClick={() => {
                 // setAppView("changePassword");
 
-                router.push("/auth/changePassword");
+                router.push("/auth/passwordChange");
               }}
             >
               Change Password

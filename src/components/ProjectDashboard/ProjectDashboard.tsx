@@ -6,7 +6,6 @@ import {
   Icon,
   IconButton,
   useToast,
-  Tooltip,
 } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import ShareProjectModal from "../Schedule/ShareProjectModal";
@@ -14,7 +13,7 @@ import CreateNewProjectButton from "../Schedule/NewProjectButton";
 import { IoArrowBack, IoArchiveOutline } from "react-icons/io5";
 import { CiShare2 } from "react-icons/ci";
 import { deleteProject } from "@/api/projectRoutes";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 function ProjectBoard() {
   const [isShareOpen, setShareModal] = useState<boolean>(false);

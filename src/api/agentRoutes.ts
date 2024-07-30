@@ -140,3 +140,27 @@ export const distributeEmails = async (
   });
   return response.data;
 };
+
+export const sendVoiceNote = async ({
+  session,
+  projectId,
+  formData,
+}: {
+  session: Session;
+  projectId: string;
+  formData: FormData;
+}) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/task/connect_to_agent/${projectId}`;
+  const response = await axios.post(url, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  if (!response.data) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.data;
+};

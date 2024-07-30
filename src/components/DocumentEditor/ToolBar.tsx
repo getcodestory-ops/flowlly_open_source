@@ -80,17 +80,14 @@ const Toolbar: React.FC<ToolbarProps> = ({
     return null;
   }
   return (
-    <Box position="sticky" top={0} zIndex={10} bg="white">
-      <HStack
-        spacing={1}
-        overflowX="auto"
-        p={2}
-        bg="gray.100"
-        borderRadius="md"
-      >
+    <Box position="sticky" top={0} zIndex={10} bg="gray.400" borderRadius="lg">
+      <HStack spacing={1} overflowX="auto" px={2} borderRadius="md">
         <Select
           size="sm"
           w="auto"
+          color="blue.500"
+          borderRadius="lg"
+          outline="none"
           value={
             editor.isActive("heading", { level: 1 })
               ? "h1"
@@ -268,7 +265,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
             icon={<FaFileDownload />}
             onClick={exportPdf}
             size="sm"
-            colorScheme="green"
+            colorScheme="blue"
           />
         </Tooltip>
         {sessionToken && (
