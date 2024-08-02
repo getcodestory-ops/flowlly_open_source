@@ -39,7 +39,6 @@ const ContentEditor = ({
     <Flex
       w="full"
       h="full"
-      maxH="70vh"
       p="2"
       flexDir="column"
       overflowY="auto"
@@ -106,7 +105,7 @@ const ContentEditor = ({
               </Button>
             </Flex>
           </BubbleMenu>
-          <EditorContent editor={editor} />
+          <EditorContent editor={editor} className="m-4 " />
         </>
       )}
     </Flex>
