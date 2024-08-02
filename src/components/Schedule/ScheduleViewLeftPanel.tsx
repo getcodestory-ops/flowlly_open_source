@@ -46,7 +46,6 @@ import CreateContingency from "./CreateContingency/CreateContingency";
 import ProcessHistoryButton from "./ProcessHistory/ProcessHistoryButton";
 import ActivitiesDetailPage from "./ActivityDetailsPage";
 import DocumentList from "../DocumentEditor/DocumentList";
-import KanbanBoard from "../kanban/KanbanBoard";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import AddNewActivityModal from "./AddNewActivityModal";
