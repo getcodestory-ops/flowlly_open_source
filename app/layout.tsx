@@ -19,8 +19,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-background text-foreground">
-        <div>in layout</div>
         <main className="min-h-screen flex flex-col items-center">
+          <div>in overall layout</div>
           {children}
         </main>
       </body>
