@@ -4,11 +4,17 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { SubmitButton } from "./submit-button";
 
-export default function Login({
+export default async function Login({
   searchParams,
 }: {
   searchParams: { message: string };
 }) {
+  const supabase = createClient();
+  const { data } = await supabase.auth.getUser();
+
+  if (data.user) {
+    redirect("/protected");
+  }
   const signIn = async (formData: FormData) => {
     "use server";
 

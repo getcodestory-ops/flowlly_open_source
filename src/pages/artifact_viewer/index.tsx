@@ -17,30 +17,8 @@ import { Session } from "@supabase/supabase-js";
 import { getAgentChatHistoryItem } from "@/api/agentRoutes";
 import { Antartifact } from "@/types/agentChats";
 import ArtifactViewer from "@/components/AiActions/ArtifactViewer";
-import colors from "../../styles/theme";
-import { ChakraProvider, extendTheme } from "@chakra-ui/react";
-
-const theme = extendTheme({
-  colors,
-  styles: {
-    global: {
-      "&::-webkit-scrollbar": {
-        width: "10px",
-      },
-      "&::-webkit-scrollbar-track": {
-        backgroundColor: "transparent", // This hides the track
-      },
-      "&::-webkit-scrollbar-thumb": {
-        backgroundColor: "#888", // Change this color for your desired thumb color
-        borderRadius: "5px",
-      },
-      "&::-webkit-scrollbar-thumb:hover": {
-        backgroundColor: "#555",
-      },
-      scrollbarWidth: "none", // This will hide the scrollbar for Firefox
-    },
-  },
-});
+import { ChakraProvider } from "@chakra-ui/react";
+import { chakraTheme } from "@/utils/chakraTheme";
 
 function Viewer() {
   const [password, setPassword] = useState("");
@@ -137,7 +115,7 @@ function Viewer() {
   }, [router, sessionToken]);
 
   return (
-    <ChakraProvider theme={theme}>
+    <ChakraProvider theme={chakraTheme}>
       <Flex
         height="100vh"
         justifyContent={"center"}
