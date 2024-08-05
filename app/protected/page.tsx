@@ -1,4 +1,5 @@
 // import DeployButton from "@/components/DeployButton";
+import { getProjects } from "@/api/projectRoutes";
 import AuthButton from "@/components/AuthButton";
 import { createClient } from "@/utils/supabase/server";
 // import FetchDataSteps from "@/components/tutorial/FetchDataSteps";
@@ -15,6 +16,13 @@ export default async function ProtectedPage() {
   if (!user) {
     return redirect("/login");
   }
+  //first get session
+  const { data: session } = await supabase.auth.getSession();
+  if (session === null || session.session === null) {
+    return redirect("/login");
+  }
+  //fetch projects here
+  const projects = await getProjects(session.session);
 
   return (
     <div className="flex-1 w-full flex flex-col gap-20 items-center">
@@ -29,6 +37,11 @@ export default async function ProtectedPage() {
             <AuthButton />
           </div>
         </nav>
+        {projects.map((project) => (
+          <div key={project.project_id} className="p-4">
+            <h2>{project.name}</h2>
+          </div>
+        ))}
       </div>
 
       {/* <div className="flex-1 flex flex-col gap-20 max-w-4xl px-3">
