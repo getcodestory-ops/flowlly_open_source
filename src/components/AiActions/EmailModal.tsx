@@ -7,7 +7,6 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
-  Button,
   FormControl,
   FormLabel,
   Input,
@@ -21,6 +20,7 @@ import {
 import { IoMdSend } from "react-icons/io";
 import { distributeEmails } from "@/api/agentRoutes";
 import { Session } from "@supabase/supabase-js";
+import { Button } from "@/components/ui/button";
 
 const EmailModal = ({
   content,
@@ -78,14 +78,8 @@ const EmailModal = ({
 
   return (
     <>
-      <Button
-        leftIcon={<IoMdSend />}
-        onClick={onOpen}
-        colorScheme="blue"
-        size="sm"
-        m="2"
-        p="2"
-      >
+      <Button variant={"ghost"} onClick={onOpen}>
+        <IoMdSend className="mr-2" />
         Distribute {subject}
       </Button>
 
@@ -103,7 +97,7 @@ const EmailModal = ({
                 onChange={(e) => setEmailInput(e.target.value)}
                 placeholder="Enter email"
               />
-              <Button mt={4} onClick={handleAddEmail}>
+              <Button className="mt-4" onClick={handleAddEmail}>
                 Add Email
               </Button>
             </FormControl>
@@ -127,9 +121,7 @@ const EmailModal = ({
 
           <ModalFooter>
             <Button
-              colorScheme="yellow"
-              mr={3}
-              isDisabled={emails.length === 0}
+              disabled={emails.length === 0}
               onClick={handleDistributeEmails}
             >
               Distribute Emails

@@ -5,6 +5,8 @@ import { useStore } from "@/utils/store";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getProjects } from "@/api/projectRoutes";
 import { getActivities } from "@/api/activity_routes";
+import { getMembers } from "@/api/membersRoutes";
+
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 
 import MenuDrawer from "../Menu/Menu";
@@ -19,6 +21,7 @@ function SideMenuPanel() {
     scheduleProbability,
     setUserActivities,
     setTaskToView,
+    setMembers,
   } = useStore((state) => ({
     session: state.session,
     setUserProjects: state.setUserProjects,
@@ -28,6 +31,7 @@ function SideMenuPanel() {
     scheduleProbability: state.scheduleProbability,
     setUserActivities: state.setUserActivities,
     setTaskToView: state.setTaskToView,
+    setMembers: state.setMembers,
   }));
 
   const [hovered, setHovered] = useState<boolean>(false);
@@ -105,6 +109,24 @@ function SideMenuPanel() {
       setActiveProject(projects[0]);
     }
   }, [projects, setActiveProject, setUserProjects]);
+
+  const { data: members, isLoading: membersLoading } = useQuery({
+    queryKey: ["memberList", session, activeProject],
+    queryFn: async () => {
+      if (!session || !activeProject) {
+        return Promise.reject("No session or active project");
+      }
+
+      return getMembers(session, activeProject.project_id);
+    },
+    enabled: !!session?.access_token,
+  });
+
+  useEffect(() => {
+    if (members && members.data.length > 0) {
+      setMembers(members.data);
+    }
+  }, [members, setMembers]);
 
   return (
     <Flex

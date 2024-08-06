@@ -67,3 +67,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+.ProseMirror {
+  @apply p-2;
+  @apply outline-primary;
+  @apply outline-1;
+}

@@ -1,13 +1,8 @@
 import React, { use, useEffect, useState } from "react";
-import {
-  Button,
-  Flex,
-  Grid,
-  IconButton,
-  Text,
-  Textarea,
-  useToast,
-} from "@chakra-ui/react";
+import { useToast } from "@chakra-ui/react";
+import { Textarea } from "@/components/ui/textarea";
+
+import { Button } from "@/components/ui/button";
 import { MdSend } from "react-icons/md";
 
 import { updateScheduleViaNotes } from "@/api/schedule_routes";
@@ -69,44 +64,38 @@ function EditScheduleThroughNotes({ activityName }: { activityName: string }) {
   }, [isSuccess]);
 
   return (
-    <Flex flexDir={"column"} gap="4">
+    <div className="flex flex-col gap-4">
       {activeEdit && (
-        <>
-          <Text fontWeight={"bold"} p="2">
-            Add updates or notes related to the activity here
-          </Text>
-
+        <div className="p-2">
           <Textarea
-            resize="vertical"
+            placeholder={"Add updates or notes related to the activity here"}
             rows={10}
-            fontSize={"sm"}
+            className="p-2"
             onChange={(e) => setContent(e.target.value)}
             value={content}
-            bg="white"
           ></Textarea>
-        </>
+        </div>
       )}
 
       {!activeEdit && content}
-      <Flex>
+      <div>
         <Button
-          leftIcon={<MdSend />}
-          border="1px"
           aria-label="Submit Note to AI scheduler"
-          colorScheme="yellow"
+          variant="outline"
           onClick={() => {
             if (!activeEdit) setActiveEdit((state) => !state);
             if (!isPending && activeEdit) mutate();
           }}
-          isActive={isPending}
-          size="xs"
+          disabled={isPending}
+          size="sm"
         >
+          <MdSend className="mr-2" />
           {isPending
             ? "Note submitted Successfully!"
             : "Submit your note to AI scheduler"}
         </Button>
-      </Flex>
-    </Flex>
+      </div>
+    </div>
   );
 }
 

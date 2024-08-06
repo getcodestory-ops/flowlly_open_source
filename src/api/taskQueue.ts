@@ -84,3 +84,18 @@ export const deleteQueueMessage = async (
     },
   });
 };
+
+export const get_task_result = async (
+  session: Session,
+  taskId: string,
+  projectId: string
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/task_result/${projectId}`;
+  const respone = await axios.get(url, {
+    params: { task_id: taskId },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+  return respone.data;
+};

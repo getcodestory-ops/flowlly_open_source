@@ -131,10 +131,13 @@ function Viewer() {
       }
     }
     const { chatHistoryId } = router.query;
+
     if (typeof chatHistoryId === "string") {
       retrieveChat(chatHistoryId);
     }
   }, [router, sessionToken]);
+
+  const { projectId, childTaskId } = router.query;
 
   return (
     <ChakraProvider theme={theme}>
@@ -162,12 +165,14 @@ function Viewer() {
                 color="white"
                 overflow="scroll"
               >
-                {chatData && (
-                  <ArtifactViewer
-                    antartifact={chatData}
-                    sessionToken={sessionToken}
-                  />
-                )}
+                {typeof projectId === "string" &&
+                  typeof childTaskId === "string" && (
+                    <ArtifactViewer
+                      projectId={projectId}
+                      childTaskId={childTaskId}
+                      sessionToken={sessionToken}
+                    />
+                  )}
               </Box>
             </Center>
           </Flex>
