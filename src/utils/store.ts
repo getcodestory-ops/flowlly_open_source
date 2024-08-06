@@ -10,6 +10,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { MemberEntity } from "@/types/members";
 import { useState, useEffect } from "react";
+import { ActivityEntityWithMembers } from "./mapOwnerToMembers";
 
 export const useStoreHydrated = <T, F>(
   store: (callback: (state: T) => unknown) => unknown,
@@ -166,7 +167,8 @@ export const useStore = create<State>()(
       }),
     setRightPanelView: (view: "gantt" | "task") =>
       set(() => ({ rightPanelView: view })),
-    setTaskToView: (task: ActivityEntity) => set(() => ({ taskToView: task })),
+    setTaskToView: (task: ActivityEntity | ActivityEntityWithMembers) =>
+      set(() => ({ taskToView: task })),
     setTaskDetailsView: (
       view: "details" | "history" | "impact" | "gantt" | "edit"
     ) => set(() => ({ taskDetailsView: view })),

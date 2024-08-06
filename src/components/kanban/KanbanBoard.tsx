@@ -4,6 +4,7 @@ import KanbanLane from "./KanbanLane";
 import { useStore } from "@/utils/store";
 import { ActivityEntity } from "@/types/activities";
 import UpdateActivityModal from "../Schedule/UpdateActivityModal";
+import { ActivityEntityWithMembers } from "@/utils/mapOwnerToMembers";
 
 function KanbanBoard() {
   const { userActivities, setUserActivities, taskToView } = useStore(
@@ -14,7 +15,9 @@ function KanbanBoard() {
     })
   );
 
-  const [modifyTask, setModifyTask] = useState<ActivityEntity>(taskToView);
+  const [modifyTask, setModifyTask] = useState<
+    ActivityEntity | ActivityEntityWithMembers
+  >(taskToView);
   const [editOpen, setEditOpen] = useState<boolean>(false);
 
   const statuses = [
@@ -40,7 +43,7 @@ function KanbanBoard() {
 
   return (
     <Flex w={"full"} justifyContent={"space-around"}>
-      {modifyTask && (
+      {/* {modifyTask && (
         <UpdateActivityModal
           isOpen={editOpen}
           onClose={() => setEditOpen(false)}
@@ -48,7 +51,7 @@ function KanbanBoard() {
           modifyTask={modifyTask}
           updateSource={"kanban"}
         />
-      )}
+      )} */}
       {statuses.map((status, index) => (
         <KanbanLane
           key={index}
