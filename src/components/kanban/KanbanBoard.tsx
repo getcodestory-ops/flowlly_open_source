@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Flex } from "@chakra-ui/react";
-import KanbanLane from "./KanbanLane";
+// import KanbanLane from "./KanbanLane";
 import { useStore } from "@/utils/store";
 import { ActivityEntity } from "@/types/activities";
 import UpdateActivityModal from "../Schedule/UpdateActivityModal";
@@ -52,14 +52,14 @@ function KanbanBoard() {
           updateSource={"kanban"}
         />
       )} */}
-      {statuses.map((status, index) => (
+      {/* {statuses.map((status, index) => (
         <KanbanLane
           key={index}
           status={status}
           tasks={userActivities.filter((task) => task.status === status)}
           onDrop={handleDrop}
         />
-      ))}
+      ))} */}
     </Flex>
   );
 }
