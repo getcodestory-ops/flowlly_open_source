@@ -139,12 +139,14 @@ function ArtifactViewer({
 
   return (
     <div className="ml-2 flex">
-      {task_result && task_result.run_config && !task_result.task_results && (
-        <CountdownTimer runConfig={task_result.run_config} />
-      )}
+      {task_result &&
+        task_result.run_config &&
+        task_result.task_results.length === 0 && (
+          <CountdownTimer runConfig={task_result.run_config} />
+        )}
       {task_result &&
         task_result.task_results &&
-        task_result.task_results.length &&
+        task_result.task_results.length > 0 &&
         task_result.task_function && (
           <div className="flex flex-col">
             <Accordion type="single" collapsible className="w-full">
