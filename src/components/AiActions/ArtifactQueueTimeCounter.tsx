@@ -83,6 +83,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({ runConfig }) => {
     <Box textAlign="center" py={10} px={6}>
       {timeRemaining && (
         <Text fontSize="sm">
+          Running the process in:
           {timeRemaining.days} days, {timeRemaining.hours} hours,{" "}
           {timeRemaining.minutes} minutes, {timeRemaining.seconds} seconds
         </Text>

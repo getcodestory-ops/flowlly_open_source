@@ -106,7 +106,7 @@ function TaskResultDisplay({
       );
 
     default:
-      return <Flex>{JSON.stringify(results)}</Flex>;
+      return <Flex>{"waiting for results.."}</Flex>;
   }
 }
 
@@ -134,18 +134,19 @@ function ArtifactViewer({
     queryKey: ["task_result", childTaskId, projectId, sessionToken],
     queryFn: () => get_task_result(sessionToken, childTaskId, projectId),
     enabled: !!childTaskId && !!sessionToken,
+    // refetchInterval: 5000,
   });
 
   return (
     <div className="ml-2 flex">
+      {task_result && task_result.run_config && !task_result.task_results && (
+        <CountdownTimer runConfig={task_result.run_config} />
+      )}
       {task_result &&
         task_result.task_results &&
         task_result.task_results.length &&
         task_result.task_function && (
           <div className="flex flex-col">
-            {task_result.run_config && !task_result.task_results && (
-              <CountdownTimer runConfig={task_result.run_config} />
-            )}
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1">
                 <AccordionTrigger>Results </AccordionTrigger>
