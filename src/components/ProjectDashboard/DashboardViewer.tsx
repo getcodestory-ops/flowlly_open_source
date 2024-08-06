@@ -234,7 +234,7 @@ const DashboardXMLViewer: React.FC<DashboardProps> = ({ input }) => {
   }
 
   return (
-    <Box maxWidth="container.xl" margin="auto" p={8}>
+    <Box margin="auto" p={8}>
       <Heading as="h1" size="xl" mb={6}>
         Construction Project Dashboard
       </Heading>

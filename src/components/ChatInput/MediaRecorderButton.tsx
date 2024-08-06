@@ -111,7 +111,9 @@ const MediaRecorderButton: React.FC = () => {
               }}
             />
           }
-          colorScheme={recording ? "red" : "green"}
+          colorScheme={recording ? "red" : "blackAlpha"}
+          size="sm"
+          fontWeight={"normal"}
           onClick={recording ? stopRecording : startRecording}
         >
           {recording ? "Stop Recording" : "Voice note"}

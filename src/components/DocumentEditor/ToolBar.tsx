@@ -98,7 +98,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
             }
           }}
         >
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="w-48">
             <SelectValue placeholder="Select heading level" />
           </SelectTrigger>
           <SelectContent>

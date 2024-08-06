@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Flex, Text, Box, Button, Icon, Tooltip } from "@chakra-ui/react";
+import { Flex, Text, Box, Icon, Tooltip } from "@chakra-ui/react";
+import { Button } from "@/components/ui/button";
 import {
   MdHistoryToggleOff,
   MdInfoOutline,
@@ -21,6 +22,8 @@ import UpdateActivityModal from "./UpdateActivityModal";
 import { ActivityEntity } from "@/types/activities";
 import EditScheduleThroughNotes from "./EditScheduleThroughNote/EditScheduleThroughNote";
 import { useDeleteActivity } from "@/utils/useDeleteActivity";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ActivityEntityWithMembers } from "@/utils/mapOwnerToMembers";
 
 function ActivitiesDetailPage() {
   const handleTaskDelete = useDeleteActivity();
@@ -78,10 +81,26 @@ function ActivitiesDetailPage() {
     placeholderData: keepPreviousData,
   });
 
-  const handleEdit = (activity: ActivityEntity, newStatus: string) => {
+  const handleEdit = (
+    activity: ActivityEntityWithMembers | ActivityEntity,
+    newStatus: string
+  ) => {
     if (!activity) return;
-    setModifyTask(activity);
-    setEditOpen(true);
+    console.log(activity);
+
+    if (activity.owner) {
+      const ownerIds = activity.owner.map((owner) => {
+        if (typeof owner === "string") return owner;
+        return owner.id;
+      });
+      setModifyTask({
+        ...activity,
+        owner: ownerIds,
+        status: newStatus,
+      });
+      setEditOpen(true);
+      return;
+    }
   };
 
   useEffect(() => {
@@ -176,6 +195,7 @@ function ActivitiesDetailPage() {
         overflowY={"auto"}
         overscrollBehaviorY={"contain"}
         fontSize={"12px"}
+        maxW="xl"
       >
         <Flex maxW="xl" mb="2"></Flex>
         <Flex
@@ -216,17 +236,16 @@ function ActivitiesDetailPage() {
             fontWeight={"semibold"}
             color={`${!taskToView.owner ? "red" : "black"}`}
           >
-            {(members &&
-              taskToView.owner &&
-              taskToView.owner
-                .map((ownerId) => {
-                  const owner = members.filter(
-                    (member) => member.id === ownerId
-                  )[0];
-                  return owner?.first_name ?? "" + " " + owner?.last_name ?? "";
-                })
-                .join(", ")) ??
-              "No owner assigned"}
+            {taskToView.owner &&
+              taskToView.owner.length &&
+              (taskToView.owner
+                .map(
+                  (member) =>
+                    typeof member !== "string" &&
+                    `${member.first_name} ${member.last_name}`
+                )
+                .join(" ") ??
+                "No owner assigned")}
           </Text>
         </Flex>
         <Flex direction={"column"} mt={"4"}>
@@ -245,36 +264,6 @@ function ActivitiesDetailPage() {
         <Flex direction={"column"} mt={"4"}>
           <EditScheduleThroughNotes activityName={taskToView.name} />
         </Flex>
-        {/* <Flex direction={"column"} mt={"4"}>
-          <Text as={"i"} mr={"2"}>
-            Task Estimated Cost:
-          </Text>
-          <Text
-            fontWeight={"semibold"}
-            color={`${!taskToView.cost ? "red" : "black"}`}
-          >
-            {taskToView.cost ? taskToView.cost : "No estimated cost assigned"}
-          </Text>
-        </Flex> */}
-        {/* <Flex direction={"column"} mt={"4"}>
-          <Text as={"i"} mr={"2"}>
-            Task Resources:
-          </Text>
-          <Text
-            fontWeight={"semibold"}
-            color={`${
-              !taskToView.resources
-                ? "red"
-                : taskToView.resources.length > 0
-                ? "red"
-                : "black"
-            }`}
-          >
-            {taskToView.resources && taskToView.resources.length > 0
-              ? taskToView.resources
-              : "No resources assigned"}
-          </Text>
-        </Flex> */}
       </Flex>
     );
   };
@@ -320,7 +309,7 @@ function ActivitiesDetailPage() {
             <Text as={"b"}>Task Created</Text>
           </Flex>
         </Flex>
-        <Flex direction={"column"}>
+        <Flex direction={"column"} maxH="prose" maxW="md" overflow={"auto"}>
           {taskToView.history &&
             taskToView.history
               .sort((a, b) => {
@@ -377,14 +366,6 @@ function ActivitiesDetailPage() {
                           {history.message ?? history.impact ?? ""}
                         </Text>
                       </Flex>
-                      {/* <Flex>
-                    <Text fontSize={"sm"} as={"i"} mr={"2"}>
-                      Analysis:
-                    </Text>
-                    <Text fontSize={"sm"} as={"b"}>
-                      {history.impact}
-                    </Text>
-                  </Flex> */}
                     </>
                   )}
                 </Flex>
@@ -406,6 +387,9 @@ function ActivitiesDetailPage() {
         }}
         direction={"column"}
         fontSize={"12px"}
+        maxH="prose"
+        maxW="md"
+        overflow="scroll"
       >
         {taskToView.history &&
           taskToView.history
@@ -425,43 +409,47 @@ function ActivitiesDetailPage() {
               // If both are 'severe' or neither, maintain existing order
               return 0;
             })
-            .map((history) => (
-              <Flex
-                direction={"column"}
-                borderBottom={"2px"}
-                borderBottomColor={"brand.light"}
-                pb={"4"}
-                m="6"
-                key={history.created_at}
-                mb={"8"}
-                pr={"10"}
-              >
-                <Flex>
-                  <Text as={"i"} mr={"2"}>
-                    Date:
-                  </Text>
-                  <Text as={"b"}>{history.created_at?.slice(0, 10)}</Text>
-                </Flex>
-                <Flex mt={"2"}>
-                  <Text as={"i"} mr={"2"}>
-                    Severity:
-                  </Text>
-                  <Text as={"b"}>{history.severity}</Text>
-                </Flex>
-                <Flex direction={"column"} mt={"2"}>
-                  <Text as={"i"} mr={"2"}>
-                    Impact on Schedule:
-                  </Text>
-                  <Text as={"b"} pt={"2"}>
-                    {history.impact}
-                  </Text>
-                </Flex>
-                <Flex direction={"column"} mt={"2"}>
-                  <Text as={"i"} mr={"2"}>
-                    Suggested Actions:
-                  </Text>
-                </Flex>
-              </Flex>
+            .map((history, index) => (
+              <div key={`${history?.impact}-${index}`}>
+                {history && (
+                  <Flex
+                    direction={"column"}
+                    borderBottom={"2px"}
+                    borderBottomColor={"brand.light"}
+                    pb={"4"}
+                    m="6"
+                    key={history.created_at}
+                    mb={"8"}
+                    pr={"10"}
+                  >
+                    <Flex>
+                      <Text as={"i"} mr={"2"}>
+                        Date:
+                      </Text>
+                      <Text as={"b"}>{history.created_at?.slice(0, 10)}</Text>
+                    </Flex>
+                    <Flex mt={"2"}>
+                      <Text as={"i"} mr={"2"}>
+                        Severity:
+                      </Text>
+                      <Text as={"b"}>{history.severity}</Text>
+                    </Flex>
+                    <Flex direction={"column"} mt={"2"}>
+                      <Text as={"i"} mr={"2"}>
+                        Impact on Schedule:
+                      </Text>
+                      <Text as={"b"} pt={"2"}>
+                        {history.impact}
+                      </Text>
+                    </Flex>
+                    <Flex direction={"column"} mt={"2"}>
+                      <Text as={"i"} mr={"2"}>
+                        Suggested Actions:
+                      </Text>
+                    </Flex>
+                  </Flex>
+                )}
+              </div>
             ))}
         {actionsCard()}
       </Flex>
@@ -471,15 +459,7 @@ function ActivitiesDetailPage() {
   return (
     <>
       {userActivities && userActivities.length > 0 && taskToView && (
-        <Flex
-          direction={"column"}
-          // justifyContent={"center"}
-          w={"full"}
-          px={"8"}
-          py={"2"}
-          rounded={"lg"}
-          bg={"brand.background"}
-        >
+        <div className="flex flex-col w-full px-8 py-2 rounded-lg overflow-scroll">
           {modifyTask && editOpen && (
             <UpdateActivityModal
               isOpen={editOpen}
@@ -488,76 +468,62 @@ function ActivitiesDetailPage() {
               modifyTask={modifyTask}
             />
           )}
-          <Flex direction={"column"} zIndex={"1"}>
-            <Flex>
-              <Button
-                bg={`${
-                  taskDetailsView === "details" ? "brand.accent" : "white"
-                }`}
-                color={"brand.dark"}
-                size={"xs"}
-                _hover={{ bg: "brand.dark", color: "white" }}
-                alignContent={"center"}
-                mr={"6"}
-                onClick={() => setTaskDetailsView("details")}
-                border={"1px"}
-                borderColor={"brand.dark"}
-              >
-                <Flex alignItems={"center"}>
-                  <Icon as={MdInfoOutline} mr={"2"} />
-                  <Text>Task Details</Text>
-                </Flex>
-              </Button>
-              {taskToView?.history && (
-                <Button
-                  bg={`${
-                    taskDetailsView === "history" ? "brand.accent" : "white"
-                  }`}
-                  size={"xs"}
-                  _hover={{ bg: "brand.dark", color: "white" }}
-                  alignContent={"center"}
-                  onClick={() => setTaskDetailsView("history")}
-                  mr={"6"}
-                  border={"1px"}
-                  borderColor={"brand.dark"}
-                >
-                  <Flex alignItems={"center"}>
-                    <Icon as={MdHistoryToggleOff} mr={"2"} />
-                    <Text>Task History</Text>
+          <div>
+            <div className="flex flex-col w-96">
+              {taskToView && (
+                <>
+                  <Flex
+                    direction={"row"}
+                    alignItems={"baseline"}
+                    justifyContent={"space-between"}
+                  >
+                    <div className="flex items-center">
+                      <Icon
+                        as={BiSolidCircle}
+                        mr={"2"}
+                        color={
+                          taskToView.status === "Delayed"
+                            ? "#FF4141"
+                            : taskToView.status === "At Risk"
+                            ? "#FFA841"
+                            : taskToView.status === "In Progress"
+                            ? "#5F55EE"
+                            : taskToView.status === "Completed"
+                            ? "#26d995"
+                            : "brand2.dark"
+                        }
+                        boxSize={"3"}
+                      />
+                      <div className="font-bold text-sm min-h-12 flex items-center">
+                        {taskToView?.name}
+                      </div>
+                    </div>
+
+                    <>
+                      <Flex gap="4">
+                        <Button
+                          size={"sm"}
+                          variant={"outline"}
+                          onClick={() => handleEdit(taskToView, "In Progress")}
+                        >
+                          <Text>{editTask ? "Save Changes" : "Edit Task"}</Text>
+                        </Button>
+                        <Button
+                          size={"sm"}
+                          variant={"outline"}
+                          onClick={() => handleTaskDelete(taskToView.id)}
+                        >
+                          <Text> Delete Task</Text>
+                        </Button>
+                      </Flex>
+                    </>
                   </Flex>
-                </Button>
-              )}
-              {taskToView?.status === "Delayed" ||
-              taskToView?.status === "At Risk" ? (
-                <Button
-                  bg={`${
-                    taskDetailsView === "impact" ? "brand.accent" : "white"
-                  }`}
-                  size={"xs"}
-                  _hover={{ bg: "brand.dark", color: "white" }}
-                  onClick={() => setTaskDetailsView("impact")}
-                  mr={"6"}
-                  border={"1px"}
-                  borderColor={"brand.dark"}
-                >
-                  <Flex alignItems={"center"}>
-                    <Icon as={AiOutlineAlert} mr={"2"} />
-                    <Text>Delay Impact</Text>
-                  </Flex>
-                </Button>
-              ) : null}
-            </Flex>
-            {taskToView && (
-              <>
-                <Flex
-                  direction={"row"}
-                  alignItems={"baseline"}
-                  justifyContent={"space-between"}
-                >
-                  <Flex direction={"row"} pt={"8"} alignItems={"center"}>
-                    <Icon
-                      as={BiSolidCircle}
-                      mr={"2"}
+                  <Flex ml={"6"} fontSize={"12px"}>
+                    <Text as={"i"} mr={2}>
+                      Status:
+                    </Text>
+                    <Text
+                      as={"b"}
                       color={
                         taskToView.status === "Delayed"
                           ? "#FF4141"
@@ -569,71 +535,34 @@ function ActivitiesDetailPage() {
                           ? "#26d995"
                           : "brand2.dark"
                       }
-                      boxSize={"3"}
-                    />
-                    <Text as={"b"} fontSize={"14px"}>
-                      {taskToView?.name}
+                    >
+                      {taskToView.status}
                     </Text>
                   </Flex>
-
-                  {taskDetailsView === "details" && (
-                    <>
-                      <Flex gap="4">
-                        <Button
-                          size={"xs"}
-                          bg={"brand.dark"}
-                          color={"white"}
-                          _hover={{ bg: "brand.light", color: "brand.dark" }}
-                          // onClick={() => setEditTask(!editTask)}
-                          onClick={() => handleEdit(taskToView, "In Progress")}
-                        >
-                          <Text>{editTask ? "Save Changes" : "Edit Task"}</Text>
-                        </Button>
-                        <Button
-                          size={"xs"}
-                          bg={"brand.dark"}
-                          color={"white"}
-                          _hover={{ bg: "brand.light", color: "brand.dark" }}
-                          onClick={() => handleTaskDelete(taskToView.id)}
-                        >
-                          <Text> Delete Task</Text>
-                        </Button>
-                      </Flex>
-                      {/* <AddActivityChildren /> */}
-                    </>
-                  )}
-                </Flex>
-                <Flex ml={"6"} fontSize={"12px"}>
-                  <Text as={"i"} mr={2}>
-                    Status:
-                  </Text>
-                  <Text
-                    as={"b"}
-                    color={
-                      taskToView.status === "Delayed"
-                        ? "#FF4141"
-                        : taskToView.status === "At Risk"
-                        ? "#FFA841"
-                        : taskToView.status === "In Progress"
-                        ? "#5F55EE"
-                        : taskToView.status === "Completed"
-                        ? "#26d995"
-                        : "brand2.dark"
-                    }
-                  >
-                    {taskToView.status}
-                  </Text>
-                </Flex>
-              </>
-            )}
-          </Flex>
-
-          {taskDetailsView === "history" && historyView()}
-          {taskDetailsView === "impact" && impactView()}
-          {taskDetailsView === "details" && (
-            <>{editTask ? <ActivityEditView /> : detailsView()}</>
-          )}
-        </Flex>
+                </>
+              )}
+            </div>
+            <Tabs
+              defaultValue="details"
+              className="flex flex-col h-full overflow-scroll p-2  "
+            >
+              <TabsList className="grid grid-cols-3 w-96 ">
+                <TabsTrigger value="details">Task Details</TabsTrigger>
+                <TabsTrigger value="history">Task History</TabsTrigger>
+                <TabsTrigger value="impact">Delay Impact</TabsTrigger>
+              </TabsList>
+              <TabsContent value="details" className="flex-1 overflow-scroll">
+                {detailsView()}
+              </TabsContent>
+              <TabsContent value="history" className="flex-1 overflow-scroll">
+                {historyView()}
+              </TabsContent>
+              <TabsContent value="impact" className="flex-1 overflow-scroll">
+                {impactView()}
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
       )}
     </>
   );

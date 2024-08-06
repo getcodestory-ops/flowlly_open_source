@@ -30,6 +30,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import ScheduleNotifications from "../Notifications/ScheduleNotifications";
 import MediaRecorderButton from "../ChatInput/MediaRecorderButton";
 import DashboardXMLViewer from "../ProjectDashboard/DashboardViewer";
+import { ActionDock } from "@/components/ProjectDashboard/ActionDock";
 
 function ScheduleSummaryView() {
   const session = useStore((state) => state.session);
@@ -111,7 +112,7 @@ function ScheduleSummaryView() {
   }, [isSuccess]);
 
   return (
-    <Grid templateColumns="repeat(8, 1fr)" gap="4" p="4" h="full" w="full">
+    <Grid templateColumns="repeat(8, 1fr)" gap="4" p="4" h="full">
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} size="4xl">
         <ModalOverlay />
         {data?.data && (
@@ -152,7 +153,7 @@ function ScheduleSummaryView() {
         )}
       </Modal>
       <GridItem colSpan={smallScreen ? 8 : 6} overflow="auto">
-        <Flex direction="column">
+        <div className="flex justify-center">
           <Flex justifyContent={"right"}></Flex>
           {isLoading && (
             <Flex gap="2">
@@ -174,12 +175,12 @@ function ScheduleSummaryView() {
           )}
 
           {data?.data && (
-            <Flex p="4">
-              {/* <MarkDownDisplay content={summaryContent} /> */}
+            <div className="flex  flex-1 overflow-hidden">
               <DashboardXMLViewer input={data?.data} />
-            </Flex>
+            </div>
           )}
-        </Flex>
+        </div>
+
         <Flex
           alignItems={"center"}
           justifyContent={"center"}
@@ -187,22 +188,27 @@ function ScheduleSummaryView() {
           bottom="0"
           bg="white"
           p="2"
+          rounded="lg"
         >
+          {/* <ActionDock /> */}
           <Flex
             gap="2"
-            bg="brand.light"
             p="2"
             borderRadius={"lg"}
+            border="1px"
+            borderColor={"gray.200"}
             alignItems={"center"}
+            pt="4"
             flexDir={smallScreen ? "column" : "row"}
           >
-            <Text fontWeight={"bold"}>Submit Project updates </Text>
             <MediaRecorderButton />
             <Tooltip label="Edit schedule using notes">
               <Button
                 leftIcon={<FaPencilAlt />}
                 onClick={() => setIsOpen(true)}
-                colorScheme="green"
+                colorScheme="blackAlpha"
+                size="sm"
+                fontWeight={"normal"}
               >
                 {isPending ? "Note submitted Successfully!" : "Text note"}
               </Button>

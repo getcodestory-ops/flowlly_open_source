@@ -4,8 +4,6 @@ import { AgentMessage } from "@/types/agentChats";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
 import ArtifactViewer from "./ArtifactViewer";
 import { useStore } from "@/utils/store";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { FaRegDotCircle } from "react-icons/fa";
 
 /**
  * Represents the props for the AgentMessageInteractiveView component.
@@ -17,13 +15,7 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
   return (
     <Flex flexDir="column">
       {message.response ? (
-        <Alert className="my-8">
-          <FaRegDotCircle />
-          <AlertTitle>Task complete</AlertTitle>
-          <AlertDescription className="font-normal">
-            {message.response}
-          </AlertDescription>
-        </Alert>
+        <MarkDownDisplay content={message.response} />
       ) : (
         <>
           {typeof message.content === "string" && (

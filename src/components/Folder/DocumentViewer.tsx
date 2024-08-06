@@ -54,7 +54,7 @@ function DocumentViewer() {
 
           <Flex flexDir={"column"} gap="4">
             <Flex fontWeight={"bold"}>Folders</Flex>
-            <Flex
+            {/* <Flex
               _hover={{ bg: "gray.200", borderLeft: "2px solid gray.400" }}
               borderRadius={"lg"}
             >
@@ -66,7 +66,7 @@ function DocumentViewer() {
               >
                 Home Folder
               </Button>
-            </Flex>
+            </Flex> */}
             <Flex
               _hover={{ bg: "gray.200" }}
               borderLeft={documentViewer === "Media" ? "2px solid gray" : ""}
@@ -81,7 +81,7 @@ function DocumentViewer() {
                 Media
               </Button>
             </Flex>
-            <Flex _hover={{ bg: "gray.200" }} borderRadius={"lg"}>
+            {/* <Flex _hover={{ bg: "gray.200" }} borderRadius={"lg"}>
               <Button
                 leftIcon={<GrDocument />}
                 colorScheme=""
@@ -90,8 +90,8 @@ function DocumentViewer() {
               >
                 My Files
               </Button>
-            </Flex>
-            <Flex _hover={{ bg: "gray.200" }} borderRadius={"lg"}>
+            </Flex> */}
+            {/* <Flex _hover={{ bg: "gray.200" }} borderRadius={"lg"}>
               <Button
                 leftIcon={<GrFavorite />}
                 colorScheme=""
@@ -100,7 +100,7 @@ function DocumentViewer() {
               >
                 Favorites
               </Button>
-            </Flex>
+            </Flex> */}
           </Flex>
           <Flex flexDir={"column"} gap="4">
             <Flex fontWeight={"bold"}>Reports</Flex>
@@ -118,7 +118,7 @@ function DocumentViewer() {
                 Daily Reports
               </Button>
             </Flex>
-            <Flex _hover={{ bg: "gray.200" }} borderRadius={"lg"}>
+            {/* <Flex _hover={{ bg: "gray.200" }} borderRadius={"lg"}>
               <Button
                 leftIcon={<CiClock2 />}
                 colorScheme=""
@@ -127,8 +127,8 @@ function DocumentViewer() {
               >
                 Schedule Impact
               </Button>
-            </Flex>
-            <Flex _hover={{ bg: "gray.200" }} borderRadius={"lg"}>
+            </Flex> */}
+            {/* <Flex _hover={{ bg: "gray.200" }} borderRadius={"lg"}>
               <Button
                 leftIcon={<CiStickyNote />}
                 colorScheme=""
@@ -137,7 +137,7 @@ function DocumentViewer() {
               >
                 Notes
               </Button>
-            </Flex>
+            </Flex> */}
           </Flex>
         </Flex>
       </GridItem>

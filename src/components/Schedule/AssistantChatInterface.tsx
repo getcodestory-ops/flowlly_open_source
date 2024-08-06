@@ -1,20 +1,20 @@
 import React, { useRef, useEffect, useLayoutEffect } from "react";
-import {
-  Flex,
-  Button,
-  Icon,
-  Text,
-  Input,
-  GridItem,
-  Box,
-} from "@chakra-ui/react";
+import { Flex, Icon, Text, Input, GridItem, Box } from "@chakra-ui/react";
 import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
 import { useStore } from "@/utils/store";
 import { BsSend } from "react-icons/bs";
 import { IoChatboxEllipses } from "react-icons/io5";
 import UpdateTaskForm from "../ChatInput/Forms/UpdateTaskForm";
 import AgentMessageInteractiveView from "../AiActions/AgentMessageInteractiveView";
-
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { CornerDownLeft, Mic, Paperclip } from "lucide-react";
 function AssistantChatInterface() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -136,38 +136,89 @@ function AssistantChatInterface() {
         py={"2"}
       >
         {activeProject && (
-          <Flex
-            justifyContent={"center"}
-            bg={"brand.background"}
-            p={"2"}
-            rounded={"xl"}
+          <div
+            className="relative overflow-hidden rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring"
+            x-chunk="dashboard-03-chunk-1"
           >
-            <Input
-              size={"sm"}
-              border={"white"}
-              rounded={"lg"}
-              placeholder={"Flowlly help me ..."}
-              className="custom-selector"
-              value={chatInput}
+            <Label htmlFor="message" className="sr-only">
+              Message
+            </Label>
+            <Textarea
+              id="message"
+              placeholder="Type your message here..."
+              className="min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0"
               onChange={(e) => setChatInput(e.target.value)}
+              value={chatInput}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   handleChatSubmit();
                 }
               }}
-            ></Input>
+            />
+            <div className="flex items-center p-3 pt-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Paperclip className="size-4" />
+                    <span className="sr-only">Attach file</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">Attach File</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Mic className="size-4" />
+                    <span className="sr-only">Use Microphone</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">Use Microphone</TooltipContent>
+              </Tooltip>
+              <Button
+                type="submit"
+                size="sm"
+                className="ml-auto gap-1.5"
+                onClick={() => {
+                  handleChatSubmit();
+                }}
+              >
+                Send Message
+                <CornerDownLeft className="size-3.5" />
+              </Button>
+            </div>
+          </div>
+          // <Flex
+          //   justifyContent={"center"}
+          //   bg={"brand.background"}
+          //   p={"2"}
+          //   rounded={"xl"}
+          // >
+          //   <Input
+          //     size={"sm"}
+          //     border={"white"}
+          //     rounded={"lg"}
+          //     placeholder={"Flowlly help me ..."}
+          //     className="custom-selector"
+          //     value={chatInput}
+          //     onChange={(e) => setChatInput(e.target.value)}
+          //     onKeyDown={(e) => {
+          //       if (e.key === "Enter" && !e.shiftKey) {
+          //         handleChatSubmit();
+          //       }
+          //     }}
+          //   ></Input>
 
-            <Button
-              rounded={"full"}
-              bg={"white"}
-              _hover={{ bg: "brand.dark", color: "white" }}
-              onClick={() => {
-                handleChatSubmit();
-              }}
-            >
-              <Icon as={BsSend} fontSize={"22px"}></Icon>
-            </Button>
-          </Flex>
+          //   <Button
+          //     rounded={"full"}
+          //     bg={"white"}
+          //     _hover={{ bg: "brand.dark", color: "white" }}
+          //     onClick={() => {
+          //       handleChatSubmit();
+          //     }}
+          //   >
+          //     <Icon as={BsSend} fontSize={"22px"}></Icon>
+          //   </Button>
+          // </Flex>
         )}
       </GridItem>
     </>

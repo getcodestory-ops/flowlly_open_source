@@ -3,6 +3,7 @@ import { Chat, ChatMessage, ChatHistory } from "@/types/chat";
 import { ProjectEntity } from "@/types/projects";
 import { AgentChatEntity } from "@/types/agentChats";
 import { ActivityEntity } from "@/types/activities";
+import { ActivityEntityWithMembers } from "@/utils/mapOwnerToMembers";
 import { MemberEntity } from "./members";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
@@ -79,7 +80,7 @@ export type State = {
   selectedContext: Brain | null;
   pdfViewer: PdfViewer;
   rightPanelView: "gantt" | "task";
-  taskToView: ActivityEntity;
+  taskToView: ActivityEntityWithMembers | ActivityEntity;
   taskDetailsView: "details" | "history" | "impact" | "gantt" | "edit";
   filterView: "none" | "Delayed" | "At Risk" | "In Progress" | any;
   scheduleProbability: number;
@@ -114,7 +115,7 @@ export type State = {
   setPdfViewer: (pdfDetails: any) => void;
   updateChatHistory: (id: string, chatHistory: ChatHistory[]) => void;
   setRightPanelView: (view: "gantt" | "task") => void;
-  setTaskToView: (task: ActivityEntity) => void;
+  setTaskToView: (task: ActivityEntityWithMembers | ActivityEntity) => void;
   setTaskDetailsView: (
     view: "details" | "history" | "impact" | "gantt" | "edit"
   ) => void;

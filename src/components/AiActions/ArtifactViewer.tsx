@@ -11,6 +11,12 @@ import ContentEditor from "../DocumentEditor/ContentEditor";
 import { FaRegDotCircle } from "react-icons/fa";
 import ActionItemViewer from "./ActionItemViewer";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 function TaskResultDisplay({
   task_function,
@@ -87,12 +93,13 @@ function TaskResultDisplay({
                   {results.child_task.message}
                 </AlertDescription>
               </Alert>
-
-              <ArtifactViewer
-                childTaskId={results.child_task.child_task_id}
-                projectId={projectId}
-                sessionToken={sessionToken}
-              />
+              <div className="ml-2 border-l-2">
+                <ArtifactViewer
+                  childTaskId={results.child_task.child_task_id}
+                  projectId={projectId}
+                  sessionToken={sessionToken}
+                />
+              </div>
             </div>
           )}
         </>
@@ -130,26 +137,34 @@ function ArtifactViewer({
   });
 
   return (
-    <Flex ml="2">
+    <div className="ml-2 flex">
       {task_result &&
         task_result.task_results &&
         task_result.task_results.length &&
         task_result.task_function && (
-          <Flex flexDir="column">
+          <div className="flex flex-col">
             {task_result.run_config && !task_result.task_results && (
               <CountdownTimer runConfig={task_result.run_config} />
             )}
-
-            <TaskResultDisplay
-              task_function={task_result.task_function}
-              results={task_result.task_results[0].results}
-              chidlTaskId={childTaskId}
-              projectId={projectId}
-              sessionToken={sessionToken}
-            />
-          </Flex>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="item-1">
+                <AccordionTrigger>Results </AccordionTrigger>
+                <AccordionContent>
+                  <div className="ml-2 border-l-2">
+                    <TaskResultDisplay
+                      task_function={task_result.task_function}
+                      results={task_result.task_results[0].results}
+                      chidlTaskId={childTaskId}
+                      projectId={projectId}
+                      sessionToken={sessionToken}
+                    />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
         )}
-    </Flex>
+    </div>
   );
 }
 export default ArtifactViewer;
