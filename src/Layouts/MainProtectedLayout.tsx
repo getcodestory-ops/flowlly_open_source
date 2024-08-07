@@ -38,9 +38,8 @@ export function MainLayout() {
   }));
 
   useEffect(() => {
-    // console.log("userActivities", userActivities);
     setProjectStatus(checkProjectStatus(userActivities));
-  }, [userActivities]);
+  }, [userActivities, setProjectStatus]);
 
   return (
     <>

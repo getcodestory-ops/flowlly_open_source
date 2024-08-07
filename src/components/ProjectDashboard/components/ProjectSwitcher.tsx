@@ -33,19 +33,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { useStore } from "@/utils/store";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getProjects } from "@/api/projectRoutes";
 import supabase from "@/utils/supabaseClient";
-import { useRouter } from "next/router";
-import { ProjectEntity } from "@/types/projects";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const queryClient = new QueryClient();
@@ -86,25 +78,14 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
   useEffect(() => {
     if (userProjects.length === 0) return;
 
-    // if (projectId) {
-    //   const project = userProjects.find(
-    //     (p: ProjectEntity) => p.project_id === projectId
-    //   );
-
-    //   if (project) {
-    //     setActiveProject(project);
-    //     return;
-    //   }
-    // }
-
     setActiveProject(userProjects[0]);
-  }, [userProjects.length, setUserProjects, setActiveProject]);
+  }, [userProjects, userProjects.length, setUserProjects, setActiveProject]);
 
   useEffect(() => {
     if (data && data.length > 0 && isSuccess) {
       setUserProjects(data);
     }
-  }, [data?.length, isSuccess, setUserProjects]);
+  }, [data?.length, isSuccess, setUserProjects, data]);
 
   useEffect(() => {
     async function loginCheck() {
