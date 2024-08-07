@@ -11,19 +11,19 @@ import { immer } from "zustand/middleware/immer";
 import { MemberEntity } from "@/types/members";
 import { useState, useEffect } from "react";
 
-export const useStoreHydrated = <T, F>(
-  store: (callback: (state: T) => unknown) => unknown,
-  callback: (state: T) => F
-) => {
-  const result = store(callback) as F;
-  const [data, setData] = useState<F>();
+// export const useStoreHydrated = <T, F>(
+//   store: (callback: (state: T) => unknown) => unknown,
+//   callback: (state: T) => F
+// ) => {
+//   const result = store(callback) as F;
+//   const [data, setData] = useState<F>();
 
-  useEffect(() => {
-    setData(result);
-  }, []);
+//   useEffect(() => {
+//     setData(result);
+//   }, []);
 
-  return data;
-};
+//   return data;
+// };
 
 export const useStore = create<State>()(
   // persist(

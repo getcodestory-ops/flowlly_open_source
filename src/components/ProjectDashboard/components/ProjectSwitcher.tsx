@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState } from "react";
 import {
   CaretSortIcon,
@@ -45,17 +46,19 @@ import { getProjects } from "@/api/projectRoutes";
 import supabase from "@/utils/supabaseClient";
 import { useRouter } from "next/router";
 import { ProjectEntity } from "@/types/projects";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+const queryClient = new QueryClient();
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
 >;
 
 interface TeamSwitcherProps extends PopoverTriggerProps {}
 
-export default function ProjectSwitcher({ className }: TeamSwitcherProps) {
-  const router = useRouter();
-  const { query } = router;
-  const projectId = query.projectId as string;
+export function ProjectSwitcher({ className }: TeamSwitcherProps) {
+  // const router = useRouter();
+  // const { query } = router;
+  // const projectId = query.projectId as string;
 
   const {
     session,
@@ -83,19 +86,19 @@ export default function ProjectSwitcher({ className }: TeamSwitcherProps) {
   useEffect(() => {
     if (userProjects.length === 0) return;
 
-    if (projectId) {
-      const project = userProjects.find(
-        (p: ProjectEntity) => p.project_id === projectId
-      );
+    // if (projectId) {
+    //   const project = userProjects.find(
+    //     (p: ProjectEntity) => p.project_id === projectId
+    //   );
 
-      if (project) {
-        setActiveProject(project);
-        return;
-      }
-    }
+    //   if (project) {
+    //     setActiveProject(project);
+    //     return;
+    //   }
+    // }
 
     setActiveProject(userProjects[0]);
-  }, [userProjects.length, setUserProjects, setActiveProject, projectId]);
+  }, [userProjects.length, setUserProjects, setActiveProject]);
 
   useEffect(() => {
     if (data && data.length > 0 && isSuccess) {
@@ -157,9 +160,9 @@ export default function ProjectSwitcher({ className }: TeamSwitcherProps) {
                         key={project.project_id}
                         onSelect={() => {
                           setActiveProject(project);
-                          router.push(
-                            `/documents?projectId=${project.project_id}`
-                          );
+                          // router.push(
+                          //   `/documents?projectId=${project.project_id}`
+                          // );
                           setOpen(false);
                         }}
                         className="text-sm"
@@ -256,5 +259,13 @@ export default function ProjectSwitcher({ className }: TeamSwitcherProps) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export default function Switcher() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ProjectSwitcher />
+    </QueryClientProvider>
   );
 }
