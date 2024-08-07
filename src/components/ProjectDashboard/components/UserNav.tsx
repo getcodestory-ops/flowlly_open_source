@@ -29,7 +29,9 @@ export async function UserNav() {
     return redirect("/applogin");
   };
 
-  if (!user) return redirect("/applogin");
+  if (!user) {
+    return <></>;
+  }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
