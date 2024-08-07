@@ -2,7 +2,8 @@ import "@/styles/globals.css";
 
 import Image from "next/image";
 import { Archivo_Black } from "next/font/google";
-
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 // import { MainNav } from "@/components/MainNav/MainNav";
 import { Search } from "@/components/ProjectDashboard/components/Search";
 import ProjectSwitcher from "@/components/ProjectDashboard/components/ProjectSwitcher";
@@ -13,11 +14,28 @@ const archivoBlack = Archivo_Black({
   subsets: ["latin"],
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const onLogout = async () => {
+    "use server";
+
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    return redirect("/applogin");
+  };
+
+  if (!user) {
+    return <></>;
+  }
   return (
     <main className="flex flex-col">
       <div className="md:hidden">
@@ -44,7 +62,7 @@ export default function RootLayout({
             {/* <MainNav className="mx-6" /> */}
             <div className="ml-auto flex items-center space-x-4">
               <Search />
-              <UserNav />
+              <UserNav user={user} onLogout={onLogout} />
             </div>
           </div>
         </div>

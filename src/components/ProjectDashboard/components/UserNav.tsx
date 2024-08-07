@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,25 +13,32 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { RedirectButton } from "@/components/RedirectButton/RedirectButton";
+import { User } from "@supabase/supabase-js";
 
-export async function UserNav() {
-  const supabase = createClient();
+export function UserNav({
+  user,
+  onLogout,
+}: {
+  user: User;
+  onLogout: () => void;
+}) {
+  // const supabase = createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // const {
+  //   data: { user },
+  // } = await supabase.auth.getUser();
 
-  const signOut = async () => {
-    "use server";
+  // const signOut = async () => {
+  //   "use server";
 
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    return redirect("/applogin");
-  };
+  //   const supabase = createClient();
+  //   await supabase.auth.signOut();
+  //   return redirect("/applogin");
+  // };
 
-  if (!user) {
-    return <></>;
-  }
+  // if (!user) {
+  //   return <></>;
+  // }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -77,7 +84,7 @@ export async function UserNav() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <form action={signOut}>
+          <form action={onLogout}>
             <button className=" rounded-md no-underline bg-btn-background hover:bg-btn-background-hover">
               Logout
             </button>
