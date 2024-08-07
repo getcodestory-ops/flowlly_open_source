@@ -1,16 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import Link from "next/link";
 import { redirect } from "next/navigation";
-// import {
-//   Flex,
-//   Avatar,
-//   Menu,
-//   MenuButton,
-//   MenuList,
-//   MenuItem,
-//   Button,
-//   Tooltip,
-// } from "@chakra-ui/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {

@@ -1,5 +1,5 @@
 // import DeployButton from "../components/DeployButton";
-import AuthButton from "../components/AuthButton";
+// import AuthButton from "../components/AuthButton";
 import { createClient } from "@/utils/supabase/server";
 // import ConnectSupabaseSteps from "@/components/tutorial/ConnectSupabaseSteps";
 // import SignUpUserSteps from "@/components/tutorial/SignUpUserSteps";
@@ -25,7 +25,7 @@ export default async function Index() {
         <div className="w-full max-w-4xl flex justify-between items-center p-3 text-sm">
           {/* {isSupabaseConnected && } */}
           {/* <DeployButton /> */}
-          <AuthButton />
+          {/* <AuthButton /> */}
         </div>
       </nav>
 
