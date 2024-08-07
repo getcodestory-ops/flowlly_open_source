@@ -176,3 +176,26 @@ export const deleteActivity = async ({
 
   return response.data;
 };
+
+export const archiveActivity = async ({
+  session,
+  projectId,
+  activityId,
+}: {
+  session: Session;
+  projectId: string;
+  activityId: string;
+}) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/activity/archive/${projectId}/${activityId}`;
+  const response = await axios.delete(url, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  if (!response.data) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.data;
+};
