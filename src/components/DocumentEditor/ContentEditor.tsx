@@ -28,6 +28,12 @@ const ContentEditor = ({
       ImageResize,
       TextAlign,
     ],
+    editorProps: {
+      attributes: {
+        class:
+          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl m-5 focus:outline-none ",
+      },
+    },
     content: content,
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
@@ -38,9 +44,7 @@ const ContentEditor = ({
   return (
     <Flex
       w="full"
-      h="full"
       maxH="70vh"
-      p="2"
       flexDir="column"
       overflowY="auto"
       sx={{
@@ -50,8 +54,8 @@ const ContentEditor = ({
         },
         h2: {
           fontSize: "3xl",
-
-          marginTop: "2rem",
+          marginTop: "1rem",
+          marginBottom: "1rem",
         },
         h3: {
           fontSize: "2xl",
@@ -106,7 +110,7 @@ const ContentEditor = ({
               </Button>
             </Flex>
           </BubbleMenu>
-          <EditorContent editor={editor} />
+          <EditorContent editor={editor} className="m-4 " />
         </>
       )}
     </Flex>

@@ -37,6 +37,7 @@ import {
 import { useStore } from "@/utils/store";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getProjects } from "@/api/projectRoutes";
+import { getMembers } from "@/api/membersRoutes";
 import supabase from "@/utils/supabaseClient";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -58,6 +59,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     activeProject,
     setActiveProject,
     setUserProjects,
+    setMembers,
     setSession,
   } = useStore((state) => ({
     session: state.session,
@@ -65,6 +67,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     activeProject: state.activeProject,
     setActiveProject: state.setActiveProject,
     setUserProjects: state.setUserProjects,
+    setMembers: state.setMembers,
     setSession: state.setSession,
   }));
 
@@ -96,6 +99,24 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     }
     loginCheck();
   }, [setSession]);
+
+  const { data: members, isLoading: membersLoading } = useQuery({
+    queryKey: ["memberList", session, activeProject],
+    queryFn: async () => {
+      if (!session || !activeProject) {
+        return Promise.reject("No session or active project");
+      }
+
+      return getMembers(session, activeProject.project_id);
+    },
+    enabled: !!session?.access_token,
+  });
+
+  useEffect(() => {
+    if (members) {
+      setMembers(members);
+    }
+  }, [members, setMembers]);
 
   const [open, setOpen] = useState(false);
   const [showNewTeamDialog, setShowNewTeamDialog] = useState(false);

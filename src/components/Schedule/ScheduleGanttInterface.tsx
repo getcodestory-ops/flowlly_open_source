@@ -292,7 +292,7 @@ const ScheduleGanttInterface = () => {
           />
         )}
 
-        <Flex>
+        <div className="flex items-center gap-4 p-2">
           <Icon
             as={PiMagnifyingGlassPlus}
             cursor={"pointer"}
@@ -309,21 +309,13 @@ const ScheduleGanttInterface = () => {
             onClick={handleCriticalPath}
           />
 
-          {/* <Icon
-            as={MdFormatListBulletedAdd}
-            cursor={"pointer"}
-            onClick={handleAddActivity}
-          /> */}
-        </Flex>
-        <ViewSwitcher
-          onViewModeChange={(viewMode) => setView(viewMode)}
-          onViewListChange={setIsChecked}
-          isChecked={isChecked}
-          View={view}
-        />
-        <Text fontSize={"md"} fontWeight={"bold"} mt={"2"}>
-          {view} View
-        </Text>
+          <ViewSwitcher
+            onViewModeChange={(viewMode) => setView(viewMode)}
+            onViewListChange={setIsChecked}
+            isChecked={isChecked}
+            View={view}
+          />
+        </div>
       </Flex>
       <Flex
         className="Wrapper"

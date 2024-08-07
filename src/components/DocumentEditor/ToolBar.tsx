@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { Text, Spinner } from "@chakra-ui/react";
 import {
-  HStack,
-  IconButton,
-  Tooltip,
   Select,
-  Divider,
-  Text,
-  Box,
-  Spinner,
-} from "@chakra-ui/react";
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import {
   FaBold,
   FaItalic,
@@ -19,6 +19,7 @@ import {
   FaUndo,
   FaRedo,
 } from "react-icons/fa";
+
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import htmlToPdfmake from "html-to-pdfmake";
@@ -27,6 +28,8 @@ import { TDocumentDefinitions } from "pdfmake/interfaces";
 import useDebounce from "@/utils/useDebounce";
 import EmailModal from "../AiActions/EmailModal";
 import { useStore } from "@/utils/store";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
@@ -80,25 +83,10 @@ const Toolbar: React.FC<ToolbarProps> = ({
     return null;
   }
   return (
-    <Box position="sticky" top={0} zIndex={10} bg="gray.400" borderRadius="lg">
-      <HStack spacing={1} overflowX="auto" px={2} borderRadius="md">
+    <div className="flex items-center justify-between  bg-gray-900 text-white   rounded-lg top-0 sticky z-10 ">
+      <div className="flex items-center justify-between px-4 py-2 bg-gray-900 text-white  mx-auto rounded-lg">
         <Select
-          size="sm"
-          w="auto"
-          color="blue.500"
-          borderRadius="lg"
-          outline="none"
-          value={
-            editor.isActive("heading", { level: 1 })
-              ? "h1"
-              : editor.isActive("heading", { level: 2 })
-              ? "h2"
-              : editor.isActive("heading", { level: 3 })
-              ? "h3"
-              : "p"
-          }
-          onChange={(e) => {
-            const value = e.target.value;
+          onValueChange={(value) => {
             if (value === "p") {
               editor.chain().focus().setParagraph().run();
             } else {
@@ -110,164 +98,76 @@ const Toolbar: React.FC<ToolbarProps> = ({
             }
           }}
         >
-          <option value="p">Paragraph</option>
-          <option value="h1">Heading 1</option>
-          <option value="h2">Heading 2</option>
-          <option value="h3">Heading 3</option>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Select heading level" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="p">Paragraph</SelectItem>
+              <SelectItem value="h1">Heading 1</SelectItem>
+              <SelectItem value="h2">Heading 2</SelectItem>
+              <SelectItem value="h3">Heading 3</SelectItem>
+            </SelectGroup>
+          </SelectContent>
         </Select>
 
-        <Divider orientation="vertical" />
+        <Button
+          onClick={() => editor.chain().focus().toggleMark("bold").run()}
+          variant={"ghost"}
+        >
+          <FaBold />
+        </Button>
+        <Button
+          variant={"ghost"}
+          onClick={() => editor.chain().focus().toggleMark("italic").run()}
+        >
+          <FaItalic />
+        </Button>
 
-        <Tooltip label="Bold">
-          <IconButton
-            aria-label="Bold"
-            icon={<FaBold />}
-            onClick={() => editor.chain().focus().toggleMark("bold").run()}
-            isActive={editor.isActive("bold")}
-            variant={editor.isActive("bold") ? "solid" : "ghost"}
-            colorScheme="blue"
-            size="sm"
-          />
-        </Tooltip>
+        <Button
+          variant={"ghost"}
+          onClick={() => editor.chain().focus().toggleMark("underline").run()}
+        >
+          <FaUnderline />
+        </Button>
 
-        <Tooltip label="Italic">
-          <IconButton
-            aria-label="Italic"
-            icon={<FaItalic />}
-            onClick={() => editor.chain().focus().toggleMark("italic").run()}
-            isActive={editor.isActive("italic")}
-            variant={editor.isActive("italic") ? "solid" : "ghost"}
-            colorScheme="blue"
-            size="sm"
-          />
-        </Tooltip>
+        <Button
+          variant={"ghost"}
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+        >
+          <FaListUl />
+        </Button>
 
-        <Tooltip label="Underline">
-          <IconButton
-            aria-label="Underline"
-            icon={<FaUnderline />}
-            onClick={() => editor.chain().focus().toggleMark("underline").run()}
-            isActive={editor.isActive("underline")}
-            variant={editor.isActive("underline") ? "solid" : "ghost"}
-            colorScheme="blue"
-            size="sm"
-          />
-        </Tooltip>
+        <Button
+          variant={"ghost"}
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        >
+          <FaListOl />
+        </Button>
+        <Button
+          variant={"ghost"}
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+        >
+          <FaCode />
+        </Button>
+        <Separator orientation="vertical" />
+        <Button
+          variant={"ghost"}
+          onClick={() => editor.chain().focus().undo().run()}
+        >
+          <FaUndo />
+        </Button>
+        <Button
+          variant={"ghost"}
+          onClick={() => editor.chain().focus().redo().run()}
+        >
+          <FaRedo />
+        </Button>
+        <Separator orientation="vertical" />
+        <Button variant={"ghost"} onClick={exportPdf}>
+          <FaFileDownload />
+        </Button>
 
-        <Divider orientation="vertical" />
-
-        <Tooltip label="Bullet List">
-          <IconButton
-            aria-label="Bullet List"
-            icon={<FaListUl />}
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-            isActive={editor.isActive("bulletList")}
-            variant={editor.isActive("bulletList") ? "solid" : "ghost"}
-            colorScheme="blue"
-            size="sm"
-          />
-        </Tooltip>
-
-        <Tooltip label="Numbered List">
-          <IconButton
-            aria-label="Numbered List"
-            icon={<FaListOl />}
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            isActive={editor.isActive("orderedList")}
-            variant={editor.isActive("orderedList") ? "solid" : "ghost"}
-            colorScheme="blue"
-            size="sm"
-          />
-        </Tooltip>
-
-        {/* <Tooltip label="Blockquote">
-          <IconButton
-            aria-label="Blockquote"
-            icon={<FaQuoteRight />}
-            onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            isActive={editor.isActive("blockquote")}
-            variant={editor.isActive("blockquote") ? "solid" : "ghost"}
-            colorScheme="blue"
-            size="sm"
-          />
-        </Tooltip> */}
-
-        <Tooltip label="Code Block">
-          <IconButton
-            aria-label="Code Block"
-            icon={<FaCode />}
-            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            isActive={editor.isActive("codeBlock")}
-            variant={editor.isActive("codeBlock") ? "solid" : "ghost"}
-            colorScheme="blue"
-            size="sm"
-          />
-        </Tooltip>
-
-        <Divider orientation="vertical" />
-        {/* 
-        <Tooltip label="Insert Link">
-          <IconButton
-            aria-label="Insert Link"
-            icon={<FaLink />}
-            onClick={() => {
-              const url = window.prompt("Enter the URL");
-              if (url) {
-                editor.chain().focus().setLink({ href: url }).run();
-              }
-            }}
-            isActive={editor.isActive("link")}
-            variant={editor.isActive("link") ? "solid" : "ghost"}
-            colorScheme="blue"
-            size="sm"
-          />
-        </Tooltip> */}
-
-        {/* <Tooltip label="Insert Image">
-          <IconButton
-            aria-label="Insert Image"
-            icon={<FaImage />}
-            onClick={() => {
-              const url = window.prompt("Enter the image URL");
-              if (url) {
-                editor.chain().focus().setImage({ src: url }).run();
-              }
-            }}
-            colorScheme="blue"
-            size="sm"
-          />
-        </Tooltip> */}
-
-        <Divider orientation="vertical" />
-
-        <Tooltip label="Undo">
-          <IconButton
-            aria-label="Undo"
-            icon={<FaUndo />}
-            onClick={() => editor.chain().focus().undo().run()}
-            colorScheme="blue"
-            size="sm"
-          />
-        </Tooltip>
-
-        <Tooltip label="Redo">
-          <IconButton
-            aria-label="Redo"
-            icon={<FaRedo />}
-            onClick={() => editor.chain().focus().redo().run()}
-            colorScheme="blue"
-            size="sm"
-          />
-        </Tooltip>
-        <Tooltip label="Export to PDF">
-          <IconButton
-            aria-label="Export to PDF"
-            icon={<FaFileDownload />}
-            onClick={exportPdf}
-            size="sm"
-            colorScheme="blue"
-          />
-        </Tooltip>
         {sessionToken && (
           <EmailModal
             editor={editor}
@@ -275,20 +175,17 @@ const Toolbar: React.FC<ToolbarProps> = ({
             subject={documentType}
           />
         )}
-        <Divider orientation="vertical" />
+        <Separator orientation="vertical" />
 
-        <Text
-          fontSize="sm"
-          color={saveStatus === "Saving" ? "blue.500" : "green.500"}
-        >
+        <Text fontSize="sm" color={saveStatus === "Saving" ? "white" : "white"}>
           {saveStatus?.toLowerCase() === "saved" ? (
             saveStatus
           ) : (
             <Spinner size="sm" />
           )}
         </Text>
-      </HStack>
-    </Box>
+      </div>
+    </div>
   );
 };
 

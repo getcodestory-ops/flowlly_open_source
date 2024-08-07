@@ -21,6 +21,8 @@ import {
 import { StorageEntity, ContainerResources } from "@/types/document";
 import { FiFileText } from "react-icons/fi";
 import { FaRegFileAudio } from "react-icons/fa6";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 const FilePreview: React.FC<{ resource: ContainerResources }> = ({
   resource,
@@ -44,7 +46,7 @@ const FilePreview: React.FC<{ resource: ContainerResources }> = ({
       case ".png":
       case ".gif":
         return (
-          <>
+          <div className="border rounded-lg h-auto w-auto transition-all hover:scale-105 ">
             <Image
               src={url}
               alt={file_name}
@@ -56,12 +58,12 @@ const FilePreview: React.FC<{ resource: ContainerResources }> = ({
               <ModalOverlay />
               <ModalContent>
                 <ModalCloseButton />
-                <ModalBody p={0}>
+                <ModalBody p={2}>
                   <Image src={url} alt={file_name} />
                 </ModalBody>
               </ModalContent>
             </Modal>
-          </>
+          </div>
         );
       case ".mp4":
       case ".webm":
@@ -120,21 +122,26 @@ const FilePreview: React.FC<{ resource: ContainerResources }> = ({
         bottom="0"
         left="0"
         right="0"
-        bg="blackAlpha.600"
-        color="white"
         borderRadius={"lg"}
         p={2}
+        bg="white"
         maxH="150px"
         overflow={"auto"}
       >
-        {hover && <Text fontSize="sm">{metadata?.description}</Text>}
+        {hover && (
+          <div className="space-y-1 text-sm">
+            <p className="text-xs text-muted-foreground">
+              {metadata?.description}
+            </p>
+          </div>
+        )}
         <Text fontSize="xs">{formattedDate}</Text>
       </Box>
     </Box>
   );
 };
 
-const MediaGallery: React.FC = () => {
+const DocumentEntityViewer: React.FC = () => {
   const { session, activeProject } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
@@ -154,14 +161,39 @@ const MediaGallery: React.FC = () => {
   if (!data || data.length === 0) return <Text>No media files found.</Text>;
 
   return (
-    <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
-      {data.flatMap((entity) =>
-        entity.storage_relations.map((resource, index) => (
-          <FilePreview key={`${entity.id}-${index}`} resource={resource} />
-        ))
-      )}
-    </Grid>
+    <div className="h-full">
+      <div className="flex flex-col">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Media Files
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Updates on media files in the project
+            </p>
+          </div>
+        </div>
+        <Separator className="my-4 " />
+        <div className="relative">
+          <div className="grid w-full gap-6 grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 ">
+            {data.flatMap((entity) =>
+              entity.storage_relations.map((resource, index) => (
+                <div
+                  key={`${entity.id}-${index}`}
+                  className="w-[350px] h-[350px] rounded-md  bg-muted/40 rounded-lg overflow-hidden "
+                >
+                  <FilePreview
+                    key={`${entity.id}-${index}`}
+                    resource={resource}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
-export default MediaGallery;
+export default DocumentEntityViewer;

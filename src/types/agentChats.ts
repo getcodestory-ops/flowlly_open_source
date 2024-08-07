@@ -26,8 +26,9 @@ export interface AgentMessage {
   };
   response?: string;
   antartifact?: Antartifact;
-  antithing?: string;
+  antithinking?: string;
   metadata?: any;
+  child_task_id?: string;
 }
 
 export interface AgentChat {

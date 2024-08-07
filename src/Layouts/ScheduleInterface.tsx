@@ -2,6 +2,15 @@ import React from "react";
 import { Flex } from "@chakra-ui/react";
 import ScheduleUIView from "@/components/Schedule/ScheduleViewLeftPanel";
 import { useStore } from "@/utils/store";
+import CreateNewProjectButton from "@/components/Schedule/NewProjectButton";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 function ScheduleInterface({ view }: { view?: string | string[] }) {
   const { activeProject } = useStore((state) => ({
@@ -9,24 +18,25 @@ function ScheduleInterface({ view }: { view?: string | string[] }) {
   }));
 
   return (
-    <Flex direction={"column"} w={"full"}>
+    <div className="w-full h-full overflow-hidden">
       {activeProject ? (
         <ScheduleUIView uiView={view} />
       ) : (
-        <>
-          <Flex
-            fontSize={"3xl"}
-            fontWeight={"black"}
-            color={"brand.mid"}
-            justifyContent={"center"}
-            alignItems={"center"}
-            h={"100%"}
-          >
-            Select a project at the top left corner
-          </Flex>
-        </>
+        <div className="justify-center items-center w-full h-full flex">
+          <Card className="w-[350px]">
+            <CardHeader>
+              <CardTitle>Create project</CardTitle>
+              <CardDescription>
+                To get started first create a new project.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CreateNewProjectButton />
+            </CardContent>
+          </Card>
+        </div>
       )}
-    </Flex>
+    </div>
   );
 }
 
