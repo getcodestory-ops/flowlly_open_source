@@ -20,7 +20,8 @@ import ArtifactViewer from "@/components/AiActions/ArtifactViewer";
 
 import { ChakraProvider } from "@chakra-ui/react";
 import { chakraTheme } from "@/utils/chakraTheme";
-
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+const query = new QueryClient();
 
 function Viewer() {
   const [password, setPassword] = useState("");
@@ -121,26 +122,18 @@ function Viewer() {
 
   return (
     <ChakraProvider theme={chakraTheme}>
-      <Flex
-        height="100vh"
-        justifyContent={"center"}
-        alignItems="center"
-        width="100vw"
-        bg="brand.dark"
-      >
-        {sessionToken && (
-          <Flex w={"100vw"}>
-            <Center
-              p="2"
-              width="full"
-              height="100vh"
-              display="flex"
-              alignItems="center"
-              flexDirection="column"
-            >
-              <Box
-                p={6}
-                borderRadius={8}
+      <QueryClientProvider client={query}>
+        <Flex
+          height="100vh"
+          justifyContent={"center"}
+          alignItems="center"
+          width="100vw"
+          bg="brand.dark"
+        >
+          {sessionToken && (
+            <Flex w={"100vw"}>
+              <Center
+                p="2"
                 width="full"
                 height="100vh"
                 display="flex"
@@ -151,17 +144,27 @@ function Viewer() {
                   p={6}
                   borderRadius={8}
                   width="full"
-                  color="white"
-                  overflow="scroll"
+                  height="100vh"
+                  display="flex"
+                  alignItems="center"
+                  flexDirection="column"
                 >
-                  {typeof projectId === "string" &&
-                    typeof childTaskId === "string" && (
-                      <ArtifactViewer
-                        projectId={projectId}
-                        childTaskId={childTaskId}
-                        sessionToken={sessionToken}
-                      />
-                    )}
+                  <Box
+                    p={6}
+                    borderRadius={8}
+                    width="full"
+                    color="white"
+                    overflow="scroll"
+                  >
+                    {typeof projectId === "string" &&
+                      typeof childTaskId === "string" && (
+                        <ArtifactViewer
+                          projectId={projectId}
+                          childTaskId={childTaskId}
+                          sessionToken={sessionToken}
+                        />
+                      )}
+                  </Box>
                 </Box>
               </Center>
             </Flex>
