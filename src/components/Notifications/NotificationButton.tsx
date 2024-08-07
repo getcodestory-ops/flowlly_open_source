@@ -17,26 +17,10 @@ import {
 import { FiBell } from "react-icons/fi";
 import ScheduleNotifications from "./ScheduleNotifications";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import NotificationWebSocket from "./NotificationWebSocket";
 
 function NotificationButton() {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [counter, setCounter] = useState(0);
-
-  const [notifications, setNotifications] = useState([
-    { message: "New project created" },
-  ]);
-  const { isConnected, lastMessage, sendMessage } = useWebSocket();
-
-  const handleSendNotification = () => {
-    setCounter((state) => state + 1);
-    sendMessage(`${counter} New notification`);
-  };
-
-  useEffect(() => {
-    if (isConnected && lastMessage) {
-      setNotifications((state) => [...state, { message: lastMessage }]);
-    }
-  }, [isConnected, lastMessage]);
 
   return (
     <>
@@ -61,14 +45,7 @@ function NotificationButton() {
             This is notification area
             {/* <ScheduleNotifications /> */}
             <Flex direction="column" align="center">
-              <Button onClick={handleSendNotification}>
-                Send Notification
-              </Button>
-              <Text>Notifications:</Text>
-              {notifications.map((notification, index) => (
-                <Box key={index}>{notification.message}</Box>
-              ))}
-              {/* <Text>Last message: {lastMessage}</Text> */}
+              <NotificationWebSocket />
             </Flex>
           </ModalBody>
           <ModalFooter>

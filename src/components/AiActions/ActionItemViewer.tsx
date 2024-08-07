@@ -10,34 +10,85 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-
-import { CheckIcon } from "@radix-ui/react-icons";
+import { CheckIcon, Cross2Icon } from "@radix-ui/react-icons";
+import { Toaster } from "@/components/ui/toaster";
+import { useStore } from "@/utils/store";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  getScheduleRevisions,
+  updateActivityRevision,
+  rejectRevision,
+  getScheduleRevisionsById,
+} from "@/api/schedule_routes";
+import { useArchiveActivity } from "@/utils/useArchiveActivity";
+import { Revision } from "@/types/activities";
 
 interface ActionItemInterface {
   results: Array<{
     activity_addition: Array<{
+      id: string;
       name: string;
-      end_date: string;
-      start_date: string;
+      end: string;
+      start: string;
       description: string;
     }>;
     activity_deletion: Array<{ name: string }>;
     activity_modification: Array<{
-      name: string;
-      reason: string;
-      impact_on_start_date: number;
-      impact_on_end_date: number;
+      id: string;
+      status: string;
+      revision: {
+        name: string;
+        reason: string;
+        impact_on_start_date: number;
+        impact_on_end_date: number;
+      } | null;
     }>;
   }>;
 }
 
 function ActionItemViewer({ results }: ActionItemInterface) {
+  const { toast } = useToast();
+  const handleActivityArchive = useArchiveActivity();
+  const session = useStore((state) => state.session);
+  const activeProject = useStore((state) => state.activeProject);
+
+  const queryClient = useQueryClient();
   const { activity_addition, activity_deletion, activity_modification } =
     results[0];
 
+  const approveImpact = useMutation({
+    mutationFn: (revision: { id: string; revision: Revision }) => {
+      if (!session?.access_token || !activeProject) {
+        return Promise.reject("No active project or session");
+      }
+      return updateActivityRevision(
+        session,
+        activeProject.project_id,
+        revision
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scheduleRevision"] });
+      toast({
+        title: "Success",
+        description: "Revision Updated",
+        duration: 9000,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        duration: 9000,
+      });
+    },
+  });
+
   return (
     <div className="font-normal">
-      {activity_addition.length && (
+      <Toaster />
+      {activity_addition && activity_addition.length && (
         <div className="mt-8">
           <h2 className="text-center m-2 text-xl">
             New activities to be added in schedule{" "}
@@ -49,7 +100,7 @@ function ActionItemViewer({ results }: ActionItemInterface) {
                 <TableHead>Description</TableHead>
                 <TableHead>Start Date</TableHead>
                 <TableHead>End Date</TableHead>
-                <TableHead>Approve</TableHead>
+                <TableHead>Reject</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -57,11 +108,14 @@ function ActionItemViewer({ results }: ActionItemInterface) {
                 <TableRow key={`addition-${index}`}>
                   <TableCell>{activity.name}</TableCell>
                   <TableCell>{activity.description}</TableCell>
-                  <TableCell>{activity.start_date}</TableCell>
-                  <TableCell>{activity.end_date}</TableCell>
+                  <TableCell>{activity.start}</TableCell>
+                  <TableCell>{activity.end}</TableCell>
                   <TableCell>
                     <Button variant="outline" size="icon">
-                      <CheckIcon className="h-w w-4" />
+                      <Cross2Icon
+                        className="h-w w-4"
+                        onClick={() => handleActivityArchive(activity.id)}
+                      />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -97,7 +151,7 @@ function ActionItemViewer({ results }: ActionItemInterface) {
         </div>
       )}
 
-      {activity_modification.length && (
+      {activity_modification && activity_modification.length && (
         <div className="mt-16">
           <h2 className="text-center m-2 text-xl">
             {" "}
@@ -117,15 +171,40 @@ function ActionItemViewer({ results }: ActionItemInterface) {
             <TableBody>
               {activity_modification.map((activity, index) => (
                 <TableRow key={`modification-${index}`}>
-                  <TableCell>{activity.name}</TableCell>
-                  <TableCell>{activity.reason}</TableCell>
-                  <TableCell>{activity.impact_on_start_date}</TableCell>
-                  <TableCell>{activity.impact_on_end_date}</TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="icon">
-                      <CheckIcon className="h-w w-4" />
-                    </Button>
-                  </TableCell>
+                  {activity.revision && (
+                    <>
+                      <TableCell>{activity.revision.name}</TableCell>
+                      <TableCell>{activity.revision.reason}</TableCell>
+                      <TableCell>
+                        {activity.revision.impact_on_start_date}
+                      </TableCell>
+                      <TableCell>
+                        {activity.revision.impact_on_end_date}
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="icon">
+                          <CheckIcon
+                            className="h-w w-4"
+                            onClick={() => {
+                              if (activity.id && activity.revision) {
+                                approveImpact.mutate({
+                                  id: activity.id,
+                                  revision: {
+                                    impact_on_start_date:
+                                      activity.revision?.impact_on_start_date ??
+                                      0,
+                                    impact_on_end_date:
+                                      activity.revision?.impact_on_end_date ??
+                                      0,
+                                  },
+                                });
+                              }
+                            }}
+                          />
+                        </Button>
+                      </TableCell>
+                    </>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
