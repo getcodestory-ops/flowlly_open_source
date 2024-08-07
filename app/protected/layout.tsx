@@ -1,5 +1,5 @@
 import "@/styles/globals.css";
-
+import { getProjects } from "@/api/projectRoutes";
 import Image from "next/image";
 import { Archivo_Black } from "next/font/google";
 import { createClient } from "@/utils/supabase/server";
@@ -33,6 +33,14 @@ export default async function RootLayout({
     return redirect("/applogin");
   };
 
+  //first get session
+  const { data: session } = await supabase.auth.getSession();
+  if (session === null || session.session === null) {
+    return redirect("/applogin");
+  }
+  //fetch projects here
+  const projects = await getProjects(session.session);
+
   if (!user) {
     return <></>;
   }
@@ -58,7 +66,7 @@ export default async function RootLayout({
         <div className="border-b">
           <div className="flex h-16 items-center px-4 gap-4">
             <div className={`${archivoBlack.className} text-2xl`}>FLOWLLY</div>
-            <ProjectSwitcher />
+            <ProjectSwitcher projects={projects} />
             {/* <MainNav className="mx-6" /> */}
             <div className="ml-auto flex items-center space-x-4">
               <Search />

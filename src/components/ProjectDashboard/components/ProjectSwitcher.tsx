@@ -33,6 +33,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { ProjectEntity } from "@/types/projects";
 
 import { useStore } from "@/utils/store";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
@@ -48,7 +49,10 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<
 
 interface TeamSwitcherProps extends PopoverTriggerProps {}
 
-export function ProjectSwitcher({ className }: TeamSwitcherProps) {
+export function ProjectSwitcher({
+  className,
+  projects,
+}: TeamSwitcherProps & { projects: ProjectEntity[] }) {
   // const router = useRouter();
   // const { query } = router;
   // const projectId = query.projectId as string;
@@ -156,8 +160,8 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
                 <CommandItem>Loading projects...</CommandItem>
               ) : (
                 <CommandGroup>
-                  {userProjects && userProjects.length > 0 ? (
-                    userProjects.map((project) => (
+                  {projects && projects.length > 0 ? (
+                    projects.map((project) => (
                       <CommandItem
                         key={project.project_id}
                         onSelect={() => {
@@ -207,7 +211,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
                     }}
                   >
                     <PlusCircledIcon className="mr-2 h-5 w-5" />
-                    Create Team
+                    Create Project
                   </CommandItem>
                 </DialogTrigger>
               </CommandGroup>
@@ -218,15 +222,15 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create team</DialogTitle>
+          <DialogTitle>Create Project</DialogTitle>
           <DialogDescription>
-            Add a new team to manage products and customers.
+            Add a new project to manage your data.
           </DialogDescription>
         </DialogHeader>
         <div>
           <div className="space-y-4 py-2 pb-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Team name</Label>
+              <Label htmlFor="name">Project name</Label>
               <Input id="name" placeholder="Acme Inc." />
             </div>
             {/* <div className="space-y-2">
@@ -264,10 +268,10 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
   );
 }
 
-export default function Switcher() {
+export default function Switcher({ projects }: { projects: ProjectEntity[] }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <ProjectSwitcher />
+      <ProjectSwitcher projects={projects} />
     </QueryClientProvider>
   );
 }
