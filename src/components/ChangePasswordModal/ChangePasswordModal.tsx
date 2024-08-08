@@ -19,6 +19,9 @@ import { createClient } from "@/utils/supabase/client";
 interface ChangePasswordModalProps {
   onCancel: () => void;
   isOpen: boolean;
+
+  onError?: () => void;
+  onSuccess?: () => void;
 }
 
 export function ChangePasswordModal({
@@ -26,7 +29,26 @@ export function ChangePasswordModal({
   isOpen,
 }: ChangePasswordModalProps) {
   const toast = useToast();
+  return (
+    <Modal show={isOpen} backdrop={true} centered onHide={onCancel}>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <ChangePasswordComponent
+          onCancel={onCancel}
+          isOpen={isOpen}
+          toast={toast}
+        />
+      </div>
+    </Modal>
+  );
+}
 
+export const ChangePasswordComponent = ({
+  onCancel,
+  isOpen,
+  toast,
+  onError,
+  onSuccess,
+}: ChangePasswordModalProps & { toast: ReturnType<typeof useToast> }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordsMatch, setPasswordsMatch] = useState(false);
@@ -42,7 +64,7 @@ export function ChangePasswordModal({
   const handleSetPassword = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!passwordsMatch) return;
-    onCancel();
+
     const supabase = createClient();
 
     const { error } = await supabase.auth.updateUser({
@@ -57,6 +79,7 @@ export function ChangePasswordModal({
         duration: 5000,
         isClosable: true,
       });
+      onError && onError();
       return;
     }
 
@@ -66,6 +89,8 @@ export function ChangePasswordModal({
       duration: 5000,
       isClosable: true,
     });
+    onSuccess && onSuccess();
+    onCancel();
   };
 
   const manageErrorHandling = (pwd1: string, pwd2: string) => {
@@ -86,76 +111,61 @@ export function ChangePasswordModal({
   useEffect(() => {
     manageErrorHandling(password, confirmPassword);
   }, [password, confirmPassword]);
-
   return (
-    <Modal show={isOpen} backdrop={true} centered onHide={onCancel}>
-      <div
-        className={`
-      fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50
-      ${isOpen ? "" : "hidden"}
-      `}
-      >
-        <Card className="w-[350px]">
-          <CardHeader>
-            <CardTitle>Set new passowrd</CardTitle>
-            {/* <CardDescription>
-              Add a folder in {folderName} category
-            </CardDescription> */}
-          </CardHeader>
-          <form onSubmit={handleSetPassword} autoComplete="off">
-            <CardContent>
-              <div className="grid w-full items-center gap-4">
-                <div className="flex flex-col space-y-1.5">
-                  <Label htmlFor="name">Password</Label>
-                  <Input
-                    id="#1pswd"
-                    name="#1pswd"
-                    onChange={(e) => {
-                      e.preventDefault();
-                      setPassword(e.target.value);
-                    }}
-                    type="password"
-                    placeholder="********"
-                    value={password}
-                  />
-                  <div className="mt-6"></div>
-                  <Label htmlFor="name">Confirm Password</Label>
-                  <Input
-                    id="#2pswd"
-                    name="#2pswd"
-                    onChange={(e) => {
-                      e.preventDefault();
-                      setConfirmPassword(e.target.value);
-                    }}
-                    type="password"
-                    placeholder="********"
-                    value={confirmPassword}
-                  />
-                  <div
-                    className={
-                      passwordsMatch ? "hidden" : "text-red-500 text-sm"
-                    }
-                  >
-                    {errorMessage}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button variant="outline" onClick={onCancel}>
-                Cancel
-              </Button>
-              <Button
-                variant={`${passwordsMatch ? "default" : "link"}`}
-                type="submit"
-                className={!passwordsMatch ? "hidden" : ""}
+    <Card className="w-[350px]">
+      <CardHeader>
+        <CardTitle className="text-2xl text-center">Set new passowrd</CardTitle>
+      </CardHeader>
+      <form onSubmit={handleSetPassword} autoComplete="off">
+        <CardContent>
+          <div className="grid w-full items-center gap-4">
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="name">Password</Label>
+              <Input
+                id="#1pswd"
+                name="#1pswd"
+                onChange={(e) => {
+                  e.preventDefault();
+                  setPassword(e.target.value);
+                }}
+                type="password"
+                placeholder="********"
+                value={password}
+              />
+              <div className="mt-6"></div>
+              <Label htmlFor="name">Confirm Password</Label>
+              <Input
+                id="#2pswd"
+                name="#2pswd"
+                onChange={(e) => {
+                  e.preventDefault();
+                  setConfirmPassword(e.target.value);
+                }}
+                type="password"
+                placeholder="********"
+                value={confirmPassword}
+              />
+              <div
+                className={passwordsMatch ? "hidden" : "text-red-500 text-sm"}
               >
-                Set Password
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
-      </div>
-    </Modal>
+                {errorMessage}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button
+            variant={`${passwordsMatch ? "default" : "link"}`}
+            type="submit"
+            disabled={!passwordsMatch}
+          >
+            Set Password
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
   );
-}
+};
