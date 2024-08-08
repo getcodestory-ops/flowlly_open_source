@@ -1,0 +1,81 @@
+import "@/styles/globals.css";
+import { getProjects } from "@/api/projectRoutes";
+import Image from "next/image";
+import { Archivo_Black } from "next/font/google";
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
+// import { MainNav } from "@/components/MainNav/MainNav";
+import { Search } from "@/components/ProjectDashboard/components/Search";
+import ProjectSwitcher from "@/components/ProjectDashboard/components/ProjectSwitcher";
+import { UserNav } from "@/components/ProjectDashboard/components/UserNav";
+
+const archivoBlack = Archivo_Black({
+  weight: "400",
+  subsets: ["latin"],
+});
+
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const onLogout = async () => {
+    "use server";
+
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    return redirect("/applogin");
+  };
+
+  //first get session
+  const { data: session } = await supabase.auth.getSession();
+  if (session === null || session.session === null || !user) {
+    return redirect("/applogin");
+  }
+  //fetch projects here
+  const projects = await getProjects(session.session);
+
+  return (
+    <main className="flex flex-col relative">
+      <div className="md:hidden">
+        <Image
+          src="/examples/dashboard-light.png"
+          width={1280}
+          height={866}
+          alt="Dashboard"
+          className="block dark:hidden"
+        />
+        <Image
+          src="/examples/dashboard-dark.png"
+          width={1280}
+          height={866}
+          alt="Dashboard"
+          className="hidden dark:block"
+        />
+      </div>
+      <div className="hidden flex-col md:flex">
+        <div className="border-b">
+          <div className="flex h-16 items-center px-4 gap-4">
+            <div className={`${archivoBlack.className} text-2xl`}>FLOWLLY</div>
+            <ProjectSwitcher projects={projects} session={session.session} />
+            {/* <MainNav className="mx-6" /> */}
+            <div className="ml-auto flex items-center space-x-4">
+              <Search />
+              <UserNav user={user} onLogout={onLogout} />
+            </div>
+          </div>
+        </div>
+        <div className="flex  overflow-hidden">
+          {/* <Sidebar /> */}
+          {children}
+        </div>
+      </div>
+    </main>
+  );
+}
