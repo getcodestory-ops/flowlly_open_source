@@ -17,8 +17,31 @@ import checkAdminRights from "@/utils/checkAdminRights";
 import { Session } from "@supabase/supabase-js";
 import { useStore } from "@/utils/store";
 import { type EmailOtpType } from "@supabase/supabase-js";
-import { ChakraProvider } from "@chakra-ui/react";
-import { chakraTheme } from "@/utils/chakraTheme";
+import { ChakraProvider, extendTheme } from "@chakra-ui/react";
+
+import colors from "../../styles/theme";
+
+const theme = extendTheme({
+  colors,
+  styles: {
+    global: {
+      "&::-webkit-scrollbar": {
+        width: "10px",
+      },
+      "&::-webkit-scrollbar-track": {
+        backgroundColor: "transparent", // This hides the track
+      },
+      "&::-webkit-scrollbar-thumb": {
+        backgroundColor: "#888", // Change this color for your desired thumb color
+        borderRadius: "5px",
+      },
+      "&::-webkit-scrollbar-thumb:hover": {
+        backgroundColor: "#555",
+      },
+      scrollbarWidth: "none", // This will hide the scrollbar for Firefox
+    },
+  },
+});
 
 function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -79,7 +102,7 @@ function ResetPassword() {
   }, [sessionToken]);
 
   return (
-    <ChakraProvider theme={chakraTheme}>
+    <ChakraProvider theme={theme}>
       <Flex
         height="100vh"
         justifyContent={"center"}
