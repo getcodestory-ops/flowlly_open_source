@@ -14,17 +14,27 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User } from "@supabase/supabase-js";
+// import { User } from "@supabase/supabase-js";
 import { ChangePasswordModal } from "@/components/ChangePasswordModal/ChangePasswordModal";
+import { createClient } from "@/utils/supabase/client";
+import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export function UserNav({
-  user,
-  onLogout,
-}: {
-  user: User;
-  onLogout: () => void;
+  email,
+}: // onLogout,
+{
+  email: string;
+  // onLogout: () => void;
 }) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const router = useRouter();
+
+  const onLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/applogin");
+  };
   return (
     <>
       <DropdownMenu>
@@ -35,9 +45,7 @@ export function UserNav({
                */}
 
               <AvatarFallback>
-                <div className="text-lg">
-                  {user.email && user.email[0].toUpperCase()}
-                </div>
+                <div className="text-lg">{email && email[0].toUpperCase()}</div>
               </AvatarFallback>
             </Avatar>
           </Button>
@@ -46,10 +54,10 @@ export function UserNav({
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
-                {user.email ? user.email.split("@")[0] : ""}
+                {email ? email.split("@")[0] : ""}
               </p>
               <p className="text-xs leading-none text-muted-foreground">
-                {user.email}
+                {email}
               </p>
             </div>
           </DropdownMenuLabel>
@@ -63,28 +71,24 @@ export function UserNav({
             Billing
             <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
           </DropdownMenuItem> */}
-            <DropdownMenuItem>
-              <div onClick={() => setIsOpen(true)}>Change Password</div>
+            <DropdownMenuItem onClick={() => setIsOpen(true)}>
+              Change Password
               {/* <DropdownMenuShortcut>⌘C</DropdownMenuShortcut> */}
             </DropdownMenuItem>
             {/* <DropdownMenuItem>New Team</DropdownMenuItem> */}
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <form action={onLogout}>
+          <DropdownMenuItem onClick={onLogout}>
+            {/* <form action={onLogout}>
               <button className=" rounded-md no-underline bg-btn-background hover:bg-btn-background-hover">
                 Logout
               </button>
-            </form>
+            </form> */}
+            Logout
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <ChangePasswordModal
-        onCancel={() => setIsOpen(false)}
-        isOpen={isOpen}
-        folderName="Change Password"
-        onAdd={() => {}}
-      />
+      <ChangePasswordModal onCancel={() => setIsOpen(false)} isOpen={isOpen} />
     </>
   );
 }

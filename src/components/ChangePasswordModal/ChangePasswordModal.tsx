@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 
 import { useToast } from "@chakra-ui/react";
@@ -17,16 +17,12 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/utils/supabase/client";
 
 interface ChangePasswordModalProps {
-  onAdd: (name: string) => void;
   onCancel: () => void;
-  folderName: string;
   isOpen: boolean;
 }
 
 export function ChangePasswordModal({
-  onAdd,
   onCancel,
-  folderName,
   isOpen,
 }: ChangePasswordModalProps) {
   const toast = useToast();
@@ -45,6 +41,7 @@ export function ChangePasswordModal({
 
   const handleSetPassword = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!passwordsMatch) return;
     onCancel();
     const supabase = createClient();
 
@@ -86,20 +83,9 @@ export function ChangePasswordModal({
     }
   };
 
-  const handlePasswordInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    e.preventDefault();
-    const { name, value } = e.target;
-
-    if (name === "password") {
-      setPassword(value);
-      manageErrorHandling(value, confirmPassword);
-    } else if (name === "confirmPassword") {
-      setConfirmPassword(value);
-      manageErrorHandling(password, value);
-    }
-  };
+  useEffect(() => {
+    manageErrorHandling(password, confirmPassword);
+  }, [password, confirmPassword]);
 
   return (
     <Modal show={isOpen} backdrop={true} centered onHide={onCancel}>
@@ -116,28 +102,34 @@ export function ChangePasswordModal({
               Add a folder in {folderName} category
             </CardDescription> */}
           </CardHeader>
-          <form onSubmit={handleSetPassword}>
+          <form onSubmit={handleSetPassword} autoComplete="off">
             <CardContent>
               <div className="grid w-full items-center gap-4">
                 <div className="flex flex-col space-y-1.5">
                   <Label htmlFor="name">Password</Label>
                   <Input
-                    id="name"
-                    onChange={handlePasswordInputChange}
+                    id="#1pswd"
+                    name="#1pswd"
+                    onChange={(e) => {
+                      e.preventDefault();
+                      setPassword(e.target.value);
+                    }}
                     type="password"
-                    name="password"
-                    placeholder="••••••••"
-                    required
+                    placeholder="********"
+                    value={password}
                   />
                   <div className="mt-6"></div>
                   <Label htmlFor="name">Confirm Password</Label>
                   <Input
-                    id="name"
-                    onChange={handlePasswordInputChange}
+                    id="#2pswd"
+                    name="#2pswd"
+                    onChange={(e) => {
+                      e.preventDefault();
+                      setConfirmPassword(e.target.value);
+                    }}
                     type="password"
-                    name="confirmPassword"
-                    placeholder="••••••••"
-                    required
+                    placeholder="********"
+                    value={confirmPassword}
                   />
                   <div
                     className={
@@ -167,16 +159,3 @@ export function ChangePasswordModal({
     </Modal>
   );
 }
-
-export const ChangePasswordButtonClick = ({
-  onClick,
-}: {
-  onClick: () => void;
-}) => {
-  return (
-    <div>
-      <div onClick={onClick}>ChangePassword popup</div>
-
-    </div>
-  );
-};

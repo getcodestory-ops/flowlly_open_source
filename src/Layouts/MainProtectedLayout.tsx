@@ -58,7 +58,7 @@ function MainLayout() {
                 h="calc(100vh - 64px)"
                 w="100vw"
               >
-                <MainDisplayInLayout appView={appView} />
+                {/* <MainDisplayInLayout appView={appView} /> */}
               </Flex>
             </Flex>
           </TooltipProvider>

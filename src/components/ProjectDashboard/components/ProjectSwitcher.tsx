@@ -50,18 +50,16 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<
 
 interface TeamSwitcherProps extends PopoverTriggerProps {}
 
-export function ProjectSwitcher({
-  className,
-  projects,
-  session,
-}: TeamSwitcherProps & { projects: ProjectEntity[]; session: Session }) {
+export function ProjectSwitcher({ className }: TeamSwitcherProps) {
   const {
+    userProjects,
     activeProject,
     setActiveProject,
     setUserProjects,
     setMembers,
     setSession,
   } = useStore((state) => ({
+    userProjects: state.userProjects,
     activeProject: state.activeProject,
     setActiveProject: state.setActiveProject,
     setUserProjects: state.setUserProjects,
@@ -69,35 +67,35 @@ export function ProjectSwitcher({
     setSession: state.setSession,
   }));
 
-  useEffect(() => {
-    if (projects && projects.length > 0) {
-      setUserProjects(projects);
-      setActiveProject(projects[0]);
-    }
-  }, [projects?.length, setUserProjects, projects, setActiveProject]);
+  // useEffect(() => {
+  //   if (projects && projects.length > 0) {
+  //     setUserProjects(projects);
+  //     setActiveProject(projects[0]);
+  //   }
+  // }, [projects?.length, setUserProjects, projects, setActiveProject]);
 
-  useEffect(() => {
-    if (session) {
-      setSession(session);
-    }
-  }, [setSession, session]);
+  // useEffect(() => {
+  //   if (session) {
+  //     setSession(session);
+  //   }
+  // }, [setSession, session]);
 
-  const { data: members, isLoading: membersLoading } = useQuery({
-    queryKey: ["memberList", session, activeProject],
-    queryFn: async () => {
-      if (!session || !activeProject) {
-        return Promise.reject("No session or active project");
-      }
-      return getMembers(session, activeProject.project_id);
-    },
-    enabled: !!session?.access_token,
-  });
+  // const { data: members, isLoading: membersLoading } = useQuery({
+  //   queryKey: ["memberList", session, activeProject],
+  //   queryFn: async () => {
+  //     if (!session || !activeProject) {
+  //       return Promise.reject("No session or active project");
+  //     }
+  //     return getMembers(session, activeProject.project_id);
+  //   },
+  //   enabled: !!session?.access_token,
+  // });
 
-  useEffect(() => {
-    if (members) {
-      setMembers(members);
-    }
-  }, [members, setMembers]);
+  // useEffect(() => {
+  //   if (members) {
+  //     setMembers(members);
+  //   }
+  // }, [members, setMembers]);
 
   const [open, setOpen] = useState(false);
   const [showNewTeamDialog, setShowNewTeamDialog] = useState(false);
@@ -134,8 +132,8 @@ export function ProjectSwitcher({
               <CommandEmpty>No Project found.</CommandEmpty>
 
               <CommandGroup>
-                {projects && projects.length > 0 ? (
-                  projects.map((project) => (
+                {userProjects && userProjects.length > 0 ? (
+                  userProjects.map((project) => (
                     <CommandItem
                       key={project.project_id}
                       onSelect={() => {
@@ -241,16 +239,10 @@ export function ProjectSwitcher({
   );
 }
 
-export default function Switcher({
-  projects,
-  session,
-}: {
-  projects: ProjectEntity[];
-  session: Session;
-}) {
+export default function Switcher() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ProjectSwitcher projects={projects} session={session} />
+      <ProjectSwitcher />
     </QueryClientProvider>
   );
 }
