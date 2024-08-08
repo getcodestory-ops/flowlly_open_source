@@ -9,6 +9,7 @@ import {
   StopwatchIcon,
   TimerIcon,
   HeartFilledIcon,
+  ArchiveIcon,
 } from "@radix-ui/react-icons";
 
 export const labels = [
@@ -41,6 +42,11 @@ export const statuses = [
     value: "Pending",
     label: "Pending",
     icon: StopwatchIcon,
+  },
+  {
+    value: "Archived",
+    label: "Archived",
+    icon: ArchiveIcon,
   },
 ];
 

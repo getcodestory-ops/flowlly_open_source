@@ -17,6 +17,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import StreamingResponse from "../Notifications/StreamWebResponse";
 
 function TaskResultDisplay({
   task_function,
@@ -28,6 +29,7 @@ function TaskResultDisplay({
   task_function: string;
   results: {
     results?: string | any;
+    stream?: string;
     minutes_of_the_meeting?: string;
     child_task?: {
       message: string;
@@ -49,7 +51,10 @@ function TaskResultDisplay({
           borderRadius={"lg"}
         >
           <Icon as={FaRegDotCircle} fontSize={"sm"} color="green.400" />
-          <MarkDownDisplay content={results.results ?? ""} />
+          <div className="flex flex-col">
+            <MarkDownDisplay content={results.results ?? ""} />
+            {results.stream && <StreamingResponse />}
+          </div>
         </Flex>
       );
 

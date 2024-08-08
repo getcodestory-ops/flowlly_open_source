@@ -2,18 +2,18 @@ import { useEffect, useState } from "react";
 
 interface WebSocketHook {
   isConnected: boolean;
-  lastMessage: string | null;
+  lastMessage: any | null;
   sendMessage: (message: string) => void;
 }
 
 export const useWebSocket = (): WebSocketHook => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [lastMessage, setLastMessage] = useState<string | null>(null);
+  const [lastMessage, setLastMessage] = useState<any | null>(null);
 
   useEffect(() => {
     const ws = new WebSocket(
-      `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/ws`
+      `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/ws/c65422b7-3356-4876-a216-7b0ed270ceed`
     );
 
     ws.onopen = () => {
