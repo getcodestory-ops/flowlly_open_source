@@ -40,8 +40,9 @@ import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getMembers } from "@/api/membersRoutes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Session } from "@supabase/supabase-js";
-// import { getProjects } from "@/api/projectRoutes";
+import { getProjects } from "@/api/projectRoutes";
 // import supabase from "@/utils/supabaseClient";
+import { createClient } from "@/utils/supabase/client";
 
 const queryClient = new QueryClient();
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
@@ -52,6 +53,7 @@ interface TeamSwitcherProps extends PopoverTriggerProps {}
 
 export function ProjectSwitcher({ className }: TeamSwitcherProps) {
   const {
+    session,
     userProjects,
     activeProject,
     setActiveProject,
@@ -59,6 +61,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     setMembers,
     setSession,
   } = useStore((state) => ({
+    session: state.session,
     userProjects: state.userProjects,
     activeProject: state.activeProject,
     setActiveProject: state.setActiveProject,
@@ -96,6 +99,41 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
   //     setMembers(members);
   //   }
   // }, [members, setMembers]);
+
+  const supabase = createClient();
+  const { data, isLoading, isSuccess } = useQuery({
+    queryKey: ["initialProjectList", session],
+    queryFn: () => {
+      if (session && session.access_token) {
+        return getProjects(session!, "SCHEDULE");
+      }
+      return Promise.reject("No session or access token");
+    },
+    enabled: !!session?.access_token,
+    placeholderData: keepPreviousData,
+  });
+
+  useEffect(() => {
+    if (userProjects.length === 0) return;
+
+    setActiveProject(userProjects[0]);
+  }, [userProjects.length, userProjects, setActiveProject]);
+
+  useEffect(() => {
+    if (data && data.length > 0 && isSuccess) {
+      setUserProjects(data);
+    }
+  }, [data?.length, isSuccess, setUserProjects, data]);
+
+  useEffect(() => {
+    async function loginCheck() {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.user) {
+        setSession(data.session);
+      }
+    }
+    loginCheck();
+  }, [setSession]);
 
   const [open, setOpen] = useState(false);
   const [showNewTeamDialog, setShowNewTeamDialog] = useState(false);

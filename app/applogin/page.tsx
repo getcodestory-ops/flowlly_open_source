@@ -15,7 +15,7 @@ const signIn = async (formData: FormData) => {
     email,
     password,
   });
-  console.log("redirecting to /protected", email, password);
+  // console.log("redirecting to /protected", email, password);
 
   if (error) {
     let message = "An error occured";
