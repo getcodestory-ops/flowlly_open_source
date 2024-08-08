@@ -42,7 +42,7 @@ export default async function RootLayout({
   const projects = await getProjects(session.session);
 
   return (
-    <main className="flex flex-col">
+    <main className="flex flex-col relative">
       <div className="md:hidden">
         <Image
           src="/examples/dashboard-light.png"
