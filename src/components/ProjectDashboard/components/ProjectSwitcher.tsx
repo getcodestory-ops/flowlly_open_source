@@ -37,10 +37,11 @@ import { ProjectEntity } from "@/types/projects";
 
 import { useStore } from "@/utils/store";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { getProjects } from "@/api/projectRoutes";
 import { getMembers } from "@/api/membersRoutes";
-import supabase from "@/utils/supabaseClient";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Session } from "@supabase/supabase-js";
+// import { getProjects } from "@/api/projectRoutes";
+// import supabase from "@/utils/supabaseClient";
 
 const queryClient = new QueryClient();
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
@@ -52,22 +53,15 @@ interface TeamSwitcherProps extends PopoverTriggerProps {}
 export function ProjectSwitcher({
   className,
   projects,
-}: TeamSwitcherProps & { projects: ProjectEntity[] }) {
-  // const router = useRouter();
-  // const { query } = router;
-  // const projectId = query.projectId as string;
-
+  session,
+}: TeamSwitcherProps & { projects: ProjectEntity[]; session: Session }) {
   const {
-    session,
-    userProjects,
     activeProject,
     setActiveProject,
     setUserProjects,
     setMembers,
     setSession,
   } = useStore((state) => ({
-    session: state.session,
-    userProjects: state.userProjects,
     activeProject: state.activeProject,
     setActiveProject: state.setActiveProject,
     setUserProjects: state.setUserProjects,
@@ -75,34 +69,18 @@ export function ProjectSwitcher({
     setSession: state.setSession,
   }));
 
-  const { data, isLoading, isSuccess } = useQuery({
-    queryKey: ["initialProjectList", session],
-    queryFn: () => getProjects(session!, "SCHEDULE"),
-    enabled: !!session?.access_token,
-    placeholderData: keepPreviousData,
-  });
-
   useEffect(() => {
-    if (userProjects.length === 0) return;
-
-    setActiveProject(userProjects[0]);
-  }, [userProjects, userProjects.length, setUserProjects, setActiveProject]);
-
-  useEffect(() => {
-    if (data && data.length > 0 && isSuccess) {
-      setUserProjects(data);
+    if (projects && projects.length > 0) {
+      setUserProjects(projects);
+      setActiveProject(projects[0]);
     }
-  }, [data?.length, isSuccess, setUserProjects, data]);
+  }, [projects?.length, setUserProjects, projects, setActiveProject]);
 
   useEffect(() => {
-    async function loginCheck() {
-      const { data } = await supabase.auth.getSession();
-      if (data?.session?.user) {
-        setSession(data.session);
-      }
+    if (session) {
+      setSession(session);
     }
-    loginCheck();
-  }, [setSession]);
+  }, [setSession, session]);
 
   const { data: members, isLoading: membersLoading } = useQuery({
     queryKey: ["memberList", session, activeProject],
@@ -110,7 +88,6 @@ export function ProjectSwitcher({
       if (!session || !activeProject) {
         return Promise.reject("No session or active project");
       }
-
       return getMembers(session, activeProject.project_id);
     },
     enabled: !!session?.access_token,
@@ -156,47 +133,43 @@ export function ProjectSwitcher({
               <CommandInput placeholder="Search Project..." />
               <CommandEmpty>No Project found.</CommandEmpty>
 
-              {isLoading ? (
-                <CommandItem>Loading projects...</CommandItem>
-              ) : (
-                <CommandGroup>
-                  {projects && projects.length > 0 ? (
-                    projects.map((project) => (
-                      <CommandItem
-                        key={project.project_id}
-                        onSelect={() => {
-                          setActiveProject(project);
-                          // router.push(
-                          //   `/documents?projectId=${project.project_id}`
-                          // );
-                          setOpen(false);
-                        }}
-                        className="text-sm"
-                      >
-                        <Avatar className="mr-2 h-5 w-5">
-                          <AvatarImage
-                            src={`https://avatar.vercel.sh/personal.png`}
-                            alt={project.name}
-                            className="grayscale"
-                          />
-                          <AvatarFallback>SC</AvatarFallback>
-                        </Avatar>
-                        {project.name}
-                        <CheckIcon
-                          className={cn(
-                            "ml-auto h-4 w-4",
-                            activeProject?.project_id === project.project_id
-                              ? "opacity-100"
-                              : "opacity-0"
-                          )}
+              <CommandGroup>
+                {projects && projects.length > 0 ? (
+                  projects.map((project) => (
+                    <CommandItem
+                      key={project.project_id}
+                      onSelect={() => {
+                        setActiveProject(project);
+                        // router.push(
+                        //   `/documents?projectId=${project.project_id}`
+                        // );
+                        setOpen(false);
+                      }}
+                      className="text-sm"
+                    >
+                      <Avatar className="mr-2 h-5 w-5">
+                        <AvatarImage
+                          src={`https://avatar.vercel.sh/personal.png`}
+                          alt={project.name}
+                          className="grayscale"
                         />
-                      </CommandItem>
-                    ))
-                  ) : (
-                    <CommandItem>No projects available</CommandItem>
-                  )}
-                </CommandGroup>
-              )}
+                        <AvatarFallback>SC</AvatarFallback>
+                      </Avatar>
+                      {project.name}
+                      <CheckIcon
+                        className={cn(
+                          "ml-auto h-4 w-4",
+                          activeProject?.project_id === project.project_id
+                            ? "opacity-100"
+                            : "opacity-0"
+                        )}
+                      />
+                    </CommandItem>
+                  ))
+                ) : (
+                  <CommandItem>No projects available</CommandItem>
+                )}
+              </CommandGroup>
             </CommandList>
 
             <CommandSeparator />
@@ -268,10 +241,16 @@ export function ProjectSwitcher({
   );
 }
 
-export default function Switcher({ projects }: { projects: ProjectEntity[] }) {
+export default function Switcher({
+  projects,
+  session,
+}: {
+  projects: ProjectEntity[];
+  session: Session;
+}) {
   return (
     <QueryClientProvider client={queryClient}>
-      <ProjectSwitcher projects={projects} />
+      <ProjectSwitcher projects={projects} session={session} />
     </QueryClientProvider>
   );
 }

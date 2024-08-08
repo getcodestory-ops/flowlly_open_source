@@ -35,15 +35,12 @@ export default async function RootLayout({
 
   //first get session
   const { data: session } = await supabase.auth.getSession();
-  if (session === null || session.session === null) {
+  if (session === null || session.session === null || !user) {
     return redirect("/applogin");
   }
   //fetch projects here
   const projects = await getProjects(session.session);
 
-  if (!user) {
-    return <></>;
-  }
   return (
     <main className="flex flex-col">
       <div className="md:hidden">
@@ -66,7 +63,7 @@ export default async function RootLayout({
         <div className="border-b">
           <div className="flex h-16 items-center px-4 gap-4">
             <div className={`${archivoBlack.className} text-2xl`}>FLOWLLY</div>
-            <ProjectSwitcher projects={projects} />
+            <ProjectSwitcher projects={projects} session={session.session} />
             {/* <MainNav className="mx-6" /> */}
             <div className="ml-auto flex items-center space-x-4">
               <Search />
