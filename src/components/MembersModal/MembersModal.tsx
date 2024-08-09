@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/utils/supabase/client";
 import { MemberEntity } from "@/types/members";
+import { TeamDetail } from "./TeamDetail";
 
 interface MembersModalProps {
   onCancel: () => void;
@@ -27,15 +28,10 @@ export function MembersModal({ onCancel, isOpen }: MembersModalProps) {
   const { members } = useStore((state) => ({
     members: state.members,
   }));
-  console.log(members);
   return (
     <Modal show={isOpen} backdrop={true} centered onHide={onCancel}>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        {members &&
-          members.length > 0 &&
-          members.map((member, i) => (
-            <span key={`member-${i}`}>{member.email}</span>
-          ))}
+        <TeamDetail members={members} onCancel={onCancel} />
       </div>
     </Modal>
   );
