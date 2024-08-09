@@ -20,9 +20,14 @@ import { TeamDetail } from "./TeamDetail";
 interface MembersModalProps {
   onCancel: () => void;
   isOpen: boolean;
+  projectAccessId?: string;
 }
 
-export function MembersModal({ onCancel, isOpen }: MembersModalProps) {
+export function MembersModal({
+  onCancel,
+  isOpen,
+  projectAccessId,
+}: MembersModalProps) {
   const toast = useToast();
 
   const { members } = useStore((state) => ({
@@ -31,7 +36,11 @@ export function MembersModal({ onCancel, isOpen }: MembersModalProps) {
   return (
     <Modal show={isOpen} backdrop={true} centered onHide={onCancel}>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <TeamDetail members={members} onCancel={onCancel} />
+        <TeamDetail
+          members={members}
+          onCancel={onCancel}
+          projectAccessId={projectAccessId}
+        />
       </div>
     </Modal>
   );

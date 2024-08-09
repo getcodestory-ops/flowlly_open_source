@@ -96,7 +96,6 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
 
   useEffect(() => {
     if (membersData && membersData.data.length > 0) {
-      console.log("members were set", membersData.data);
       setMembers(membersData.data);
     }
   }, [membersData, setMembers]);
@@ -289,6 +288,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
         onCancel={() => setIsMembersOpen(false)}
         isOpen={isMembersOpen}
         // members={members}
+        projectAccessId={activeProject?.project_id}
       />
     </>
   );
