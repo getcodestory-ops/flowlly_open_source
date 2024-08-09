@@ -26,6 +26,51 @@ export const LoginLayout = ({
   const { toast } = useToast();
 
   const [email, setEmail] = useState("");
+
+  //   const email = formData.get("email") as string;
+  //   const password = formData.get("password") as string;
+  //   const supabase = createClient();
+
+  //   const { error } = await supabase.auth.signInWithPassword({
+  //     email,
+  //     password,
+  //   });
+
+  //   if (error) {
+  //     let message = "An error occured";
+  //     if (error.name === "AuthApiError") {
+  //       message =
+  //         "Please verify your email before logging in. Check your spam folder if you can't find the email in main inbox.";
+  //     }
+  //     toast({
+  //       title: error.message,
+  //       description: message,
+  //       duration: 5000,
+  //     });
+  //   } else {
+  //     toast({
+  //       title: "Login successful !",
+  //       description: "You have been logged in successfully.",
+  //       duration: 5000,
+  //     });
+
+  //     return redirect("/protected");
+  //   }
+  // };
+
+  const onErrorCallback = () =>
+    toast({
+      title: "Login Unsuccesful",
+      description: "An error occured while logging in, please try again",
+      duration: 5000,
+    });
+  const onSuccessCallback = () =>
+    toast({
+      title: "Login successful",
+      description: "You have been logged in successfully",
+      duration: 5000,
+    });
+
   const handlePasswordReset = async (email: string) => {
     if (!email) {
       toast({
@@ -94,7 +139,15 @@ export const LoginLayout = ({
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" formAction={signIn}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  formAction={(formData) => {
+                    signIn(formData)
+                      .then(onSuccessCallback)
+                      .catch(onErrorCallback);
+                  }}
+                >
                   Login
                 </Button>
                 <Button variant="outline" className="w-full" disabled={true}>
