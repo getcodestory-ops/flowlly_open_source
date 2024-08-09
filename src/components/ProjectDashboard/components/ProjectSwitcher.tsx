@@ -44,6 +44,7 @@ import { getProjects } from "@/api/projectRoutes";
 // import supabase from "@/utils/supabaseClient";
 import { createClient } from "@/utils/supabase/client";
 import { RiTeamLine } from "react-icons/ri";
+import { MembersModal } from "@/components/MembersModal/MembersModal";
 
 const queryClient = new QueryClient();
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
@@ -78,28 +79,24 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
   //   }
   // }, [projects?.length, setUserProjects, projects, setActiveProject]);
 
-  // useEffect(() => {
-  //   if (session) {
-  //     setSession(session);
-  //   }
-  // }, [setSession, session]);
+  const [isMembersOpen, setIsMembersOpen] = useState(false);
 
-  // const { data: members, isLoading: membersLoading } = useQuery({
-  //   queryKey: ["memberList", session, activeProject],
-  //   queryFn: async () => {
-  //     if (!session || !activeProject) {
-  //       return Promise.reject("No session or active project");
-  //     }
-  //     return getMembers(session, activeProject.project_id);
-  //   },
-  //   enabled: !!session?.access_token,
-  // });
+  const { data: members, isLoading: membersLoading } = useQuery({
+    queryKey: ["memberList", session, activeProject],
+    queryFn: async () => {
+      if (!session || !activeProject) {
+        return Promise.reject("No session or active project");
+      }
+      return getMembers(session, activeProject.project_id);
+    },
+    enabled: !!session?.access_token,
+  });
 
-  // useEffect(() => {
-  //   if (members) {
-  //     setMembers(members);
-  //   }
-  // }, [members, setMembers]);
+  useEffect(() => {
+    if (members) {
+      setMembers(members);
+    }
+  }, [members, setMembers]);
 
   const supabase = createClient();
   const { data, isLoading, isSuccess } = useQuery({
@@ -140,113 +137,120 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
   const [showNewTeamDialog, setShowNewTeamDialog] = useState(false);
 
   return (
-    <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            aria-label="Select a team"
-            className={cn("w-[200px] justify-between", className)}
-          >
-            <Avatar className="mr-2 h-5 w-5">
-              <AvatarImage
-                src={`https://avatar.vercel.sh/personal.png`}
-                alt={activeProject?.name ? activeProject.name : "No Project"}
-                className="grayscale"
-              />
-              <AvatarFallback></AvatarFallback>
-            </Avatar>
-            {activeProject?.name.length
-              ? activeProject.name.slice(0, 15)
-              : "No Project"}
-            <CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0">
-          <Command>
-            <CommandList>
-              <CommandInput placeholder="Search Project..." />
-              <CommandEmpty>No Project found.</CommandEmpty>
+    <>
+      <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              aria-label="Select a team"
+              className={cn("w-[200px] justify-between", className)}
+            >
+              <Avatar className="mr-2 h-5 w-5">
+                <AvatarImage
+                  src={`https://avatar.vercel.sh/personal.png`}
+                  alt={activeProject?.name ? activeProject.name : "No Project"}
+                  className="grayscale"
+                />
+                <AvatarFallback></AvatarFallback>
+              </Avatar>
+              {activeProject?.name.length
+                ? activeProject.name.slice(0, 15)
+                : "No Project"}
+              <CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[300px] p-0">
+            <Command>
+              <CommandList>
+                <CommandInput placeholder="Search Project..." />
+                <CommandEmpty>No Project found.</CommandEmpty>
 
-              <CommandGroup>
-                {userProjects && userProjects.length > 0 ? (
-                  userProjects.map((project) => (
-                    <CommandItem
-                      key={project.project_id}
-                      onSelect={() => {
-                        setActiveProject(project);
-                        // router.push(
-                        //   `/documents?projectId=${project.project_id}`
-                        // );
-                        setOpen(false);
-                      }}
-                      className="text-sm"
-                    >
-                      <div className="flex flex-row gap-2">
-                        <CheckIcon
-                          className={cn(
-                            "mr-auto h-4 w-4",
+                <CommandGroup>
+                  {userProjects && userProjects.length > 0 ? (
+                    userProjects.map((project) => (
+                      <CommandItem
+                        key={project.project_id}
+                        onSelect={() => {
+                          setActiveProject(project);
+                          // router.push(
+                          //   `/documents?projectId=${project.project_id}`
+                          // );
+                          setOpen(false);
+                        }}
+                        className="text-sm"
+                      >
+                        <div className="flex flex-row gap-2">
+                          <CheckIcon
+                            className={cn(
+                              "mr-auto h-4 w-4",
+                              activeProject?.project_id === project.project_id
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          <span className="mr-2">{project.name}</span>
+                        </div>
+                        <div className="ml-auto h-5 w-5 flex items-center justify-center">
+                          {/* <MembersListOpener
+                          isVisible={
                             activeProject?.project_id === project.project_id
-                              ? "opacity-100"
-                              : "opacity-0"
-                          )}
-                        />
-                        <span className="mr-2">{project.name}</span>
-                      </div>
-                      <div className="ml-auto h-5 w-5 flex items-center justify-center">
-                        <RiTeamLine
-                          className={
-                            activeProject?.project_id === project.project_id
-                              ? "opacity-100"
-                              : "opacity-0"
                           }
-                        />
-                      </div>
+                        /> */}
+                          <RiTeamLine
+                            className={
+                              activeProject?.project_id === project.project_id
+                                ? "opacity-100"
+                                : "opacity-0"
+                            }
+                            onClick={() => setIsMembersOpen(true)}
+                          />
+                        </div>
+                      </CommandItem>
+                    ))
+                  ) : (
+                    <CommandItem>No projects available</CommandItem>
+                  )}
+                </CommandGroup>
+              </CommandList>
+
+              <CommandSeparator />
+
+              <CommandList>
+                <CommandGroup>
+                  <DialogTrigger asChild>
+                    <CommandItem
+                      onSelect={() => {
+                        setOpen(false);
+                        setShowNewTeamDialog(true);
+                      }}
+                    >
+                      <PlusCircledIcon className="mr-2 h-5 w-5" />
+                      Create Project
                     </CommandItem>
-                  ))
-                ) : (
-                  <CommandItem>No projects available</CommandItem>
-                )}
-              </CommandGroup>
-            </CommandList>
+                  </DialogTrigger>
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
 
-            <CommandSeparator />
-
-            <CommandList>
-              <CommandGroup>
-                <DialogTrigger asChild>
-                  <CommandItem
-                    onSelect={() => {
-                      setOpen(false);
-                      setShowNewTeamDialog(true);
-                    }}
-                  >
-                    <PlusCircledIcon className="mr-2 h-5 w-5" />
-                    Create Project
-                  </CommandItem>
-                </DialogTrigger>
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create Project</DialogTitle>
-          <DialogDescription>
-            Add a new project to manage your data.
-          </DialogDescription>
-        </DialogHeader>
-        <div>
-          <div className="space-y-4 py-2 pb-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Project name</Label>
-              <Input id="name" placeholder="Acme Inc." />
-            </div>
-            {/* <div className="space-y-2">
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Project</DialogTitle>
+            <DialogDescription>
+              Add a new project to manage your data.
+            </DialogDescription>
+          </DialogHeader>
+          <div>
+            <div className="space-y-4 py-2 pb-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Project name</Label>
+                <Input id="name" placeholder="Acme Inc." />
+              </div>
+              {/* <div className="space-y-2">
               <Label htmlFor="plan">Subscription plan</Label>
               <Select>
                 <SelectTrigger>
@@ -268,18 +272,61 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
                 </SelectContent>
               </Select>
             </div> */}
+            </div>
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setShowNewTeamDialog(false)}>
-            Cancel
-          </Button>
-          <Button type="submit">Continue</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowNewTeamDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit">Continue</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <MembersModal
+        onCancel={() => setIsMembersOpen(false)}
+        isOpen={isMembersOpen}
+      />
+    </>
   );
 }
+
+const MembersListOpener = ({ isVisible }: { isVisible: boolean }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const { session, activeProject, setMembers } = useStore((state) => ({
+    session: state.session,
+    activeProject: state.activeProject,
+    setMembers: state.setMembers,
+  }));
+  const { data: members, isLoading: membersLoading } = useQuery({
+    queryKey: ["memberList", session, activeProject],
+    queryFn: async () => {
+      if (!session || !activeProject) {
+        return Promise.reject("No session or active project");
+      }
+      return getMembers(session, activeProject.project_id);
+    },
+    enabled: !!session?.access_token,
+  });
+
+  useEffect(() => {
+    if (members) {
+      setMembers(members);
+    }
+  }, [members, setMembers]);
+  return (
+    <>
+      {/* <RiTeamLine
+        className={isVisible ? "opacity-100" : "opacity-0"}
+        onClick={() => setIsOpen(true)}
+      /> */}
+      <MembersModal onCancel={() => setIsOpen(false)} isOpen={isOpen} />
+    </>
+  );
+};
 
 export default function Switcher() {
   return (
