@@ -43,6 +43,7 @@ import { Session } from "@supabase/supabase-js";
 import { getProjects } from "@/api/projectRoutes";
 // import supabase from "@/utils/supabaseClient";
 import { createClient } from "@/utils/supabase/client";
+import { RiTeamLine } from "react-icons/ri";
 
 const queryClient = new QueryClient();
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
@@ -155,7 +156,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
                 alt={activeProject?.name ? activeProject.name : "No Project"}
                 className="grayscale"
               />
-              <AvatarFallback>SC</AvatarFallback>
+              <AvatarFallback></AvatarFallback>
             </Avatar>
             {activeProject?.name.length
               ? activeProject.name.slice(0, 15)
@@ -163,7 +164,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
             <CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
+        <PopoverContent className="w-[300px] p-0">
           <Command>
             <CommandList>
               <CommandInput placeholder="Search Project..." />
@@ -183,23 +184,26 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
                       }}
                       className="text-sm"
                     >
-                      <Avatar className="mr-2 h-5 w-5">
-                        <AvatarImage
-                          src={`https://avatar.vercel.sh/personal.png`}
-                          alt={project.name}
-                          className="grayscale"
+                      <div className="flex flex-row gap-2">
+                        <CheckIcon
+                          className={cn(
+                            "mr-auto h-4 w-4",
+                            activeProject?.project_id === project.project_id
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
                         />
-                        <AvatarFallback>SC</AvatarFallback>
-                      </Avatar>
-                      {project.name}
-                      <CheckIcon
-                        className={cn(
-                          "ml-auto h-4 w-4",
-                          activeProject?.project_id === project.project_id
-                            ? "opacity-100"
-                            : "opacity-0"
-                        )}
-                      />
+                        <span className="mr-2">{project.name}</span>
+                      </div>
+                      <div className="ml-auto h-5 w-5 flex items-center justify-center">
+                        <RiTeamLine
+                          className={
+                            activeProject?.project_id === project.project_id
+                              ? "opacity-100"
+                              : "opacity-0"
+                          }
+                        />
+                      </div>
                     </CommandItem>
                   ))
                 ) : (
