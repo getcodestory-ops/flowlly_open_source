@@ -16,18 +16,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 // import { User } from "@supabase/supabase-js";
 import { ChangePasswordModal } from "@/components/ChangePasswordModal/ChangePasswordModal";
+import { UserProfileModal } from "@/components/UserProfileModal/UserProfileModal";
 import { createClient } from "@/utils/supabase/client";
 import { redirect } from "next/navigation";
 import { useRouter } from "next/navigation";
 
-export function UserNav({
-  email,
-}: // onLogout,
-{
-  email: string;
-  // onLogout: () => void;
-}) {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+export function UserNav({ email }: { email: string }) {
+  const [isChangePasswordOpen, setIsChangePasswordOpen] =
+    useState<boolean>(false);
+  const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
   const router = useRouter();
 
   const onLogout = async () => {
@@ -63,15 +60,15 @@ export function UserNav({
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            {/* <DropdownMenuItem>
-            Profile
-            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-          </DropdownMenuItem> */}
+            <DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
+              Profile
+              {/* <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut> */}
+            </DropdownMenuItem>
             {/* <DropdownMenuItem>
             Billing
             <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
           </DropdownMenuItem> */}
-            <DropdownMenuItem onClick={() => setIsOpen(true)}>
+            <DropdownMenuItem onClick={() => setIsChangePasswordOpen(true)}>
               Change Password
               {/* <DropdownMenuShortcut>⌘C</DropdownMenuShortcut> */}
             </DropdownMenuItem>
@@ -88,7 +85,15 @@ export function UserNav({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <ChangePasswordModal onCancel={() => setIsOpen(false)} isOpen={isOpen} />
+      <ChangePasswordModal
+        onCancel={() => setIsChangePasswordOpen(false)}
+        isOpen={isChangePasswordOpen}
+      />
+      <UserProfileModal
+        onCancel={() => setIsProfileOpen(false)}
+        isOpen={isProfileOpen}
+        email={email}
+      />
     </>
   );
 }
