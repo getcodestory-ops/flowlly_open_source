@@ -55,6 +55,7 @@ interface TeamSwitcherProps extends PopoverTriggerProps {}
 
 export function ProjectSwitcher({ className }: TeamSwitcherProps) {
   const {
+    members,
     session,
     userProjects,
     activeProject,
@@ -63,6 +64,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     setMembers,
     setSession,
   } = useStore((state) => ({
+    members: state.members,
     session: state.session,
     userProjects: state.userProjects,
     activeProject: state.activeProject,
@@ -81,7 +83,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
 
   const [isMembersOpen, setIsMembersOpen] = useState(false);
 
-  const { data: members, isLoading: membersLoading } = useQuery({
+  const { data: membersData, isLoading: membersLoading } = useQuery({
     queryKey: ["memberList", session, activeProject],
     queryFn: async () => {
       if (!session || !activeProject) {
@@ -93,10 +95,11 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
   });
 
   useEffect(() => {
-    if (members) {
-      setMembers(members);
+    if (membersData && membersData.data.length > 0) {
+      console.log("members were set", membersData.data);
+      setMembers(membersData.data);
     }
-  }, [members, setMembers]);
+  }, [membersData, setMembers]);
 
   const supabase = createClient();
   const { data, isLoading, isSuccess } = useQuery({
@@ -193,19 +196,16 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
                           />
                           <span className="mr-2">{project.name}</span>
                         </div>
-                        <div className="ml-auto h-5 w-5 flex items-center justify-center">
-                          {/* <MembersListOpener
-                          isVisible={
-                            activeProject?.project_id === project.project_id
-                          }
-                        /> */}
+                        <div
+                          className="ml-auto h-5 w-5 flex items-center justify-center cursor-pointer"
+                          onClick={() => setIsMembersOpen(true)}
+                        >
                           <RiTeamLine
                             className={
                               activeProject?.project_id === project.project_id
                                 ? "opacity-100"
                                 : "opacity-0"
                             }
-                            onClick={() => setIsMembersOpen(true)}
                           />
                         </div>
                       </CommandItem>
@@ -288,45 +288,11 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
       <MembersModal
         onCancel={() => setIsMembersOpen(false)}
         isOpen={isMembersOpen}
+        // members={members}
       />
     </>
   );
 }
-
-const MembersListOpener = ({ isVisible }: { isVisible: boolean }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const { session, activeProject, setMembers } = useStore((state) => ({
-    session: state.session,
-    activeProject: state.activeProject,
-    setMembers: state.setMembers,
-  }));
-  const { data: members, isLoading: membersLoading } = useQuery({
-    queryKey: ["memberList", session, activeProject],
-    queryFn: async () => {
-      if (!session || !activeProject) {
-        return Promise.reject("No session or active project");
-      }
-      return getMembers(session, activeProject.project_id);
-    },
-    enabled: !!session?.access_token,
-  });
-
-  useEffect(() => {
-    if (members) {
-      setMembers(members);
-    }
-  }, [members, setMembers]);
-  return (
-    <>
-      {/* <RiTeamLine
-        className={isVisible ? "opacity-100" : "opacity-0"}
-        onClick={() => setIsOpen(true)}
-      /> */}
-      <MembersModal onCancel={() => setIsOpen(false)} isOpen={isOpen} />
-    </>
-  );
-};
 
 export default function Switcher() {
   return (

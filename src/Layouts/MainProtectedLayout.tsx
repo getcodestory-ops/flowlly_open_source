@@ -3,7 +3,6 @@ import React, { useEffect } from "react";
 import { Flex, Grid, GridItem } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-// import SideMenuPanel from "@/components/TopBar/TopBar";
 // import AiActions from "@/components/AiActions/AiActions";
 // import ScheduleUiView from "@/components/Schedule/ScheduleViewLeftPanel";
 

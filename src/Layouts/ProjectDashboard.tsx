@@ -9,7 +9,7 @@ const Chart = dynamic(
 );
 import { BiSolidCircle } from "react-icons/bi";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
-import TopBar from "@/components/TopBar";
+
 import { useStore } from "@/utils/store";
 import GraphSection from "@/components/ProjectDashboard/GraphsSection";
 import RSSsection from "@/components/ProjectDashboard/RSSsection";
