@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { createClient } from "@supabase/supabase-js";
+import supabase from "@/utils/supabaseClient";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -17,10 +17,10 @@ import Image from "next/image";
 
 import { AuthBackground } from "@/components/AuthBackground/AuthBackground";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""
-);
+// const supabase = createClient(
+//   process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+//   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""
+// );
 
 export default function Signup() {
   const router = useRouter();
