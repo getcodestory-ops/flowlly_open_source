@@ -1,36 +1,20 @@
 import React, { useState, useEffect, use } from "react";
-// import { Task, ViewMode } from "gantt-task-react";
 import { Gantt } from "@/components/Schedule/gantt-task-react-main/src/components/gantt/gantt";
 import {
   Task,
   ViewMode,
 } from "@/components/Schedule/gantt-task-react-main/src/types/public-types";
 import { ViewSwitcher } from "./view-switcher";
-import {
-  Icon,
-  useToast,
-  Box,
-  Text,
-  Spinner,
-  Modal,
-  useDisclosure,
-  Select,
-  Button,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
-} from "@chakra-ui/react";
+import { Icon, useToast, Text } from "@chakra-ui/react";
 
 import "react-date-picker/dist/DatePicker.css";
 import { getStartEndDateForProject, initTasks } from "./helper";
 import "gantt-task-react/dist/index.css";
 import { Flex } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
-import { getActivities, deleteActivity } from "@/api/activity_routes";
+import { deleteActivity } from "@/api/activity_routes";
 import { getCriticalPath } from "@/api/schedule_routes";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { activityEntityToTask } from "@/utils/activityEntityToTask";
 import {
   PiMagnifyingGlassPlus,
@@ -38,57 +22,29 @@ import {
   PiPathDuotone,
 } from "react-icons/pi";
 
-import { MdFormatListBulletedAdd } from "react-icons/md";
-import { from } from "form-data";
-import { ActivityEntity, UpdateActivityTypes } from "@/types/activities";
-import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
-import { updateActivity } from "@/api/activity_routes";
+import { ActivityEntity } from "@/types/activities";
+
 import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
 import AddNewActivityModal from "./AddNewActivityModal";
 import UpdateActivityModal from "./UpdateActivityModal";
-import { get } from "http";
-import CustomDatePicker from "../DatePicker/DatePicker";
 
 const ScheduleGanttInterface = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [fontSize, setFontSize] = useState(12);
-  const {
-    session,
-    activeProject,
-    activities,
-    setTaskToView,
-    setRightPanelView,
-    scheduleProbability,
-    setScheduleProbability,
-    scheduleDate,
-    userActivities,
-  } = useStore((state) => ({
-    session: state.session,
-    activeProject: state.activeProject,
-    activities: state.userActivities,
-    setTaskToView: state.setTaskToView,
-    setRightPanelView: state.setRightPanelView,
-    scheduleProbability: state.scheduleProbability,
-    setScheduleProbability: state.setScheduleProbability,
-    scheduleDate: state.scheduleDate,
-    userActivities: state.userActivities,
-  }));
-  const { isOpen, onClose, onOpen } = useScheduleUpdate();
+  const { session, activeProject, activities, setTaskToView, userActivities } =
+    useStore((state) => ({
+      session: state.session,
+      activeProject: state.activeProject,
+      activities: state.userActivities,
+      setTaskToView: state.setTaskToView,
+      userActivities: state.userActivities,
+    }));
+  const { isOpen, onClose } = useScheduleUpdate();
 
   const [tasks, setTasks] = React.useState<Task[]>(initTasks());
   const [editOpen, setEditOpen] = useState<boolean>(false);
   const [modifyTask, setModifyTask] = useState<ActivityEntity>();
-  const dateToday = getCurrentDateFormatted();
-  const [modalType, setModalType] = useState<string>("");
-  const [probability, setProbability] = useState<number>(0.5);
-
-  const dateAdjustment = () => {
-    let currentDate = new Date();
-    currentDate.setDate(currentDate.getDate() + 1);
-    return currentDate;
-  };
-  const [startDate, onStartChange] = useState<any>(dateAdjustment());
 
   const { mutate, isPending } = useMutation({
     mutationFn: getCriticalPath,
@@ -252,11 +208,6 @@ const ScheduleGanttInterface = () => {
   const handleExpanderClick = (task: Task) => {
     setTasks(tasks.map((t) => (t.id === task.id ? task : t)));
     // console.log("On expander click Id:" + task.id);
-  };
-
-  const handleAddActivity = () => {
-    setModalType("Add");
-    onOpen();
   };
 
   const tooltip = (task: Task) => {

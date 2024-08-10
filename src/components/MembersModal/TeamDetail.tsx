@@ -1,4 +1,3 @@
-"use client";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -24,7 +23,7 @@ import { MemberEntity } from "@/types/members";
 import { createNewMemberEntry } from "@/api/membersRoutes";
 import { useStore } from "@/utils/store";
 import { useToast } from "@/components/ui/use-toast";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 function isValidEmail(email: string) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

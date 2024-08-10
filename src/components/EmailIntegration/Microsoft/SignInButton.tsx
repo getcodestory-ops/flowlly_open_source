@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { useMsal } from "@azure/msal-react";
-import { Button, Flex, Heading, useToast } from "@chakra-ui/react";
+import { Button, Flex, useToast } from "@chakra-ui/react";
 import { loginRequest } from "./authConfig";
 import { FaMicrosoft } from "react-icons/fa";
 import { integrateApi, getApiIntegration } from "@/api/integration_routes";

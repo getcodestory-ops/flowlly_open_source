@@ -1,4 +1,3 @@
-"use client";
 import { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 
@@ -14,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/utils/supabase/client";
+import { supabase } from "@/utils/supabase/client";
 
 interface ChangePasswordModalProps {
   onCancel: () => void;
@@ -64,8 +63,6 @@ export const ChangePasswordComponent = ({
   const handleSetPassword = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!passwordsMatch) return;
-
-    const supabase = createClient();
 
     const { error } = await supabase.auth.updateUser({
       password,

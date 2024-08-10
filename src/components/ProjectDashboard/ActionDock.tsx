@@ -1,31 +1,20 @@
-import React from "react";
-import Link from "next/link";
-import { CalendarIcon, HomeIcon, MailIcon, PencilIcon } from "lucide-react";
+// import React from "react";
+// import { PencilIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Dock, DockIcon } from "@/components/ui/dock";
-import MediaRecorderButton from "../ChatInput/MediaRecorderButton";
+// import MediaRecorderButton from "../ChatInput/MediaRecorderButton";
 
-export type IconProps = React.HTMLAttributes<SVGElement>;
+// export type IconProps = React.HTMLAttributes<SVGElement>;
 
-const DATA = {
-  navbar: [
-    {
-      href: "#",
-      icon: PencilIcon,
-      label: "Text Note",
-      child: <MediaRecorderButton />,
-    },
-  ],
-};
+// const DATA = {
+//   navbar: [
+//     {
+//       href: "#",
+//       icon: PencilIcon,
+//       label: "Text Note",
+//       child: <MediaRecorderButton />,
+//     },
+//   ],
+// };
 
 // export function ActionDock() {
 //   return (

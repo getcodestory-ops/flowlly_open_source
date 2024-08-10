@@ -1,6 +1,4 @@
 import "@/styles/globals.css";
-// import { getProjects } from "@/api/projectRoutes";
-import Image from "next/image";
 import { Archivo_Black } from "next/font/google";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";

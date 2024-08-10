@@ -1,8 +1,8 @@
 import React, { useRef, useEffect, useLayoutEffect } from "react";
 import { Flex, Icon, Text, Input, GridItem, Box } from "@chakra-ui/react";
 import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
-import { useStore } from "@/utils/store";
-import { BsSend } from "react-icons/bs";
+// import { useStore } from "@/utils/store";
+// import { BsSend } from "react-icons/bs";
 import { IoChatboxEllipses } from "react-icons/io5";
 import UpdateTaskForm from "../ChatInput/Forms/UpdateTaskForm";
 import AgentMessageInteractiveView from "../AiActions/AgentMessageInteractiveView";
@@ -18,22 +18,12 @@ import { CornerDownLeft, Mic, Paperclip } from "lucide-react";
 function AssistantChatInterface() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  const {
-    chats,
-    isPending,
-    taskStatus,
-    activeProject,
-    handleChatSubmit,
-    setChatInput,
-    chatInput,
-    isOpen,
-    onClose,
-    onOpen,
-  } = useScheduleUpdate();
+  const { chats, activeProject, handleChatSubmit, setChatInput, chatInput } =
+    useScheduleUpdate();
 
-  const { activeChatEntity } = useStore((state) => ({
-    activeChatEntity: state.activeChatEntity,
-  }));
+  // const { activeChatEntity } = useStore((state) => ({
+  //   activeChatEntity: state.activeChatEntity,
+  // }));
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {

@@ -1,4 +1,3 @@
-import Head from "next/head";
 import LoginPage from "@/Layouts/LoginPage";
 import MainLayout from "@/Layouts/MainLayout";
 import { ChakraProvider } from "@chakra-ui/react";

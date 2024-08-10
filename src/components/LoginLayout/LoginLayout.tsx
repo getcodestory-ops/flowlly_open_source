@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { createClient } from "@/utils/supabase/client";
+import { supabase } from "@/utils/supabase/client";
 
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,6 @@ export const LoginLayout = ({
 }: {
   signIn: (formData: FormData) => Promise<void>;
 }) => {
-  const supabase = createClient();
   const { toast } = useToast();
 
   const [email, setEmail] = useState("");

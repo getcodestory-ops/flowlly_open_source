@@ -9,14 +9,11 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-// import { User } from "@supabase/supabase-js";
 import { ChangePasswordModal } from "@/components/ChangePasswordModal/ChangePasswordModal";
 import { UserProfileModal } from "@/components/UserProfileModal/UserProfileModal";
-import { createClient } from "@/utils/supabase/client";
-import { redirect } from "next/navigation";
+import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 
 export function UserNav({ email }: { email: string }) {
@@ -26,7 +23,6 @@ export function UserNav({ email }: { email: string }) {
   const router = useRouter();
 
   const onLogout = async () => {
-    const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/applogin");
   };
@@ -67,7 +63,7 @@ export function UserNav({ email }: { email: string }) {
             <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
           </DropdownMenuItem> */}
             <DropdownMenuItem onClick={() => setIsChangePasswordOpen(true)}>
-              Change Password
+              Change Password 6565
               {/* <DropdownMenuShortcut>⌘C</DropdownMenuShortcut> */}
             </DropdownMenuItem>
             {/* <DropdownMenuItem>New Team</DropdownMenuItem> */}

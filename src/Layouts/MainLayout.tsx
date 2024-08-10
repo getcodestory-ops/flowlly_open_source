@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import SideMenuPanel from "@/components/TopBar/TopBar";
 import AiActions from "@/components/AiActions/AiActions";
 import ScheduleInterface from "./ScheduleInterface";
-import Head from "next/head";
 import { useRouter } from "next/router";
 import supabase from "@/utils/supabaseClient";
 import ProjectSetup from "./ProjectSetup";
