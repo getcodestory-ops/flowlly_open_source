@@ -1,5 +1,3 @@
-// import { createClient } from "@/utils/supabase/server";
-// import { redirect } from "next/navigation";
 "use client";
 import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";

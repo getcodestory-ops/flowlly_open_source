@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import supabase from "@/utils/supabaseClient";
-import { Session } from "@supabase/supabase-js";
 import { useRouter } from "next/router";
 
 import { useStore } from "@/utils/store";
@@ -16,21 +15,9 @@ function Login() {
   const { toast } = useToast();
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const [sessionToken, setSessionToken] = useState<Session | null>();
   const router = useRouter();
 
   const setAppView = useStore((state) => state.setAppView);
-
-  //   useEffect(() => {
-  //     async function loginCheck() {
-  //       const { data } = await supabase.auth.getSession();
-
-  //       if (data?.session?.user) {
-  //         setSessionToken(data?.session);
-  //       }
-  //     }
-  //     loginCheck();
-  //   }, [router]);
 
   const handleLogin = async (email: string, password: string) => {
     const { data: user, error } = await supabase.auth.signInWithPassword({
@@ -57,17 +44,7 @@ function Login() {
       duration: 5000,
     });
 
-    // router.push("/");
-    // router.reload();
-    // router.push("/");
-
     router.push("/").then(() => window.location.reload());
-
-    // const { data: loginSession } = await supabase.auth.getSession();
-
-    // if (loginSession?.session?.user) {
-    //   setSessionToken(loginSession?.session);
-    // }
   };
 
   //password reset request
@@ -116,15 +93,6 @@ function Login() {
 
   return (
     <>
-      <Head>
-        <title>Construction Documentation</title>
-        <meta
-          name="description"
-          content="Your personal assistant for construction professionals"
-        />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
       <main>
         <Toaster />
 

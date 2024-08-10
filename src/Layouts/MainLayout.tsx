@@ -112,15 +112,6 @@ export default function MainLayout({
 
   return (
     <>
-      <Head>
-        <title>Construction Documentation </title>
-        <meta
-          name="description"
-          content="Personal assistant for construction professionals"
-        />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
       <main>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>

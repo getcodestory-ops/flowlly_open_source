@@ -27,37 +27,6 @@ export const LoginLayout = ({
 
   const [email, setEmail] = useState("");
 
-  //   const email = formData.get("email") as string;
-  //   const password = formData.get("password") as string;
-  //   const supabase = createClient();
-
-  //   const { error } = await supabase.auth.signInWithPassword({
-  //     email,
-  //     password,
-  //   });
-
-  //   if (error) {
-  //     let message = "An error occured";
-  //     if (error.name === "AuthApiError") {
-  //       message =
-  //         "Please verify your email before logging in. Check your spam folder if you can't find the email in main inbox.";
-  //     }
-  //     toast({
-  //       title: error.message,
-  //       description: message,
-  //       duration: 5000,
-  //     });
-  //   } else {
-  //     toast({
-  //       title: "Login successful !",
-  //       description: "You have been logged in successfully.",
-  //       duration: 5000,
-  //     });
-
-  //     return redirect("/protected");
-  //   }
-  // };
-
   const onErrorCallback = () =>
     toast({
       title: "Login Unsuccesful",

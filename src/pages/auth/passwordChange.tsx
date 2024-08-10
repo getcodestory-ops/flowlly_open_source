@@ -3,22 +3,25 @@ import { useToast } from "@chakra-ui/react";
 
 import { useRouter } from "next/router";
 import supabase from "@/utils/supabaseClient";
-import checkAdminRights from "@/utils/checkAdminRights";
-import { Session } from "@supabase/supabase-js";
+// import checkAdminRights from "@/utils/checkAdminRights";
+// import { Session } from "@supabase/supabase-js";
 import { useStore } from "@/utils/store";
 import { AuthBackground } from "@/components/AuthBackground/AuthBackground";
 import { ChangePasswordComponent } from "@/components/ChangePasswordModal/ChangePasswordModal";
 
 function ResetPassword() {
-  const [sessionToken, setSessionToken] = useState<Session | null>();
-  const [hasAdminRights, setAdminRights] = useState<boolean>(false);
+  // const [sessionToken, setSessionToken] = useState<Session | null>();
+  // const [hasAdminRights, setAdminRights] = useState<boolean>(false);
   const toast = useToast();
   const router = useRouter();
   const setAppView = useStore((state) => state.setAppView);
 
   useEffect(() => {
+    console.log("router.query", router.query);
     async function loginCheck() {
       const { token_hash } = router.query;
+      console.log("tiken_hash", token_hash);
+      console.log("router.query", router.query);
 
       if (!token_hash) {
         router.replace("/");
@@ -34,7 +37,7 @@ function ResetPassword() {
         if (session) {
           const { access_token, refresh_token } = session;
           await supabase.auth.setSession({ access_token, refresh_token });
-          setSessionToken(session);
+          // setSessionToken(session);
         }
         if (error) {
           toast({
@@ -50,11 +53,12 @@ function ResetPassword() {
 
       const { data } = await supabase.auth.getSession();
 
-      if (!token_hash && !data?.session?.user) {
+      if (!data?.session?.user) {
         router.replace("/");
-      } else {
-        setSessionToken(data?.session);
       }
+      // else {
+      // setSessionToken(data?.session);
+      // }
     }
     // loginCheck();
     const { token_hash } = router.query;
@@ -63,14 +67,14 @@ function ResetPassword() {
     }
   }, [router]);
 
-  useEffect(() => {
-    async function getAdminRights() {
-      if (!sessionToken?.user.id) return;
-      const adminRights = await checkAdminRights(sessionToken?.user.id);
-      setAdminRights(adminRights);
-    }
-    getAdminRights();
-  }, [sessionToken?.user]);
+  // useEffect(() => {
+  //   async function getAdminRights() {
+  //     if (!sessionToken?.user.id) return;
+  //     // const adminRights = await checkAdminRights(sessionToken?.user.id);
+  //     // setAdminRights(adminRights);
+  //   }
+  //   getAdminRights();
+  // }, [sessionToken?.user]);
 
   return (
     <AuthBackground>
@@ -78,7 +82,7 @@ function ResetPassword() {
         <ChangePasswordComponent
           isOpen={true}
           onCancel={() => {
-            router.push("/");
+            // router.push("/");
           }}
           toast={toast}
           onError={() => {

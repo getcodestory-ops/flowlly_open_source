@@ -1,20 +1,7 @@
 import { Modal } from "react-bootstrap";
 
-import { useToast } from "@chakra-ui/react";
-
 import { useStore } from "@/utils/store";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { createClient } from "@/utils/supabase/client";
-import { MemberEntity } from "@/types/members";
+//
 import { TeamDetail } from "./TeamDetail";
 
 interface MembersModalProps {
@@ -28,8 +15,6 @@ export function MembersModal({
   isOpen,
   projectAccessId,
 }: MembersModalProps) {
-  const toast = useToast();
-
   const { members } = useStore((state) => ({
     members: state.members,
   }));

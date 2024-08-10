@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/utils/supabase/client";
 import { useStore } from "@/utils/store";
 import { MemberEntity } from "@/types/members";
 import { updateMemberEntity } from "@/api/membersRoutes";
@@ -80,7 +79,6 @@ export const UserProfileComponent = ({
     if (!isUpdated) return;
     if (!isOpen) return;
 
-    // const supabase = createClient();
     //pick all values from form
     const formData = new FormData(event.currentTarget);
     const firstName = formData.get("firstName") as string;
