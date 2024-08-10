@@ -30,7 +30,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import ScheduleNotifications from "../Notifications/ScheduleNotifications";
 import MediaRecorderButton from "../ChatInput/MediaRecorderButton";
 import DashboardXMLViewer from "../ProjectDashboard/DashboardViewer";
-import { ActionDock } from "@/components/ProjectDashboard/ActionDock";
+// import { ActionDock } from "@/components/ProjectDashboard/ActionDock";
 
 function ScheduleSummaryView() {
   const session = useStore((state) => state.session);

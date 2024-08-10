@@ -8,7 +8,6 @@ import ScheduleInterface from "./ScheduleInterface";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import supabase from "@/utils/supabaseClient";
-import NotesPage from "@/components/Notes/NotesPage";
 import ProjectSetup from "./ProjectSetup";
 import checkProjectStatus from "@/utils/checkProjectStatus";
 import Integration from "./Integration";
@@ -172,11 +171,6 @@ export const MainDisplayInLayout = ({ appView }: { appView: string }) => {
           {appView === "schedule" && (
             <GridItem rowSpan={15} colSpan={13}>
               <ScheduleInterface />
-            </GridItem>
-          )}
-          {appView === "notes" && (
-            <GridItem rowSpan={15} colSpan={13}>
-              {<NotesPage />}
             </GridItem>
           )}
           {appView === "agent" && (
