@@ -63,7 +63,7 @@ export function UserNav({ email }: { email: string }) {
             <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
           </DropdownMenuItem> */}
             <DropdownMenuItem onClick={() => setIsChangePasswordOpen(true)}>
-              Change Password 6565
+              Change Password
               {/* <DropdownMenuShortcut>⌘C</DropdownMenuShortcut> */}
             </DropdownMenuItem>
             {/* <DropdownMenuItem>New Team</DropdownMenuItem> */}

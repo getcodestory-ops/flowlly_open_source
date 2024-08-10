@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import supabase from "@/utils/supabaseClient";
-import { Session } from "@supabase/supabase-js";
 import { useRouter } from "next/router";
 
 function Login() {
