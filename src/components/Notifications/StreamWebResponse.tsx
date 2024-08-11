@@ -9,7 +9,7 @@ function StreamingResponse() {
 
   useEffect(() => {
     if (isConnected && lastMessage) {
-      setNotification((state) => `${state}${lastMessage}`);
+      setNotification((state) => `${state}${JSON.stringify(lastMessage)}`);
     }
   }, [isConnected, lastMessage]);
 
