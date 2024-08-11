@@ -11,7 +11,6 @@ import {
   ModalCloseButton,
   Input,
   Text,
-  Textarea,
   useToast,
 } from "@chakra-ui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

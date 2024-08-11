@@ -8,7 +8,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { MdOutlineRecordVoiceOver } from "react-icons/md";
-import { IoMdSend, IoMdTrash } from "react-icons/io";
+import { IoMdTrash } from "react-icons/io";
 import { useMutation } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { keyframes } from "@chakra-ui/system";

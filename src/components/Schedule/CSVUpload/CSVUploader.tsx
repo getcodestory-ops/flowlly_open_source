@@ -1,6 +1,6 @@
 // CSVUploader.tsx
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Flex,
   Button,
@@ -16,7 +16,6 @@ import {
   Select,
   Spinner,
   Icon,
-  Heading,
   Box,
 } from "@chakra-ui/react";
 import { CreateNewActivity } from "@/types/activities";

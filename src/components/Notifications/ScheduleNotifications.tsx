@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Flex, Text, IconButton, Icon, Tooltip } from "@chakra-ui/react";
-import { AiOutlineExpandAlt } from "react-icons/ai";
+import { Flex, Text, Icon, Tooltip } from "@chakra-ui/react";
+// import { AiOutlineExpandAlt } from "react-icons/ai";
 
-import { PiControl } from "react-icons/pi";
+// import { PiControl } from "react-icons/pi";
 
 import { useStore } from "@/utils/store";
 import { useQuery } from "@tanstack/react-query";

@@ -1,22 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import { useStore } from "@/utils/store";
 import { Flex, Box, Icon, Text } from "@chakra-ui/react";
 import { CiFolderOn } from "react-icons/ci";
 
 function FolderViewer({
-  folderView,
   setFolderView,
 }: {
   folderView: boolean;
   setFolderView: (value: boolean) => void;
 }) {
-  const { folderList, selectedContext, setSelectedContext } = useStore(
-    (state) => ({
-      folderList: state.folderList,
-      selectedContext: state.selectedContext,
-      setSelectedContext: state.setSelectedContext,
-    })
-  );
+  const { folderList, setSelectedContext } = useStore((state) => ({
+    folderList: state.folderList,
+    setSelectedContext: state.setSelectedContext,
+  }));
 
   return (
     <Flex direction={"column"} gap="4">

@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from "react";
-import { Grid, GridItem, Flex, Text, Tooltip } from "@chakra-ui/react";
+import React, { useEffect } from "react";
+import { Flex, Tooltip } from "@chakra-ui/react";
 import { getDocuments } from "@/api/documentRoutes";
-import { LuFileText } from "react-icons/lu";
+
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import Link from "next/link";

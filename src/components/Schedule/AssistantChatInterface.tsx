@@ -1,8 +1,7 @@
 import React, { useRef, useEffect, useLayoutEffect } from "react";
-import { Flex, Icon, Text, Input, GridItem, Box } from "@chakra-ui/react";
+import { Flex, Icon, Text, GridItem, Box } from "@chakra-ui/react";
 import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
-// import { useStore } from "@/utils/store";
-// import { BsSend } from "react-icons/bs";
+
 import { IoChatboxEllipses } from "react-icons/io5";
 import UpdateTaskForm from "../ChatInput/Forms/UpdateTaskForm";
 import AgentMessageInteractiveView from "../AiActions/AgentMessageInteractiveView";

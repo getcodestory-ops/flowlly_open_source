@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Flex } from "@chakra-ui/react";
 import ScheduleInsights from "./ScheduleInsights";
 import { Button } from "@/components/ui/button";
 import ScheduleGanttInterface from "./ScheduleGanttInterface";
@@ -8,14 +7,7 @@ import ActivitiesDetailPage from "./ActivityDetailsPage";
 import AddNewActivityModal from "./AddNewActivityModal";
 import CsvUploadIcon from "./CSVUpload/csvUploadIcon";
 import { useScheduleSync } from "./SyncSchedule/useScheduleWithProcore";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {

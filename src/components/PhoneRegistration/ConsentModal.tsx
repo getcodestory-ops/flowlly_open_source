@@ -9,7 +9,6 @@ import {
   ModalCloseButton,
   Button,
   Link,
-  useDisclosure,
 } from "@chakra-ui/react";
 
 interface ConsentModalProps {

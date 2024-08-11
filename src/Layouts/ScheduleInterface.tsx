@@ -1,5 +1,4 @@
 import React from "react";
-import { Flex } from "@chakra-ui/react";
 import ScheduleUIView from "@/components/Schedule/ScheduleViewLeftPanel";
 import { useStore } from "@/utils/store";
 import CreateNewProjectButton from "@/components/Schedule/NewProjectButton";
@@ -7,7 +6,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";

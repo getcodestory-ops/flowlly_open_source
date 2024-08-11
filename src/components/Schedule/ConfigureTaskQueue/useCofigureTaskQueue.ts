@@ -7,7 +7,6 @@ import {
   addModifyTaskQueue,
   deleteTaskQueue,
 } from "@/api/taskQueue";
-import { TaskQueue } from "@/types/taskQueue";
 import { getMembers } from "@/api/membersRoutes";
 import { AddTaskQueue } from "@/types/taskQueue";
 

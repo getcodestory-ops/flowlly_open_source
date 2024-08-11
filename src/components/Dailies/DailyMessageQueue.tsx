@@ -17,7 +17,6 @@ import {
 } from "@chakra-ui/react";
 import { FaCheck } from "react-icons/fa";
 import { VscChromeClose } from "react-icons/vsc";
-import { FaHourglassEnd } from "react-icons/fa";
 
 function DailyMessageQueue() {
   const { dailyMessageQueue, updateMessage, deleteMessage } =

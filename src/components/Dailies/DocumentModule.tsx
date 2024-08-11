@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Grid, GridItem, Text, Flex, Icon } from "@chakra-ui/react";
+import React from "react";
+import { Flex } from "@chakra-ui/react";
 
 import DocumentViewer from "../Folder/DocumentViewer";
 

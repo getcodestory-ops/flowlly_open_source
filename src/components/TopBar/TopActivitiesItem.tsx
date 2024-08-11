@@ -6,9 +6,6 @@ import {
   MenuList,
   MenuItem,
   Box,
-  Heading,
-  useToast,
-  Icon,
   Text,
 } from "@chakra-ui/react";
 import { IoChevronDownOutline } from "react-icons/io5";
@@ -17,7 +14,7 @@ import { ActivityEntity } from "@/types/activities";
 import Breadcrubms from "./Breadcrubms";
 import { useStore } from "@/utils/store";
 import { getActivities } from "@/api/activity_routes";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import { useRouter } from "next/router";
 interface TopActivitiesItemProps {

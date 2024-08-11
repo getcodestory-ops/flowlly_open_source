@@ -1,23 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Flex, Text, Box, Icon, Tooltip } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button";
-import {
-  MdHistoryToggleOff,
-  MdInfoOutline,
-  MdOutlinePlayCircle,
-  MdDeleteOutline,
-} from "react-icons/md";
-import { AiOutlineAlert } from "react-icons/ai";
+import { MdOutlinePlayCircle, MdDeleteOutline } from "react-icons/md";
 import { useStore } from "@/utils/store";
 import { BiSolidCircle } from "react-icons/bi";
-import ActivityEditView from "./ActivityEditView";
 import { activityEntityToTask } from "@/utils/activityEntityToTask";
 import { getActivityContingencyPlan } from "@/api/activity_routes";
-import {
-  useQuery,
-  useQueryClient,
-  keepPreviousData,
-} from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import UpdateActivityModal from "./UpdateActivityModal";
 import { ActivityEntity } from "@/types/activities";
 import EditScheduleThroughNotes from "./EditScheduleThroughNote/EditScheduleThroughNote";

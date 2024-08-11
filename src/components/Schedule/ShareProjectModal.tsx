@@ -18,7 +18,6 @@ import { AxiosError } from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { shareProject } from "@/api/projectRoutes";
-import axios from "axios";
 
 interface AddNewChatEntityProps {
   isShareOpen: boolean;

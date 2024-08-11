@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Button, Flex } from "@chakra-ui/react";
+import { useState } from "react";
+import { Flex } from "@chakra-ui/react";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
 import { Antartifact } from "@/types/agentChats";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";

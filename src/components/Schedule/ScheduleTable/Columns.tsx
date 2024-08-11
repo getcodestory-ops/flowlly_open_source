@@ -1,13 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-
-import { labels, priorities, statuses } from "./Data/data";
-import { Task } from "./Data/schema";
 import { ActivityEntityWithMembers } from "@/utils/mapOwnerToMembers";
 import { DataTableColumnHeader } from "@/components/Schedule/ScheduleTable/DataTableColumnHeader";
-import { DataTableRowActions } from "@/components/Schedule/ScheduleTable/DataTableRowActions";
 import { MemberEntity } from "@/types/members";
 
 export const columns: ColumnDef<ActivityEntityWithMembers>[] = [
