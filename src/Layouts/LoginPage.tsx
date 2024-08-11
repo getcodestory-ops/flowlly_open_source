@@ -93,7 +93,7 @@ function Login() {
 
   return (
     <>
-      <main>
+      <main className="h-full bg-white w-full">
         <Toaster />
 
         <div className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px] bg-white">

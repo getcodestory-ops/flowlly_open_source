@@ -116,7 +116,7 @@ export default function MainLayout({
           <TooltipProvider>
             <Flex w="100vw" h="100vh" bg={"#E5E5E5"} overflow="auto">
               {(appView === "login" || appView === "changePassword") && (
-                <Flex>{children}</Flex>
+                <Flex w="100vw" h="100vh">{children}</Flex>
               )}
 
               {appView !== "login" && appView !== "changePassword" && (
