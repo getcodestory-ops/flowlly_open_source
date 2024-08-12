@@ -39,7 +39,7 @@ function ConsentModal({ isOpen, onOpen, onClose }: ConsentModalProps) {
               colorScheme="blue"
               mr={3}
               onClick={() => {
-                console.log("Consent given");
+                //console.log("Consent given");
                 onClose();
               }}
             >

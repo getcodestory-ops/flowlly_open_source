@@ -31,7 +31,7 @@ export const useArchiveActivity = () => {
 
   const handleActivityArchive = (id: string) => {
     if (!activeProject || !session) return;
-    console.log("i am archiving, id: ", id);
+    //console.log("i am archiving, id: ", id);
 
     mutateArchivectivity({
       session,

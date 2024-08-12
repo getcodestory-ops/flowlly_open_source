@@ -226,9 +226,9 @@ const ScheduleGanttInterface = () => {
     );
   };
 
-  useEffect(() => {
-    console.log("Gantt modifyTask", modifyTask);
-  }, [modifyTask]);
+  // useEffect(() => {
+  //   console.log("Gantt modifyTask", modifyTask);
+  // }, [modifyTask]);
 
   return (
     <Flex direction={"column"} w="full">

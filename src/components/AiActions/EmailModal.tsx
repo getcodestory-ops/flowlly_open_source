@@ -50,9 +50,9 @@ const EmailModal = ({
   };
 
   const handleDistributeEmails = () => {
-    console.log("Distributing emailsa", emails, sessionToken);
+    //"Distributing emailsa", emails, sessionToken);
     if (!sessionToken || emails.length === 0) return;
-    console.log("Distributing emails", emails);
+    //console.log("Distributing emails", emails);
     if (content) distributeEmails(sessionToken, content, emails, subject);
     else if (editor)
       distributeEmails(sessionToken, editor.getHTML(), emails, subject);
