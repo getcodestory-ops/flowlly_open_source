@@ -29,16 +29,16 @@ const VirtualPdfLoader = () => {
       selectedContext: state.selectedContext,
     }));
 
-  const { isPdfVisible, filePath, pageNumber, highlightDetails } = pdfViewer;
+  const { isPdfVisible, filePath, pageNumber } = pdfViewer;
   const [scale, setScale] = useState<number>(1.0);
   const pageRefs = useRef<HTMLElement[] | null>([]); // Array to hold refs for all pages
   const [pdfUrl, setPdfUrl] = useState<string | undefined>();
   const [numPages, setNumPages] = useState<number>(1);
-  const [isHighlightVisible, setHighlightVisibility] = useState<Boolean>(true);
+  // const [isHighlightVisible, setHighlightVisibility] = useState<Boolean>(true);
 
   useEffect(() => {
     async function setUrlForPdf() {
-      console.log("selectedContext", selectedContext);
+      // console.log("selectedContext", selectedContext);
       if (!selectedContext?.id || !filePath) return;
 
       if (!userId && !selectedFolder) return;
@@ -53,9 +53,9 @@ const VirtualPdfLoader = () => {
     setUrlForPdf();
   }, [filePath, userId, selectedFolder]);
 
-  useEffect(() => {
-    setHighlightVisibility(true);
-  }, [highlightDetails]);
+  // useEffect(() => {
+  //   setHighlightVisibility(true);
+  // }, [highlightDetails]);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -180,7 +180,7 @@ const VirtualPdfLoader = () => {
                 setPdfViewer({
                   pageNumber: Math.min(numPages, pageNumber + 1),
                 });
-                setHighlightVisibility(false);
+                // setHighlightVisibility(false);
               }}
               disabled={pageNumber >= (numPages ?? 1)}
               fontSize="xl"

@@ -1,25 +1,9 @@
 import React, { useState } from "react";
-import {
-  ChakraProvider,
-  Box,
-  Flex,
-  Grid,
-  GridItem,
-  Button,
-  VStack,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  Icon,
-  IconButton,
-} from "@chakra-ui/react";
+import { Flex, Grid, GridItem, Button } from "@chakra-ui/react";
 import { GrAdd } from "react-icons/gr";
-import { GrHome, GrDocument, GrFavorite, GrImage } from "react-icons/gr";
+import { GrImage } from "react-icons/gr";
 import DocumentEntityViewer from "./DocumentEntityViewer";
-import { FaRegNewspaper, FaClock, FaStickyNote } from "react-icons/fa";
-import { CiClock2 } from "react-icons/ci";
 import { HiOutlineDocumentReport } from "react-icons/hi";
-import { CiStickyNote } from "react-icons/ci";
 
 import DailyReports from "../Dailies/DailyReport";
 

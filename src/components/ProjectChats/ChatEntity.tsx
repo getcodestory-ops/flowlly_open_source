@@ -1,60 +1,45 @@
 import React, { useState } from "react";
-import {
-  Flex,
-  TableContainer,
-  Table,
-  Thead,
-  Th,
-  Tbody,
-  Tr,
-  Td,
-  Tooltip,
-  Select,
-  Button,
-} from "@chakra-ui/react";
-import { useQuery } from "@tanstack/react-query";
-import { getAgentChatEntities } from "@/api/agentRoutes";
-import { useStore } from "@/utils/store";
-import { IoIosExpand } from "react-icons/io";
+import { Flex, Button } from "@chakra-ui/react";
+// import { useQuery } from "@tanstack/react-query";
+// import { getAgentChatEntities } from "@/api/agentRoutes";
+// import { useStore } from "@/utils/store";
 import { FaPhoneAlt } from "react-icons/fa";
 import RegisterPhoneChats from "./RegisterPhoneChats";
-import { AgentChatEntity } from "@/types/agentChats";
 
 function ChatEntity() {
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
-  const [selectedChatId, setSelectedChatId] = useState("");
+  // const [selectedChatId, setSelectedChatId] = useState("");
 
-  const { session, activeChatEntity, setActiveChatEntity, activeProject } =
-    useStore((state) => ({
-      session: state.session,
-      activeChatEntity: state.activeChatEntity,
-      setActiveChatEntity: state.setActiveChatEntity,
-      activeProject: state.activeProject,
-    }));
+  // const { session, setActiveChatEntity, activeProject } =
+  //   useStore((state) => ({
+  //     session: state.session,
+  //     setActiveChatEntity: state.setActiveChatEntity,
+  //     activeProject: state.activeProject,
+  //   }));
 
-  const { data: chatEntities, isLoading: chatsLoading } = useQuery({
-    queryKey: ["chatEntityList", session, activeProject],
-    queryFn: () => {
-      if (!session || !activeProject) {
-        return Promise.reject("No session or active project");
-      }
-      return getAgentChatEntities(session, activeProject.project_id);
-    },
-    enabled: !!session?.access_token,
-  });
+  // const { data: chatEntities, isLoading: chatsLoading } = useQuery({
+  //   queryKey: ["chatEntityList", session, activeProject],
+  //   queryFn: () => {
+  //     if (!session || !activeProject) {
+  //       return Promise.reject("No session or active project");
+  //     }
+  //     return getAgentChatEntities(session, activeProject.project_id);
+  //   },
+  //   enabled: !!session?.access_token,
+  // });
 
-  const handleSelectChat = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const chatId = e.target.value;
-    if (!chatEntities) {
-      return;
-    }
-    const selectedChat = chatEntities.find((chat) => chat.id === chatId);
-    setSelectedChatId(chatId);
-    if (selectedChat) {
-      setActiveChatEntity(selectedChat);
-    }
-  };
+  // const handleSelectChat = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  //   const chatId = e.target.value;
+  //   if (!chatEntities) {
+  //     return;
+  //   }
+  //   const selectedChat = chatEntities.find((chat) => chat.id === chatId);
+  //   setSelectedChatId(chatId);
+  //   if (selectedChat) {
+  //     setActiveChatEntity(selectedChat);
+  //   }
+  // };
 
   return (
     <Flex mt={8} gap={8}>

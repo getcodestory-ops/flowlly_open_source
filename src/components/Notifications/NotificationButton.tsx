@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Box,
   Flex,
@@ -12,11 +12,8 @@ import {
   ModalCloseButton,
   useDisclosure,
   IconButton,
-  Text,
 } from "@chakra-ui/react";
 import { FiBell } from "react-icons/fi";
-import ScheduleNotifications from "./ScheduleNotifications";
-import { useWebSocket } from "@/hooks/useWebSocket";
 import NotificationWebSocket from "./NotificationWebSocket";
 
 function NotificationButton() {

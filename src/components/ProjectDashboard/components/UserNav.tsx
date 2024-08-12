@@ -1,5 +1,3 @@
-// import { createClient } from "@/utils/supabase/server";
-// import { redirect } from "next/navigation";
 "use client";
 import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -11,20 +9,23 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User } from "@supabase/supabase-js";
 import { ChangePasswordModal } from "@/components/ChangePasswordModal/ChangePasswordModal";
+import { UserProfileModal } from "@/components/UserProfileModal/UserProfileModal";
+import { supabase } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
-export function UserNav({
-  user,
-  onLogout,
-}: {
-  user: User;
-  onLogout: () => void;
-}) {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+export function UserNav({ email }: { email: string }) {
+  const [isChangePasswordOpen, setIsChangePasswordOpen] =
+    useState<boolean>(false);
+  const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
+  const router = useRouter();
+
+  const onLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/applogin");
+  };
   return (
     <>
       <DropdownMenu>
@@ -35,9 +36,7 @@ export function UserNav({
                */}
 
               <AvatarFallback>
-                <div className="text-lg">
-                  {user.email && user.email[0].toUpperCase()}
-                </div>
+                <div className="text-lg">{email && email[0].toUpperCase()}</div>
               </AvatarFallback>
             </Avatar>
           </Button>
@@ -46,44 +45,48 @@ export function UserNav({
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
-                {user.email ? user.email.split("@")[0] : ""}
+                {email ? email.split("@")[0] : ""}
               </p>
               <p className="text-xs leading-none text-muted-foreground">
-                {user.email}
+                {email}
               </p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            {/* <DropdownMenuItem>
-            Profile
-            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-          </DropdownMenuItem> */}
+            <DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
+              Profile
+              {/* <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut> */}
+            </DropdownMenuItem>
             {/* <DropdownMenuItem>
             Billing
             <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
           </DropdownMenuItem> */}
-            <DropdownMenuItem>
-              <div onClick={() => setIsOpen(true)}>Change Password</div>
+            <DropdownMenuItem onClick={() => setIsChangePasswordOpen(true)}>
+              Change Password
               {/* <DropdownMenuShortcut>⌘C</DropdownMenuShortcut> */}
             </DropdownMenuItem>
             {/* <DropdownMenuItem>New Team</DropdownMenuItem> */}
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <form action={onLogout}>
+          <DropdownMenuItem onClick={onLogout}>
+            {/* <form action={onLogout}>
               <button className=" rounded-md no-underline bg-btn-background hover:bg-btn-background-hover">
                 Logout
               </button>
-            </form>
+            </form> */}
+            Logout
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <ChangePasswordModal
-        onCancel={() => setIsOpen(false)}
-        isOpen={isOpen}
-        folderName="Change Password"
-        onAdd={() => {}}
+        onCancel={() => setIsChangePasswordOpen(false)}
+        isOpen={isChangePasswordOpen}
+      />
+      <UserProfileModal
+        onCancel={() => setIsProfileOpen(false)}
+        isOpen={isProfileOpen}
+        email={email}
       />
     </>
   );

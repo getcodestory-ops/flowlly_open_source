@@ -1,13 +1,5 @@
 import React, { useState } from "react";
-import {
-  Button,
-  Flex,
-  Box,
-  Icon,
-  useToast,
-  Heading,
-  Text,
-} from "@chakra-ui/react";
+import { Button, Flex, Box, Icon, useToast, Heading } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import CreateNewProjectButton from "@/components/Schedule/NewProjectButton";
 import { FiTrash } from "react-icons/fi";
@@ -19,10 +11,9 @@ import { getProjects, deleteProject } from "@/api/projectRoutes";
 import { getAgentChatEntities } from "@/api/agentRoutes";
 import { ProjectEntity } from "@/types/projects";
 import AddNewChatEntity from "./AddNewChatEntity";
-import { on } from "events";
+
 import FileHandler from "@/Layouts/FileHandler";
 import { BiConversation } from "react-icons/bi";
-import { GrSchedule } from "react-icons/gr";
 import { LuGanttChartSquare } from "react-icons/lu";
 import ShareProjectModal from "./ShareProjectModal";
 import CSVUploader from "./CSVUpload/CSVUploader";

@@ -3,23 +3,15 @@ import {
   Box,
   Flex,
   Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
   useDisclosure,
   IconButton,
   Text,
 } from "@chakra-ui/react";
 import { FiBell } from "react-icons/fi";
-import ScheduleNotifications from "./ScheduleNotifications";
 import { useWebSocket } from "@/hooks/useWebSocket";
 
 function NotificationWebSocket() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { onOpen } = useDisclosure();
   const [counter, setCounter] = useState(0);
 
   const [notifications, setNotifications] = useState([

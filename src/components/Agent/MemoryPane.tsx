@@ -1,13 +1,4 @@
-import {
-  Box,
-  Button,
-  Heading,
-  List,
-  ListItem,
-  Icon,
-  Text,
-} from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { Box, Heading } from "@chakra-ui/react";
 
 const AgentMemoryPane = ({}) => {
   return (

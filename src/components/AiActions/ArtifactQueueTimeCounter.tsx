@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, Text, Heading } from "@chakra-ui/react";
+import { Box, Heading } from "@chakra-ui/react";
 
 interface TimeConfig {
   run_time: string; // Format: "HH:MM:SS"

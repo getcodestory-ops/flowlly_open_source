@@ -13,7 +13,6 @@ import {
 } from "@/api/membersRoutes";
 import { useToast } from "@chakra-ui/react";
 import { MemberEntity } from "@/types/members";
-import { useDisclosure } from "@chakra-ui/react";
 
 export const usePhoneRegistration = () => {
   const queryClient = useQueryClient();

@@ -3,14 +3,6 @@ import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import {
   Box,
-  Heading,
-  Text,
-  List,
-  ListItem,
-  Code,
-  Collapse,
-  Button,
-  IconButton,
 } from "@chakra-ui/react";
 
 interface MarkdownRendererProps {

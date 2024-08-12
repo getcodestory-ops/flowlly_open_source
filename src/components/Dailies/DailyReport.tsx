@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState } from "react";
 import {
   Grid,
   GridItem,
@@ -20,7 +20,6 @@ import {
 import { useStore } from "@/utils/store";
 import { convertDateToTimeText } from "@/utils/timeSinceLatestSignificantEvent";
 import { useQuery } from "@tanstack/react-query";
-import ProcessHistoryButton from "../Schedule/ProcessHistory/ProcessHistoryButton";
 import { getUpdates } from "@/api/update_routes";
 import { UpdateProperties } from "@/types/updates";
 import EditorBlock from "@/components/DocumentEditor/Editor";

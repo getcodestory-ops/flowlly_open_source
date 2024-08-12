@@ -1,20 +1,10 @@
-import { Button, useToast, Tooltip, Icon, Text, Flex } from "@chakra-ui/react";
-import { processMessageHistory } from "@/api/analysis_routes";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useStore } from "@/utils/store";
+import { Button, Tooltip, Icon, Text, Flex } from "@chakra-ui/react";
 import { MdOutlineSchedule } from "react-icons/md";
 import { useState } from "react";
 import UpdateDailyUpdateScheduleModal from "./ConfigureDailyUpdateModal";
-import { useMediaQuery } from "@chakra-ui/react";
 
 const ConfigureDailyUpdate = () => {
-  const toast = useToast();
-  const queryClient = useQueryClient();
-  const session = useStore((state) => state.session);
-  const selectedContext = useStore((state) => state.selectedContext);
-  const activeProject = useStore((state) => state.activeProject);
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [smallScreen] = useMediaQuery("(max-width: 1441px)");
   const [hovered, setHovered] = useState<boolean>(false);
 
   const onClose = () => setIsOpen(false);

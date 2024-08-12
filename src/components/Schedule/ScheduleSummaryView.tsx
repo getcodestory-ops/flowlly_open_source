@@ -1,9 +1,8 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Flex,
   Tooltip,
   Button,
-  Icon,
   Grid,
   GridItem,
   Text,
@@ -15,14 +14,13 @@ import {
   Textarea,
   ModalFooter,
   useToast,
-  Box,
   useMediaQuery,
 } from "@chakra-ui/react";
 import {
   getScheduleSummary,
   updateScheduleViaNotes,
 } from "@/api/schedule_routes";
-import { getNotifications } from "@/api/update_routes";
+// import { getNotifications } from "@/api/update_routes";
 import { FaPencilAlt } from "react-icons/fa";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { useStore } from "@/utils/store";
@@ -30,7 +28,6 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import ScheduleNotifications from "../Notifications/ScheduleNotifications";
 import MediaRecorderButton from "../ChatInput/MediaRecorderButton";
 import DashboardXMLViewer from "../ProjectDashboard/DashboardViewer";
-import { ActionDock } from "@/components/ProjectDashboard/ActionDock";
 
 function ScheduleSummaryView() {
   const session = useStore((state) => state.session);
@@ -39,7 +36,7 @@ function ScheduleSummaryView() {
 
   const [activeEdit, setActiveEdit] = useState(true);
   const [content, setContent] = useState("");
-  const [summaryContent, setSummaryContent] = useState("");
+  // const [summaryContent, setSummaryContent] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const toast = useToast();
 
@@ -53,21 +50,21 @@ function ScheduleSummaryView() {
     enabled: !!session,
   });
 
-  useEffect(() => {
-    if (data?.data) {
-      setSummaryContent(data?.data);
-    }
-  }, [data]);
+  // useEffect(() => {
+  //   if (data?.data) {
+  //     setSummaryContent(data?.data);
+  //   }
+  // }, [data]);
 
-  const { data: notifications } = useQuery({
-    queryKey: ["projectNotification", activeProject, session],
-    queryFn: () => {
-      if (!session || !activeProject)
-        return Promise.reject("no session or project");
-      return getNotifications(session, activeProject.project_id);
-    },
-    enabled: !!session,
-  });
+  // const { data: notifications } = useQuery({
+  //   queryKey: ["projectNotification", activeProject, session],
+  //   queryFn: () => {
+  //     if (!session || !activeProject)
+  //       return Promise.reject("no session or project");
+  //     return getNotifications(session, activeProject.project_id);
+  //   },
+  //   enabled: !!session,
+  // });
 
   const { mutate, isPending, isSuccess } = useMutation({
     mutationFn: () => {
@@ -190,7 +187,6 @@ function ScheduleSummaryView() {
           p="2"
           rounded="lg"
         >
-          {/* <ActionDock /> */}
           <Flex
             gap="2"
             p="2"

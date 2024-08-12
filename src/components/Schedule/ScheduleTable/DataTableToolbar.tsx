@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 import { Calendar } from "@/components/ui/calendar";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTableViewOptions } from "@/components/Schedule/ScheduleTable/DataTableViewOptions";
 import { CalendarIcon } from "@radix-ui/react-icons";
-import { priorities, statuses } from "./Data/data";
+import { statuses } from "./Data/data";
 import { DataTableFacetedFilter } from "@/components/Schedule/ScheduleTable/DataTableFacetedFilter";
 import { format } from "date-fns";
 
