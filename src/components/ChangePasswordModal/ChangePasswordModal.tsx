@@ -47,7 +47,11 @@ export const ChangePasswordComponent = ({
   toast,
   onError,
   onSuccess,
-}: ChangePasswordModalProps & { toast: ReturnType<typeof useToast> }) => {
+  onAuthPage = false,
+}: ChangePasswordModalProps & {
+  toast: ReturnType<typeof useToast>;
+  onAuthPage?: boolean;
+}) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordsMatch, setPasswordsMatch] = useState(false);
@@ -151,9 +155,11 @@ export const ChangePasswordComponent = ({
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
+          {!onAuthPage && (
+            <Button variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+          )}
           <Button
             variant={`${passwordsMatch ? "default" : "link"}`}
             type="submit"

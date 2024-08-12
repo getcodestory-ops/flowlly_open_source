@@ -17,11 +17,8 @@ function ResetPassword() {
   const setAppView = useStore((state) => state.setAppView);
 
   useEffect(() => {
-    console.log("router.query", router.query);
     async function loginCheck() {
       const { token_hash } = router.query;
-      console.log("tiken_hash", token_hash);
-      console.log("router.query", router.query);
 
       if (!token_hash) {
         router.replace("/");
@@ -88,6 +85,7 @@ function ResetPassword() {
           onError={() => {
             setAppView("updates");
           }}
+          onAuthPage={true}
         />
       </div>
     </AuthBackground>
