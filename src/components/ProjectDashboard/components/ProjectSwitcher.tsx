@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState } from "react";
 import {
   CaretSortIcon,
@@ -35,7 +36,6 @@ import {
 
 import { useStore } from "@/utils/store";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { getProjects } from "@/api/projectRoutes";
 import { getMembers } from "@/api/membersRoutes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { getProjects } from "@/api/projectRoutes";
@@ -69,30 +69,6 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     setSession: state.setSession,
   }));
 
-  const { data, isLoading, isSuccess } = useQuery({
-    queryKey: ["initialProjectList", session],
-    queryFn: () => getProjects(session!, "SCHEDULE"),
-    enabled: !!session?.access_token,
-    placeholderData: keepPreviousData,
-  });
-
-  useEffect(() => {
-    if (userProjects.length === 0) return;
-
-    if (projectId) {
-      const project = userProjects.find(
-        (p: ProjectEntity) => p.project_id === projectId
-      );
-
-      if (project) {
-        setActiveProject(project);
-        return;
-      }
-    }
-
-    setActiveProject(userProjects[0]);
-  }, [userProjects.length, setUserProjects, setActiveProject, projectId]);
-
   // useEffect(() => {
   //   if (projects && projects.length > 0) {
   //     setUserProjects(projects);
@@ -108,7 +84,6 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
       if (!session || !activeProject) {
         return Promise.reject("No session or active project");
       }
-
       return getMembers(session, activeProject.project_id);
     },
     enabled: !!session?.access_token,
