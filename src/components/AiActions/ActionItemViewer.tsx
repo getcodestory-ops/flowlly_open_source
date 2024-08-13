@@ -81,8 +81,8 @@ function ActionItemViewer({ results }: ActionItemInterface) {
   return (
     <div className="font-normal">
       <Toaster />
-      {activity_addition && activity_addition.length && (
-        <div className="mt-8">
+      {activity_addition && activity_addition.length > 0 && (
+        <div className="my-4">
           <h2 className="text-center m-2 text-xl">
             New activities to be added in schedule{" "}
           </h2>
@@ -118,8 +118,8 @@ function ActionItemViewer({ results }: ActionItemInterface) {
         </div>
       )}
 
-      {activity_deletion.length > 0 && (
-        <div className="mt-8">
+      {activity_deletion && activity_deletion.length > 0 && (
+        <div className="my-4">
           <h2 className="text-center m-2 text-xl">Activity Additions</h2>
           <Table>
             <TableHeader>
@@ -145,7 +145,7 @@ function ActionItemViewer({ results }: ActionItemInterface) {
       )}
 
       {activity_modification && activity_modification.length && (
-        <div className="mt-16">
+        <div className="my-4">
           <h2 className="text-center m-2 text-xl">
             {" "}
             Existing activities to be changed

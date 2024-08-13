@@ -11,31 +11,36 @@ import { immer } from "zustand/middleware/immer";
 import { MemberEntity } from "@/types/members";
 import { useState, useEffect } from "react";
 import { ActivityEntityWithMembers } from "./mapOwnerToMembers";
+import {
+  UserUpdateCollectionType,
+  NotificationInterface,
+} from "@/types/updateCollection";
 
-// export const useStoreHydrated = <T, F>(
-//   store: (callback: (state: T) => unknown) => unknown,
-//   callback: (state: T) => F
-// ) => {
-//   const result = store(callback) as F;
-//   const [data, setData] = useState<F>();
+export const useStoreHydrated = <T, F>(
+  store: (callback: (state: T) => unknown) => unknown,
+  callback: (state: T) => F
+) => {
+  const result = store(callback) as F;
+  const [data, setData] = useState<F>();
 
-//   useEffect(() => {
-//     setData(result);
-//   }, []);
+  useEffect(() => {
+    setData(result);
+  }, []);
 
-//   return data;
-// };
+  return data;
+};
 
 export const useStore = create<State>()(
   // persist(
   // immer(
-  (set) => ({
+  (set, get) => ({
     session: null,
     appView: "dashboard",
     hasHydrated: false,
     userProjects: [],
     userActivities: [],
     activeProject: null,
+    userUpdatesCollection: {},
     activeChatEntity: {
       id: "",
       project_id: "",
@@ -78,6 +83,13 @@ export const useStore = create<State>()(
     AiActionsView: "open",
     projectStatus: "On Schedule",
     setSession: (session: Session | null) => set(() => ({ session })),
+    // setNotification : (notification: NotificationInterface, projectId: string) => {
+    //   const userUpdatesCollection = get().userUpdatesCollection;
+    //   const projectUpdates = userUpdatesCollection[projectId] || [];
+    //   userUpdatesCollection[projectId] = [...projectUpdates, notification];
+    //   set(() => ({ userUpdatesCollection }));
+    // },
+
     setAdminRights: (hasAdminRights: boolean) =>
       set(() => ({ hasAdminRights })),
     setHasHydrated: (state) => {

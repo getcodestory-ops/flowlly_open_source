@@ -145,7 +145,7 @@ function AssistantChatInterface() {
               }}
             />
             <div className="flex items-center p-3 pt-0">
-              <Tooltip>
+              {/* <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="ghost" size="icon">
                     <Paperclip className="size-4" />
@@ -162,7 +162,7 @@ function AssistantChatInterface() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="top">Use Microphone</TooltipContent>
-              </Tooltip>
+              </Tooltip> */}
               <Button
                 type="submit"
                 size="sm"

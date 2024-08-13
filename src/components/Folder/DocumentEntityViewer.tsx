@@ -66,7 +66,8 @@ const FilePreview: React.FC<{ resource: ContainerResources }> = ({
       case ".webm":
         return (
           <AspectRatio ratio={16 / 9}>
-            <video src={url} controls width="100%" height="100%">
+            <video controls>
+              <source src={url} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </AspectRatio>

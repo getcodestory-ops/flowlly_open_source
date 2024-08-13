@@ -15,6 +15,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import StreamingResponse from "../Notifications/StreamWebResponse";
 
 function TaskResultDisplay({
   task_function,
@@ -26,6 +27,7 @@ function TaskResultDisplay({
   task_function: string;
   results: {
     results?: string | any;
+    stream?: string;
     minutes_of_the_meeting?: string;
     child_task?: {
       message: string;
@@ -47,11 +49,17 @@ function TaskResultDisplay({
           borderRadius={"lg"}
         >
           <Icon as={FaRegDotCircle} fontSize={"sm"} color="green.400" />
-          <MarkDownDisplay content={results.results ?? ""} />
+          <div className="flex flex-col">
+            <MarkDownDisplay content={results.results ?? ""} />
+            {results.stream && <StreamingResponse />}
+          </div>
         </Flex>
       );
 
     case "log_action_items":
+    case "schedule_addition":
+    case "schedule_removal":
+    case "schedule_update":
       return (
         <Flex
           justifyContent={"center"}
@@ -62,19 +70,6 @@ function TaskResultDisplay({
         >
           {/* <Icon as={FaRegDotCircle} fontSize={"sm"} color="green.400" /> */}
           <ActionItemViewer results={results.results ?? []} />
-        </Flex>
-      );
-
-    case "schedule_update":
-      return (
-        <Flex
-          justifyContent={"center"}
-          alignItems={"center"}
-          gap="4"
-          p="2"
-          borderRadius={"lg"}
-        >
-          {/* <ActionItemViewer results={results.results ?? []} /> */}
         </Flex>
       );
 
@@ -103,8 +98,17 @@ function TaskResultDisplay({
         </>
       );
 
+    case "log_daily" || "log_safety":
+      return (
+        <div className="p-8">
+          {results.results?.content && (
+            <MarkDownDisplay content={results.results.content} />
+          )}
+        </div>
+      );
+
     default:
-      return <Flex>{"waiting for results.."}</Flex>;
+      return <Flex>{task_function}</Flex>;
   }
 }
 

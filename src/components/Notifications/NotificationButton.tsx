@@ -14,7 +14,9 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { FiBell } from "react-icons/fi";
-import NotificationWebSocket from "./NotificationWebSocket";
+// import ScheduleNotifications from "./ScheduleNotifications";
+// import { useWebSocket } from "@/hooks/useWebSocket";
+import StreamingResponse from "./StreamWebResponse";
 
 function NotificationButton() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -39,10 +41,10 @@ function NotificationButton() {
         >
           <ModalCloseButton />
           <ModalBody maxH={"50vh"} overflow="auto">
-            This is notification area
+            Notifications
             {/* <ScheduleNotifications /> */}
             <Flex direction="column" align="center">
-              <NotificationWebSocket />
+              {/* <StreamingResponse /> */}
             </Flex>
           </ModalBody>
           <ModalFooter>

@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import checkProjectStatus from "@/utils/checkProjectStatus";
 import { ChakraProvider } from "@chakra-ui/react";
 import { chakraTheme } from "@/utils/chakraTheme";
-import { MainDisplayInLayout } from "./MainLayout";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 const queryClient = new QueryClient();
