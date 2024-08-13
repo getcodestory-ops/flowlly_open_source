@@ -180,41 +180,6 @@ function ScheduleSummaryView() {
             </div>
           )}
         </div>
-
-        <Flex
-          alignItems={"center"}
-          justifyContent={"center"}
-          position="sticky"
-          bottom="0"
-          bg="white"
-          p="2"
-          rounded="lg"
-        >
-          {/* <ActionDock /> */}
-          <Flex
-            gap="2"
-            p="2"
-            borderRadius={"lg"}
-            border="1px"
-            borderColor={"gray.200"}
-            alignItems={"center"}
-            pt="4"
-            flexDir={smallScreen ? "column" : "row"}
-          >
-            <MediaRecorderButton />
-            <Tooltip label="Edit schedule using notes">
-              <Button
-                leftIcon={<FaPencilAlt />}
-                onClick={() => setIsOpen(true)}
-                colorScheme="blackAlpha"
-                size="sm"
-                fontWeight={"normal"}
-              >
-                {isPending ? "Note submitted Successfully!" : "Text note"}
-              </Button>
-            </Tooltip>
-          </Flex>
-        </Flex>
       </GridItem>
       <GridItem colSpan={smallScreen ? 8 : 2} hidden={smallScreen}>
         <ScheduleNotifications />

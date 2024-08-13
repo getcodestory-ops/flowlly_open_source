@@ -5,6 +5,11 @@ import { AgentChatEntity } from "@/types/agentChats";
 import { ActivityEntity } from "@/types/activities";
 import { ActivityEntityWithMembers } from "@/utils/mapOwnerToMembers";
 import { MemberEntity } from "./members";
+import {
+  UserUpdateCollectionType,
+  NotificationInterface,
+  UserNotifications,
+} from "@/types/updateCollection";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 
@@ -62,6 +67,8 @@ export type State = {
   hasAdminRights: boolean;
   userProjects: ProjectEntity[];
   activeProject: ProjectEntity | null;
+  userUpdatesCollection: UserUpdateCollectionType;
+
   userActivities: ActivityEntity[];
   activeChatEntity: AgentChatEntity;
   noteTitle: string;
@@ -89,7 +96,7 @@ export type State = {
   AiActionsView: "open" | "close" | "extend" | any;
   projectStatus: string;
   setSession: (session: Session | null) => void;
-
+  // setNotification : (notification: NotificationInterface, projectId: string) => void;
   setHasHydrated: (state: boolean) => void;
   setAppView: (appView: AppView) => void;
   setUserProjects: (userProjects: ProjectEntity[]) => void;

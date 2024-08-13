@@ -11,7 +11,7 @@ import {
 import { FaChevronDown } from "react-icons/fa";
 import { useStore } from "@/utils/store";
 import { FaRegBuilding } from "react-icons/fa";
-
+import MediaRecorderButton from "../ChatInput/MediaRecorderButton";
 import { FaCheck } from "react-icons/fa6";
 import NotificationButton from "../Notifications/NotificationButton";
 
@@ -26,7 +26,7 @@ function ProjectInfoDisplay() {
 
   return (
     <Flex justifyContent="space-between" gap="8" w="full">
-      <Flex color="white" gap="6">
+      <div className="flex color-white text-white gap-4">
         <Flex w="150px">
           <Image
             src="https://upthcaewktgrqjieqiya.supabase.co/storage/v1/object/public/images/logo_full.svg"
@@ -74,7 +74,11 @@ function ProjectInfoDisplay() {
             )}
           </Flex>
         </Flex>
-      </Flex>
+        <div className="bg-primary rounded-lg text-black">
+          <MediaRecorderButton />
+        </div>
+      </div>
+
       <Flex mr="8">
         <NotificationButton />
       </Flex>

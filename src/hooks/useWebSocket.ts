@@ -40,7 +40,7 @@ export const useWebSocket = (): WebSocketHook => {
 
         ws.onmessage = (event: MessageEvent) => {
           console.log("Message received:", event.data);
-          setLastMessage(event.data);
+          setLastMessage(JSON.parse(event.data));
         };
 
         ws.onclose = (event: any) => {

@@ -42,10 +42,10 @@ function NotificationButton() {
         >
           <ModalCloseButton />
           <ModalBody maxH={"50vh"} overflow="auto">
-            This is notification area
+            Notifications
             {/* <ScheduleNotifications /> */}
             <Flex direction="column" align="center">
-              <StreamingResponse />
+              {/* <StreamingResponse /> */}
             </Flex>
           </ModalBody>
           <ModalFooter>

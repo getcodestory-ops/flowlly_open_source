@@ -100,10 +100,10 @@ export function ActionDock() {
           </Dock>
         </TooltipProvider>
       </div>
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <Separator orientation="vertical" />
         <MediaRecorderButton />
-      </div>
+      </div> */}
     </div>
   );
 }
