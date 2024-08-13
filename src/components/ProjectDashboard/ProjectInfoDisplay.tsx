@@ -74,7 +74,7 @@ function ProjectInfoDisplay() {
             )}
           </Flex>
         </Flex>
-        <div className="bg-primary rounded-lg text-black">
+        <div className="bg-primary rounded-lg text-black invisible  md:visible">
           <MediaRecorderButton />
         </div>
       </div>

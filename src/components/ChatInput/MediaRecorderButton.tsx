@@ -13,7 +13,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { CornerDownLeft, Mic, Paperclip, PencilIcon } from "lucide-react";
+import {
+  CornerDownLeft,
+  Mic,
+  Paperclip,
+  PencilIcon,
+  TrashIcon,
+} from "lucide-react";
 import { IoSave } from "react-icons/io5";
 import {
   Popover,
@@ -37,6 +43,7 @@ const MediaRecorderButton: React.FC = () => {
     null
   );
   const [textNote, setTextNote] = useState<string>("");
+  const [audioModuleTextNote, setAudioModuteTextNote] = useState<string>("");
   const session = useStore((state) => state.session);
   const activeProject = useStore((state) => state.activeProject);
   const activityChatEntity = useStore((state) => state.activeChatEntity);
@@ -131,7 +138,10 @@ const MediaRecorderButton: React.FC = () => {
         const fileName = new Date().toISOString().replace(/:/g, "-") + ".wav";
         const file = new File([blob], fileName, { type: "audio/wav" });
         const formData = new FormData();
+
         formData.append("file", file);
+        if (audioModuleTextNote)
+          formData.append("text_note", audioModuleTextNote);
         if (activityChatEntity?.id) {
           formData.append("chat_entity_id", activityChatEntity.id);
         }
@@ -145,45 +155,69 @@ const MediaRecorderButton: React.FC = () => {
   return (
     <div className="flex   px-2 space-x-3 rounded-lg justify-center items-center ">
       <div className="flex items-center py-1">
-        {!audioUrl && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={recording ? stopRecording : startRecording}
-              >
-                <Mic className="size-4" color={recording ? "red" : "black"} />
-                <span className="sr-only">
-                  {recording ? "Stop Recording" : "Voice note"}
-                </span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top">Start recording audio</TooltipContent>
-          </Tooltip>
-        )}
-        {audioUrl && (
-          <div className="flex items-center space-x-2">
-            <audio src={audioUrl} controls />
-            <IconButton
-              aria-label="Send voice note"
-              as={FaSave}
-              cursor={"pointer"}
-              size={"sm"}
-              color="blue.500"
-              onClick={handleVoiceNoteSubmission}
-            />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  // onClick={recording ? stopRecording : startRecording}
+                >
+                  <Mic className="size-4" color={recording ? "red" : "black"} />
+                  <span className="sr-only">
+                    {recording ? "Stop Recording" : "Voice note"}
+                  </span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="min-w-[50vw]">
+                <div className="space-y-6">
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={recording ? stopRecording : startRecording}
+                    >
+                      <Mic
+                        className="size-4"
+                        color={recording ? "red" : "black"}
+                      />
+                      <span className="sr-only">
+                        {recording ? "Stop Recording" : "Voice note"}
+                      </span>
+                    </Button>
+                    {audioUrl && (
+                      <div className="flex items-center space-x-2">
+                        <audio src={audioUrl} controls className="h-6" />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setAudioUrl(null)}
+                        >
+                          <TrashIcon className="size-4" color="red" />
+                          <span className="sr-only">Delete Recording</span>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
 
-            <IconButton
-              aria-label="Delete voice note"
-              as={IoMdTrash}
-              color={"red.500"}
-              size={"sm"}
-              cursor={"pointer"}
-              onClick={() => setAudioUrl(null)}
-            />
-          </div>
-        )}
+                  <AutosizeTextarea
+                    value={audioModuleTextNote}
+                    onChange={(e) => setAudioModuteTextNote(e.target.value)}
+                  />
+                  <Button
+                    variant={"default"}
+                    disabled={!audioUrl && audioModuleTextNote.length === 0}
+                    onClick={handleVoiceNoteSubmission}
+                  >
+                    Save Note
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </TooltipTrigger>
+          <TooltipContent side="top">Start recording audio</TooltipContent>
+        </Tooltip>
       </div>
       <div className="flex items-center py-1 ">
         <Tooltip>
@@ -238,13 +272,17 @@ const MediaRecorderButton: React.FC = () => {
               <span className="sr-only">Write Text Note</span>
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="min-w-96">
+          <PopoverContent className="min-w-[50vw]">
             <div className="space-y-6">
               <AutosizeTextarea
                 value={textNote}
                 onChange={(e) => setTextNote(e.target.value)}
               />
-              <Button variant={"default"} onClick={handleTextNoteSubmission}>
+              <Button
+                variant={"default"}
+                onClick={handleTextNoteSubmission}
+                disabled={!textNote}
+              >
                 Save Note
               </Button>
             </div>

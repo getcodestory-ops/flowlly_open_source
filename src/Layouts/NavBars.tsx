@@ -57,9 +57,9 @@ export default function NavBars({ children }: { children: React.ReactNode }) {
             direction={{ base: "column", md: "row" }}
             overflow="auto"
           >
-            <Flex zIndex="overlay" h={{ base: "5vh", md: "100vh" }}>
+            <div className="overlay ">
               <SidePanel />
-            </Flex>
+            </div>
             <Flex direction={"column"} h="100vh" w="full">
               <Flex h="5vh">
                 <TopBar />
