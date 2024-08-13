@@ -2,9 +2,7 @@ import React from "react";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -13,14 +11,9 @@ import { Button } from "@/components/ui/button";
 import { CheckIcon, Cross2Icon } from "@radix-ui/react-icons";
 import { Toaster } from "@/components/ui/toaster";
 import { useStore } from "@/utils/store";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  getScheduleRevisions,
-  updateActivityRevision,
-  rejectRevision,
-  getScheduleRevisionsById,
-} from "@/api/schedule_routes";
+import { updateActivityRevision } from "@/api/schedule_routes";
 import { useArchiveActivity } from "@/utils/useArchiveActivity";
 import { Revision } from "@/types/activities";
 

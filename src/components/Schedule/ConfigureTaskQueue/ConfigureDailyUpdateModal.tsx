@@ -13,12 +13,10 @@ import {
   ModalBody,
   ModalCloseButton,
   Input,
-  Textarea,
   Text,
   Select,
   List,
   ListItem,
-  ListIcon,
   useOutsideClick,
   VStack,
   HStack,
@@ -29,12 +27,10 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { useConfigureTaskQueue } from "./useCofigureTaskQueue";
-import { AddTaskQueue } from "@/types/taskQueue";
 import MultiSelect from "@/components/MultiSelect/MultiSelect";
 import { MemberEntity } from "@/types/members";
 import { timezones } from "@/utils/timezones";
 import { MdDeleteOutline } from "react-icons/md";
-import { time } from "console";
 import { type TimeConfig } from "@/types/taskQueue";
 
 function UpdateDailyUpdateScheduleModal({

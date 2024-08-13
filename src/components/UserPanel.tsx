@@ -7,7 +7,6 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
-  Button,
   Tooltip,
 } from "@chakra-ui/react";
 import supabase from "../utils/supabaseClient";
@@ -15,8 +14,7 @@ import { useStore } from "@/utils/store";
 
 const UserPanel = () => {
   const [user, setUser] = useState<any>(null);
-  const { appView, setAppView } = useStore((state) => ({
-    appView: state.appView,
+  const { setAppView } = useStore((state) => ({
     setAppView: state.setAppView,
   }));
   const router = useRouter();

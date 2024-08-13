@@ -3,17 +3,13 @@ import {
   updateDocumentContent,
   getDocumentContent,
 } from "@/api/documentRoutes";
-import { processDocumentContent } from "@/api/schedule_routes";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
-import type { OutputData } from "@editorjs/editorjs";
-import type EditorJS from "@editorjs/editorjs";
 import { jsonToHtml } from "@/utils/jsonToHtml";
 
 export const useContentSave = (id?: string | string[]) => {
   const [content, setContent] = useState<string | null>(null);
-  const ref = useRef<EditorJS>();
   const toast = useToast();
   const { session, activeProject } = useStore((state) => ({
     session: state.session,
@@ -113,11 +109,11 @@ export const useContentSave = (id?: string | string[]) => {
   // });
 
   return {
-    ref,
-    data,
+    // ref,
+    // data,
     onSubmit,
     content,
-    setContent,
+    // setContent,
     isLoading,
   };
 };

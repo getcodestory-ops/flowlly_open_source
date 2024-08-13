@@ -1,9 +1,7 @@
 import React from "react";
-import { Flex, Button, Icon, useToast, Heading, Text } from "@chakra-ui/react";
-import { FiPlus, FiTrash } from "react-icons/fi";
+import { Flex,  Icon,   Text } from "@chakra-ui/react";
+import { FiPlus } from "react-icons/fi";
 import { useStore } from "@/utils/store";
-import { createNewChatSession } from "@/api/chatRoutes";
-import { Chat } from "@/types/chat";
 
 const CreateNewChatButton = () => {
   const setChatSession = useStore((state) => state.setChatSession);

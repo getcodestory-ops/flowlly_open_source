@@ -9,7 +9,6 @@ import {
   Text,
   Icon,
   AspectRatio,
-  Tooltip,
   Spinner,
   Modal,
   ModalOverlay,
@@ -20,8 +19,6 @@ import {
 } from "@chakra-ui/react";
 import { StorageEntity, ContainerResources } from "@/types/document";
 import { FiFileText } from "react-icons/fi";
-import { FaRegFileAudio } from "react-icons/fa6";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
 const FilePreview: React.FC<{ resource: ContainerResources }> = ({

@@ -36,7 +36,7 @@ const MultiSelect = ({
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
   const handleOptionSelect = (selected: string | string[]) => {
-    console.log(selected);
+    //console.log(selected);
     const list = Array.isArray(selected)
       ? selected
       : [...selectedOptions, selected];
@@ -51,7 +51,7 @@ const MultiSelect = ({
   };
 
   useEffect(() => {
-    console.log("loading multiselect");
+    //console.log("loading multiselect");
     setSelectedOptions(existingSelection);
   }, [existingSelection]);
 

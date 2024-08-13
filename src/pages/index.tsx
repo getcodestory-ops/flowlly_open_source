@@ -1,5 +1,4 @@
-import Head from "next/head";
-import LoginPage from "@/Layouts/OldMainLayout";
+import LoginPage from "@/Layouts/LoginPage";
 import MainLayout from "@/Layouts/MainLayout";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 
@@ -29,16 +28,7 @@ const theme = extendTheme({
 
 export default function Home() {
   return (
-    <ChakraProvider theme={theme}>
-      <Head>
-        <title>Construction Documentation</title>
-        <meta
-          name="description"
-          content="Your personal assistant for construction professionals"
-        />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <ChakraProvider theme={chakraTheme}>
       <main>
         <MainLayout>
           <LoginPage />

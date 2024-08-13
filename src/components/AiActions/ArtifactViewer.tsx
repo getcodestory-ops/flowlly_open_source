@@ -1,8 +1,6 @@
 import { Flex, Icon } from "@chakra-ui/react";
-import { Antartifact } from "@/types/agentChats";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
+
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
-import MinutesMeetingArtifact from "./MinutesMeetingArtifact";
 import { Session } from "@supabase/supabase-js";
 import { useQuery } from "@tanstack/react-query";
 import { get_task_result } from "@/api/taskQueue";

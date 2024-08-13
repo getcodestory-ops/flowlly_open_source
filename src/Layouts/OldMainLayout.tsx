@@ -14,7 +14,6 @@ import {
   Image,
 } from "@chakra-ui/react";
 import supabase from "@/utils/supabaseClient";
-import logo from "../img/logo_full.svg";
 import { useStore } from "@/utils/store";
 
 export default function LoginPage() {

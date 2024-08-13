@@ -1,4 +1,4 @@
-import { Task, ViewMode, Gantt } from "gantt-task-react";
+import { Task } from "gantt-task-react";
 
 export function initTasks() {
   const currentDate = new Date();

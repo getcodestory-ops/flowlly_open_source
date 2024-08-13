@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Flex } from "@chakra-ui/react";
 import TopBarProjects from "./TopBarProjects";
 import { ActivityEntity } from "@/types/activities";

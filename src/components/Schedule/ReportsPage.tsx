@@ -1,11 +1,8 @@
 import React, { useState } from "react";
 import { Flex, Select, Text, Button } from "@chakra-ui/react";
-import { createRoot } from "react-dom/client";
-import ReactMarkdown from "react-markdown";
 
 const ReportsPage = () => {
   const [reportSelected, setReportSelected] = useState<string>("");
-  const [selectedTimeframe, setSelectedTimeframe] = useState<string>("");
   const [newReport, setNewReport] = useState<boolean>(false);
 
   const reports = {
@@ -177,12 +174,7 @@ const ReportsPage = () => {
   const generateNewReport = () => {
     return (
       <Flex direction={"column"}>
-        <Select
-          placeholder="Select Timeframe"
-          size={"sm"}
-          onChange={(e) => setSelectedTimeframe(e.target.value)}
-          bg={"white"}
-        >
+        <Select placeholder="Select Timeframe" size={"sm"} bg={"white"}>
           <option value="option1">Today</option>
           <option value="option2">Yesterday</option>
           <option value="option3">This Week</option>

@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button, useToast } from "@chakra-ui/react";
 import { createProject } from "@/api/projectRoutes";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ActivityEntity, CreateNewActivity } from "@/types/activities";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 
 const AddActivityChildren = () => {

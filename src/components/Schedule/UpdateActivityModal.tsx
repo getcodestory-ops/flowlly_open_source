@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Flex,
@@ -11,22 +11,17 @@ import {
   ModalBody,
   ModalCloseButton,
   Input,
-  Textarea,
   useToast,
   Text,
-  Select,
 } from "@chakra-ui/react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
-import { createActivity } from "@/api/activity_routes";
-import { UpdateActivityTypes } from "@/types/activities";
 import getCurrentDateFormatted, {
   dateDiffInDays,
 } from "@/utils/getCurrentDateFormatted";
 import { updateActivity } from "@/api/activity_routes";
 import { ActivityEntity } from "@/types/activities";
 import MultiSelect from "../MultiSelect/MultiSelect";
-import type { Task } from "gantt-task-react";
 import { getMembers } from "@/api/membersRoutes";
 import { MemberEntity } from "@/types/members";
 

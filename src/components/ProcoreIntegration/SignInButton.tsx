@@ -1,6 +1,6 @@
 import { useStore } from "@/utils/store";
 import { useToast } from "@chakra-ui/react";
-import { Button, Flex, Heading } from "@chakra-ui/react";
+import { Button, Flex } from "@chakra-ui/react";
 
 const IntegrateProcore = () => {
   const { session, activeProject } = useStore((state) => ({

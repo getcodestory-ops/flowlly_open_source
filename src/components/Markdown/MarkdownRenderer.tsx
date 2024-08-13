@@ -10,7 +10,6 @@ import {
   Code,
   Collapse,
   Button,
-  IconButton,
 } from "@chakra-ui/react";
 
 interface MarkdownRendererProps {

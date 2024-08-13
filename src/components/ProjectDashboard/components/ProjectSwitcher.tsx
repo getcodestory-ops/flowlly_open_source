@@ -32,32 +32,25 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { useStore } from "@/utils/store";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getProjects } from "@/api/projectRoutes";
 import { getMembers } from "@/api/membersRoutes";
-import supabase from "@/utils/supabaseClient";
-import { useRouter } from "next/router";
-import { ProjectEntity } from "@/types/projects";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { getProjects } from "@/api/projectRoutes";
+import { supabase } from "@/utils/supabase/client";
+import { RiTeamLine } from "react-icons/ri";
+import { MembersModal } from "@/components/MembersModal/MembersModal";
 
+const queryClient = new QueryClient();
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
 >;
 
 interface TeamSwitcherProps extends PopoverTriggerProps {}
 
-export default function ProjectSwitcher({ className }: TeamSwitcherProps) {
-  const router = useRouter();
-  const { query } = router;
-  const projectId = query.projectId as string;
-
+export function ProjectSwitcher({ className }: TeamSwitcherProps) {
   const {
     session,
     userProjects,
@@ -100,23 +93,16 @@ export default function ProjectSwitcher({ className }: TeamSwitcherProps) {
     setActiveProject(userProjects[0]);
   }, [userProjects.length, setUserProjects, setActiveProject, projectId]);
 
-  useEffect(() => {
-    if (data && data.length > 0 && isSuccess) {
-      setUserProjects(data);
-    }
-  }, [data?.length, isSuccess, setUserProjects]);
+  // useEffect(() => {
+  //   if (projects && projects.length > 0) {
+  //     setUserProjects(projects);
+  //     setActiveProject(projects[0]);
+  //   }
+  // }, [projects?.length, setUserProjects, projects, setActiveProject]);
 
-  useEffect(() => {
-    async function loginCheck() {
-      const { data } = await supabase.auth.getSession();
-      if (data?.session?.user) {
-        setSession(data.session);
-      }
-    }
-    loginCheck();
-  }, [setSession]);
+  const [isMembersOpen, setIsMembersOpen] = useState(false);
 
-  const { data: members, isLoading: membersLoading } = useQuery({
+  const { data: membersData, isLoading: membersLoading } = useQuery({
     queryKey: ["memberList", session, activeProject],
     queryFn: async () => {
       if (!session || !activeProject) {
@@ -129,48 +115,80 @@ export default function ProjectSwitcher({ className }: TeamSwitcherProps) {
   });
 
   useEffect(() => {
-    if (members) {
-      setMembers(members);
+    if (membersData && membersData.data.length > 0) {
+      setMembers(membersData.data);
     }
-  }, [members, setMembers]);
+  }, [membersData, setMembers]);
+
+  const { data, isLoading, isSuccess } = useQuery({
+    queryKey: ["initialProjectList", session],
+    queryFn: () => {
+      if (session && session.access_token) {
+        return getProjects(session!, "SCHEDULE");
+      }
+      return Promise.reject("No session or access token");
+    },
+    enabled: !!session?.access_token,
+    placeholderData: keepPreviousData,
+  });
+
+  useEffect(() => {
+    if (userProjects.length === 0) return;
+
+    setActiveProject(userProjects[0]);
+  }, [userProjects.length, userProjects, setActiveProject]);
+
+  useEffect(() => {
+    if (data && data.length > 0 && isSuccess) {
+      setUserProjects(data);
+    }
+  }, [data?.length, isSuccess, setUserProjects, data]);
+
+  useEffect(() => {
+    async function loginCheck() {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.user) {
+        setSession(data.session);
+      }
+    }
+    loginCheck();
+  }, [setSession]);
 
   const [open, setOpen] = useState(false);
   const [showNewTeamDialog, setShowNewTeamDialog] = useState(false);
 
   return (
-    <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            aria-label="Select a team"
-            className={cn("w-[200px] justify-between", className)}
-          >
-            <Avatar className="mr-2 h-5 w-5">
-              <AvatarImage
-                src={`https://avatar.vercel.sh/personal.png`}
-                alt={activeProject?.name ? activeProject.name : "No Project"}
-                className="grayscale"
-              />
-              <AvatarFallback>SC</AvatarFallback>
-            </Avatar>
-            {activeProject?.name.length
-              ? activeProject.name.slice(0, 15)
-              : "No Project"}
-            <CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
-          <Command>
-            <CommandList>
-              <CommandInput placeholder="Search Project..." />
-              <CommandEmpty>No Project found.</CommandEmpty>
+    <>
+      <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              aria-label="Select a team"
+              className={cn("w-[200px] justify-between", className)}
+            >
+              <Avatar className="mr-2 h-5 w-5">
+                <AvatarImage
+                  src={`https://avatar.vercel.sh/personal.png`}
+                  alt={activeProject?.name ? activeProject.name : "No Project"}
+                  className="grayscale"
+                />
+                <AvatarFallback></AvatarFallback>
+              </Avatar>
+              {activeProject?.name.length
+                ? activeProject.name.slice(0, 15)
+                : "No Project"}
+              <CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[300px] p-0">
+            <Command>
+              <CommandList>
+                <CommandInput placeholder="Search Project..." />
+                <CommandEmpty>No Project found.</CommandEmpty>
 
-              {isLoading ? (
-                <CommandItem>Loading projects...</CommandItem>
-              ) : (
                 <CommandGroup>
                   {userProjects && userProjects.length > 0 ? (
                     userProjects.map((project) => (
@@ -178,74 +196,79 @@ export default function ProjectSwitcher({ className }: TeamSwitcherProps) {
                         key={project.project_id}
                         onSelect={() => {
                           setActiveProject(project);
-                          router.push(
-                            `/documents?projectId=${project.project_id}`
-                          );
+                          // router.push(
+                          //   `/documents?projectId=${project.project_id}`
+                          // );
                           setOpen(false);
                         }}
                         className="text-sm"
                       >
-                        <Avatar className="mr-2 h-5 w-5">
-                          <AvatarImage
-                            src={`https://avatar.vercel.sh/personal.png`}
-                            alt={project.name}
-                            className="grayscale"
+                        <div className="flex flex-row gap-2">
+                          <CheckIcon
+                            className={cn(
+                              "mr-auto h-4 w-4",
+                              activeProject?.project_id === project.project_id
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
                           />
-                          <AvatarFallback>SC</AvatarFallback>
-                        </Avatar>
-                        {project.name}
-                        <CheckIcon
-                          className={cn(
-                            "ml-auto h-4 w-4",
-                            activeProject?.project_id === project.project_id
-                              ? "opacity-100"
-                              : "opacity-0"
-                          )}
-                        />
+                          <span className="mr-2">{project.name}</span>
+                        </div>
+                        <div
+                          className="ml-auto h-5 w-5 flex items-center justify-center cursor-pointer"
+                          onClick={() => setIsMembersOpen(true)}
+                        >
+                          <RiTeamLine
+                            className={
+                              activeProject?.project_id === project.project_id
+                                ? "opacity-100"
+                                : "opacity-0"
+                            }
+                          />
+                        </div>
                       </CommandItem>
                     ))
                   ) : (
                     <CommandItem>No projects available</CommandItem>
                   )}
                 </CommandGroup>
-              )}
-            </CommandList>
+              </CommandList>
 
-            <CommandSeparator />
+              <CommandSeparator />
 
-            <CommandList>
-              <CommandGroup>
-                <DialogTrigger asChild>
-                  <CommandItem
-                    onSelect={() => {
-                      setOpen(false);
-                      setShowNewTeamDialog(true);
-                    }}
-                  >
-                    <PlusCircledIcon className="mr-2 h-5 w-5" />
-                    Create Team
-                  </CommandItem>
-                </DialogTrigger>
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+              <CommandList>
+                <CommandGroup>
+                  <DialogTrigger asChild>
+                    <CommandItem
+                      onSelect={() => {
+                        setOpen(false);
+                        setShowNewTeamDialog(true);
+                      }}
+                    >
+                      <PlusCircledIcon className="mr-2 h-5 w-5" />
+                      Create Project
+                    </CommandItem>
+                  </DialogTrigger>
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
 
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create team</DialogTitle>
-          <DialogDescription>
-            Add a new team to manage products and customers.
-          </DialogDescription>
-        </DialogHeader>
-        <div>
-          <div className="space-y-4 py-2 pb-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Team name</Label>
-              <Input id="name" placeholder="Acme Inc." />
-            </div>
-            {/* <div className="space-y-2">
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Project</DialogTitle>
+            <DialogDescription>
+              Add a new project to manage your data.
+            </DialogDescription>
+          </DialogHeader>
+          <div>
+            <div className="space-y-4 py-2 pb-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Project name</Label>
+                <Input id="name" placeholder="Acme Inc." />
+              </div>
+              {/* <div className="space-y-2">
               <Label htmlFor="plan">Subscription plan</Label>
               <Select>
                 <SelectTrigger>
@@ -267,15 +290,33 @@ export default function ProjectSwitcher({ className }: TeamSwitcherProps) {
                 </SelectContent>
               </Select>
             </div> */}
+            </div>
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setShowNewTeamDialog(false)}>
-            Cancel
-          </Button>
-          <Button type="submit">Continue</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowNewTeamDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit">Continue</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <MembersModal
+        onCancel={() => setIsMembersOpen(false)}
+        isOpen={isMembersOpen}
+        // members={members}
+        projectAccessId={activeProject?.project_id}
+      />
+    </>
+  );
+}
+
+export default function Switcher() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ProjectSwitcher />
+    </QueryClientProvider>
   );
 }

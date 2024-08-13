@@ -69,7 +69,7 @@ function AiActions() {
   }, [sessionToken]);
 
   useEffect(() => {
-    console.log("fetching brains");
+    //console.log("fetching brains");
     const fetchFolderLists = async () => {
       if (!sessionToken || !activeProject?.project_id) return;
       const brains = await getBrains(sessionToken, activeProject.project_id);

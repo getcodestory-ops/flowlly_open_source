@@ -1,5 +1,5 @@
 import { Session } from "@supabase/supabase-js";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import { MemberEntity } from "@/types/members";
 
 export const getMembers = async (session: Session, projectId: string) => {
@@ -49,6 +49,7 @@ export const createNewMemberEntry = async (
   }
 
   const data = await response.json();
+  //console.log("data", data);
   return data;
 };
 

@@ -1,30 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Flex,
   Text,
   Input,
   Select,
-  Textarea,
-  Button,
-  Icon,
-  border,
 } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import DatePicker from "react-date-picker";
 import "react-date-picker/dist/DatePicker.css";
 import "react-calendar/dist/Calendar.css";
-import { UpdateActivityTypes } from "@/types/activities";
-import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
-import { updateActivity } from "@/api/activity_routes";
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
 
 function ActivityEditView() {
-  const { taskToView, session, activeProject } = useStore((state) => ({
+  const { taskToView } = useStore((state) => ({
     taskToView: state.taskToView,
-    session: state.session,
-    activeProject: state.activeProject,
   }));
   // const [activity, setActivity] = useState<UpdateActivityTypes>({
   //   id: "",

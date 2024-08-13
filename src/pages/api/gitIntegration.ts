@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { createClient } from "@supabase/supabase-js";
+import supabase from "@/utils/supabaseClient";
 
 interface SupabaseData {
   user_id: string | string[];
@@ -7,9 +7,9 @@ interface SupabaseData {
 }
 
 async function uploadDataToSupabase(supabaseData: SupabaseData) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const supabase = createClient(supabaseUrl ?? "", supabaseAnonKey ?? "");
+  // const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  // const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // const supabase = createClient(supabaseUrl ?? "", supabaseAnonKey ?? "");
   const { data, error } = await supabase
     .from("githubIntegration")
     .upsert(supabaseData);

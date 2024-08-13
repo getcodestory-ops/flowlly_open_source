@@ -1,22 +1,15 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState } from "react";
 import {
   Grid,
   GridItem,
   Text,
   Flex,
   useDisclosure,
-  Button,
-  Tooltip,
   Select,
   Icon,
-  Image,
 } from "@chakra-ui/react";
 import {
-  MdOutlinePlayCircleOutline,
-  MdOpenInNew,
   MdOutlineEmail,
-  MdOutlinePeopleAlt,
-  MdOutlineSmsFailed,
   MdOutlineMessage,
   MdOutlineNote,
   MdOutlineInsertDriveFile,
@@ -24,15 +17,12 @@ import {
 } from "react-icons/md";
 
 import { useStore } from "@/utils/store";
-import { IoDocumentTextOutline, IoPlayCircleOutline } from "react-icons/io5";
-import { AiOutlineAlert } from "react-icons/ai";
 import { convertDateToTimeText } from "@/utils/timeSinceLatestSignificantEvent";
 import { useQuery } from "@tanstack/react-query";
 import ProcessHistoryButton from "../Schedule/ProcessHistory/ProcessHistoryButton";
 import { getUpdates } from "@/api/update_routes";
 import { UpdateProperties } from "@/types/updates";
 import EditorBlock from "@/components/DocumentEditor/Editor";
-import ConfigureDailyUpdate from "../Schedule/ConfigureTaskQueue/ConfigureDailyUpdate";
 
 const UpdatesPage = () => {
   const { documentId, setDocumentId, session, activeProject } = useStore(
