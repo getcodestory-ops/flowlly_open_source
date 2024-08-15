@@ -78,7 +78,6 @@ export function DataTableToolbar<TData>({
                       newDate ? format(newDate, "yyyy-MM-dd") : undefined
                     );
                 }}
-                initialFocus
               />
             </PopoverContent>
           </Popover>
@@ -109,7 +108,6 @@ export function DataTableToolbar<TData>({
                       newDate ? format(newDate, "yyyy-MM-dd") : undefined
                     );
                 }}
-                initialFocus
               />
             </PopoverContent>
           </Popover>
