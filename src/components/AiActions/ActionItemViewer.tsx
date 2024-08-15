@@ -144,7 +144,7 @@ function ActionItemViewer({ results }: ActionItemInterface) {
         </div>
       )}
 
-      {activity_modification && activity_modification.length && (
+      {activity_modification && activity_modification.length > 0 && (
         <div className="my-4">
           <h2 className="text-center m-2 text-xl">
             {" "}

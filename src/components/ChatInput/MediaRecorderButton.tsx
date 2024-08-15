@@ -27,6 +27,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { AutosizeTextarea } from "@/components/ui/autosize-textarea";
+import StreamComponent from "../StreamResponse/StreamAgentChat";
 
 const pulseAnimation = keyframes`
   0% { transform: scale(1); opacity: 1; }
@@ -48,10 +49,11 @@ const MediaRecorderButton: React.FC = () => {
   const activeProject = useStore((state) => state.activeProject);
   const activityChatEntity = useStore((state) => state.activeChatEntity);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [responseStreamId, setResponseStreamId] = useState<string | null>(null);
 
   const { mutate, isPending } = useMutation({
     mutationFn: sendVoiceNote,
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Success",
         description: "Your Note was successfully sent!",
@@ -60,6 +62,7 @@ const MediaRecorderButton: React.FC = () => {
         duration: 9000,
         isClosable: true,
       });
+      setResponseStreamId(data.agent_response);
     },
     onError: (error) => {
       toast({
@@ -100,6 +103,13 @@ const MediaRecorderButton: React.FC = () => {
     }
   };
 
+  const handleSubmission = (formData: FormData) => {
+    if (!session || !activeProject) return;
+    setResponseStreamId(null);
+
+    mutate({ session, projectId: activeProject?.project_id, formData });
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
@@ -115,7 +125,7 @@ const MediaRecorderButton: React.FC = () => {
     if (activityChatEntity?.id) {
       formData.append("chat_entity_id", activityChatEntity.id);
     }
-    mutate({ session, projectId: activeProject?.project_id, formData });
+    handleSubmission(formData);
   };
 
   const handleTextNoteSubmission = () => {
@@ -126,7 +136,7 @@ const MediaRecorderButton: React.FC = () => {
     if (activityChatEntity?.id) {
       formData.append("chat_entity_id", activityChatEntity.id);
     }
-    mutate({ session, projectId: activeProject?.project_id, formData });
+    handleSubmission(formData);
   };
 
   const handleVoiceNoteSubmission = () => {
@@ -145,7 +155,7 @@ const MediaRecorderButton: React.FC = () => {
         if (activityChatEntity?.id) {
           formData.append("chat_entity_id", activityChatEntity.id);
         }
-        mutate({ session, projectId: activeProject?.project_id, formData });
+        handleSubmission(formData);
       })
       .catch((error) => {
         console.error("Error converting blob to file:", error);
@@ -212,6 +222,12 @@ const MediaRecorderButton: React.FC = () => {
                   >
                     Save Note
                   </Button>
+                  {responseStreamId && session && (
+                    <StreamComponent
+                      streamingKey={responseStreamId}
+                      authToken={session.access_token}
+                    />
+                  )}
                 </div>
               </PopoverContent>
             </Popover>
@@ -235,33 +251,34 @@ const MediaRecorderButton: React.FC = () => {
         </Tooltip>
         <input
           type="file"
-          accept="audio/*,video/*"
+          accept="audio/*,video/*,image/*"
           ref={fileInputRef}
           onChange={handleFileChange}
           style={{ display: "none" }}
         />
         <div className="flex items-center  ">
-          {selectedFile &&
+          {((selectedFile &&
             (selectedFile.type.includes("audio") ||
-              selectedFile.type.includes("video")) && (
-              <div className="flex space-x-2 items-center">
-                <span>{selectedFile.name}</span>
+              selectedFile.type.includes("video"))) ||
+            selectedFile?.type.includes("image")) && (
+            <div className="flex space-x-2 items-center">
+              <span>{selectedFile.name}</span>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleFileSubmission}
-                    >
-                      <IoSave className="size-4" />
-                      <span className="sr-only">Attach file</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">Attach File</TooltipContent>
-                </Tooltip>
-              </div>
-            )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleFileSubmission}
+                  >
+                    <IoSave className="size-4" />
+                    <span className="sr-only">Attach file</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">Attach File</TooltipContent>
+              </Tooltip>
+            </div>
+          )}
         </div>
       </div>
       <div className="flex items-center">
@@ -285,6 +302,12 @@ const MediaRecorderButton: React.FC = () => {
               >
                 Save Note
               </Button>
+              {responseStreamId && session && (
+                <StreamComponent
+                  streamingKey={responseStreamId}
+                  authToken={session.access_token}
+                />
+              )}
             </div>
           </PopoverContent>
         </Popover>
