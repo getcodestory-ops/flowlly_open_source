@@ -31,28 +31,28 @@ export function useScheduleUpdate() {
     return response;
   };
 
-  const { data: taskStatus } = useQuery({
-    queryKey: ["taskStatus", currentTaskId, session],
-    queryFn: () => getStatusAndUpdateChats(session, currentTaskId),
-    refetchInterval: 1000,
-    enabled: !!session && !!currentTaskId,
-  });
+  // const { data: taskStatus } = useQuery({
+  //   queryKey: ["taskStatus", currentTaskId, session],
+  //   queryFn: () => getStatusAndUpdateChats(session, currentTaskId),
+  //   refetchInterval: 1000,
+  //   enabled: !!session && !!currentTaskId,
+  // });
 
-  useEffect(() => {
-    if (!taskStatus) return;
-    if (taskStatus.status === "completed") {
-      queryClient.invalidateQueries({ queryKey: ["agentChats"] });
-      toast({
-        title: "Success",
-        description: `Task completed successfully!`,
-        status: "success",
-        duration: 4000,
-        isClosable: true,
-        position: "bottom-right",
-      });
-      setCurrentTaskId(null);
-    }
-  }, [taskStatus]);
+  // useEffect(() => {
+  //   if (!taskStatus) return;
+  //   if (taskStatus.status === "completed") {
+  //     queryClient.invalidateQueries({ queryKey: ["agentChats"] });
+  //     toast({
+  //       title: "Success",
+  //       description: `Task completed successfully!`,
+  //       status: "success",
+  //       duration: 4000,
+  //       isClosable: true,
+  //       position: "bottom-right",
+  //     });
+  //     setCurrentTaskId(null);
+  //   }
+  // }, [taskStatus]);
 
   const { mutate, isPending, data } = useMutation({
     mutationFn: scheduleAgent,
@@ -67,14 +67,6 @@ export function useScheduleUpdate() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["agentChats"] });
-      toast({
-        title: "Success",
-        description: `Task added in the backend successfully! with id ${data.agent_response}`,
-        status: "success",
-        duration: 4000,
-        isClosable: true,
-        position: "top-right",
-      });
       setChatInput("");
       setCurrentTaskId(data.agent_response);
     },
@@ -139,7 +131,6 @@ export function useScheduleUpdate() {
   return {
     chats,
     isPending,
-    taskStatus,
     activeProject,
     isOpen,
     onClose,
@@ -147,5 +138,7 @@ export function useScheduleUpdate() {
     setChatInput,
     chatInput,
     onOpen,
+    currentTaskId,
+    session,
   };
 }

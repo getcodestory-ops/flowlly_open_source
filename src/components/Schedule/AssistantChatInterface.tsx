@@ -14,11 +14,20 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { CornerDownLeft, Mic, Paperclip } from "lucide-react";
+import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
+
 function AssistantChatInterface() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  const { chats, activeProject, handleChatSubmit, setChatInput, chatInput } =
-    useScheduleUpdate();
+  const {
+    chats,
+    activeProject,
+    handleChatSubmit,
+    setChatInput,
+    chatInput,
+    currentTaskId,
+    session,
+  } = useScheduleUpdate();
 
   // const { activeChatEntity } = useStore((state) => ({
   //   activeChatEntity: state.activeChatEntity,
@@ -96,24 +105,15 @@ function AssistantChatInterface() {
                     )}
                   </Flex>
                 </Flex>
-                <Flex px="8">
-                  {history.message?.role === "Scheduler" && (
-                    <Flex flexDirection={"column"}>
-                      <Flex textColor={"blue.400"} as="a">
-                        <a
-                          href={`/action_confirmation?actionType=scheduler&id=${history.id}`}
-                        >
-                          Link
-                        </a>
-                      </Flex>
-                      <Flex>
-                        <UpdateTaskForm data={history} />
-                      </Flex>
-                    </Flex>
-                  )}
-                </Flex>
               </Box>
             ))}
+          {currentTaskId && session && (
+            <StreamComponent
+              key={currentTaskId}
+              streamingKey={currentTaskId}
+              authToken={session.access_token}
+            />
+          )}
         </Box>
       </GridItem>
       <GridItem
@@ -145,24 +145,6 @@ function AssistantChatInterface() {
               }}
             />
             <div className="flex items-center p-3 pt-0">
-              {/* <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Paperclip className="size-4" />
-                    <span className="sr-only">Attach file</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top">Attach File</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Mic className="size-4" />
-                    <span className="sr-only">Use Microphone</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top">Use Microphone</TooltipContent>
-              </Tooltip> */}
               <Button
                 type="submit"
                 size="sm"
@@ -176,38 +158,6 @@ function AssistantChatInterface() {
               </Button>
             </div>
           </div>
-          // <Flex
-          //   justifyContent={"center"}
-          //   bg={"brand.background"}
-          //   p={"2"}
-          //   rounded={"xl"}
-          // >
-          //   <Input
-          //     size={"sm"}
-          //     border={"white"}
-          //     rounded={"lg"}
-          //     placeholder={"Flowlly help me ..."}
-          //     className="custom-selector"
-          //     value={chatInput}
-          //     onChange={(e) => setChatInput(e.target.value)}
-          //     onKeyDown={(e) => {
-          //       if (e.key === "Enter" && !e.shiftKey) {
-          //         handleChatSubmit();
-          //       }
-          //     }}
-          //   ></Input>
-
-          //   <Button
-          //     rounded={"full"}
-          //     bg={"white"}
-          //     _hover={{ bg: "brand.dark", color: "white" }}
-          //     onClick={() => {
-          //       handleChatSubmit();
-          //     }}
-          //   >
-          //     <Icon as={BsSend} fontSize={"22px"}></Icon>
-          //   </Button>
-          // </Flex>
         )}
       </GridItem>
     </>

@@ -233,9 +233,7 @@ function AiActions() {
                   </Button>
                 </Tooltip>
               </Flex>
-              <Flex h="full">
-                <PdfLoader />
-              </Flex>
+              <Flex h="full">{/* <PdfLoader /> */}</Flex>
             </Flex>
           </GridItem>
         </Grid>

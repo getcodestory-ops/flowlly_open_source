@@ -15,7 +15,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import StreamingResponse from "../Notifications/StreamWebResponse";
+import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 
 function TaskResultDisplay({
   task_function,
@@ -49,9 +49,18 @@ function TaskResultDisplay({
           borderRadius={"lg"}
         >
           <Icon as={FaRegDotCircle} fontSize={"sm"} color="green.400" />
-          <div className="flex flex-col">
+          <div
+            className="flex flex-col"
+            key={results.results.slice(0, 5) ?? ""}
+          >
             <MarkDownDisplay content={results.results ?? ""} />
-            {results.stream && <StreamingResponse />}
+            {results.stream && sessionToken && (
+              <StreamComponent
+                streamingKey={results.stream}
+                authToken={sessionToken.access_token}
+                taskId={chidlTaskId}
+              />
+            )}
           </div>
         </Flex>
       );
@@ -98,7 +107,8 @@ function TaskResultDisplay({
         </>
       );
 
-    case "log_daily" || "log_safety":
+    case "log_daily":
+    case "log_safety":
       return (
         <div className="p-8">
           {results.results?.content && (
@@ -133,7 +143,12 @@ function ArtifactViewer({
   ];
 
   const { data: task_result } = useQuery({
-    queryKey: ["task_result", childTaskId, projectId, sessionToken],
+    queryKey: [
+      `taskResult${childTaskId}`,
+      childTaskId,
+      projectId,
+      sessionToken,
+    ],
     queryFn: () => get_task_result(sessionToken, childTaskId, projectId),
     enabled: !!childTaskId && !!sessionToken,
     // refetchInterval: 5000,
