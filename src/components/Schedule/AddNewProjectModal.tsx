@@ -1,55 +1,123 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-  Box,
-  Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  Input,
-  Textarea,
-  Flex,
-  Text,
-  List,
-  ListItem,
-} from "@chakra-ui/react";
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+import { Textarea } from "@/components/ui/textarea";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useStore } from "@/utils/store";
-import { createProject } from "@/api/projectRoutes";
+
 import { timezones } from "@/utils/timezones";
-import { ProjectMetadata } from "@/types/projects";
+import { createProject } from "@/api/projectRoutes";
+import { useStore } from "@/utils/store";
 
-interface AddNewProjectModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+const formSchema = z.object({
+  projectname: z
+    .string()
+    .min(4, {
+      message: "Project name must be at least 4 characters.",
+    })
+    .max(64, {
+      message: "Project name must be less than 64 characters.",
+    }),
+  projectdescription: z
+    .string()
+    .max(100, {
+      message: "Description must be less than 100 characters.",
+    })
+    .optional(),
+  projectnumber: z
+    .string()
+    .max(100, {
+      message: "Description must be less than 100 characters.",
+    })
+    .optional(),
+  projectaddress: z.string().optional(),
+  timezone: z.string().optional(),
+});
 
-function AddNewProjectModal({ isOpen, onClose }: AddNewProjectModalProps) {
+export function AlertDialogDemo() {
+  const [isOpen, setIsOpen] = useState(false);
   const { session } = useStore((state) => ({
     session: state.session,
   }));
+  // 1. Define your form.
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      projectname: "",
+      projectdescription: "",
+    },
+  });
 
-  const [projectName, setProjectName] = useState<string>("");
-  const [timezoneFilter, setTimezoneFilter] = useState("");
-  const [projectDescription, setProjectDescription] = useState<string>("");
-  const [projectNumber, setProjectNumber] = useState<string>("");
-  const [address, setAddress] = useState<string>("");
-  const [showTimezoneOptions, setShowTimezoneOptions] = useState(false);
-  const [metadata, setMetadata] = useState<ProjectMetadata>({});
+  // 2. Define a submit handler.
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    // Do something with the form values.
+    // ✅ This will be type-safe and validated.
+    // console.log(values);
 
+    setIsOpen(false); // Close the dialog after submission
+    mutation.mutate({
+      projectName: values.projectname,
+      projectDescription: values.projectdescription,
+      projectNumber: values.projectnumber,
+      address: values.projectaddress,
+      timezone: values.timezone,
+    });
+    form.reset(); // Reset the form fields
+  }
   const queryClient = useQueryClient();
-
   const mutation = useMutation({
-    mutationFn: () =>
+    mutationFn: ({
+      projectName,
+      projectDescription,
+      projectNumber,
+      address,
+      timezone,
+    }: {
+      projectName: string;
+      projectDescription?: string;
+      projectNumber?: string;
+      address?: string;
+      timezone?: string;
+    }) =>
       createProject(session!, {
         name: projectName,
         description: projectDescription,
         project_number: projectNumber,
         address: address,
-        metadata: metadata,
+        metadata: {
+          timezone,
+        },
       }),
     onError: (error) => {
       console.log(error);
@@ -60,114 +128,126 @@ function AddNewProjectModal({ isOpen, onClose }: AddNewProjectModalProps) {
     },
   });
 
-  const filteredTimezones = timezones.filter((tz) =>
-    tz.toLowerCase().includes(timezoneFilter.toLowerCase())
-  );
-
-  const handleTimezoneChange = (selectedOption: string) => {
-    setMetadata({ ...metadata, timezone: selectedOption });
-    setShowTimezoneOptions(false);
-    setTimezoneFilter(selectedOption);
-  };
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={"4xl"}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Create New Project</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Box mb={4}>
-            <Input
-              placeholder="Project Name"
-              value={projectName}
-              onChange={(e) => {
-                setProjectName(e.target.value);
-              }}
-            />
-          </Box>
-          <Flex mb="4" gap="4" flexDirection={"column"}>
-            <Textarea
-              placeholder="Project Description"
-              value={projectDescription}
-              onChange={(e) => setProjectDescription(e.target.value)}
-            />
-            <Input
-              placeholder="Project Number"
-              value={projectNumber}
-              onChange={(e) => {
-                setProjectNumber(e.target.value);
-              }}
-            />
-            <Textarea
-              placeholder="Address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
-          </Flex>
-          <Flex direction={"column"}>
-            <Text as={"b"} fontSize={"12px"}>
-              Time zone
-            </Text>
-            <Box position="relative" mt="2">
-              <Input
-                placeholder="Filter Timezones"
-                value={timezoneFilter}
-                onChange={(e) => setTimezoneFilter(e.target.value)}
-                onFocus={() => setShowTimezoneOptions(true)}
-              />
-              {showTimezoneOptions && (
-                <List
-                  spacing={2}
-                  bg="white"
-                  mt={1}
-                  boxShadow="md"
-                  position="absolute"
-                  width="full"
-                  zIndex="dropdown"
-                  maxH="xs"
-                  overflow={"auto"}
-                >
-                  {filteredTimezones.map((timezone) => (
-                    <ListItem
-                      key={timezone}
-                      p={2}
-                      cursor="pointer"
-                      _hover={{ bg: "gray.100" }}
-                      onClick={() => handleTimezoneChange(timezone)}
-                    >
-                      {timezone}
-                    </ListItem>
-                  ))}
-                  {filteredTimezones.length === 0 && (
-                    <ListItem p={2}>No results found.</ListItem>
+    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+      <AlertDialogTrigger asChild>
+        <Button variant="default">+ Add Project</Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent className="w-[550px] ">
+        <AlertDialogHeader>
+          <AlertDialogTitle>Create New Project</AlertDialogTitle>
+          <AlertDialogDescription>
+            Deploy your new project in one-click.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="flex flex-row space-between"></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <FormField
+                  control={form.control}
+                  name="projectname"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Project Name <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Name for the new project"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription></FormDescription>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </List>
-              )}
-            </Box>
-          </Flex>
-        </ModalBody>
+                />
+              </div>
+              <div className="grid gap-2">
+                <FormField
+                  control={form.control}
+                  name="projectnumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Project Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Project number" {...field} />
+                      </FormControl>
+                      <FormDescription></FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
 
-        <ModalFooter>
-          <Button
-            bg={"brand.dark"}
-            color={"white"}
-            _hover={{ bg: "brand.accent", color: "brand.dark" }}
-            mr={3}
-            onClick={() => {
-              mutation.mutate();
-              onClose();
-            }}
-          >
-            Save
-          </Button>
-          <Button variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+            <FormField
+              control={form.control}
+              name="projectdescription"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Project Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Add a description about your project"
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="projectaddress"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Project Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Project address" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="timezone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Timezone</FormLabel>
+                  <FormControl>
+                    <Select
+                      defaultValue="timezone"
+                      value={field.value} // Set the value from the form state
+                      onValueChange={(value) => field.onChange(value)} // Update the form state
+                    >
+                      <SelectTrigger id="timezone">
+                        <SelectValue placeholder="Select"></SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timezones.map((tz) => (
+                          <SelectItem key={tz} value={tz}>
+                            {tz}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <Button type="submit">Submit</Button>
+            </AlertDialogFooter>
+          </form>
+        </Form>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
-
-export default AddNewProjectModal;
