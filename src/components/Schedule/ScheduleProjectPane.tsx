@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Button, Flex, Box, Icon, useToast, Heading } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
-import CreateNewProjectButton from "@/components/Schedule/NewProjectButton";
 import { FiTrash } from "react-icons/fi";
 import { AiOutlinePlus } from "react-icons/ai";
 import { ImFilesEmpty } from "react-icons/im";
@@ -17,6 +16,7 @@ import { BiConversation } from "react-icons/bi";
 import { LuGanttChartSquare } from "react-icons/lu";
 import ShareProjectModal from "./ShareProjectModal";
 import CSVUploader from "./CSVUpload/CSVUploader";
+import { AddNewProjectButton } from "@/components/Schedule/AddNewProjectModal";
 
 const ScheduleProjectPanel = () => {
   const toast = useToast();
@@ -130,7 +130,7 @@ const ScheduleProjectPanel = () => {
         </Heading>
       </Box>
       <Flex>
-        <CreateNewProjectButton />
+        <AddNewProjectButton />
       </Flex>
       {isLoading && <Heading color="white">Loading...</Heading>}
       {!isLoading &&

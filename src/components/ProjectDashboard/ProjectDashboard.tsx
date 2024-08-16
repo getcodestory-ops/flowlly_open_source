@@ -9,11 +9,11 @@ import {
 } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import ShareProjectModal from "../Schedule/ShareProjectModal";
-import CreateNewProjectButton from "../Schedule/NewProjectButton";
 import { IoArrowBack, IoArchiveOutline } from "react-icons/io5";
 import { CiShare2 } from "react-icons/ci";
 import { deleteProject } from "@/api/projectRoutes";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { AddNewProjectButton } from "../Schedule/AddNewProjectModal";
 
 function ProjectBoard() {
   const [isShareOpen, setShareModal] = useState<boolean>(false);
@@ -74,7 +74,7 @@ function ProjectBoard() {
         {!subProjectMenu && userProjects && userProjects.length > 0 && (
           <>
             <GridItem colSpan={4} p="2" rounded={"2xl"} height="50px">
-              <CreateNewProjectButton />
+              <AddNewProjectButton />
             </GridItem>
             {userProjects.map((project, index) => (
               <GridItem

@@ -65,7 +65,7 @@ const formSchema = z.object({
   timezone: z.string().optional(),
 });
 
-export function AlertDialogDemo() {
+export function AddNewProjectButton() {
   const [isOpen, setIsOpen] = useState(false);
   const { session } = useStore((state) => ({
     session: state.session,
