@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Flex, useMediaQuery } from "@chakra-ui/react";
-import UserPanel from "../UserPanel";
+// import UserPanel from "../UserPanel";
 import { useStore } from "@/utils/store";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { getProjects } from "@/api/projectRoutes";
+// import { getProjects } from "@/api/projectRoutes";
 import { getActivities } from "@/api/activity_routes";
-import { getMembers } from "@/api/membersRoutes";
+// import { getMembers } from "@/api/membersRoutes";
 
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 
@@ -14,34 +14,34 @@ import MenuDrawer from "../Menu/Menu";
 function SideMenuPanel() {
   const {
     session,
-    setUserProjects,
-    setActiveProject,
+    // setUserProjects,
+    // setActiveProject,
     activeProject,
     scheduleDate,
     scheduleProbability,
     setUserActivities,
     setTaskToView,
-    setMembers,
+    // setMembers,
   } = useStore((state) => ({
     session: state.session,
-    setUserProjects: state.setUserProjects,
-    setActiveProject: state.setActiveProject,
+    // setUserProjects: state.setUserProjects,
+    // setActiveProject: state.setActiveProject,
     activeProject: state.activeProject,
     scheduleDate: state.scheduleDate,
     scheduleProbability: state.scheduleProbability,
     setUserActivities: state.setUserActivities,
     setTaskToView: state.setTaskToView,
-    setMembers: state.setMembers,
+    // setMembers: state.setMembers,
   }));
 
   const [hovered, setHovered] = useState<boolean>(false);
-  const [smallScreen] = useMediaQuery("(max-width: 1441px)");
+  // const [smallScreen] = useMediaQuery("(max-width: 1441px)");
 
-  const { data: projects } = useQuery({
-    queryKey: ["initialProjectList", session],
-    queryFn: () => getProjects(session!, "SCHEDULE"),
-    enabled: !!session?.access_token,
-  });
+  // const { data: projects } = useQuery({
+  //   queryKey: ["initialProjectList", session],
+  //   queryFn: () => getProjects(session!, "SCHEDULE"),
+  //   enabled: !!session?.access_token,
+  // });
 
   const defaultTask = {
     id: "SCHEDULE",
@@ -103,30 +103,30 @@ function SideMenuPanel() {
     setTaskToView(defaultTask);
   }, [activeProject]);
 
-  useEffect(() => {
-    if (projects && projects.length > 0) {
-      setUserProjects(projects);
-      setActiveProject(projects[0]);
-    }
-  }, [projects, setActiveProject, setUserProjects]);
+  // useEffect(() => {
+  //   if (projects && projects.length > 0) {
+  //     setUserProjects(projects);
+  //     setActiveProject(projects[0]);
+  //   }
+  // }, [projects, setActiveProject, setUserProjects]);
 
-  const { data: members, isLoading: membersLoading } = useQuery({
-    queryKey: ["memberList", session, activeProject],
-    queryFn: async () => {
-      if (!session || !activeProject) {
-        return Promise.reject("No session or active project");
-      }
+  // const { data: members, isLoading: membersLoading } = useQuery({
+  //   queryKey: ["memberList", session, activeProject],
+  //   queryFn: async () => {
+  //     if (!session || !activeProject) {
+  //       return Promise.reject("No session or active project");
+  //     }
 
-      return getMembers(session, activeProject.project_id);
-    },
-    enabled: !!session?.access_token,
-  });
+  //     return getMembers(session, activeProject.project_id);
+  //   },
+  //   enabled: !!session?.access_token,
+  // });
 
-  useEffect(() => {
-    if (members && members.data.length > 0) {
-      setMembers(members.data);
-    }
-  }, [members, setMembers]);
+  // useEffect(() => {
+  //   if (members && members.data.length > 0) {
+  //     setMembers(members.data);
+  //   }
+  // }, [members, setMembers]);
 
   return (
     <Flex
@@ -145,14 +145,14 @@ function SideMenuPanel() {
       <Flex alignItems={"center"} flexDirection={"column"}>
         <MenuDrawer hovered={hovered} />
       </Flex>
-      <Flex
+      {/* <Flex
         flexDir="column"
         justifyContent={"center"}
         alignItems={"center"}
         gap="4"
       >
         <UserPanel />
-      </Flex>
+      </Flex> */}
     </Flex>
   );
 }

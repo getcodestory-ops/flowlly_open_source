@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import {
   CaretSortIcon,
   CheckIcon,
@@ -17,17 +17,10 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
+import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AddNewProjectModalContent } from "@/components/Schedule/AddNewProjectModal";
+
 import {
   Popover,
   PopoverContent,
@@ -43,7 +36,7 @@ import { supabase } from "@/utils/supabase/client";
 import { RiTeamLine } from "react-icons/ri";
 import { MembersModal } from "@/components/MembersModal/MembersModal";
 
-const queryClient = new QueryClient();
+// const queryClient = new QueryClient();
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
 >;
@@ -58,7 +51,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     setActiveProject,
     setUserProjects,
     setMembers,
-    setSession,
+    // setSession,
   } = useStore((state) => ({
     session: state.session,
     userProjects: state.userProjects,
@@ -66,15 +59,8 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     setActiveProject: state.setActiveProject,
     setUserProjects: state.setUserProjects,
     setMembers: state.setMembers,
-    setSession: state.setSession,
+    // setSession: state.setSession,
   }));
-
-  // useEffect(() => {
-  //   if (projects && projects.length > 0) {
-  //     setUserProjects(projects);
-  //     setActiveProject(projects[0]);
-  //   }
-  // }, [projects?.length, setUserProjects, projects, setActiveProject]);
 
   const [isMembersOpen, setIsMembersOpen] = useState(false);
 
@@ -119,22 +105,22 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     }
   }, [data?.length, isSuccess, setUserProjects, data]);
 
-  useEffect(() => {
-    async function loginCheck() {
-      const { data } = await supabase.auth.getSession();
-      if (data?.session?.user) {
-        setSession(data.session);
-      }
-    }
-    loginCheck();
-  }, [setSession]);
+  // useEffect(() => {
+  //   async function loginCheck() {
+  //     const { data } = await supabase.auth.getSession();
+  //     if (data?.session?.user) {
+  //       setSession(data.session);
+  //     }
+  //   }
+  //   loginCheck();
+  // }, [setSession]);
 
   const [open, setOpen] = useState(false);
   const [showNewTeamDialog, setShowNewTeamDialog] = useState(false);
 
   return (
     <>
-      <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
+      <AlertDialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -171,9 +157,6 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
                         key={project.project_id}
                         onSelect={() => {
                           setActiveProject(project);
-                          // router.push(
-                          //   `/documents?projectId=${project.project_id}`
-                          // );
                           setOpen(false);
                         }}
                         className="text-sm"
@@ -213,7 +196,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
 
               <CommandList>
                 <CommandGroup>
-                  <DialogTrigger asChild>
+                  <AlertDialogTrigger asChild>
                     <CommandItem
                       onSelect={() => {
                         setOpen(false);
@@ -223,65 +206,17 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
                       <PlusCircledIcon className="mr-2 h-5 w-5" />
                       Create Project
                     </CommandItem>
-                  </DialogTrigger>
+                  </AlertDialogTrigger>
                 </CommandGroup>
               </CommandList>
             </Command>
           </PopoverContent>
         </Popover>
-
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create Project</DialogTitle>
-            <DialogDescription>
-              Add a new project to manage your data.
-            </DialogDescription>
-          </DialogHeader>
-          <div>
-            <div className="space-y-4 py-2 pb-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Project name</Label>
-                <Input id="name" placeholder="Acme Inc." />
-              </div>
-              {/* <div className="space-y-2">
-              <Label htmlFor="plan">Subscription plan</Label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a plan" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="free">
-                    <span className="font-medium">Free</span> -{" "}
-                    <span className="text-muted-foreground">
-                      Trial for two weeks
-                    </span>
-                  </SelectItem>
-                  <SelectItem value="pro">
-                    <span className="font-medium">Pro</span> -{" "}
-                    <span className="text-muted-foreground">
-                      $9/month per user
-                    </span>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div> */}
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowNewTeamDialog(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">Continue</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        <AddNewProjectModalContent setIsOpen={setShowNewTeamDialog} />
+      </AlertDialog>
       <MembersModal
         onCancel={() => setIsMembersOpen(false)}
         isOpen={isMembersOpen}
-        // members={members}
         projectAccessId={activeProject?.project_id}
       />
     </>
@@ -290,8 +225,8 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
 
 export default function Switcher() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ProjectSwitcher />
-    </QueryClientProvider>
+    // <QueryClientProvider client={queryClient}>
+    <ProjectSwitcher />
+    // </QueryClientProvider>
   );
 }

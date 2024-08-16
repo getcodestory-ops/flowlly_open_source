@@ -15,8 +15,9 @@ import { ChangePasswordModal } from "@/components/ChangePasswordModal/ChangePass
 import { UserProfileModal } from "@/components/UserProfileModal/UserProfileModal";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-
+import { useStore } from "@/utils/store";
 export function UserNav({ email }: { email: string }) {
+  const { setAppView } = useStore();
   const [isChangePasswordOpen, setIsChangePasswordOpen] =
     useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
@@ -24,7 +25,10 @@ export function UserNav({ email }: { email: string }) {
 
   const onLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/applogin");
+    // router.push("/");
+
+    setAppView("login");
+    router.push("/");
   };
   return (
     <>
@@ -36,7 +40,9 @@ export function UserNav({ email }: { email: string }) {
                */}
 
               <AvatarFallback>
-                <div className="text-lg">{email && email[0].toUpperCase()}</div>
+                <Button className="text-lg">
+                  {email && email[0].toUpperCase()}
+                </Button>
               </AvatarFallback>
             </Avatar>
           </Button>

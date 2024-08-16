@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Flex, Grid, GridItem } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import SideMenuPanel from "@/components/TopBar/TopBar";
+import SideMenuPanel from "@/components/TopBar/SideMenuPanel";
 import AiActions from "@/components/AiActions/AiActions";
 import ScheduleInterface from "./ScheduleInterface";
 import { useRouter } from "next/router";
@@ -123,9 +123,8 @@ export default function MainLayout({
 
               {appView !== "login" && appView !== "changePassword" && (
                 <Flex width="full" flexDir="column" h="100vh" w="100vw">
-                  <Flex p="2" bg="brand.dark" w="full" zIndex="2" px="4">
-                    <ProjectInfoDisplay />
-                  </Flex>
+                  <ProjectInfoDisplay />
+
                   <Flex gap="2" p="1" w="full" flexGrow={1} overflow="auto">
                     <Flex width="60px" zIndex={1}>
                       <SideMenuPanel />
