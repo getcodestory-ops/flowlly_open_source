@@ -65,7 +65,11 @@ const formSchema = z.object({
   timezone: z.string().optional(),
 });
 
-export function AddNewProjectButton() {
+export function AddNewProjectButton({
+  children,
+}: {
+  children?: React.ReactNode;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const { session } = useStore((state) => ({
     session: state.session,
@@ -131,7 +135,7 @@ export function AddNewProjectButton() {
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="default">+ Add Project</Button>
+        {children ? children : <Button variant="default">+ Add Project</Button>}
       </AlertDialogTrigger>
       <AlertDialogContent className="w-[550px] ">
         <AlertDialogHeader>
