@@ -10,7 +10,9 @@ import supabase from "@/utils/supabaseClient";
 import ProjectSetup from "./ProjectSetup";
 import checkProjectStatus from "@/utils/checkProjectStatus";
 import Integration from "./Integration";
-import DocumentModule from "@/components/Dailies/DocumentModule";
+import DocumentModule, {
+  DocumentFolderModule,
+} from "@/components/Dailies/DocumentModule";
 import ProjectBoard from "@/components/ProjectDashboard/ProjectDashboard";
 import ProjectInfoDisplay from "@/components/ProjectDashboard/ProjectInfoDisplay";
 import ScheduleSummaryView from "@/components/Schedule/ScheduleSummaryView";
@@ -124,62 +126,7 @@ export default function MainLayout({
               {appView !== "login" && appView !== "changePassword" && (
                 <Flex width="full" flexDir="column" h="100vh" w="100vw">
                   <ProjectInfoDisplay />
-
-                  <Flex gap="2" p="1" w="full" flexGrow={1} overflow="auto">
-                    <Flex width="60px" zIndex={1}>
-                      <SideMenuPanel />
-                    </Flex>
-
-                    <Flex flexGrow={1} overflow={"hidden"}>
-                      <Grid
-                        h="full"
-                        w="full"
-                        templateRows="repeat(15, 1fr)"
-                        templateColumns="repeat(13, 1fr)"
-                        gap={4}
-                        bg={"white"}
-                        rounded={"2xl"}
-                        boxShadow={"lg"}
-                      >
-                        {appView === "dashboard" && (
-                          <GridItem rowSpan={15} colSpan={13}>
-                            {<ScheduleSummaryView />}
-                          </GridItem>
-                        )}
-                        {appView === "schedule" && (
-                          <GridItem rowSpan={15} colSpan={13}>
-                            <ScheduleInterface />
-                          </GridItem>
-                        )}
-                        {appView === "agent" && (
-                          <GridItem rowSpan={15} colSpan={13}>
-                            <AiActions />
-                          </GridItem>
-                        )}
-
-                        {appView === "updates" && (
-                          <GridItem rowSpan={15} colSpan={13}>
-                            <DocumentModule />
-                          </GridItem>
-                        )}
-                        {appView === "project" && (
-                          <GridItem rowSpan={15} colSpan={13} h="full">
-                            <ProjectBoard />
-                          </GridItem>
-                        )}
-                        {(appView === "members" || appView === "folders") && (
-                          <GridItem rowSpan={15} colSpan={13}>
-                            <ProjectSetup />
-                          </GridItem>
-                        )}
-                        {appView === "integrations" && (
-                          <GridItem rowSpan={15} colSpan={13}>
-                            <Integration />
-                          </GridItem>
-                        )}
-                      </Grid>
-                    </Flex>
-                  </Flex>
+                  <MainDisplayInLayout appView={appView} />
                 </Flex>
               )}
             </Flex>
@@ -189,3 +136,64 @@ export default function MainLayout({
     </>
   );
 }
+
+export const MainDisplayInLayout = ({ appView }: { appView: string }) => {
+  return (
+    <Flex gap="2" p="1" w="full" flexGrow={1} overflow="auto">
+      <Flex width="60px" zIndex={1}>
+        <SideMenuPanel />
+      </Flex>
+
+      <Flex flexGrow={1} overflow={"hidden"}>
+        <Grid
+          h="full"
+          w="full"
+          templateRows="repeat(15, 1fr)"
+          templateColumns="repeat(13, 1fr)"
+          gap={4}
+          bg={"white"}
+          rounded={"2xl"}
+          boxShadow={"lg"}
+        >
+          {appView === "dashboard" && (
+            <GridItem rowSpan={15} colSpan={13}>
+              {<ScheduleSummaryView />}
+            </GridItem>
+          )}
+          {appView === "schedule" && (
+            <GridItem rowSpan={15} colSpan={13}>
+              <ScheduleInterface />
+            </GridItem>
+          )}
+          {appView === "agent" && (
+            <GridItem rowSpan={15} colSpan={13}>
+              <AiActions />
+            </GridItem>
+          )}
+
+          {appView === "updates" && (
+            <GridItem rowSpan={15} colSpan={13}>
+              {/* <DocumentModule /> */}
+              <DocumentFolderModule />
+            </GridItem>
+          )}
+          {appView === "project" && (
+            <GridItem rowSpan={15} colSpan={13} h="full">
+              <ProjectBoard />
+            </GridItem>
+          )}
+          {(appView === "members" || appView === "folders") && (
+            <GridItem rowSpan={15} colSpan={13}>
+              <ProjectSetup />
+            </GridItem>
+          )}
+          {appView === "integrations" && (
+            <GridItem rowSpan={15} colSpan={13}>
+              <Integration />
+            </GridItem>
+          )}
+        </Grid>
+      </Flex>
+    </Flex>
+  );
+};

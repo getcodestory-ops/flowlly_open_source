@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Flex, useToast } from "@chakra-ui/react";
+import { useToast } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import ShareProjectModal from "../Schedule/ShareProjectModal";
 import { deleteProject } from "@/api/projectRoutes";
@@ -9,7 +9,6 @@ import { AddNewProjectButton } from "../Schedule/AddNewProjectModal";
 import { Button } from "../ui/button";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -75,15 +74,7 @@ function ProjectBoard() {
   });
 
   return (
-    <Flex
-      h="100%"
-      overflowY={"scroll"}
-      className="custom-scrollbar"
-      bg="brand.light"
-      p="4"
-      borderRadius={"lg"}
-      alignItems="start"
-    >
+    <div className="h-full overflow-y-scroll custom-scrollbar bg-brand-light p-4 rounded-lg flex items-start">
       <ShareProjectModal
         isShareOpen={isShareOpen}
         shareModalClose={() => {
@@ -140,7 +131,7 @@ function ProjectBoard() {
           </GridItem>
         )} */}
       </div>
-    </Flex>
+    </div>
   );
 }
 
