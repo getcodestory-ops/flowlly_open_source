@@ -30,7 +30,7 @@ function ProjectInfoDisplay() {
           <div className="flex h-16 items-center px-4 gap-4">
             <div className={`${archivoBlack.className} text-2xl`}>FLOWLLY</div>
             <ProjectSwitcher />
-            {/* <MediaRecorderButton /> */}
+            <MediaRecorderButton />
             <div className="ml-auto flex items-center space-x-4">
               <Search />
               <UserNav email={"user.email" ?? ""} />

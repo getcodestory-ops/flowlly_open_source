@@ -16,10 +16,13 @@ import { UserProfileModal } from "@/components/UserProfileModal/UserProfileModal
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/utils/store";
-export function UserNav({ email }: { email: string }) {
-  const { setAppView } = useStore((state) => ({
+export function UserNav({}: { email: string }) {
+  const { setAppView, session } = useStore((state) => ({
     setAppView: state.setAppView,
+    session: state.session,
   }));
+  console.log("session", session);
+  const email = session?.user?.email ?? "User";
   const [isChangePasswordOpen, setIsChangePasswordOpen] =
     useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
@@ -36,7 +39,7 @@ export function UserNav({ email }: { email: string }) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className=" h-8 w-8 rounded-full">
+          <Button variant="default" className="h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
               {/* <AvatarImage src="/avatars/01.png" alt="@shadcn" />
                */}
@@ -62,10 +65,9 @@ export function UserNav({ email }: { email: string }) {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
+            {/* <DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
               Profile
-              {/* <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut> */}
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             {/* <DropdownMenuItem>
             Billing
             <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
