@@ -126,6 +126,7 @@ const MediaRecorderButton: React.FC = () => {
       formData.append("chat_entity_id", activityChatEntity.id);
     }
     handleSubmission(formData);
+    setSelectedFile(null);
   };
 
   const handleTextNoteSubmission = () => {
@@ -182,29 +183,32 @@ const MediaRecorderButton: React.FC = () => {
               </PopoverTrigger>
               <PopoverContent className="min-w-[50vw]">
                 <div className="space-y-6">
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-4 items-center">
                     <Button
-                      variant="ghost"
-                      size="icon"
+                      variant={recording ? "destructive" : "outline"}
+                      size="lg"
+                      className="p-3"
                       onClick={recording ? stopRecording : startRecording}
                     >
-                      <Mic
-                        className="size-4"
-                        color={recording ? "red" : "black"}
-                      />
-                      <span className="sr-only">
+                      <Mic className="size-6" />
+
+                      <span className="pl-2">
                         {recording ? "Stop Recording" : "Voice note"}
                       </span>
                     </Button>
                     {audioUrl && (
-                      <div className="flex items-center space-x-2">
-                        <audio src={audioUrl} controls className="h-6" />
+                      <div className="flex items-center space-x-2 flex-grow">
+                        <audio
+                          src={audioUrl}
+                          controls
+                          className="h-8 flex-grow"
+                        />
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => setAudioUrl(null)}
                         >
-                          <TrashIcon className="size-4" color="red" />
+                          <TrashIcon className="size-5" color="red" />
                           <span className="sr-only">Delete Recording</span>
                         </Button>
                       </div>
