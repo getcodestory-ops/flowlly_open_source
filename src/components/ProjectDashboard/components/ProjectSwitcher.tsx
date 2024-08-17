@@ -30,9 +30,9 @@ import {
 import { useStore } from "@/utils/store";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getMembers } from "@/api/membersRoutes";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { getProjects } from "@/api/projectRoutes";
-import { supabase } from "@/utils/supabase/client";
+// import { supabase } from "@/utils/supabase/client";
 import { RiTeamLine } from "react-icons/ri";
 import { MembersModal } from "@/components/MembersModal/MembersModal";
 

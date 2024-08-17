@@ -17,7 +17,9 @@ import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/utils/store";
 export function UserNav({ email }: { email: string }) {
-  const { setAppView } = useStore();
+  const { setAppView } = useStore((state) => ({
+    setAppView: state.setAppView,
+  }));
   const [isChangePasswordOpen, setIsChangePasswordOpen] =
     useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);

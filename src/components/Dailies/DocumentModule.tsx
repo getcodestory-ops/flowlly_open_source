@@ -370,14 +370,6 @@ const FolderDetails: React.FC<FolderDetailsProp> = ({
     enabled: !!session && !!activeProject && !!currentFolderStructure.folderId,
   });
 
-  // const createFolder = () => {
-  //   if (!currentFolderStructure.folderId) return;
-  //   onClickAddNewFolder({
-  //     id: currentFolderStructure.folderId,
-  //     name: currentFolderStructure.folderName,
-  //   });
-  // };
-
   if (!currentFolderStructure.folderId || !subFolders) return <></>;
   if (isFilePending || isFolderPending)
     return (
