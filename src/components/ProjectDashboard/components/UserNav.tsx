@@ -42,9 +42,9 @@ export function UserNav({ email }: { email: string }) {
                */}
 
               <AvatarFallback>
-                <Button className="text-lg">
-                  {email && email[0].toUpperCase()}
-                </Button>
+                {/* <Button className="text-lg"> */}
+                {email && email[0].toUpperCase()}
+                {/* </Button> */}
               </AvatarFallback>
             </Avatar>
           </Button>

@@ -93,23 +93,18 @@ export const DocumentFolderModule = () => {
 };
 
 export function DatabasePageLayout() {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // const queryClient = useQueryClient();
+  // const { toast } = useToast();
   const { session, activeProject } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
   }));
   const [rootId, setRootId] = useState<string | null>(null);
-  const [folderDataAtButtonClick, setFolderDataAtButtonClick] =
-    useState<FolderDataProp | null>(null);
-  const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
+  // const [folderDataAtButtonClick, setFolderDataAtButtonClick] =
+  //   useState<FolderDataProp | null>(null);
+  // const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
   const [currentFolderStructure, setCurrentFolderStructure] =
     useState<CurrentFolderStructure | null>(null);
-
-  // const onClickAddNewFolder = (val: FolderDataProp) => {
-  //   setFolderDataAtButtonClick(val);
-  //   setIsNewFolderModalOpen(true);
-  // };
 
   useQuery({
     queryKey: [
@@ -118,30 +113,41 @@ export function DatabasePageLayout() {
       session,
     ],
     queryFn: () => {
-      if (!session || !activeProject) {
-        return "no session or project";
+      if (session && session.access_token && activeProject) {
+        return fetchFolders(session, activeProject.project_id, null, (data) => {
+          const rootFolder = data.find(
+            (folder: GetFolderSubFolderProp) => folder.name === "root"
+          );
+          if (rootFolder) {
+            setRootId(rootFolder.id);
+            setCurrentFolderStructure({
+              folderId: rootFolder.id,
+              folderName: "Project Database",
+              depth: 0,
+              parent: null,
+            });
+          }
+        });
       }
-      fetchFolders(session, activeProject?.project_id, null, (data) => {
-        const rootFolder = data.find(
-          (folder: GetFolderSubFolderProp) => folder.name === "root"
-        );
-
-        if (rootFolder) {
-          setRootId(rootFolder.id);
-          setCurrentFolderStructure({
-            folderId: rootFolder.id,
-            folderName: "Project Database",
-            depth: 0,
-            parent: null,
-          });
-          return rootFolder.id;
-        } else {
-          return "no root id found";
-        }
-      });
+      return Promise.reject("No session or access token");
     },
     enabled: !!session && !!activeProject,
   });
+
+  /**
+   * 
+   *   const { data, isLoading, isSuccess } = useQuery({
+    queryKey: ["initialProjectList", session],
+    queryFn: () => {
+      if (session && session.access_token) {
+        return getProjects(session!, "SCHEDULE");
+      }
+      return Promise.reject("No session or access token");
+    },
+    enabled: !!session?.access_token,
+    placeholderData: keepPreviousData,
+  });
+   */
 
   if (!session) {
     return <div>on different page session not found</div>;

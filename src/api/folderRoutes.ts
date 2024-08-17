@@ -36,9 +36,9 @@ export const fetchFolders = async (
   projectId: string,
   folderId: string | null,
   callBack?: (data: any) => void
-) => {
-  if (!session) {
-    return;
+): Promise<GetFolderSubFolderProp[]> => {
+  if (!session || !session.access_token) {
+    return [];
   }
   const { baseUrl, data } = getUrlInput(
     session,
@@ -46,14 +46,21 @@ export const fetchFolders = async (
     projectId,
     folderId
   );
+  try {
+    const response = await axios.get<GetFolderSubFolderProp[]>(baseUrl, data);
 
-  const response = await axios.get<GetFolderSubFolderProp[]>(baseUrl, data);
+    if (response.data) {
+      if (callBack) {
+        callBack(response.data);
+      }
+      return response.data;
+    }
 
-  if (callBack) {
-    callBack(response.data);
+    throw new Error("No projects were found!");
+  } catch (e) {
+    console.error("Error in fetchFolders", e);
+    throw new Error("Error in fetching data folders!");
   }
-
-  return response.data;
 };
 
 export const fetchFiles = async (
@@ -65,7 +72,6 @@ export const fetchFiles = async (
   if (!session) {
     return;
   }
-  console.log("fetchFiles", folderId);
   const { baseUrl, data } = getUrlInput(
     session,
     reqType.FILE,
@@ -74,7 +80,6 @@ export const fetchFiles = async (
   );
 
   const response = await axios.get<GetFolderFileProp[]>(baseUrl, data);
-  console.log("fetchFiles response", response.data);
 
   if (callBack) {
     callBack(response.data);
