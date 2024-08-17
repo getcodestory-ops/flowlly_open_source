@@ -17,7 +17,6 @@ export default function Home() {
     project_access_id: string,
     code: string
   ) => {
-    console.log(session, project_access_id);
     const url = `${serverUrl}/integrate/procore/${project_access_id}`;
     const headers = {
       Authorization: `Bearer ${session.access_token}`,

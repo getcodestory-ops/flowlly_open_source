@@ -21,7 +21,6 @@ export function UserNav({}: { email: string }) {
     setAppView: state.setAppView,
     session: state.session,
   }));
-  console.log("session", session);
   const email = session?.user?.email ?? "User";
   const [isChangePasswordOpen, setIsChangePasswordOpen] =
     useState<boolean>(false);
@@ -30,8 +29,6 @@ export function UserNav({}: { email: string }) {
 
   const onLogout = async () => {
     await supabase.auth.signOut();
-    // router.push("/");
-
     setAppView("login");
     router.push("/");
   };
@@ -41,14 +38,7 @@ export function UserNav({}: { email: string }) {
         <DropdownMenuTrigger asChild>
           <Button variant="default" className="h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
-              {/* <AvatarImage src="/avatars/01.png" alt="@shadcn" />
-               */}
-
-              <AvatarFallback>
-                {/* <Button className="text-lg"> */}
-                {email && email[0].toUpperCase()}
-                {/* </Button> */}
-              </AvatarFallback>
+              <AvatarFallback>{email && email[0].toUpperCase()}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
@@ -74,19 +64,10 @@ export function UserNav({}: { email: string }) {
           </DropdownMenuItem> */}
             <DropdownMenuItem onClick={() => setIsChangePasswordOpen(true)}>
               Change Password
-              {/* <DropdownMenuShortcut>⌘C</DropdownMenuShortcut> */}
             </DropdownMenuItem>
-            {/* <DropdownMenuItem>New Team</DropdownMenuItem> */}
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={onLogout}>
-            {/* <form action={onLogout}>
-              <button className=" rounded-md no-underline bg-btn-background hover:bg-btn-background-hover">
-                Logout
-              </button>
-            </form> */}
-            Logout
-          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <ChangePasswordModal

@@ -30,7 +30,6 @@ const createFolderIfNotExists = async (FOLDER_NAME: string) => {
 
 const useCreateFolderIfNotExists = ({ sessionToken }: SessionToken) => {
   useEffect(() => {
-    // console.log(sessionToken.user.id);
     if (!sessionToken?.user) return;
     createFolderIfNotExists(sessionToken.user.id);
   }, [sessionToken]);

@@ -35,7 +35,6 @@ import {
 
 function ProjectBoard() {
   const [isShareOpen, setShareModal] = useState<boolean>(false);
-  // const [subProjectMenu, setSubProjectMenu] = useState<boolean>(false);
   const toast = useToast();
   const queryClient = useQueryClient();
   const { userProjects, activeProject, setActiveProject, session } = useStore(
@@ -114,22 +113,6 @@ function ProjectBoard() {
             </div>
           </>
         )}
-        {/* {subProjectMenu && (
-          <GridItem colSpan={4} p={"4"} rounded={"2xl"} bg="brand.light">
-            <Icon
-              as={IoArrowBack}
-              alignItems={"center"}
-              fontSize="2xl"
-              cursor={"pointer"}
-              onClick={() => {
-                setSubProjectMenu(false);
-              }}
-            ></Icon>
-            <Flex alignItems={"center"}>Name : {activeProject?.name}</Flex>
-            <Flex>Description : {activeProject?.description}</Flex>
-            <Flex></Flex>
-          </GridItem>
-        )} */}
       </div>
     </div>
   );

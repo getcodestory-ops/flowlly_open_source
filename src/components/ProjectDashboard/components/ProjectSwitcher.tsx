@@ -30,13 +30,10 @@ import {
 import { useStore } from "@/utils/store";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getMembers } from "@/api/membersRoutes";
-// import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { getProjects } from "@/api/projectRoutes";
-// import { supabase } from "@/utils/supabase/client";
 import { RiTeamLine } from "react-icons/ri";
 import { MembersModal } from "@/components/MembersModal/MembersModal";
 
-// const queryClient = new QueryClient();
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
 >;
@@ -51,7 +48,6 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     setActiveProject,
     setUserProjects,
     setMembers,
-    // setSession,
   } = useStore((state) => ({
     session: state.session,
     userProjects: state.userProjects,
@@ -59,7 +55,6 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     setActiveProject: state.setActiveProject,
     setUserProjects: state.setUserProjects,
     setMembers: state.setMembers,
-    // setSession: state.setSession,
   }));
 
   const [isMembersOpen, setIsMembersOpen] = useState(false);
@@ -225,8 +220,8 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
 
 export default function Switcher() {
   return (
-    // <QueryClientProvider client={queryClient}>
     <ProjectSwitcher />
+    // <QueryClientProvider client={queryClient}>
     // </QueryClientProvider>
   );
 }

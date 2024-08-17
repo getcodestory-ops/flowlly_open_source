@@ -17,7 +17,6 @@ const checkAdminRights = async (userId: string): Promise<boolean> => {
   //       throw new Error(error.message);
   //     }
 
-  // console.log(data)
   //     // If row exists, set hasAdminRights to true, else false
   //     const hasAdminRights = data && data.length > 0;
 

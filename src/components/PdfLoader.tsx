@@ -38,7 +38,6 @@ const VirtualPdfLoader = () => {
 
   useEffect(() => {
     async function setUrlForPdf() {
-      // console.log("selectedContext", selectedContext);
       if (!selectedContext?.id || !filePath) return;
 
       if (!userId && !selectedFolder) return;

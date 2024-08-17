@@ -31,10 +31,6 @@ function FormPage({ children }: { children: React.ReactNode }) {
     loginCheck();
   }, []);
 
-  // useEffect(() => {
-  //   console.log(actionType, id);
-  // }, [actionType, id]);
-
   return (
     <div>
       {appView === "login" && <Flex>{children}</Flex>}

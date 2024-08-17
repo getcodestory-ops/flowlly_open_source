@@ -214,7 +214,6 @@ export const useStore = create<State>()(
 //           }
 //           if (state) {
 //             state?.setHasHydrated(true);
-//             console.log("successuflly rehydrated store");
 //           }
 //         };
 //       },

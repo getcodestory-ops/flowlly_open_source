@@ -125,9 +125,7 @@ const BarChartContent: React.FC<{ data: string }> = ({ data }) => {
   try {
     // Remove any leading/trailing whitespace and parse the JSON string
     data = `{ "datasets": ${data.trim()} }`;
-    // console.log(data);
     const parsedData = JSON.parse(data);
-    // console.log(data.trim());
 
     // if (
     //   !parsedData.datasets ||

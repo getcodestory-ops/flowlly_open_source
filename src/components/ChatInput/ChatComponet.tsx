@@ -64,7 +64,6 @@ function ChatComponent() {
 
   const handleChatSubmit = async () => {
     let newChatSession = null;
-    //console.log("chatSession", chatSession, selectedContext, folderList);
 
     if (!chatSession) {
       if (!activeProject) return;

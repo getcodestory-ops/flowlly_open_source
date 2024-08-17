@@ -23,7 +23,6 @@ const UserPanel = () => {
   useEffect(() => {
     async function getAndSetUser() {
       const session = await supabase.auth.getSession();
-      //console.log(session.data.session?.user.id);
 
       setUser(session.data.session?.user ?? null);
 

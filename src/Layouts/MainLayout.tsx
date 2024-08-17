@@ -10,7 +10,7 @@ import supabase from "@/utils/supabaseClient";
 import ProjectSetup from "./ProjectSetup";
 import checkProjectStatus from "@/utils/checkProjectStatus";
 import Integration from "./Integration";
-import DocumentModule, {
+import {
   DocumentFolderModule,
 } from "@/components/Dailies/DocumentModule";
 import ProjectBoard from "@/components/ProjectDashboard/ProjectDashboard";
@@ -44,27 +44,12 @@ export default function MainLayout({
   }));
 
   useEffect(() => {
-    // console.log("userActivities", userActivities);
     setProjectStatus(checkProjectStatus(userActivities));
   }, [userActivities]);
 
-  const gridItemRef = useRef(null);
-
-  // const checkScrolling = (element: HTMLElement) => {
-  //   const vertical = element.scrollHeight > element.clientHeight;
-  //   const horizontal = element.scrollWidth > element.clientWidth;
-  // };
-
-  // useEffect(() => {
-  //   // Check if the GridItem needs scrolling after the component mounts
-  //   if (gridItemRef.current) {
-  //     checkScrolling(gridItemRef.current);
-  //   }
-  // }, []);
-
   useEffect(() => {
     async function loginCheck() {
-      console.log(router.query);
+
       const { accessToken, refreshToken } = router.query;
 
       if (accessToken && refreshToken) {
@@ -72,7 +57,6 @@ export default function MainLayout({
           typeof accessToken === "string" &&
           typeof refreshToken === "string"
         ) {
-          console.log("setting session");
           await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
@@ -98,18 +82,12 @@ export default function MainLayout({
   }, []);
 
   useEffect(() => {
-    console.log("path", router.pathname);
     if (path === "/auth/passwordChange") {
-      console.log("path", router.pathname);
       setAppView("changePassword");
     } else {
       setAppView("dashboard");
     }
   }, [router.pathname]);
-
-  // useEffect(() => {
-  //   useStore.persist.rehydrate();
-  // }, []);
 
   return (
     <>
@@ -173,7 +151,6 @@ export const MainDisplayInLayout = ({ appView }: { appView: string }) => {
 
           {appView === "updates" && (
             <GridItem rowSpan={15} colSpan={13}>
-              {/* <DocumentModule /> */}
               <DocumentFolderModule />
             </GridItem>
           )}

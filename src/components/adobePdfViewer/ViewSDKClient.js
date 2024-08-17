@@ -104,7 +104,6 @@ class ViewSDKClient {
   registerSaveApiHandler() {
     /* Define Save API Handler */
     const saveApiHandler = (metaData, content, options) => {
-      // console.log(metaData, content, options);
       return new Promise((resolve) => {
         /* Dummy implementation of Save API, replace with your business logic */
         setTimeout(() => {

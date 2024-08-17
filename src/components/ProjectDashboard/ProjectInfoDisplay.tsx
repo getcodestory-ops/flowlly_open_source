@@ -1,7 +1,5 @@
 "use client";
 import React from "react";
-
-// import { useStore } from "@/utils/store";
 import MediaRecorderButton from "../ChatInput/MediaRecorderButton";
 
 import { Archivo_Black } from "next/font/google";
@@ -15,14 +13,6 @@ const archivoBlack = Archivo_Black({
 });
 
 function ProjectInfoDisplay() {
-  // const { userProjects, activeProject, setActiveProject } = useStore(
-  //   (state) => ({
-  //     userProjects: state.userProjects,
-  //     activeProject: state.activeProject,
-  //     setActiveProject: state.setActiveProject,
-  //   })
-  // );
-
   return (
     <div className="flex flex-col w-full bg-white">
       <div className="hidden flex-col md:flex">

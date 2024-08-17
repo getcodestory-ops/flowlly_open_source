@@ -69,7 +69,6 @@ function AiActions() {
   }, [sessionToken]);
 
   useEffect(() => {
-    //console.log("fetching brains");
     const fetchFolderLists = async () => {
       if (!sessionToken || !activeProject?.project_id) return;
       const brains = await getBrains(sessionToken, activeProject.project_id);
@@ -101,7 +100,6 @@ function AiActions() {
 
   const handleChatSubmit = async () => {
     let newChatSession = null;
-    //console.log("triggered submit", chatInput, chatSession, selectedContext);
     if (!chatSession) {
       if (!activeProject) return;
       const chatTitle = getFirstFiveWords(chatInput);
