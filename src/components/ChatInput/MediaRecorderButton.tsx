@@ -185,7 +185,7 @@ const MediaRecorderButton: React.FC = () => {
                 <div className="space-y-6">
                   <div className="flex space-x-4 items-center">
                     <Button
-                      variant={recording ? "destructive" : "outline"}
+                      variant={recording ? "destructive" : "default"}
                       size="lg"
                       className="p-3"
                       onClick={recording ? stopRecording : startRecording}
@@ -193,7 +193,7 @@ const MediaRecorderButton: React.FC = () => {
                       <Mic className="size-6" />
 
                       <span className="pl-2">
-                        {recording ? "Stop Recording" : "Voice note"}
+                        {recording ? "Stop Recording" : "Voice Note"}
                       </span>
                     </Button>
                     {audioUrl && (
@@ -217,6 +217,7 @@ const MediaRecorderButton: React.FC = () => {
 
                   <AutosizeTextarea
                     value={audioModuleTextNote}
+                    placeholder="Add any additional notes here !"
                     onChange={(e) => setAudioModuteTextNote(e.target.value)}
                   />
                   <Button
