@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 import { StorageResourceEntity } from "@/types/document";
-import { BookOpen, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import ContentEditor from "../DocumentEditor/ContentEditor";
@@ -12,14 +12,7 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
 }) => {
   const { file_name, metadata, url, created_at } = resource || {};
   const fileExt = metadata?.extension?.toLowerCase();
-  const [hover, setHover] = useState(false);
   const { onSubmit, isPending } = useStorageTextFileSave(resource?.id);
-
-  const formattedDate = created_at
-    ? new Date(created_at).toDateString() +
-      " " +
-      new Date(created_at).toLocaleTimeString()
-    : "Date unknown";
 
   const renderPreview = () => {
     switch (fileExt) {
@@ -67,8 +60,8 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
           <Dialog>
             <DialogTrigger asChild>
               <div className="rounded-lg  transition-all hover:scale-105 cursor-pointer">
-                <div className="flex  items-center p-8 ">
-                  <FileText className="text-4xl" />
+                <div className="flex  items-center">
+                  <FileText className="text-2xl" />
                 </div>
               </div>
             </DialogTrigger>
@@ -90,14 +83,10 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
   };
 
   return (
-    <div
-      className="relative "
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-    >
-      <div className="overflow-hidden min-h-32 max-w-96">{renderPreview()}</div>
-      {hover && metadata?.description && (
-        <div className="absolute bottom-0 left-0 right-0 rounded-lg p-2 bg-white max-h-[150px] overflow-auto">
+    <div>
+      <div className="overflow-hidden">{renderPreview()}</div>
+      {metadata?.description && (
+        <div className="rounded-lg p-2 bg-white max-h-96 overflow-auto">
           <div className="space-y-1 text-sm">
             <p className="text-xs ">{metadata?.description}</p>
           </div>
