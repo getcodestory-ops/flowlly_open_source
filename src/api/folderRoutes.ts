@@ -6,6 +6,7 @@ import { ContainerResources } from "@/types/document";
 enum reqType {
   FOLDER = "subfolder",
   FILE = "files",
+  DELETE = "folder",
 }
 
 export type GetFolderFileProp = {
@@ -35,6 +36,7 @@ export const fetchFolders = async (
   session: Session,
   projectId: string,
   folderId: string | null,
+  isProjectWide: boolean,
   callBack?: (data: any) => void
 ): Promise<GetFolderSubFolderProp[]> => {
   if (!session || !session.access_token) {
@@ -44,7 +46,8 @@ export const fetchFolders = async (
     session,
     reqType.FOLDER,
     projectId,
-    folderId
+    folderId,
+    isProjectWide
   );
   try {
     const response = await axios.get<GetFolderSubFolderProp[]>(baseUrl, data);
@@ -67,6 +70,7 @@ export const fetchFiles = async (
   session: Session,
   projectId: string,
   folderId: string | null,
+  isProjectWide: boolean,
   callBack?: (data: any) => void
 ) => {
   if (!session) {
@@ -76,7 +80,8 @@ export const fetchFiles = async (
     session,
     reqType.FILE,
     projectId,
-    folderId
+    folderId,
+    isProjectWide
   );
 
   const response = await axios.get<GetFolderFileProp[]>(baseUrl, data);
@@ -162,12 +167,12 @@ export const deleteFolder = async (
   }
   const { baseUrl, data } = getUrlInput(
     session,
-    reqType.FOLDER,
+    reqType.DELETE,
     projectId,
     folderId
   );
 
-  const response = await axios.get<GetFolderSubFolderProp[]>(baseUrl, data);
+  const response = await axios.delete(baseUrl, data);
 
   if (callBack) {
     callBack(response.data);
@@ -182,13 +187,15 @@ const getUrlInput = (
   session: Session,
   reqType: reqType,
   projectId: string,
-  folderId: string | null
+  folderId: string | null,
+  isProjectWide?: boolean
 ) => {
   return {
     baseUrl: `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/${reqType}/${projectId}`,
     data: {
       params: {
         folder_id: folderId,
+        is_project_wide: isProjectWide,
       },
       headers: {
         Authorization: `Bearer ${session.access_token}`,
