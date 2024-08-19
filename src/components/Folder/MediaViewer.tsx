@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 
 import { StorageResourceEntity } from "@/types/document";
-import { FiFileText } from "react-icons/fi";
+import { BookOpen, FileText } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import ContentEditor from "../DocumentEditor/ContentEditor";
+import { useStorageTextFileSave } from "../DocumentEditor/useStorageTextSave";
 
 export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
   resource,
@@ -12,6 +13,7 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
   const { file_name, metadata, url, created_at } = resource || {};
   const fileExt = metadata?.extension?.toLowerCase();
   const [hover, setHover] = useState(false);
+  const { onSubmit, isPending } = useStorageTextFileSave(resource?.id);
 
   const formattedDate = created_at
     ? new Date(created_at).toDateString() +
@@ -65,18 +67,23 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
           <Dialog>
             <DialogTrigger asChild>
               <div className="rounded-lg  transition-all hover:scale-105 cursor-pointer">
-                <p className="truncate">{metadata?.content ?? "No content"}</p>
+                <div className="flex  items-center p-8 ">
+                  <FileText className="text-4xl" />
+                </div>
               </div>
             </DialogTrigger>
             <DialogContent className="max-w-6xl ">
-              <ContentEditor content={metadata?.content} />
+              <ContentEditor
+                content={metadata?.content}
+                saveFunction={onSubmit}
+              />
             </DialogContent>
           </Dialog>
         );
       default:
         return (
           <div className="flex items-center justify-center ">
-            <FiFileText className="text-4xl" />
+            <FileText className="text-4xl" />
           </div>
         );
     }
@@ -89,16 +96,13 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
       onMouseLeave={() => setHover(false)}
     >
       <div className="overflow-hidden min-h-32 max-w-96">{renderPreview()}</div>
-      <div className="absolute bottom-0 left-0 right-0 rounded-lg p-2 bg-white max-h-[150px] overflow-auto">
-        {hover && (
+      {hover && metadata?.description && (
+        <div className="absolute bottom-0 left-0 right-0 rounded-lg p-2 bg-white max-h-[150px] overflow-auto">
           <div className="space-y-1 text-sm">
-            <p className="text-xs text-muted-foreground">
-              {metadata?.description}
-            </p>
+            <p className="text-xs ">{metadata?.description}</p>
           </div>
-        )}
-        <p className="text-xs">{formattedDate}</p>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -157,3 +157,27 @@ export async function uploadMP3File(
 
   return response.data;
 }
+
+export const updateStorageTextDocument = async (
+  session: Session,
+  projectId: string,
+  resourceId: string,
+  contentData: string
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/document/${projectId}`;
+
+  const response = await axios.put(
+    url,
+    {
+      resource_id: resourceId,
+      content: { extension: ".txt", content: contentData },
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    }
+  );
+  return response.data;
+};
