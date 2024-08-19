@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/tooltip";
 import { AppView } from "@/types/store";
 
-function SideMenuPanel() {
+export function SideMenuPanel() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const onClose = () => setIsOpen(false);
   return (
@@ -52,8 +52,6 @@ function SideMenuPanel() {
     </>
   );
 }
-
-export default SideMenuPanel;
 
 const menuItems: { label: string; fnKey: AppView; icon: React.ReactNode }[] = [
   {

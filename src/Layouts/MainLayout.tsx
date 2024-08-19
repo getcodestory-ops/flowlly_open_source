@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Flex, Grid, GridItem } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import SideMenuPanel from "@/components/TopBar/SideMenuPanel";
+import { SideMenuPanel } from "@/components/TopBar/SideMenuPanel";
 import AiActions from "@/components/AiActions/AiActions";
 import ScheduleInterface from "./ScheduleInterface";
 import { useRouter } from "next/router";
