@@ -61,6 +61,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 
 import DocumentViewer from "../Folder/DocumentViewer";
+import { MediaViewer } from "../Folder/MediaViewer";
 
 const DocumentModule = () => {
   return (
@@ -551,17 +552,15 @@ const FileRow = ({ file, email }: { file: any; email: string }) => {
   return (
     <TableRow>
       <TableCell>
-        <div className="font-medium">{file.file_name}</div>
-        <div className="hidden text-sm text-muted-foreground md:inline">
-          {email}
-        </div>
+        <MediaViewer resource={file} />
+        <div className="font-thin text-xs">{file.file_name}</div>
       </TableCell>
       <TableCell className="hidden sm:table-cell">
         {file.metadata.extension}
       </TableCell>
       <TableCell className="hidden sm:table-cell">
         <Badge className="text-xs" variant="outline">
-          Processing
+          Processed
         </Badge>
       </TableCell>
       <TableCell className="hidden md:table-cell">

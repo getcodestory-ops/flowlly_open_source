@@ -15,7 +15,7 @@ enum AccessRole {
   editor = "editor",
 }
 
-interface StorageResourceEntity {
+export interface StorageResourceEntity {
   id: string;
   created_at?: string;
   file_name: string;

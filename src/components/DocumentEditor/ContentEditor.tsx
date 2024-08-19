@@ -44,7 +44,7 @@ const ContentEditor = ({
   return (
     <Flex
       w="full"
-      maxH="70vh"
+      maxH="90vh"
       flexDir="column"
       overflowY="auto"
       sx={{

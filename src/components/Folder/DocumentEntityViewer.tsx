@@ -2,29 +2,17 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { getcontainerEntities } from "@/api/documentRoutes";
-import {
-  Grid,
-  Box,
-  Image,
-  Text,
-  Icon,
-  AspectRatio,
-  Spinner,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure,
-} from "@chakra-ui/react";
 import { StorageEntity, ContainerResources } from "@/types/document";
 import { FiFileText } from "react-icons/fi";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Separator } from "@/components/ui/separator";
+import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-const FilePreview: React.FC<{ resource: ContainerResources }> = ({
+export const FilePreview: React.FC<{ resource: ContainerResources }> = ({
   resource,
 }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const { file_name, metadata, url, created_at } =
     resource.storage_resources || {};
   const fileExt = metadata?.extension?.toLowerCase();
@@ -43,24 +31,16 @@ const FilePreview: React.FC<{ resource: ContainerResources }> = ({
       case ".png":
       case ".gif":
         return (
-          <div className="border rounded-lg h-auto w-auto transition-all hover:scale-105 ">
-            <Image
-              src={url}
-              alt={file_name}
-              objectFit="cover"
-              onClick={onOpen}
-              cursor="pointer"
-            />
-            <Modal isOpen={isOpen} onClose={onClose} size="xl">
-              <ModalOverlay />
-              <ModalContent>
-                <ModalCloseButton />
-                <ModalBody p={2}>
-                  <Image src={url} alt={file_name} />
-                </ModalBody>
-              </ModalContent>
-            </Modal>
-          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <div className="border rounded-lg h-auto w-auto transition-all hover:scale-105 cursor-pointer">
+                <img src={url} alt={file_name} className="object-cover" />
+              </div>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <img src={url} alt={file_name} />
+            </DialogContent>
+          </Dialog>
         );
       case ".mp4":
       case ".webm":
@@ -76,56 +56,32 @@ const FilePreview: React.FC<{ resource: ContainerResources }> = ({
       case ".ogg":
       case ".wav":
         return (
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
-            h="100%"
-            p={4}
-          >
-            <Box width="100%" minWidth="300px">
+          <div className="flex flex-col items-center justify-center  p-4">
+            <div className="w-full min-w-[300px]">
               <audio src={url} controls style={{ width: "100%" }}>
                 Your browser does not support the audio element.
               </audio>
-            </Box>
-          </Box>
+            </div>
+          </div>
         );
       default:
         return (
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            h="100%"
-          >
-            <Icon as={FiFileText} fontSize="4xl" />
-          </Box>
+          <div className="flex items-center justify-center ">
+            <FiFileText className="text-4xl" />
+          </div>
         );
     }
   };
 
   return (
-    <Box
-      position="relative"
-      h="100%"
+    <div
+      className="relative "
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
-      <AspectRatio ratio={1}>
-        <Box overflow="hidden">{renderPreview()}</Box>
-      </AspectRatio>
-      <Box
-        position="absolute"
-        bottom="0"
-        left="0"
-        right="0"
-        borderRadius={"lg"}
-        p={2}
-        bg="white"
-        maxH="150px"
-        overflow={"auto"}
-      >
+      <div className="overflow-hidden">{renderPreview()}</div>
+
+      <div className="absolute bottom-0 left-0 right-0 rounded-lg p-2 bg-white max-h-[150px] overflow-auto">
         {hover && (
           <div className="space-y-1 text-sm">
             <p className="text-xs text-muted-foreground">
@@ -133,9 +89,9 @@ const FilePreview: React.FC<{ resource: ContainerResources }> = ({
             </p>
           </div>
         )}
-        <Text fontSize="xs">{formattedDate}</Text>
-      </Box>
-    </Box>
+        <p className="text-xs">{formattedDate}</p>
+      </div>
+    </div>
   );
 };
 
@@ -155,8 +111,8 @@ const DocumentEntityViewer: React.FC = () => {
     enabled: !!session?.access_token && !!activeProject?.project_id,
   });
 
-  if (isLoading) return <Spinner />;
-  if (!data || data.length === 0) return <Text>No media files found.</Text>;
+  if (isLoading) return <div>Loading...</div>;
+  if (!data || data.length === 0) return <p>No media files found.</p>;
 
   return (
     <div className="h-full">
@@ -171,24 +127,23 @@ const DocumentEntityViewer: React.FC = () => {
             </p>
           </div>
         </div>
-        <Separator className="my-4 " />
-        <div className="relative">
-          <div className="grid w-full gap-6 grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 ">
+        <Separator className="my-4" />
+        <ScrollArea className="h-[calc(100vh-200px)]">
+          <div className="grid w-full gap-6 grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
             {data.flatMap((entity) =>
               entity.storage_relations.map((resource, index) => (
-                <div
+                <Card
                   key={`${entity.id}-${index}`}
-                  className="w-[350px] h-[350px] rounded-md  bg-muted/40 rounded-lg overflow-hidden "
+                  className="w-[350px] h-[350px] overflow-hidden"
                 >
-                  <FilePreview
-                    key={`${entity.id}-${index}`}
-                    resource={resource}
-                  />
-                </div>
+                  <CardContent className="p-0">
+                    <FilePreview resource={resource} />
+                  </CardContent>
+                </Card>
               ))
             )}
           </div>
-        </div>
+        </ScrollArea>
       </div>
     </div>
   );
