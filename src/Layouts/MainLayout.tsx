@@ -10,9 +10,7 @@ import supabase from "@/utils/supabaseClient";
 import ProjectSetup from "./ProjectSetup";
 import checkProjectStatus from "@/utils/checkProjectStatus";
 import Integration from "./Integration";
-import {
-  DocumentFolderModule,
-} from "@/components/Dailies/DocumentModule";
+import { DocumentFolderModule } from "@/components/Dailies/DocumentModule";
 import ProjectBoard from "@/components/ProjectDashboard/ProjectDashboard";
 import ProjectInfoDisplay from "@/components/ProjectDashboard/ProjectInfoDisplay";
 import ScheduleSummaryView from "@/components/Schedule/ScheduleSummaryView";
@@ -49,7 +47,6 @@ export default function MainLayout({
 
   useEffect(() => {
     async function loginCheck() {
-
       const { accessToken, refreshToken } = router.query;
 
       if (accessToken && refreshToken) {
@@ -130,7 +127,7 @@ export const MainDisplayInLayout = ({ appView }: { appView: string }) => {
           templateColumns="repeat(13, 1fr)"
           gap={4}
           bg={"white"}
-          rounded={"2xl"}
+          rounded={"xl"}
           boxShadow={"lg"}
         >
           {appView === "dashboard" && (
