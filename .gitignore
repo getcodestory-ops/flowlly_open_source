@@ -39,5 +39,5 @@ yarn-error.log*
 next-env.d.ts
 
 # yarn
-.package-lock.json
+package-lock.json
 yarn.lock
