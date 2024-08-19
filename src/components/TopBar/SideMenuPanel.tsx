@@ -100,6 +100,7 @@ const AllMenuButtons = () => {
     <>
       {menuItems.map((item) => (
         <MenuButton
+          key={item.label}
           isSelected={appView === item.fnKey}
           onClick={() => setAppView(item.fnKey)}
           label={item.label}

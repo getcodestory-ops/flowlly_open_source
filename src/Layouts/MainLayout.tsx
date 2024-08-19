@@ -91,7 +91,7 @@ export default function MainLayout({
       <main>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
-            <Flex w="100vw" h="100vh" bg={"#E5E5E5"} overflow="auto">
+            <div className="w-full h-full overflow-auto">
               {(appView === "login" || appView === "changePassword") && (
                 <Flex w="100vw" h="100vh">
                   {children}
@@ -99,12 +99,13 @@ export default function MainLayout({
               )}
 
               {appView !== "login" && appView !== "changePassword" && (
-                <Flex width="full" flexDir="column" h="100vh" w="100vw">
+                <div className=" flex flex-col w-[100vw] h-[100vh] ">
                   <ProjectInfoDisplay />
+
                   <MainDisplayInLayout appView={appView} />
-                </Flex>
+                </div>
               )}
-            </Flex>
+            </div>
           </TooltipProvider>
         </QueryClientProvider>
       </main>
@@ -112,12 +113,12 @@ export default function MainLayout({
   );
 }
 
-export const MainDisplayInLayout = ({ appView }: { appView: string }) => {
+const MainDisplayInLayout = ({ appView }: { appView: string }) => {
   return (
     <Flex gap="2" p="1" w="full" flexGrow={1} overflow="auto">
-      <Flex width="60px" zIndex={1}>
+      <div className="w-12 border-r">
         <SideMenuPanel />
-      </Flex>
+      </div>
 
       <Flex flexGrow={1} overflow={"hidden"}>
         <Grid

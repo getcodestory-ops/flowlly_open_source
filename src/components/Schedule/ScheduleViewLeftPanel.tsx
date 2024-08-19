@@ -61,7 +61,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
         >
           <Card className="overflow-y-scroll">
             <CardHeader>
-              <CardTitle>Project Activities</CardTitle>
+              <CardTitle className="text-3xl">Project Activities</CardTitle>
             </CardHeader>
             <CardContent>
               <ScheduleInsights />
@@ -69,7 +69,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Activity Details</CardTitle>
+              <CardTitle className="text-3xl">Activity Details</CardTitle>
             </CardHeader>
             <CardContent>
               <ActivitiesDetailPage />
