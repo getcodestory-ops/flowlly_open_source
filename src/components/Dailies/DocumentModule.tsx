@@ -2,25 +2,12 @@ import React from "react";
 import { Flex } from "@chakra-ui/react";
 import Link from "next/link";
 import { FileSearch } from "lucide-react";
-import { IoHomeOutline } from "react-icons/io5";
-import { FiUsers } from "react-icons/fi";
-import { AiOutlineLineChart } from "react-icons/ai";
-import { IoSettingsOutline } from "react-icons/io5";
-import { LuPackage } from "react-icons/lu"; //IoHomeOutline
-import { FaFolder } from "react-icons/fa";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 import { useState, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 //components
 import { Button } from "@/components/ui/button";
-// import { NewFolderModal } from "@/components/NewCategoryModal/NewFolderModal";
-// import { FolderOptions } from "@/components/Dropdowns/FolderOptions";
 import {
   Table,
   TableBody,
@@ -29,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { Badge } from "@/components/ui/badge";
 
@@ -93,16 +81,12 @@ export const DocumentFolderModule = () => {
 };
 
 export function DatabasePageLayout() {
-  // const queryClient = useQueryClient();
-  // const { toast } = useToast();
   const { session, activeProject } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
   }));
   const [rootId, setRootId] = useState<string | null>(null);
-  // const [folderDataAtButtonClick, setFolderDataAtButtonClick] =
-  //   useState<FolderDataProp | null>(null);
-  // const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
+  const [isProjectWide, setIsProjectWide] = useState<boolean>(true);
   const [currentFolderStructure, setCurrentFolderStructure] =
     useState<CurrentFolderStructure | null>(null);
 
@@ -111,53 +95,59 @@ export function DatabasePageLayout() {
       `fetchProjectFolders-${rootId}`,
       activeProject?.project_id,
       session,
+      isProjectWide,
     ],
     queryFn: () => {
       if (session && session.access_token && activeProject) {
-        return fetchFolders(session, activeProject.project_id, null, (data) => {
-          const rootFolder = data.find(
-            (folder: GetFolderSubFolderProp) => folder.name === "root"
-          );
-          if (rootFolder) {
-            setRootId(rootFolder.id);
-            setCurrentFolderStructure({
-              folderId: rootFolder.id,
-              folderName: "Project Database",
-              depth: 0,
-              parent: null,
-            });
+        return fetchFolders(
+          session,
+          activeProject.project_id,
+          null,
+          isProjectWide,
+          (data) => {
+            const rootFolder = data.find(
+              (folder: GetFolderSubFolderProp) => folder.name === "root"
+            );
+            if (rootFolder) {
+              setRootId(rootFolder.id);
+              setCurrentFolderStructure({
+                folderId: rootFolder.id,
+                folderName: isProjectWide
+                  ? "Project Database"
+                  : "Personal Database",
+                depth: 0,
+                parent: null,
+              });
+            }
           }
-        });
+        );
       }
       return Promise.reject("No session or access token");
     },
     enabled: !!session && !!activeProject,
   });
 
-  /**
-   * 
-   *   const { data, isLoading, isSuccess } = useQuery({
-    queryKey: ["initialProjectList", session],
-    queryFn: () => {
-      if (session && session.access_token) {
-        return getProjects(session!, "SCHEDULE");
-      }
-      return Promise.reject("No session or access token");
-    },
-    enabled: !!session?.access_token,
-    placeholderData: keepPreviousData,
-  });
-   */
-
   if (!session) {
     return <div>on different page session not found</div>;
   }
   return (
     <div className="flex flex-1 h-full">
-      {/* <SideNavigation /> */}
       <div className="flex-1 p-4 ">
-        {/* max-h-full overflow-auto */}
         <div className="flex w-full flex-col">
+          <Tabs
+            defaultValue="project"
+            className="pb-4"
+            onValueChange={(value) => {
+              setIsProjectWide(value === "project");
+            }}
+          >
+            <div className="flex items-center">
+              <TabsList>
+                <TabsTrigger value="project">Project</TabsTrigger>
+                <TabsTrigger value="personal">Personal</TabsTrigger>
+              </TabsList>
+            </div>
+          </Tabs>
           {currentFolderStructure && (
             <DatabaseHeader
               currentFolderStructure={currentFolderStructure}
@@ -171,6 +161,7 @@ export function DatabasePageLayout() {
                 activeProject={activeProject}
                 currentFolderStructure={currentFolderStructure}
                 setCurrentFolderStructure={setCurrentFolderStructure}
+                isProjectWide={isProjectWide}
               />
             </div>
           )}
@@ -180,15 +171,9 @@ export function DatabasePageLayout() {
   );
 }
 
-type FolderDataProp = {
-  id: string;
-  name: string;
-};
-
 interface FolderDetailsProp {
   session: any;
   activeProject: any;
-  // onClickAddNewFolder: (val: FolderDataProp) => void;
   currentFolderStructure: CurrentFolderStructure;
   setCurrentFolderStructure: { (val: CurrentFolderStructure): void };
 }
@@ -268,14 +253,14 @@ const DatabaseHeader = ({
           />
         </BreadcrumbList>
       </Breadcrumb>
-      <div className="relative ml-auto flex-1 md:grow-0">
+      {/* <div className="relative ml-auto flex-1 md:grow-0">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           type="search"
           placeholder="Search ..."
           className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
         />
-      </div>
+      </div> */}
     </header>
   );
 };
@@ -324,14 +309,14 @@ type CurrentFolderStructure = {
   parent: CurrentFolderStructure | null;
 };
 
-//recursive folder structure NOT TO BE DELETED
-// TO BE USED LATER
-const FolderDetails: React.FC<FolderDetailsProp> = ({
+const FolderDetails: React.FC<
+  FolderDetailsProp & { isProjectWide: boolean }
+> = ({
   session,
   activeProject,
-  // onClickAddNewFolder,
   currentFolderStructure,
   setCurrentFolderStructure,
+  isProjectWide,
 }) => {
   const queryClient = useQueryClient();
   const [files, setFiles] = useState<any[]>([]);
@@ -347,7 +332,8 @@ const FolderDetails: React.FC<FolderDetailsProp> = ({
       fetchFolders(
         session,
         activeProject?.project_id,
-        currentFolderStructure.folderId
+        currentFolderStructure.folderId,
+        isProjectWide
       ),
     enabled: !!session && !!activeProject && !!currentFolderStructure.folderId,
   });
@@ -358,12 +344,14 @@ const FolderDetails: React.FC<FolderDetailsProp> = ({
       activeProject?.project_id,
       session,
       currentFolderStructure.folderId,
+      isProjectWide,
     ],
     queryFn: () => {
       return fetchFiles(
         session,
         activeProject?.project_id,
         currentFolderStructure.folderId,
+        isProjectWide,
         (data: GetFolderFileProp[]) => {
           if (!data || !data.length || !data[0].storage_relations) return;
           const filesData = data[0].storage_relations.map(
@@ -512,12 +500,10 @@ const FilesContent = ({
   return (
     <Card x-chunk="dashboard-05-chunk-3" className="relative">
       <CardHeader>
-        {/* <div className="w-full"> */}
         <CardTitle>All Files</CardTitle>
         <CardDescription>
           Recent files in the selected category.
         </CardDescription>
-        {/* </div> */}
         <AddFileInFolderButton
           folderId={folderId}
           session={session}
