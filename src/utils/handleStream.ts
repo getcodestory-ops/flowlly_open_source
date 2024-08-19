@@ -25,7 +25,6 @@ export const handleStreams = () => {
 
       dataStrings.forEach((data) => {
         const parsedData = JSON.parse(data);
-        console.log(data);
         // updateStreamingHistory(parsedData);
       });
 

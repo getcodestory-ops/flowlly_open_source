@@ -15,8 +15,13 @@ import { ChangePasswordModal } from "@/components/ChangePasswordModal/ChangePass
 import { UserProfileModal } from "@/components/UserProfileModal/UserProfileModal";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-
-export function UserNav({ email }: { email: string }) {
+import { useStore } from "@/utils/store";
+export function UserNav({}: { email: string }) {
+  const { setAppView, session } = useStore((state) => ({
+    setAppView: state.setAppView,
+    session: state.session,
+  }));
+  const email = session?.user?.email ?? "User";
   const [isChangePasswordOpen, setIsChangePasswordOpen] =
     useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
@@ -24,20 +29,16 @@ export function UserNav({ email }: { email: string }) {
 
   const onLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/applogin");
+    setAppView("login");
+    router.push("/");
   };
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className=" h-8 w-8 rounded-full">
+          <Button variant="default" className="h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
-              {/* <AvatarImage src="/avatars/01.png" alt="@shadcn" />
-               */}
-
-              <AvatarFallback>
-                <div className="text-lg">{email && email[0].toUpperCase()}</div>
-              </AvatarFallback>
+              <AvatarFallback>{email && email[0].toUpperCase()}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
@@ -54,29 +55,19 @@ export function UserNav({ email }: { email: string }) {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
+            {/* <DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
               Profile
-              {/* <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut> */}
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             {/* <DropdownMenuItem>
             Billing
             <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
           </DropdownMenuItem> */}
             <DropdownMenuItem onClick={() => setIsChangePasswordOpen(true)}>
               Change Password
-              {/* <DropdownMenuShortcut>⌘C</DropdownMenuShortcut> */}
             </DropdownMenuItem>
-            {/* <DropdownMenuItem>New Team</DropdownMenuItem> */}
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={onLogout}>
-            {/* <form action={onLogout}>
-              <button className=" rounded-md no-underline bg-btn-background hover:bg-btn-background-hover">
-                Logout
-              </button>
-            </form> */}
-            Logout
-          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onLogout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <ChangePasswordModal

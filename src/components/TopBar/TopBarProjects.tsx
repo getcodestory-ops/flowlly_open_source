@@ -35,9 +35,7 @@ const TopBarProjects = ({
 
   const { session, setActiveProject } = useStore((state) => ({
     session: state.session,
-    userProjects: state.userProjects,
     setActiveProject: state.setActiveProject,
-    setUserProjects: state.setUserProjects,
   }));
 
   const { data: projects, isLoading } = useQuery({

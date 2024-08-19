@@ -27,7 +27,6 @@ export const createNewChatSession = async (
   chatName: string,
   project_access_id: string
 ) => {
-  //console.log(project_access_id);
   const chat_data = {
     name: chatName,
     project_access_id: project_access_id,

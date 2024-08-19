@@ -157,7 +157,6 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
     }
     const formattedDate = new Date(selectedDate);
     setScheduleDate(formattedDate);
-    // console.log("formattedDate", formattedDate);
     // return formattedDate;
   };
 
@@ -277,11 +276,6 @@ function CustomDatePicker({ onDateSelect }: CustomDatePickerProps) {
 
     setHighlightedDates(newHighlightedDates);
   }, [impactfulRevisions]);
-
-  // useEffect(() => {
-  //   console.log("impactfulRevisions", impactfulRevisions);
-  //   console.log("highlightedDates", highlightedDates);
-  // }, [highlightedDates]);
 
   return (
     <Flex alignItems={"center"}>

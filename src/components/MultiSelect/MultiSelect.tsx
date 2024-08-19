@@ -36,7 +36,6 @@ const MultiSelect = ({
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
   const handleOptionSelect = (selected: string | string[]) => {
-    //console.log(selected);
     const list = Array.isArray(selected)
       ? selected
       : [...selectedOptions, selected];

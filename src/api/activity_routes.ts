@@ -13,7 +13,7 @@ export const getActivities = async (
   date: string = getCurrentDateFormatted(),
   probability: number = 0.0
 ): Promise<ActivityEntity[]> => {
-  // console.log(date);
+
   const query = {
     date: date,
     probability: probability,

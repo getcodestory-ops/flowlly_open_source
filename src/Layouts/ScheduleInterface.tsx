@@ -1,7 +1,8 @@
 import React from "react";
 import ScheduleUIView from "@/components/Schedule/ScheduleViewLeftPanel";
 import { useStore } from "@/utils/store";
-import CreateNewProjectButton from "@/components/Schedule/NewProjectButton";
+
+import { AddNewProjectButton } from "@/components/Schedule/AddNewProjectModal";
 import {
   Card,
   CardContent,
@@ -29,7 +30,7 @@ function ScheduleInterface({ view }: { view?: string | string[] }) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <CreateNewProjectButton />
+              <AddNewProjectButton />
             </CardContent>
           </Card>
         </div>

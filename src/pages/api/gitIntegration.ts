@@ -18,13 +18,11 @@ async function uploadDataToSupabase(supabaseData: SupabaseData) {
     console.log(error);
     return error;
   } else {
-    console.log("data uploaded successfully");
     return "okay";
   }
 }
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  console.log("initiating request");
   if (req.method !== "POST") {
     return res.status(400).json({ message: "This mthod not supported" });
   } else {

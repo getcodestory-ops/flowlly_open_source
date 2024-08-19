@@ -42,7 +42,6 @@ export const updateContext = async (
       }
     );
     if (!response.ok) {
-      console.log(response);
       throw new Error("Somethign went wrong");
       return;
     }
@@ -97,7 +96,6 @@ export const getContexualAnswerStream = async (
       }
     );
     if (!response.ok) {
-      console.log(response);
 
       return;
     }
@@ -134,7 +132,6 @@ export const getContexualAnswer = async (
       }
     );
     if (!response.ok) {
-      console.log(response);
 
       return;
     }

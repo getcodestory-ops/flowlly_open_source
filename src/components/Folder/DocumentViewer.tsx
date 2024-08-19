@@ -38,19 +38,6 @@ function DocumentViewer() {
 
           <Flex flexDir={"column"} gap="4">
             <Flex fontWeight={"bold"}>Folders</Flex>
-            {/* <Flex
-              _hover={{ bg: "gray.200", borderLeft: "2px solid gray.400" }}
-              borderRadius={"lg"}
-            >
-              <Button
-                leftIcon={<GrHome />}
-                colorScheme=""
-                color="black"
-                size="sm"
-              >
-                Home Folder
-              </Button>
-            </Flex> */}
             <Flex
               _hover={{ bg: "gray.200" }}
               borderLeft={documentViewer === "Media" ? "2px solid gray" : ""}
@@ -65,26 +52,6 @@ function DocumentViewer() {
                 Media
               </Button>
             </Flex>
-            {/* <Flex _hover={{ bg: "gray.200" }} borderRadius={"lg"}>
-              <Button
-                leftIcon={<GrDocument />}
-                colorScheme=""
-                color="black"
-                size="sm"
-              >
-                My Files
-              </Button>
-            </Flex> */}
-            {/* <Flex _hover={{ bg: "gray.200" }} borderRadius={"lg"}>
-              <Button
-                leftIcon={<GrFavorite />}
-                colorScheme=""
-                color="black"
-                size="sm"
-              >
-                Favorites
-              </Button>
-            </Flex> */}
           </Flex>
           <Flex flexDir={"column"} gap="4">
             <Flex fontWeight={"bold"}>Reports</Flex>
@@ -102,26 +69,6 @@ function DocumentViewer() {
                 Daily Reports
               </Button>
             </Flex>
-            {/* <Flex _hover={{ bg: "gray.200" }} borderRadius={"lg"}>
-              <Button
-                leftIcon={<CiClock2 />}
-                colorScheme=""
-                color="black"
-                size="sm"
-              >
-                Schedule Impact
-              </Button>
-            </Flex> */}
-            {/* <Flex _hover={{ bg: "gray.200" }} borderRadius={"lg"}>
-              <Button
-                leftIcon={<CiStickyNote />}
-                colorScheme=""
-                color="black"
-                size="sm"
-              >
-                Notes
-              </Button>
-            </Flex> */}
           </Flex>
         </Flex>
       </GridItem>

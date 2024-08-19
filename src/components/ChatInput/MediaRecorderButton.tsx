@@ -170,7 +170,7 @@ const MediaRecorderButton: React.FC = () => {
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   size="icon"
                   // onClick={recording ? stopRecording : startRecording}
                 >
@@ -239,7 +239,7 @@ const MediaRecorderButton: React.FC = () => {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="ghost"
+              variant="secondary"
               size="icon"
               onClick={() => fileInputRef.current?.click()}
             >
@@ -284,7 +284,7 @@ const MediaRecorderButton: React.FC = () => {
       <div className="flex items-center">
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="secondary" size="icon">
               <PencilIcon className="size-4" color="black" />
               <span className="sr-only">Write Text Note</span>
             </Button>
