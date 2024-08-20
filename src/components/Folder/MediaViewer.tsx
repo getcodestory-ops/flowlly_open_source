@@ -66,7 +66,13 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
                   <FileText className="text-2xl hover:scale-105" />
                   <div>
                     No Preview.{" "}
-                    <span className="text-blue-500 cursor-pointer">Open</span>{" "}
+                    <span
+                      className="text-primary cursor-pointer 
+                    hover:underline
+                    "
+                    >
+                      Open
+                    </span>{" "}
                     to edit!
                   </div>
                 </div>
