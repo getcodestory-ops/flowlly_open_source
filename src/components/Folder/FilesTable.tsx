@@ -17,6 +17,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { MediaDialogContent } from "./MediaViewer/MediaDialogContent";
+
 import { Badge } from "@/components/ui/badge";
 
 import {
@@ -72,7 +75,7 @@ export const FilesContent = ({
               {files.map((file, i) => (
                 <FileRow
                   key={i}
-                  file={file}
+                  resource={file}
                   email={session.user.email}
                   setCurrentFile={setCurrentFile}
                   currentFile={currentFile}
@@ -83,12 +86,16 @@ export const FilesContent = ({
           </Table>
         </CardContent>
       </Card>
-      <FilePreviewCard file={currentFile} />
+      <FilePreviewCard resource={currentFile} />
     </div>
   );
 };
 
-const FilePreviewCard = ({ file }: { file: StorageResourceEntity | null }) => {
+const FilePreviewCard = ({
+  resource,
+}: {
+  resource: StorageResourceEntity | null;
+}) => {
   return (
     <Card className="sticky top-4 self-start">
       <CardHeader className="flex flex-row items-center">
@@ -96,12 +103,21 @@ const FilePreviewCard = ({ file }: { file: StorageResourceEntity | null }) => {
           <CardTitle>Preview</CardTitle>
           <CardDescription>Preview the hovered file</CardDescription>
         </div>
-        <Button variant="ghost" className="ml-auto gap-1">
-          <Maximize size={16} />
-        </Button>
+        {resource && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="ghost" className="ml-auto gap-1">
+                <Maximize size={16} />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-6xl flex flex-col items-center justify-center">
+              <MediaDialogContent resource={resource} />
+            </DialogContent>
+          </Dialog>
+        )}
       </CardHeader>
       <CardContent>
-        {file && (
+        {resource && (
           <div className="flex flex-col items-center justify-center">
             <div className="flex flex-row w-full">
               <div
@@ -109,11 +125,12 @@ const FilePreviewCard = ({ file }: { file: StorageResourceEntity | null }) => {
                 overflow-hidden whitespace-nowrap overflow-ellipsis
               "
               >
-                {file.file_name}
+                {resource.file_name}
               </div>
-              <Badge variant="secondary">{file.metadata.extension}</Badge>
+              <Badge variant="secondary">{resource.metadata.extension}</Badge>
             </div>
-            <MediaViewer resource={file} />
+
+            <MediaViewer resource={resource} />
           </div>
         )}
       </CardContent>
@@ -134,35 +151,42 @@ const FilesHeader = () => {
 };
 
 const FileRow = ({
-  file,
+  resource,
   setCurrentFile,
   currentFile,
 }: {
-  file: any;
+  resource: any;
   email: string;
-  setCurrentFile: (file: any) => void;
+  setCurrentFile: (resource: any) => void;
   currentFile: any;
 }) => {
   return (
-    <TableRow
-      onMouseEnter={() => setCurrentFile(file)}
-      className={`hover:bg-blue-100 cursor-pointer ${
-        currentFile?.id === file.id ? "bg-blue-100" : ""
-      }`}
-    >
-      <TableCell>
-        <div className="flex flex-row justify-start gap-4">
-          <FileMediaIcon fileExt={file.metadata.extension + ""} />
-          <div className="font-medium">{file.file_name}</div>
-        </div>
-      </TableCell>
-      <TableCell className="hidden sm:table-cell">
-        <Badge variant="secondary">{file.metadata.extension}</Badge>
-      </TableCell>
-      <TableCell className="hidden md:table-cell">
-        {formatDate(file.created_at)}
-      </TableCell>
-    </TableRow>
+    <Dialog>
+      <DialogTrigger asChild>
+        <TableRow
+          onMouseEnter={() => setCurrentFile(resource)}
+          className={`hover:bg-blue-100 cursor-pointer ${
+            currentFile?.id === resource.id ? "bg-blue-100" : ""
+          }`}
+        >
+          <TableCell>
+            <div className="flex flex-row justify-start gap-4">
+              <FileMediaIcon fileExt={resource.metadata.extension + ""} />
+              <div className="font-medium">{resource.file_name}</div>
+            </div>
+          </TableCell>
+          <TableCell className="hidden sm:table-cell">
+            <Badge variant="secondary">{resource.metadata.extension}</Badge>
+          </TableCell>
+          <TableCell className="hidden md:table-cell">
+            {formatDate(resource.created_at)}
+          </TableCell>
+        </TableRow>
+      </DialogTrigger>
+      <DialogContent className="max-w-6xl flex flex-col items-center justify-center">
+        <MediaDialogContent resource={resource} />
+      </DialogContent>
+    </Dialog>
   );
 };
 

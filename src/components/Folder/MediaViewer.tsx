@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 import { StorageResourceEntity } from "@/types/document";
-import { FileText } from "lucide-react";
+import { FileText, File } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import ContentEditor from "../DocumentEditor/ContentEditor";
@@ -23,7 +23,7 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
         return (
           <Dialog>
             <DialogTrigger asChild>
-              <div className="border rounded-lg h-auto w-auto transition-all hover:scale-105 cursor-pointer">
+              <div className="max-h-96 overflow-auto">
                 <img src={url} alt={file_name} className="object-cover" />
               </div>
             </DialogTrigger>
@@ -35,12 +35,14 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
       case ".mp4":
       case ".webm":
         return (
-          <AspectRatio ratio={1}>
-            <video controls>
-              <source src={url} type="video/mp4" />
-              Your browser does not support the video tag
-            </video>
-          </AspectRatio>
+          <div className="overflow-auto">
+            <AspectRatio ratio={1}>
+              <video controls>
+                <source src={url} type="video/mp4" />
+                Your browser does not support the video tag
+              </video>
+            </AspectRatio>
+          </div>
         );
       case ".mp3":
       case ".ogg":
@@ -59,9 +61,14 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
         return (
           <Dialog>
             <DialogTrigger asChild>
-              <div className="rounded-lg  transition-all hover:scale-105 cursor-pointer">
-                <div className="flex  items-center">
-                  <FileText className="text-2xl" />
+              <div className="rounded-lg  transition-all cursor-pointer mt-4">
+                <div className="flex flex-row items-center gap-4">
+                  <FileText className="text-2xl hover:scale-105" />
+                  <div>
+                    No Preview.{" "}
+                    <span className="text-blue-500 cursor-pointer">Open</span>{" "}
+                    to edit!
+                  </div>
                 </div>
               </div>
             </DialogTrigger>
@@ -76,7 +83,10 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
       default:
         return (
           <div className="flex items-center justify-center ">
-            <FileText className="text-4xl" />
+            <div className="flex flex-row items-center gap-4">
+              <File className="text-2xl" />
+              <div>Sorry No Preview Available</div>
+            </div>
           </div>
         );
     }
@@ -84,7 +94,7 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
 
   return (
     <div>
-      <div className="overflow-hidden">{renderPreview()}</div>
+      <div>{renderPreview()}</div>
       {metadata?.description && (
         <div className="rounded-lg p-2 bg-white max-h-96 overflow-auto">
           <div className="space-y-1 text-sm">

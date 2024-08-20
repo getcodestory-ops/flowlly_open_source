@@ -1,51 +1,56 @@
-import { DialogContent } from "@/components/ui/dialog";
-
 import { StorageResourceEntity } from "@/types/document";
 import { FileText } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import ContentEditor from "@/components/DocumentEditor/ContentEditor";
 
-interface MediaDialogTriggerProps {
-  file: StorageResourceEntity;
-  onSubmit?: () => void;
+import { useStorageTextFileSave } from "@/components/DocumentEditor/useStorageTextSave";
+interface MediaDialogContentProps {
+  resource: StorageResourceEntity;
 }
 
-export const MediaDialogTrigger: React.FC<MediaDialogTriggerProps> = ({
-  file,
-  onSubmit,
+export const MediaDialogContent: React.FC<MediaDialogContentProps> = ({
+  resource,
 }) => {
-  const { file_name, metadata, url } = file || {};
+  const { file_name, metadata, url } = resource || {};
   const description = metadata?.description;
   const fileExt = metadata?.extension?.toLowerCase();
+
+  const { onSubmit, isPending } = useStorageTextFileSave(resource?.id);
   switch (fileExt) {
     case ".jpg":
     case ".jpeg":
     case ".png":
     case ".gif":
       return (
-        <DialogContent className="">
-          <img src={url} alt={file_name} />
-          <p className="text-center">{description}</p>
-        </DialogContent>
+        <>
+          <img
+            src={url}
+            alt={file_name}
+            className="align-middle object-cover max-h-80"
+          />
+          <DescriptionContent description={description} />
+        </>
       );
     case ".mp4":
     case ".webm":
       return (
-        <DialogContent className="">
-          <AspectRatio ratio={1}>
+        <>
+          {/* <AspectRatio ratio={1}> */}
+          <div className="max-h-96  overflow-auto">
             <video controls>
               <source src={url} type="video/mp4" />
               Your browser does not support the video tag
             </video>
-          </AspectRatio>
-          <p className="text-center">{description}</p>
-        </DialogContent>
+          </div>
+          {/* </AspectRatio> */}
+          <DescriptionContent description={description} />
+        </>
       );
     case ".mp3":
     case ".ogg":
     case ".wav":
       return (
-        <DialogContent className="">
+        <>
           <div className="flex flex-col items-center justify-center  p-4">
             <div className="w-full min-w-[300px]">
               <audio src={url} controls style={{ width: "100%" }}>
@@ -53,22 +58,30 @@ export const MediaDialogTrigger: React.FC<MediaDialogTriggerProps> = ({
               </audio>
             </div>
           </div>
-          <p className="text-center">{description}</p>
-        </DialogContent>
+          <DescriptionContent description={description} />
+        </>
       );
     case ".txt":
       return (
-        <DialogContent className="max-w-6xl ">
-          <ContentEditor content={metadata?.content} saveFunction={onSubmit} />
-        </DialogContent>
+        <ContentEditor content={metadata?.content} saveFunction={onSubmit} />
       );
     default:
       return (
-        <DialogContent className="flex items-center justify-center ">
+        <>
           <FileText className="text-4xl" />
           Sorry No Preview Available
-          <p className="text-center">{description}</p>
-        </DialogContent>
+          <DescriptionContent description={description} />
+        </>
       );
   }
+};
+
+const DescriptionContent = ({ description }: { description: string }) => {
+  return (
+    <div className="rounded-lg p-2 bg-white max-h-96 overflow-auto">
+      <div className="space-y-1 text-sm">
+        <p className="text-sm ">{description}</p>
+      </div>
+    </div>
+  );
 };
