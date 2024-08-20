@@ -1,24 +1,13 @@
 import React from "react";
-import { Flex } from "@chakra-ui/react";
 import Link from "next/link";
 import { FileSearch } from "lucide-react";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 //components
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import {
   Card,
@@ -33,19 +22,15 @@ import {
   fetchFolders,
   fetchFiles,
   createSubFolder,
-  uploadFileInFolder,
   GetFolderFileProp,
   GetFolderSubFolderProp,
 } from "@/api/folderRoutes";
 import { AddNewFolderModal } from "../CreateNewFolderModal/CreateNewFolderModal";
 import { useQuery } from "@tanstack/react-query";
-import { useToast } from "@/components/ui/use-toast";
 import { Folder } from "lucide-react";
 
 //store zustang
 import { useStore } from "@/utils/store";
-
-import { Search } from "lucide-react";
 
 import {
   Breadcrumb,
@@ -56,22 +41,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-import { Input } from "@/components/ui/input";
-
 import { Progress } from "@/components/ui/progress";
 
-import DocumentViewer from "../Folder/DocumentViewer";
-import { MediaViewer } from "../Folder/MediaViewer";
-
-const DocumentModule = () => {
-  return (
-    <Flex flexDir="column" w="full" height="100%">
-      <DocumentViewer />
-    </Flex>
-  );
-};
-
-export default DocumentModule;
+import { FilesContent } from "../Folder/FilesTable";
 
 export const DocumentFolderModule = () => {
   return (
@@ -178,63 +150,6 @@ interface FolderDetailsProp {
   currentFolderStructure: CurrentFolderStructure;
   setCurrentFolderStructure: { (val: CurrentFolderStructure): void };
 }
-
-const AddFileInFolderButton = ({
-  folderId,
-  session,
-  activeProject,
-}: {
-  folderId: string | null;
-  session: any;
-  activeProject: any;
-}) => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileUpload = (e: any) => {
-    const file = fileInputRef.current?.files?.[0];
-
-    if (!file) return;
-
-    uploadFileInFolder(
-      session,
-      activeProject.project_id,
-      file,
-      folderId,
-      (data) => {
-        queryClient.invalidateQueries({
-          queryKey: [`fetchFiles-${folderId}`],
-        });
-        toast({
-          title: "File Uploaded Successfully",
-          description: `File  uploaded successfully`,
-          duration: 20000,
-        });
-      }
-    );
-  };
-
-  return (
-    <div className="absolute right-4">
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileUpload}
-        style={{ display: "none" }}
-        //single file at a time
-        multiple={false}
-      />
-      <Button
-        onClick={() => fileInputRef.current?.click()}
-        size="sm"
-        variant="default"
-      >
-        + File
-      </Button>
-    </div>
-  );
-};
 
 const DatabaseHeader = ({
   currentFolderStructure,
@@ -436,181 +351,22 @@ const CategoryFolder = ({
 }) => {
   return (
     <div className="rounded-lg shadow-md hover:shadow-lg transition-shadow w-full hover:cursor-pointer relative">
-      {false && (
-        <>
-          <Card
-            className="hover:bg-blue-100  hover:border-blue-500"
-            onClick={onClick}
-          >
-            <CardHeader className="pb-2">
-              <CardDescription>{timeAgo(date)}</CardDescription>
-              <CardTitle className="max-h-full flex flex-row items-center gap-3">
-                <Folder className="w-8" />
-                <div className="text-2xl max-h-full overflow-hidden text-ellipsis whitespace-nowrap flex-1">
-                  {categoryName}
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xs text-muted-foreground">
-                +25% from last week
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Progress value={25} aria-label="25% increase" />
-            </CardFooter>
-          </Card>
-          {/* <div className="absolute top-2 right-1 rounded-full hover:bg-muted p-1">
-            <FolderOptions
-              folderName={categoryName}
-              onDelete={() => console.log("delete")}
-            />
-          </div> */}
-        </>
-      )}
-      {true && (
-        <Card
-          className="hover:bg-blue-100  hover:border-blue-500 h-auto p-0"
-          onClick={onClick}
-        >
-          <CardHeader>
-            <CardTitle className="max-h-full flex flex-row items-center gap-3 p-0">
-              <Folder className="w-4" />
-              <div className="text-lg max-h-full overflow-hidden text-ellipsis whitespace-nowrap flex-1">
-                {categoryName}
-              </div>
-            </CardTitle>
-          </CardHeader>
-        </Card>
-      )}
+      <Card
+        className="hover:bg-blue-100  hover:border-blue-500 h-auto p-0"
+        onClick={onClick}
+      >
+        <CardHeader>
+          <CardTitle className="max-h-full flex flex-row items-center gap-3 p-0">
+            <Folder className="w-4" />
+            <div className="text-lg max-h-full overflow-hidden text-ellipsis whitespace-nowrap flex-1">
+              {categoryName}
+            </div>
+          </CardTitle>
+        </CardHeader>
+      </Card>
     </div>
   );
 };
-
-const FilesContent = ({
-  files,
-  folderId,
-  session,
-  activeProject,
-}: {
-  files: any[];
-  folderId: string;
-  session: any;
-  activeProject: any;
-}) => {
-  return (
-    <Card x-chunk="dashboard-05-chunk-3" className="relative">
-      <CardHeader>
-        <CardTitle>All Files</CardTitle>
-        <CardDescription>
-          Recent files in the selected category.
-        </CardDescription>
-        <AddFileInFolderButton
-          folderId={folderId}
-          session={session}
-          activeProject={activeProject}
-        />
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="hidden md:table-cell">File Name</TableHead>
-              <TableHead className="hidden sm:table-cell">Type</TableHead>
-              <TableHead className="hidden sm:table-cell">AI</TableHead>
-              <TableHead className="hidden md:table-cell">Date</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {files.map((file, i) => (
-              <FileRow key={i} file={file} email={session.user.email} />
-            ))}
-            {files.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center">
-                  <div className="flex flex-col items-center justify-center pt-8">
-                    <FileSearch className="w-20 h-20 text-gray-400 mb-4" />
-                    <p className="text-lg font-medium text-gray-500">
-                      No files found
-                    </p>
-                    <p className="text-sm text-gray-400">
-                      It looks like there are no files here. Try uploading or
-                      checking back later.
-                    </p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  );
-};
-
-const FileRow = ({ file, email }: { file: any; email: string }) => {
-  return (
-    <TableRow>
-      <TableCell>
-        <MediaViewer resource={file} />
-        <div className="font-thin text-xs">{file.file_name}</div>
-      </TableCell>
-      <TableCell className="hidden sm:table-cell">
-        {file.metadata.extension}
-      </TableCell>
-      <TableCell className="hidden sm:table-cell">
-        <Badge className="text-xs" variant="outline">
-          Processed
-        </Badge>
-      </TableCell>
-      <TableCell className="hidden md:table-cell">
-        {formatDate(file.created_at)}
-      </TableCell>
-    </TableRow>
-  );
-};
-
-function formatDate(dateString: string): string {
-  // Create a new Date object from the input date string
-  const date = new Date(dateString);
-
-  // Define arrays for month and AM/PM strings
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
-  // Extract the month, day, year, and time components
-  const month = monthNames[date.getMonth()];
-  const day = date.getDate();
-  const year = date.getFullYear();
-
-  let hours = date.getHours();
-  const minutes = date.getMinutes();
-  const ampm = hours >= 12 ? "PM" : "AM";
-
-  // Convert hours from 24-hour format to 12-hour format
-  hours = hours % 12;
-  hours = hours ? hours : 12; // the hour '0' should be '12'
-
-  // Format minutes to be always two digits
-  const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-
-  // Construct the formatted date string
-  const formattedDate = `${month} ${day}, ${year} ${hours}:${formattedMinutes} ${ampm}`;
-
-  return formattedDate;
-}
 
 function timeAgo(dateString: string): string {
   const now = new Date();
