@@ -33,6 +33,7 @@ import { getMembers } from "@/api/membersRoutes";
 import { getProjects } from "@/api/projectRoutes";
 import { RiTeamLine } from "react-icons/ri";
 import { MembersModal } from "@/components/MembersModal/MembersModal";
+import { getAgentChatEntities } from "@/api/agentRoutes";
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
@@ -48,6 +49,8 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     setActiveProject,
     setUserProjects,
     setMembers,
+    activeChatEntity,
+    setActiveChatEntity,
   } = useStore((state) => ({
     session: state.session,
     userProjects: state.userProjects,
@@ -55,6 +58,8 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     setActiveProject: state.setActiveProject,
     setUserProjects: state.setUserProjects,
     setMembers: state.setMembers,
+    activeChatEntity: state.activeChatEntity,
+    setActiveChatEntity: state.setActiveChatEntity,
   }));
 
   const [isMembersOpen, setIsMembersOpen] = useState(false);
@@ -100,15 +105,25 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     }
   }, [data?.length, isSuccess, setUserProjects, data]);
 
-  // useEffect(() => {
-  //   async function loginCheck() {
-  //     const { data } = await supabase.auth.getSession();
-  //     if (data?.session?.user) {
-  //       setSession(data.session);
-  //     }
-  //   }
-  //   loginCheck();
-  // }, [setSession]);
+  const { data: chatEntitities, isLoading: chatsLoading } = useQuery({
+    queryKey: ["chatEntityList", session, activeProject],
+    queryFn: () => {
+      if (!session || !activeProject) {
+        return Promise.reject("No session or active project");
+      }
+      return getAgentChatEntities(session, activeProject.project_id);
+    },
+    enabled: !!session?.access_token,
+  });
+
+  useEffect(() => {
+    console.log("changing active chat entity");
+    if (chatEntitities && chatEntitities.length > 0) {
+      setActiveChatEntity(chatEntitities[chatEntitities.length - 1]);
+    } else {
+      setActiveChatEntity(null);
+    }
+  }, [chatEntitities, setActiveChatEntity]);
 
   const [open, setOpen] = useState(false);
   const [showNewTeamDialog, setShowNewTeamDialog] = useState(false);

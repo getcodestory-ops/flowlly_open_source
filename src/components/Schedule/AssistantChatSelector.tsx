@@ -45,6 +45,8 @@ const AssistantChatSelector = () => {
   useEffect(() => {
     if (chatEntitities && chatEntitities.length > 0) {
       setActiveChatEntity(chatEntitities[chatEntitities.length - 1]);
+    } else {
+      setActiveChatEntity(null);
     }
   }, [chatEntitities, setActiveChatEntity]);
 

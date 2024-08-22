@@ -102,7 +102,7 @@ export type State = {
   setUserProjects: (userProjects: ProjectEntity[]) => void;
   setUserActivities: (userActivities: ActivityEntity[]) => void;
   setActiveProject: (activeProject: ProjectEntity | null) => void;
-  setActiveChatEntity: (activeChatEntity: AgentChatEntity) => void;
+  setActiveChatEntity: (activeChatEntity: AgentChatEntity | null) => void;
   setAdminRights: (hasAdminRights: boolean) => void;
   setSidePanelExtensionView: (
     sidePanelExtensionView: SidePanelExtension
