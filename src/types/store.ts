@@ -70,7 +70,8 @@ export type State = {
   userUpdatesCollection: UserUpdateCollectionType;
 
   userActivities: ActivityEntity[];
-  activeChatEntity: AgentChatEntity;
+  activeChatEntity: AgentChatEntity | null;
+  chatEntities: AgentChatEntity[];
   noteTitle: string;
   prompts: {
     scope: string;
@@ -103,6 +104,7 @@ export type State = {
   setUserActivities: (userActivities: ActivityEntity[]) => void;
   setActiveProject: (activeProject: ProjectEntity | null) => void;
   setActiveChatEntity: (activeChatEntity: AgentChatEntity | null) => void;
+  setChatEntities: (chatEntities: AgentChatEntity[]) => void;
   setAdminRights: (hasAdminRights: boolean) => void;
   setSidePanelExtensionView: (
     sidePanelExtensionView: SidePanelExtension

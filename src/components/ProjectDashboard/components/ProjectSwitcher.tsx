@@ -26,7 +26,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-
 import { useStore } from "@/utils/store";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getMembers } from "@/api/membersRoutes";
@@ -51,6 +50,8 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     setMembers,
     activeChatEntity,
     setActiveChatEntity,
+    chatEntities,
+    setChatEntities,
   } = useStore((state) => ({
     session: state.session,
     userProjects: state.userProjects,
@@ -60,6 +61,8 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     setMembers: state.setMembers,
     activeChatEntity: state.activeChatEntity,
     setActiveChatEntity: state.setActiveChatEntity,
+    chatEntities: state.chatEntities,
+    setChatEntities: state.setChatEntities,
   }));
 
   const [isMembersOpen, setIsMembersOpen] = useState(false);
@@ -119,9 +122,11 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
   useEffect(() => {
     console.log("changing active chat entity");
     if (chatEntitities && chatEntitities.length > 0) {
+      setChatEntities(chatEntitities);
       setActiveChatEntity(chatEntitities[chatEntitities.length - 1]);
     } else {
       setActiveChatEntity(null);
+      setChatEntities([]);
     }
   }, [chatEntitities, setActiveChatEntity]);
 

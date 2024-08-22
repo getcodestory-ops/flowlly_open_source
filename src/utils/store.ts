@@ -41,12 +41,8 @@ export const useStore = create<State>()(
     userActivities: [],
     activeProject: null,
     userUpdatesCollection: {},
-    activeChatEntity: {
-      id: "",
-      project_id: "",
-      chat_name: "",
-      chat_details: "",
-    },
+    activeChatEntity: null,
+    chatEntities: [],
     hasAdminRights: false,
     noteTitle: "",
     prompts: scopeConfig,
@@ -102,7 +98,9 @@ export const useStore = create<State>()(
       set(() => ({ userActivities })),
     setActiveProject: (activeProject: ProjectEntity | null) =>
       set(() => ({ activeProject })),
-    setActiveChatEntity: (activeChatEntity: AgentChatEntity) =>
+    setChatEntities: (chatEntities: AgentChatEntity[]) =>
+      set(() => ({ chatEntities })),
+    setActiveChatEntity: (activeChatEntity: AgentChatEntity | null) =>
       set(() => ({ activeChatEntity })),
     setSidePanelExtensionView: (sidePanelExtensionView: SidePanelExtension) =>
       set((state) => ({
