@@ -6,6 +6,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import ContentEditor from "../DocumentEditor/ContentEditor";
 import { useStorageTextFileSave } from "../DocumentEditor/useStorageTextSave";
+import { useDocumentTracer } from "./useDocumentTracer";
 
 export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
   resource,
@@ -13,6 +14,7 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
   const { file_name, metadata, url, created_at } = resource || {};
   const fileExt = metadata?.extension?.toLowerCase();
   const { onSubmit, isPending } = useStorageTextFileSave(resource?.id);
+  const traces = useDocumentTracer(resource?.id);
 
   const renderPreview = () => {
     switch (fileExt) {
@@ -75,6 +77,7 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
                     </span>{" "}
                     to edit!
                   </div>
+                  <div>{traces && JSON.stringify(traces)}</div>
                 </div>
               </div>
             </DialogTrigger>
