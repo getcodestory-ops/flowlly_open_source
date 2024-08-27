@@ -65,11 +65,24 @@ function TaskResultDisplay({
           borderRadius={"lg"}
         >
           <Icon as={FaRegDotCircle} fontSize={"sm"} color="green.400" />
+
           <div
             className="flex flex-col"
-            key={results.results.slice(0, 5) ?? ""}
+            // key={results.results.slice(0, 5) ?? ""}
           >
-            <MarkDownDisplay content={results.results ?? ""} />
+            {typeof results.results === "string" ? (
+              <div>
+                <MarkDownDisplay content={results.results} />
+              </div>
+            ) : (
+              <div>
+                {results.results?.result && (
+                  <MarkDownDisplay content={results.results.result} />
+                )}
+              </div>
+            )}
+            {/* <MarkDownDisplay content={results.results ?? ""} /> */}
+
             {results.stream && sessionToken && (
               <StreamComponent
                 streamingKey={results.stream}
@@ -275,13 +288,21 @@ function ArtifactViewer({
                 <AccordionTrigger>Results </AccordionTrigger>
                 <AccordionContent>
                   <div className="ml-2 border-l-2">
-                    <TaskResultDisplay
-                      task_function={task_result.task_function}
-                      results={task_result.task_results[0].results}
-                      chidlTaskId={childTaskId}
-                      projectId={projectId}
-                      sessionToken={sessionToken}
-                    />
+                    {task_result.task_results.map((task_output: any) => (
+                      <>
+                        {task_output.results && (
+                          <div className="border-b-2">
+                            <TaskResultDisplay
+                              task_function={task_result.task_function}
+                              results={task_output.results}
+                              chidlTaskId={childTaskId}
+                              projectId={projectId}
+                              sessionToken={sessionToken}
+                            />
+                          </div>
+                        )}
+                      </>
+                    ))}
                     <div className="ml-2">
                       <ReRunChatAction id={childTaskId} />
                     </div>
