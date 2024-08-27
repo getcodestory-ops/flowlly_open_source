@@ -23,30 +23,19 @@ const AssistantChatSelector = () => {
   const onClose = () => setIsOpen(false);
   const onOpen = () => setIsOpen(true);
 
-  const { session, activeProject, activeChatEntity, setActiveChatEntity } =
-    useStore((state) => ({
-      session: state.session,
-      activeProject: state.activeProject,
-      activeChatEntity: state.activeChatEntity,
-      setActiveChatEntity: state.setActiveChatEntity,
-    }));
-
-  const { data: chatEntitities, isLoading: chatsLoading } = useQuery({
-    queryKey: ["chatEntityList", session, activeProject],
-    queryFn: () => {
-      if (!session || !activeProject) {
-        return Promise.reject("No session or active project");
-      }
-      return getAgentChatEntities(session, activeProject.project_id);
-    },
-    enabled: !!session?.access_token,
-  });
-
-  useEffect(() => {
-    if (chatEntitities && chatEntitities.length > 0) {
-      setActiveChatEntity(chatEntitities[chatEntitities.length - 1]);
-    }
-  }, [chatEntitities, setActiveChatEntity]);
+  const {
+    session,
+    activeProject,
+    activeChatEntity,
+    setActiveChatEntity,
+    chatEntities,
+  } = useStore((state) => ({
+    session: state.session,
+    activeProject: state.activeProject,
+    activeChatEntity: state.activeChatEntity,
+    setActiveChatEntity: state.setActiveChatEntity,
+    chatEntities: state.chatEntities,
+  }));
 
   return (
     <Flex flexDirection={"column"} borderColor={"gray.200"} fontSize={"xs"}>
@@ -88,8 +77,8 @@ const AssistantChatSelector = () => {
             overflow={"auto"}
             className="custom-scrollbar"
           >
-            {chatEntitities &&
-              chatEntitities.map((chatEntity, index) => (
+            {chatEntities &&
+              chatEntities.map((chatEntity, index) => (
                 <MenuItem
                   key={`chat-${chatEntity.id}-index-${index}`}
                   onClick={() => setActiveChatEntity(chatEntity)}

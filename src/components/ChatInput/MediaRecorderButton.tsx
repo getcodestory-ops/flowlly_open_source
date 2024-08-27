@@ -19,6 +19,7 @@ import {
   Paperclip,
   PencilIcon,
   TrashIcon,
+  AudioLines,
 } from "lucide-react";
 import { IoSave } from "react-icons/io5";
 import {
@@ -28,6 +29,7 @@ import {
 } from "@/components/ui/popover";
 import { AutosizeTextarea } from "@/components/ui/autosize-textarea";
 import StreamComponent from "../StreamResponse/StreamAgentChat";
+import MediaStreamerButton from "./MediaStreamButton";
 
 const pulseAnimation = keyframes`
   0% { transform: scale(1); opacity: 1; }
@@ -165,6 +167,7 @@ const MediaRecorderButton: React.FC = () => {
 
   return (
     <div className="flex   px-2 space-x-3 rounded-lg justify-center items-center ">
+      <MediaStreamerButton />
       <div className="flex items-center py-1">
         <Tooltip>
           <TooltipTrigger asChild>

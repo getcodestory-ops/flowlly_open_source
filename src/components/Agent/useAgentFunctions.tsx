@@ -115,7 +115,7 @@ export function useScheduleUpdate() {
   });
 
   const handleChatSubmit = async () => {
-    if (!session || !activeProject || !activeChatEntity.id) {
+    if (!session || !activeProject || !activeChatEntity?.id) {
       return;
     }
 

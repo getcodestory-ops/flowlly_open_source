@@ -85,7 +85,7 @@ export const deleteQueueMessage = async (
   });
 };
 
-export const get_task_result = async (
+export const getTaskResult = async (
   session: Session,
   taskId: string,
   projectId: string
@@ -97,5 +97,29 @@ export const get_task_result = async (
       Authorization: `Bearer ${session.access_token}`,
     },
   });
+  return respone.data;
+};
+
+export const reRunTask = async ({
+  session,
+  taskId,
+  taskFunction,
+  projectId,
+}: {
+  session: Session;
+  taskId: string;
+  taskFunction: string;
+  projectId: string;
+}) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/task/re_run_task/${projectId}`;
+  const respone = await axios.put(
+    url,
+    { task_id: taskId, task_function: taskFunction },
+    {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    }
+  );
   return respone.data;
 };

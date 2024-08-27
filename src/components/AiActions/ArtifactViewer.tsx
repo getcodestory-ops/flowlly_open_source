@@ -1,9 +1,24 @@
 import { Flex, Icon } from "@chakra-ui/react";
-
+import React, { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
 import { Session } from "@supabase/supabase-js";
 import { useQuery } from "@tanstack/react-query";
-import { get_task_result } from "@/api/taskQueue";
+import { getTaskResult } from "@/api/taskQueue";
 import CountdownTimer from "./ArtifactQueueTimeCounter";
 import ContentEditor from "../DocumentEditor/ContentEditor";
 import { FaRegDotCircle } from "react-icons/fa";
@@ -16,6 +31,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
+import { useReRunAction } from "./useReRunAction";
 
 function TaskResultDisplay({
   task_function,
@@ -122,6 +138,93 @@ function TaskResultDisplay({
   }
 }
 
+import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
+
+const availableActions = [
+  {
+    value: "log_minutes",
+    label: "Write Minutes",
+  },
+  {
+    value: "log_safety",
+    label: "Write safety report",
+  },
+  {
+    value: "log_daily",
+    label: "Note update in daily log",
+  },
+  {
+    value: "schedule_update",
+    label: "Update schedule",
+  },
+  {
+    value: "invoke_reference",
+    label: "Search project documents",
+  },
+];
+
+export function ReRunChatAction({ id }: { id: string }) {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
+  const { reRun } = useReRunAction(id);
+
+  return (
+    <div className="flex gap-4 mt-2">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            role="combobox"
+            aria-expanded={open}
+            className="w-[300px] justify-between"
+          >
+            {value
+              ? availableActions.find((framework) => framework.value === value)
+                  ?.label
+              : "Select a different action..."}
+            <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[300px] p-0">
+          <Command>
+            <CommandInput
+              placeholder="Search available actions..."
+              className="h-9"
+            />
+            <CommandList>
+              <CommandEmpty>No action found.</CommandEmpty>
+              <CommandGroup>
+                {availableActions.map((framework) => (
+                  <CommandItem
+                    key={framework.value}
+                    value={framework.value}
+                    onSelect={(currentValue) => {
+                      setValue(currentValue === value ? "" : currentValue);
+                      setOpen(false);
+                    }}
+                  >
+                    {framework.label}
+                    <CheckIcon
+                      className={cn(
+                        "ml-auto h-4 w-4",
+                        value === framework.value ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      <Button className="ml-2" size="sm" onClick={() => reRun(value)}>
+        Re-run
+      </Button>
+    </div>
+  );
+}
+
 function ArtifactViewer({
   childTaskId,
   projectId,
@@ -149,18 +252,19 @@ function ArtifactViewer({
       projectId,
       sessionToken,
     ],
-    queryFn: () => get_task_result(sessionToken, childTaskId, projectId),
+    queryFn: () => getTaskResult(sessionToken, childTaskId, projectId),
     enabled: !!childTaskId && !!sessionToken,
     // refetchInterval: 5000,
   });
 
   return (
-    <div className="ml-2 flex">
+    <div className="ml-2 flex flex-col">
       {task_result &&
         task_result.run_config &&
         task_result.task_results.length === 0 && (
           <CountdownTimer runConfig={task_result.run_config} />
         )}
+
       {task_result &&
         task_result.task_results &&
         task_result.task_results.length > 0 &&
@@ -178,6 +282,9 @@ function ArtifactViewer({
                       projectId={projectId}
                       sessionToken={sessionToken}
                     />
+                    <div className="ml-2">
+                      <ReRunChatAction id={childTaskId} />
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>

@@ -7,9 +7,10 @@ import { Task } from "gantt-task-react";
 export const useDeleteActivity = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
-  const { session, activeProject } = useStore((state) => ({
+  const { session, activeProject, setTaskToView } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
+    setTaskToView: state.setTaskToView,
   }));
 
   const { mutate: mutateDeleteActivity, isPending: deletePending } =
@@ -25,6 +26,7 @@ export const useDeleteActivity = () => {
           position: "bottom-right",
         });
         queryClient.invalidateQueries({ queryKey: ["activityList"] });
+        setTaskToView(null);
       },
     });
 

@@ -1,10 +1,5 @@
 import React, { useState } from "react";
-import {
-  Flex,
-  Text,
-  Input,
-  Select,
-} from "@chakra-ui/react";
+import { Flex, Text, Input, Select } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import DatePicker from "react-date-picker";
 import "react-date-picker/dist/DatePicker.css";
@@ -17,20 +12,8 @@ function ActivityEditView() {
   const { taskToView } = useStore((state) => ({
     taskToView: state.taskToView,
   }));
-  // const [activity, setActivity] = useState<UpdateActivityTypes>({
-  //   id: "",
-  //   name: "",
-  //   description: "",
-  //   duration: 0,
-  //   start: "",
-  //   end: "",
-  //   cost: 0,
-  //   owner: "",
-  //   progress: 0,
-  //   dependencies: [],
-  //   resources: [],
-  //   status: "",
-  // });
+
+  if (!taskToView) return null;
 
   const dateAdjustment = (date: string) => {
     let currentDate = new Date(date);
@@ -130,7 +113,7 @@ function ActivityEditView() {
         <Text
           fontSize={"sm"}
           fontWeight={"semibold"}
-          color={`${!taskToView.description ? "red" : "black"}`}
+          color={`${!taskToView?.description ? "red" : "black"}`}
         >
           {taskToView && taskToView.description
             ? taskToView.description

@@ -26,3 +26,18 @@ export const getNotifications = async (session: Session, projectId: string) => {
   });
   return response.data;
 };
+
+export const getNodeTraces = async (
+  session: Session,
+  projectId: string,
+  nodeId: string
+): Promise<UpdateProperties> => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/trace/${projectId}/${nodeId}`;
+  const response = await axios.get(url, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  return response.data;
+};
