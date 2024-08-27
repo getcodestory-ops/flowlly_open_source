@@ -111,7 +111,7 @@ export const reRunTask = async ({
   taskFunction: string;
   projectId: string;
 }) => {
-  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/task_result/${projectId}`;
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/task/re_run_task/${projectId}`;
   const respone = await axios.put(
     url,
     { task_id: taskId, task_function: taskFunction },

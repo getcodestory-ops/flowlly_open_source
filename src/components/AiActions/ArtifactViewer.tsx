@@ -218,7 +218,7 @@ export function ReRunChatAction({ id }: { id: string }) {
           </Command>
         </PopoverContent>
       </Popover>
-      <Button className="ml-2" size="sm">
+      <Button className="ml-2" size="sm" onClick={() => reRun(value)}>
         Re-run
       </Button>
     </div>
