@@ -177,7 +177,7 @@ export const useStore = create<State>()(
       }),
     setRightPanelView: (view: "gantt" | "task") =>
       set(() => ({ rightPanelView: view })),
-    setTaskToView: (task: ActivityEntity | ActivityEntityWithMembers) =>
+    setTaskToView: (task: ActivityEntity | ActivityEntityWithMembers | null) =>
       set(() => ({ taskToView: task })),
     setTaskDetailsView: (
       view: "details" | "history" | "impact" | "gantt" | "edit"

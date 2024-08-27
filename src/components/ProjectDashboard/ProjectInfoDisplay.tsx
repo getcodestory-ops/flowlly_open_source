@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import MediaRecorderButton from "../ChatInput/MediaRecorderButton";
+import MediaStreamerButton from "../ChatInput/MediaStreamButton";
 
 import { Archivo_Black } from "next/font/google";
 import { Search } from "@/components/ProjectDashboard/components/Search";
@@ -20,7 +20,7 @@ function ProjectInfoDisplay() {
           <div className="flex h-16 items-center px-4 gap-4">
             <div className={`${archivoBlack.className} text-2xl`}>FLOWLLY</div>
             <ProjectSwitcher />
-            <MediaRecorderButton />
+            <MediaStreamerButton />
             <div className="ml-auto flex items-center space-x-4">
               <Search />
               <UserNav email={"user.email" ?? ""} />

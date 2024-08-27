@@ -163,3 +163,76 @@ export const sendVoiceNote = async ({
 
   return response.data;
 };
+
+export const streamVoiceNote = async ({
+  session,
+  projectId,
+  formData,
+}: {
+  session: Session;
+  projectId: string;
+  formData: FormData;
+}) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/stream/voice_note/${projectId}`;
+  const response = await axios.post(url, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  if (!response.data) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.data;
+};
+
+export const endVoiceNote = async ({
+  session,
+  projectId,
+  chatEntityId,
+}: {
+  session: Session;
+  projectId: string;
+  chatEntityId: string;
+}) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/stream/voice_note/end/${projectId}`;
+  const response = await axios.post(
+    url,
+    {
+      chat_entity_id: chatEntityId,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    }
+  );
+
+  if (!response.data) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.data;
+};
+
+export const getPendingVoiceNotes = async (
+  session: Session,
+  chatEntityId: string
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/unprocessed/voice_notes/${chatEntityId}`;
+  const response = await axios.get(url, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  if (!response.data) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.data;
+};

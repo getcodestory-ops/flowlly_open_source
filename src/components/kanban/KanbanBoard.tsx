@@ -16,7 +16,7 @@ function KanbanBoard() {
   );
 
   const [modifyTask, setModifyTask] = useState<
-    ActivityEntity | ActivityEntityWithMembers
+    ActivityEntity | ActivityEntityWithMembers | null
   >(taskToView);
   const [editOpen, setEditOpen] = useState<boolean>(false);
 
@@ -32,7 +32,7 @@ function KanbanBoard() {
     setModifyTask(
       userActivities.find((task) => task.id === draggedItem.id) ?? taskToView
     );
-    setModifyTask((prev) => ({ ...prev, status: newStatus }));
+    // setModifyTask((prev) => { if(prev) return { ...prev, status: newStatus } } );
     setEditOpen(true);
   };
   useEffect(() => {

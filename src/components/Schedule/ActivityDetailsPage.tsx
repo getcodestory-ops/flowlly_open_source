@@ -59,7 +59,8 @@ function ActivitiesDetailPage() {
   const { data: contingencyPlans } = useQuery({
     queryKey: ["getProjectContingencyPlan", session, activeProject, taskToView],
     queryFn: () => {
-      if (!activeProject) return Promise.reject("No active project");
+      if (!activeProject || !taskToView)
+        return Promise.reject("No active project");
       return getActivityContingencyPlan(
         session!,
         activeProject?.project_id,
@@ -196,19 +197,19 @@ function ActivitiesDetailPage() {
             <Text as={"i"} mr={"2"}>
               Start Date:
             </Text>
-            <Text fontWeight={"semibold"}>{taskToView.start}</Text>
+            <Text fontWeight={"semibold"}>{taskToView?.start}</Text>
           </Flex>
           <Flex direction={"column"}>
             <Text as={"i"} mr={"2"}>
               End Date:
             </Text>
-            <Text fontWeight={"semibold"}>{taskToView.end}</Text>
+            <Text fontWeight={"semibold"}>{taskToView?.end}</Text>
           </Flex>
           <Flex direction={"column"}>
             <Text as={"i"} mr={"2"}>
               Duration:
             </Text>
-            <Text fontWeight={"semibold"}>{taskToView.duration} days</Text>
+            <Text fontWeight={"semibold"}>{taskToView?.duration} days</Text>
           </Flex>
           {/* <Flex direction={"column"}>
             <Text as={"i"} mr={"2"}>
@@ -223,9 +224,10 @@ function ActivitiesDetailPage() {
           </Text>
           <Text
             fontWeight={"semibold"}
-            color={`${!taskToView.owner ? "red" : "black"}`}
+            color={`${!taskToView?.owner ? "red" : "black"}`}
           >
-            {taskToView.owner &&
+            {taskToView &&
+              taskToView.owner &&
               taskToView.owner.length &&
               (taskToView.owner
                 .map(
@@ -243,7 +245,7 @@ function ActivitiesDetailPage() {
           </Text>
           <Text
             fontWeight={"semibold"}
-            color={`${!taskToView.description ? "red" : "black"}`}
+            color={`${!taskToView?.description ? "red" : "black"}`}
           >
             {taskToView && taskToView.description
               ? taskToView.description
@@ -251,7 +253,9 @@ function ActivitiesDetailPage() {
           </Text>
         </Flex>
         <Flex direction={"column"} mt={"4"}>
-          <EditScheduleThroughNotes activityName={taskToView.name} />
+          {taskToView && (
+            <EditScheduleThroughNotes activityName={taskToView.name} />
+          )}
         </Flex>
       </Flex>
     );
@@ -286,7 +290,7 @@ function ActivitiesDetailPage() {
             </Text>
 
             <Text as={"b"}>
-              {taskToView.creation_time &&
+              {taskToView?.creation_time &&
                 taskToView.creation_time.slice(0, 10)}
             </Text>
           </Flex>
@@ -299,7 +303,7 @@ function ActivitiesDetailPage() {
           </Flex>
         </Flex>
         <Flex direction={"column"} maxH="prose" maxW="md" overflow={"auto"}>
-          {taskToView.history &&
+          {taskToView?.history &&
             taskToView.history
               .sort((a, b) => {
                 // Convert created_at to Date objects for comparison
@@ -380,7 +384,7 @@ function ActivitiesDetailPage() {
         maxW="md"
         overflow="scroll"
       >
-        {taskToView.history &&
+        {taskToView?.history &&
           taskToView.history
             .sort((a, b) => {
               // Convert created_at to Date objects for comparison

@@ -18,7 +18,7 @@ import {
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
 import { Session } from "@supabase/supabase-js";
 import { useQuery } from "@tanstack/react-query";
-import { get_task_result } from "@/api/taskQueue";
+import { getTaskResult } from "@/api/taskQueue";
 import CountdownTimer from "./ArtifactQueueTimeCounter";
 import ContentEditor from "../DocumentEditor/ContentEditor";
 import { FaRegDotCircle } from "react-icons/fa";
@@ -31,6 +31,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
+import { useReRunAction } from "./useReRunAction";
 
 function TaskResultDisplay({
   task_function,
@@ -162,9 +163,10 @@ const availableActions = [
   },
 ];
 
-export function ReRunChatAction() {
+export function ReRunChatAction({ id }: { id: string }) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
+  const { reRun } = useReRunAction(id);
 
   return (
     <div className="flex gap-4 mt-2">
@@ -250,7 +252,7 @@ function ArtifactViewer({
       projectId,
       sessionToken,
     ],
-    queryFn: () => get_task_result(sessionToken, childTaskId, projectId),
+    queryFn: () => getTaskResult(sessionToken, childTaskId, projectId),
     enabled: !!childTaskId && !!sessionToken,
     // refetchInterval: 5000,
   });
@@ -281,7 +283,7 @@ function ArtifactViewer({
                       sessionToken={sessionToken}
                     />
                     <div className="ml-2">
-                      <ReRunChatAction />
+                      <ReRunChatAction id={childTaskId} />
                     </div>
                   </div>
                 </AccordionContent>

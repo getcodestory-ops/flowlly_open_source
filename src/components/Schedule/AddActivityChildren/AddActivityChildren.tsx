@@ -11,6 +11,7 @@ const AddActivityChildren = () => {
   const taskToView = useStore((state) => state.taskToView);
   const activeProject = useStore((state) => state.activeProject);
 
+  if (!taskToView || !session) return null;
   const { mutate, isPending, data } = useMutation({
     mutationFn: () =>
       createProject(session!, {

@@ -23,7 +23,7 @@ function ScheduleInsights() {
   >([]);
 
   useEffect(() => {
-    if (taskToView.id !== "SCHEDULE") {
+    if (taskToView && taskToView.id !== "SCHEDULE") {
       const updateTaskToView: any = activities.find(
         (activity) => activity.id === taskToView.id
       );

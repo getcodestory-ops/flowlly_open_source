@@ -88,7 +88,7 @@ export type State = {
   selectedContext: Brain | null;
   pdfViewer: PdfViewer;
   rightPanelView: "gantt" | "task";
-  taskToView: ActivityEntityWithMembers | ActivityEntity;
+  taskToView: ActivityEntityWithMembers | ActivityEntity | null;
   taskDetailsView: "details" | "history" | "impact" | "gantt" | "edit";
   filterView: "none" | "Delayed" | "At Risk" | "In Progress" | any;
   scheduleProbability: number;
@@ -124,7 +124,9 @@ export type State = {
   setPdfViewer: (pdfDetails: any) => void;
   updateChatHistory: (id: string, chatHistory: ChatHistory[]) => void;
   setRightPanelView: (view: "gantt" | "task") => void;
-  setTaskToView: (task: ActivityEntityWithMembers | ActivityEntity) => void;
+  setTaskToView: (
+    task: ActivityEntityWithMembers | ActivityEntity | null
+  ) => void;
   setTaskDetailsView: (
     view: "details" | "history" | "impact" | "gantt" | "edit"
   ) => void;
