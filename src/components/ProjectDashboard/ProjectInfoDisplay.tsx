@@ -1,11 +1,10 @@
 "use client";
 import React from "react";
-import MediaStreamerButton from "../ChatInput/MediaStreamButton";
-
 import { Archivo_Black } from "next/font/google";
 import { Search } from "@/components/ProjectDashboard/components/Search";
 import ProjectSwitcher from "@/components/ProjectDashboard/components/ProjectSwitcher";
 import { UserNav } from "@/components/ProjectDashboard/components/UserNav";
+import MediaRecorderButton from "../ChatInput/MediaRecorderButton";
 
 const archivoBlack = Archivo_Black({
   weight: "400",
@@ -20,7 +19,8 @@ function ProjectInfoDisplay() {
           <div className="flex h-16 items-center px-4 gap-4">
             <div className={`${archivoBlack.className} text-2xl`}>FLOWLLY</div>
             <ProjectSwitcher />
-            <MediaStreamerButton />
+
+            <MediaRecorderButton />
             <div className="ml-auto flex items-center space-x-4">
               <Search />
               <UserNav email={"user.email" ?? ""} />

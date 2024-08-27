@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/popover";
 import { AutosizeTextarea } from "@/components/ui/autosize-textarea";
 import StreamComponent from "../StreamResponse/StreamAgentChat";
+import MediaStreamerButton from "./MediaStreamButton";
 
 const pulseAnimation = keyframes`
   0% { transform: scale(1); opacity: 1; }
@@ -166,79 +167,7 @@ const MediaRecorderButton: React.FC = () => {
 
   return (
     <div className="flex   px-2 space-x-3 rounded-lg justify-center items-center ">
-      <div className="flex items-center py-1">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  // onClick={recording ? stopRecording : startRecording}
-                >
-                  <AudioLines
-                    className="size-4"
-                    color={recording ? "red" : "black"}
-                  />
-                  <span className="sr-only">
-                    {recording ? "Stop Recording" : "Voice note"}
-                  </span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="min-w-[50vw]">
-                <div className="space-y-6">
-                  <div className="flex space-x-4 items-center">
-                    <Button
-                      variant={recording ? "destructive" : "default"}
-                      size="lg"
-                      className="p-3"
-                      onClick={recording ? stopRecording : startRecording}
-                    >
-                      <Mic className="size-6" />
-
-                      <span className="pl-2">
-                        {recording ? "Stop Recording" : "Voice Note"}
-                      </span>
-                    </Button>
-                    {audioUrl && (
-                      <div className="flex items-center space-x-2 flex-grow">
-                        <audio
-                          src={audioUrl}
-                          controls
-                          className="h-8 flex-grow"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setAudioUrl(null)}
-                        >
-                          <TrashIcon className="size-5" color="red" />
-                          <span className="sr-only">Delete Recording</span>
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-
-                  <Button
-                    variant={"default"}
-                    disabled={!audioUrl && audioModuleTextNote.length === 0}
-                    onClick={handleVoiceNoteSubmission}
-                  >
-                    Save Note
-                  </Button>
-                  {responseStreamId && session && (
-                    <StreamComponent
-                      streamingKey={responseStreamId}
-                      authToken={session.access_token}
-                    />
-                  )}
-                </div>
-              </PopoverContent>
-            </Popover>
-          </TooltipTrigger>
-          <TooltipContent side="top">Start recording audio</TooltipContent>
-        </Tooltip>
-      </div>
+      <MediaStreamerButton />
       <div className="flex items-center py-1">
         <Tooltip>
           <TooltipTrigger asChild>
