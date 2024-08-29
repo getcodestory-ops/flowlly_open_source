@@ -98,6 +98,7 @@ export const createSubFolder = async (
   projectId: string,
   folderName: string,
   parentId: string | null,
+  shared?: boolean,
   callBack?: (data: any) => void
 ) => {
   if (!session) {
@@ -111,6 +112,7 @@ export const createSubFolder = async (
       name: folderName,
       parent_id: parentId,
       type_of: "folder",
+      shared: shared ?? false,
     },
     {
       headers: {

@@ -23,6 +23,7 @@ import CountdownTimer from "./ArtifactQueueTimeCounter";
 import ContentEditor from "../DocumentEditor/ContentEditor";
 import { FaRegDotCircle } from "react-icons/fa";
 import ActionItemViewer from "./ActionItemViewer";
+import { Toaster } from "../ui/toaster";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Accordion,
@@ -183,6 +184,7 @@ export function ReRunChatAction({ id }: { id: string }) {
 
   return (
     <div className="flex gap-4 mt-2">
+      <Toaster />
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -293,7 +295,10 @@ function ArtifactViewer({
                         {task_output.results && (
                           <div className="border-b-2">
                             <TaskResultDisplay
-                              task_function={task_result.task_function}
+                              task_function={
+                                task_output?.results?.task_function ??
+                                task_result.task_function
+                              }
                               results={task_output.results}
                               chidlTaskId={childTaskId}
                               projectId={projectId}

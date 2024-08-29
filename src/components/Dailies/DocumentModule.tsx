@@ -297,6 +297,7 @@ const FolderDetails: React.FC<
               activeProject.project_id,
               name,
               currentFolderStructure.folderId,
+              isProjectWide,
               (data: GetFolderSubFolderProp) => {
                 queryClient.invalidateQueries({
                   queryKey: [
