@@ -60,17 +60,7 @@ export const useStore = create<State>()(
       highlightDetails: undefined,
     },
     rightPanelView: "gantt",
-    taskToView: {
-      id: "SCHEDULE",
-      project_id: "parent",
-      name: "Select a task",
-      start: "01/01/23",
-      end: "01/02/23",
-      progress: 0,
-      activity_critical: {
-        critical_path: false,
-      },
-    },
+    taskToView: null,
     taskDetailsView: "details",
     filterView: "none",
     scheduleProbability: 1.0,

@@ -32,14 +32,21 @@ const ScheduleGanttInterface = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [fontSize, setFontSize] = useState(12);
-  const { session, activeProject, activities, setTaskToView, userActivities } =
-    useStore((state) => ({
-      session: state.session,
-      activeProject: state.activeProject,
-      activities: state.userActivities,
-      setTaskToView: state.setTaskToView,
-      userActivities: state.userActivities,
-    }));
+  const {
+    session,
+    activeProject,
+    activities,
+    taskToView,
+    setTaskToView,
+    userActivities,
+  } = useStore((state) => ({
+    session: state.session,
+    activeProject: state.activeProject,
+    activities: state.userActivities,
+    taskToView: state.taskToView,
+    setTaskToView: state.setTaskToView,
+    userActivities: state.userActivities,
+  }));
   const { isOpen, onClose } = useScheduleUpdate();
 
   const [tasks, setTasks] = React.useState<Task[]>(initTasks());
@@ -144,6 +151,13 @@ const ScheduleGanttInterface = () => {
   }
 
   const handelTaskSelection = (task: Task) => {
+    //if taskToview is same as task then set it to null
+    if (taskToView !== null) {
+      if (taskToView.id === task.id) {
+        setTaskToView(null);
+        return;
+      }
+    }
     activities?.map((activity) => {
       if (activity.id === task.id) {
         setTaskToView(activity);
@@ -202,6 +216,7 @@ const ScheduleGanttInterface = () => {
   };
 
   const handleSelect = (task: Task, isSelected: boolean) => {
+    // handelTaskSelection(task);
     // console.log(task.name + " has " + (isSelected ? "selected" : "unselected"));
   };
 

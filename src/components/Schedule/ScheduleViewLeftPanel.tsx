@@ -9,12 +9,18 @@ import CsvUploadIcon from "./CSVUpload/csvUploadIcon";
 import { useScheduleSync } from "./SyncSchedule/useScheduleWithProcore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { X } from "lucide-react";
+import { useStore } from "@/utils/store";
 
 function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
   const onOpen = () => setIsOpen(true);
   const { syncSchedule } = useScheduleSync();
+  const { taskToView, setTaskToView } = useStore((state) => ({
+    taskToView: state.taskToView,
+    setTaskToView: state.setTaskToView,
+  }));
 
   const handleAddActivity = () => {
     onOpen();
@@ -57,22 +63,14 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
         </TabsList>
         <TabsContent
           value="list"
-          className="flex h-full overflow-scroll  gap-4 "
+          className="flex h-full overflow-scroll  gap-4  "
         >
-          <Card className="overflow-y-scroll">
+          <Card className="overflow-y-scroll flex-stretch w-full ">
             <CardHeader>
               <CardTitle className="text-3xl">Project Activities</CardTitle>
             </CardHeader>
             <CardContent>
               <ScheduleInsights />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-3xl">Activity Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ActivitiesDetailPage />
             </CardContent>
           </Card>
         </TabsContent>
@@ -84,6 +82,28 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <div
+        className={`fixed  right-0 h-full w-3/4 max-w-2xl bg-background shadow-lg transform transition-transform duration-300 ease-in-out ${
+          taskToView ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <Card className="h-full">
+          <CardHeader className="flex flex-row justify-between items-center">
+            <CardTitle className="text-3xl">Activity Details</CardTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTaskToView(null)}
+            >
+              <X className="h-6 w-6" />
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <ActivitiesDetailPage />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

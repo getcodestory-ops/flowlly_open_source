@@ -37,7 +37,10 @@ export const FilePreview: React.FC<{ resource: ContainerResources }> = ({
                 <img src={url} alt={file_name} className="object-cover" />
               </div>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent
+              className="sm:max-w-[425px]"
+              aria-describedby="file viewer"
+            >
               <img src={url} alt={file_name} />
             </DialogContent>
           </Dialog>

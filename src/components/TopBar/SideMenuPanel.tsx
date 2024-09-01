@@ -218,9 +218,9 @@ const SetUseStoreData = () => {
     }
   }, [activities, isSuccess, setUserActivities]);
 
-  useEffect(() => {
-    setTaskToView(defaultTask);
-  }, [activeProject]);
+  // useEffect(() => {
+  //   setTaskToView(defaultTask);
+  // }, [activeProject]);
 
   return <></>;
 };

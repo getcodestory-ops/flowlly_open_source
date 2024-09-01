@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { Flex, Text, Box, Icon, Tooltip } from "@chakra-ui/react";
+import React, { useState } from "react";
+import { Flex, Text, Icon } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button";
-import { MdOutlinePlayCircle, MdDeleteOutline } from "react-icons/md";
+// import { MdOutlinePlayCircle, MdDeleteOutline } from "react-icons/md";
 import { useStore } from "@/utils/store";
 import { BiSolidCircle } from "react-icons/bi";
-import { activityEntityToTask } from "@/utils/activityEntityToTask";
-import { getActivityContingencyPlan } from "@/api/activity_routes";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+// import { activityEntityToTask } from "@/utils/activityEntityToTask";
+// import { getActivityContingencyPlan } from "@/api/activity_routes";
+// import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import UpdateActivityModal from "./UpdateActivityModal";
 import { ActivityEntity } from "@/types/activities";
 import EditScheduleThroughNotes from "./EditScheduleThroughNote/EditScheduleThroughNote";
@@ -18,13 +18,13 @@ function ActivitiesDetailPage() {
   const handleTaskDelete = useDeleteActivity();
 
   const {
-    session,
+    // session,
     taskToView,
-    activeProject,
-    taskDetailsView,
-    setTaskDetailsView,
+    // activeProject,
+    // taskDetailsView,
+    // setTaskDetailsView,
     userActivities,
-    members,
+    // members,
   } = useStore((state) => ({
     session: state.session,
     taskToView: state.taskToView,
@@ -38,38 +38,38 @@ function ActivitiesDetailPage() {
     setTaskToView: state.setTaskToView,
   }));
 
-  type Action = {
-    id: string;
-    created_at: string;
-    contingency_plan: string;
-  };
+  // type Action = {
+  //   id: string;
+  //   created_at: string;
+  //   contingency_plan: string;
+  // };
 
   const [editOpen, setEditOpen] = useState<boolean>(false);
   const [modifyTask, setModifyTask] = useState<ActivityEntity>();
   const [editTask, setEditTask] = useState<boolean>(false);
-  const [tasks, setTasks] = useState<any[]>(userActivities);
-  const [actions, setActions] = useState<Action[]>([
-    {
-      contingency_plan: "No remediation plan created.",
-      id: "1",
-      created_at: "2021-08-10T00:00:00.000Z",
-    },
-  ]);
+  // const [tasks, setTasks] = useState<any[]>(userActivities);
+  // const [actions, setActions] = useState<Action[]>([
+  //   {
+  //     contingency_plan: "No remediation plan created.",
+  //     id: "1",
+  //     created_at: "2021-08-10T00:00:00.000Z",
+  //   },
+  // ]);
 
-  const { data: contingencyPlans } = useQuery({
-    queryKey: ["getProjectContingencyPlan", session, activeProject, taskToView],
-    queryFn: () => {
-      if (!activeProject || !taskToView)
-        return Promise.reject("No active project");
-      return getActivityContingencyPlan(
-        session!,
-        activeProject?.project_id,
-        taskToView.id
-      );
-    },
-    enabled: !!session?.access_token,
-    placeholderData: keepPreviousData,
-  });
+  // const { data: contingencyPlans } = useQuery({
+  //   queryKey: ["getProjectContingencyPlan", session, activeProject, taskToView],
+  //   queryFn: () => {
+  //     if (!activeProject || !taskToView)
+  //       return Promise.reject("No active project");
+  //     return getActivityContingencyPlan(
+  //       session!,
+  //       activeProject?.project_id,
+  //       taskToView.id
+  //     );
+  //   },
+  //   enabled: !!session?.access_token,
+  //   placeholderData: keepPreviousData,
+  // });
 
   const handleEdit = (
     activity: ActivityEntityWithMembers | ActivityEntity,
@@ -93,89 +93,88 @@ function ActivitiesDetailPage() {
     }
   };
 
-  useEffect(() => {
-    if (contingencyPlans) {
-      setActions(contingencyPlans);
-    }
-  }, [contingencyPlans]);
+  // useEffect(() => {
+  //   if (contingencyPlans) {
+  //     setActions(contingencyPlans);
+  //   }
+  // }, [contingencyPlans]);
 
-  useEffect(() => {
-    if (userActivities) {
-      if (userActivities.length > 0) {
-        // console.log("activities", activities);
-        const transformedTasks = userActivities
-          .map(activityEntityToTask)
-          .sort((a, b) => a.start.getTime() - b.start.getTime()); // Assuming the data you want is in activities.data
-        setTasks(transformedTasks);
-      } else {
-        const currentDate = new Date();
-        setTasks([
-          {
-            start: new Date(
-              currentDate.getFullYear(),
-              currentDate.getMonth(),
-              currentDate.getDate()
-            ),
-            end: new Date(
-              currentDate.getFullYear(),
-              currentDate.getMonth(),
-              currentDate.getDate()
-            ),
-            name: "No data available",
-            id: "ProjectSample",
-            progress: 0,
-            type: "project",
-            hideChildren: false,
-            displayOrder: 1,
-          },
-        ]);
-      }
-    }
-  }, [userActivities]);
+  // useEffect(() => {
+  //   if (userActivities) {
+  //     if (userActivities.length > 0) {
+  //       // console.log("activities", activities);
+  //       const transformedTasks = userActivities
+  //         .map(activityEntityToTask)
+  //         .sort((a, b) => a.start.getTime() - b.start.getTime()); // Assuming the data you want is in activities.data
+  //       setTasks(transformedTasks);
+  //     } else {
+  //       const currentDate = new Date();
+  //       setTasks([
+  //         {
+  //           start: new Date(
+  //             currentDate.getFullYear(),
+  //             currentDate.getMonth(),
+  //             currentDate.getDate()
+  //           ),
+  //           end: new Date(
+  //             currentDate.getFullYear(),
+  //             currentDate.getMonth(),
+  //             currentDate.getDate()
+  //           ),
+  //           name: "No data available",
+  //           id: "ProjectSample",
+  //           progress: 0,
+  //           type: "project",
+  //           hideChildren: false,
+  //           displayOrder: 1,
+  //         },
+  //       ]);
+  //     }
+  //   }
+  // }, [userActivities]);
 
-  const actionsCard = () => {
-    let elements = []; // Initialize an empty array
+  // const actionsCard = () => {
+  //   return (
+  //     <>
+  //       {actions.map((action: Action, index: number) => (
+  //         <Flex pl={"4"} direction={"column"} key={`actions-${index}`}>
+  //           <Flex mb={"2"}>
+  //             <Tooltip
+  //               label="Run action"
+  //               aria-label="A tooltip"
+  //               bg={"white"}
+  //               color={"brand.dark"}
+  //             >
+  //               <Box mr={"2"} cursor={"pointer"}>
+  //                 <Icon
+  //                   as={MdOutlinePlayCircle}
+  //                   _hover={{ color: "brand.accent" }}
+  //                 />
+  //               </Box>
+  //             </Tooltip>
 
-    for (let action of actions) {
-      let element = (
-        <Flex pl={"4"} direction={"column"}>
-          <Flex mb={"2"}>
-            <Tooltip
-              label="Run action"
-              aria-label="A tooltip"
-              bg={"white"}
-              color={"brand.dark"}
-            >
-              <Box mr={"2"} cursor={"pointer"}>
-                <Icon
-                  as={MdOutlinePlayCircle}
-                  _hover={{ color: "brand.accent" }}
-                />
-              </Box>
-            </Tooltip>
-
-            <Tooltip
-              label="Eliminate action"
-              aria-label="A tooltip"
-              bg={"white"}
-              color={"brand.dark"}
-            >
-              <Box cursor={"pointer"}>
-                <Icon as={MdDeleteOutline} _hover={{ color: "brand.accent" }} />
-              </Box>
-            </Tooltip>
-            <Text fontSize={"sm"} as={"b"} ml={"6"} whiteSpace={"pre-wrap"}>
-              {action.contingency_plan}
-            </Text>
-          </Flex>
-        </Flex>
-      );
-
-      elements.push(element); // Add the element to the array
-    }
-
-    return elements; // Return the array of elements
-  };
+  //             <Tooltip
+  //               label="Eliminate action"
+  //               aria-label="A tooltip"
+  //               bg={"white"}
+  //               color={"brand.dark"}
+  //             >
+  //               <Box cursor={"pointer"}>
+  //                 <Icon
+  //                   as={MdDeleteOutline}
+  //                   _hover={{ color: "brand.accent" }}
+  //                 />
+  //               </Box>
+  //             </Tooltip>
+  //             <Text fontSize={"sm"} as={"b"} ml={"6"} whiteSpace={"pre-wrap"}>
+  //               {action.contingency_plan}
+  //             </Text>
+  //           </Flex>
+  //         </Flex>
+  //       ))}
+  //     </>
+  //   );
+  // };
 
   const detailsView = () => {
     return (
@@ -403,7 +402,9 @@ function ActivitiesDetailPage() {
               return 0;
             })
             .map((history, index) => (
-              <div key={`${history?.impact}-${index}`}>
+              <div
+                key={`view-task-history-${history?.impact ?? index}-${index}`}
+              >
                 {history && (
                   <Flex
                     direction={"column"}
@@ -444,7 +445,7 @@ function ActivitiesDetailPage() {
                 )}
               </div>
             ))}
-        {actionsCard()}
+        {/* {actionsCard()} */}
       </Flex>
     );
   };

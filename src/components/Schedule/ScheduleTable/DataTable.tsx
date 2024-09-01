@@ -38,7 +38,7 @@ export function DataTable<TData, TValue>({
   data,
 }: DataTableProps<TData, TValue>) {
   const setTaskToView = useStore((state) => state.setTaskToView);
-
+  const taskToView = useStore((state) => state.taskToView);
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -98,9 +98,22 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() =>
-                    setTaskToView(row.original as ActivityEntityWithMembers)
-                  }
+                  onClick={() => {
+                    if (taskToView) {
+                      if (
+                        taskToView.id ===
+                        (row.original as ActivityEntityWithMembers).id
+                      ) {
+                        setTaskToView(null);
+                      } else {
+                        setTaskToView(
+                          row.original as ActivityEntityWithMembers
+                        );
+                      }
+                    } else {
+                      setTaskToView(row.original as ActivityEntityWithMembers);
+                    }
+                  }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
