@@ -139,7 +139,7 @@ export const AddNewFolderModalContent = ({
   }, [isOpen]);
 
   return (
-    <AlertDialogContent className="w-[550px] ">
+    <AlertDialogContent className="w-[550px]">
       <AlertDialogHeader>
         <AlertDialogTitle>Create New Folder</AlertDialogTitle>
         <AlertDialogDescription>

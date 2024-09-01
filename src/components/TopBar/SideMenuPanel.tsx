@@ -125,18 +125,20 @@ const MenuButton = ({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Link
-          href="#"
-          className={`flex h-8 w-8 items-center justify-center rounded-2xl transition-colors ${
-            isSelected
-              ? "text-foreground font-semibold bg-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-          onClick={onClick}
-        >
-          {icon}
-          <span className="sr-only">{label}</span>
-        </Link>
+        <div className="flex flex-col text-center justify-center items-center my-1">
+          <Link
+            href="#"
+            className={`flex h-8 w-8 items-center justify-center rounded-2xl transition-colors ${
+              isSelected
+                ? "text-foreground font-semibold bg-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            onClick={onClick}
+          >
+            {icon}
+          </Link>
+          <span className="text-[0.45rem] ">{label}</span>
+        </div>
       </TooltipTrigger>
       <TooltipContent side="right">{label}</TooltipContent>
     </Tooltip>
@@ -216,9 +218,9 @@ const SetUseStoreData = () => {
     }
   }, [activities, isSuccess, setUserActivities]);
 
-  useEffect(() => {
-    setTaskToView(defaultTask);
-  }, [activeProject]);
+  // useEffect(() => {
+  //   setTaskToView(defaultTask);
+  // }, [activeProject]);
 
   return <></>;
 };

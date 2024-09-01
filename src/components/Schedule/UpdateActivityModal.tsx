@@ -132,7 +132,10 @@ function UpdateActivityModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-96 lg:w-full">
+      <DialogContent
+        className="w-96 lg:w-full"
+        aria-describedby="activity update"
+      >
         {!activeProject ? (
           <DialogHeader>
             <DialogTitle>No Project Selected</DialogTitle>

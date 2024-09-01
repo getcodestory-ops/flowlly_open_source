@@ -26,8 +26,9 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { useStore } from "@/utils/store";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import ScheduleNotifications from "../Notifications/ScheduleNotifications";
-import MediaRecorderButton from "../ChatInput/MediaRecorderButton";
-import DashboardXMLViewer from "../ProjectDashboard/DashboardViewer";
+import ConstructionDashboard from "../ProjectDashboard/ConstructionDashboard";
+// import MediaRecorderButton from "../ChatInput/MediaRecorderButton";
+// import DashboardXMLViewer from "../ProjectDashboard/DashboardViewer";
 
 function ScheduleSummaryView() {
   const session = useStore((state) => state.session);
@@ -40,15 +41,15 @@ function ScheduleSummaryView() {
   const [isOpen, setIsOpen] = useState(false);
   const toast = useToast();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["scheduleSummaryDaily", activeProject, session],
-    queryFn: () => {
-      if (!session || !activeProject)
-        return Promise.reject("no session or project");
-      return getScheduleSummary(session, activeProject.project_id);
-    },
-    enabled: !!session,
-  });
+  // const { data, isLoading } = useQuery({
+  //   queryKey: ["scheduleSummaryDaily", activeProject, session],
+  //   queryFn: () => {
+  //     if (!session || !activeProject)
+  //       return Promise.reject("no session or project");
+  //     return getScheduleSummary(session, activeProject.project_id);
+  //   },
+  //   enabled: !!session,
+  // });
 
   // useEffect(() => {
   //   if (data?.data) {
@@ -109,79 +110,9 @@ function ScheduleSummaryView() {
   }, [isSuccess]);
 
   return (
-    <Grid templateColumns="repeat(8, 1fr)" gap="4" p="4" h="full">
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} size="4xl">
-        <ModalOverlay />
-        {data?.data && (
-          <ModalContent>
-            <ModalHeader>Edit Schedule</ModalHeader>
-            <ModalBody>
-              {activeEdit && (
-                <>
-                  <Text fontWeight={"bold"} p="2">
-                    Add your notes and revisions here
-                  </Text>
-
-                  <Textarea
-                    resize="vertical"
-                    rows={10}
-                    onChange={(e) => setContent(e.target.value)}
-                    value={content}
-                  ></Textarea>
-                </>
-              )}
-              {!activeEdit && content}
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                colorScheme="yellow"
-                onClick={() => {
-                  if (!activeEdit) setActiveEdit((state) => !state);
-                  if (!isPending && activeEdit) mutate();
-                }}
-                isActive={isPending}
-              >
-                {isPending
-                  ? "Note submitted Successfully!"
-                  : "Submit your note to AI scheduler"}
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        )}
-      </Modal>
-      <GridItem colSpan={smallScreen ? 8 : 6} overflow="auto">
-        <div className="flex justify-center">
-          <Flex justifyContent={"right"}></Flex>
-          {isLoading && (
-            <Flex gap="2">
-              <Text>Generating the summary...</Text>{" "}
-              <Flex
-                justifyContent={"center"}
-                alignItems={"center"}
-                animation={`spin infinite 2s linear`}
-                css={{
-                  "@keyframes spin": {
-                    "0%": { transform: "rotate(0deg)" },
-                    "100%": { transform: "rotate(360deg)" },
-                  },
-                }}
-              >
-                <AiOutlineLoading3Quarters />
-              </Flex>
-            </Flex>
-          )}
-
-          {data?.data && (
-            <div className="flex  flex-1 overflow-hidden">
-              <DashboardXMLViewer input={data?.data} />
-            </div>
-          )}
-        </div>
-      </GridItem>
-      <GridItem colSpan={smallScreen ? 8 : 2} hidden={smallScreen}>
-        <ScheduleNotifications />
-      </GridItem>
-    </Grid>
+    <div className="flex justify-center h-full overflow-scroll">
+      <ConstructionDashboard />
+    </div>
   );
 }
 

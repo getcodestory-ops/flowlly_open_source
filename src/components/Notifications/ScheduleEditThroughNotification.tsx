@@ -34,17 +34,17 @@ import { Revision } from "@/types/activities";
 import { FaCircleDot } from "react-icons/fa6";
 import ChatSenderDisplay from "../ChatInput/ChatSenderDisplay";
 
-interface ScheduleEditThroughNofiticationProps {
+interface ScheduleEditThroughNotificationProps {
   isOpen: boolean;
   onClose: () => void;
   notification: Notification | null;
 }
 
-function ScheduleEditThroughNofitication({
+function ScheduleEditThroughNotification({
   isOpen,
   onClose,
   notification,
-}: ScheduleEditThroughNofiticationProps) {
+}: ScheduleEditThroughNotificationProps) {
   const session = useStore((state) => state.session);
   const activeProject = useStore((state) => state.activeProject);
   const toast = useToast();
@@ -271,4 +271,4 @@ function ScheduleEditThroughNofitication({
   );
 }
 
-export default ScheduleEditThroughNofitication;
+export default ScheduleEditThroughNotification;

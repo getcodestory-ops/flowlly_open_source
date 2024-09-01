@@ -110,7 +110,10 @@ const FilePreviewCard = ({
                 <Maximize size={16} />
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-6xl flex flex-col items-center justify-center">
+            <DialogContent
+              className="max-w-6xl flex flex-col items-center justify-center"
+              aria-describedby="file viewer"
+            >
               <MediaDialogContent resource={resource} />
             </DialogContent>
           </Dialog>
@@ -183,7 +186,10 @@ const FileRow = ({
           </TableCell>
         </TableRow>
       </DialogTrigger>
-      <DialogContent className="max-w-6xl flex flex-col items-center justify-center">
+      <DialogContent
+        className="max-w-6xl flex flex-col items-center justify-center"
+        aria-describedby="file viewer"
+      >
         <MediaDialogContent resource={resource} />
       </DialogContent>
     </Dialog>

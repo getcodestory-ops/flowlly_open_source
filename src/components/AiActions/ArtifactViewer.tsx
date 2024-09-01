@@ -290,24 +290,30 @@ function ArtifactViewer({
                 <AccordionTrigger>Results </AccordionTrigger>
                 <AccordionContent>
                   <div className="ml-2 border-l-2">
-                    {task_result.task_results.map((task_output: any) => (
-                      <>
-                        {task_output.results && (
-                          <div className="border-b-2">
-                            <TaskResultDisplay
-                              task_function={
-                                task_output?.results?.task_function ??
-                                task_result.task_function
-                              }
-                              results={task_output.results}
-                              chidlTaskId={childTaskId}
-                              projectId={projectId}
-                              sessionToken={sessionToken}
-                            />
-                          </div>
-                        )}
-                      </>
-                    ))}
+                    {task_result.task_results.map(
+                      (task_output: any, index: number) => (
+                        <div
+                          key={JSON.stringify(
+                            task_output?.results ?? `key-artifact-${index}`
+                          )}
+                        >
+                          {task_output.results && (
+                            <div className="border-b-2">
+                              <TaskResultDisplay
+                                task_function={
+                                  task_output?.results?.task_function ??
+                                  task_result.task_function
+                                }
+                                results={task_output.results}
+                                chidlTaskId={childTaskId}
+                                projectId={projectId}
+                                sessionToken={sessionToken}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )
+                    )}
                     <div className="ml-2">
                       <ReRunChatAction id={childTaskId} />
                     </div>

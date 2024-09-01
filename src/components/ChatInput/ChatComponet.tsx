@@ -152,7 +152,7 @@ function ChatComponent() {
                 {chatType == "search" && <SearchMemory />}
                 {chatType == "schedule" && <AssistantChatSelector />}
               </Flex>
-              <Flex>
+              {/* <Flex>
                 {folderList && folderList.length > 0 && (
                   <Select
                     size={"xs"}
@@ -177,7 +177,7 @@ function ChatComponent() {
                     ))}
                   </Select>
                 )}
-              </Flex>
+              </Flex> */}
 
               {/* <Tooltip
                 label="Collapse"
