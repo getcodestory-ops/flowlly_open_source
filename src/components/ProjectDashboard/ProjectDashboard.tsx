@@ -40,7 +40,7 @@ import { ProjectEntity } from "@/types/projects";
 function ProjectBoard() {
   const [isShareOpen, setShareModal] = useState<boolean>(false);
   const pathname = usePathname();
-  const { projectId } = useParams() as { projectId: string | undefined };
+  const params = useParams();
   const router = useRouter();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -54,8 +54,8 @@ function ProjectBoard() {
   );
 
   const mutation = useMutation({
-    mutationFn: ({ projectId }: { projectId: string }) =>
-      deleteProject(session!, projectId),
+    mutationFn: ({ selectedProjectId }: { selectedProjectId: string }) =>
+      deleteProject(session!, selectedProjectId),
     onError: (error) => {
       toast({
         title: "Error",
@@ -80,7 +80,9 @@ function ProjectBoard() {
   });
 
   const switchProject = (project: ProjectEntity) => {
-    if (pathname && pathname.includes(`/${projectId}/`)) {
+    const projectId = params ? params?.projectId : null;
+
+    if (projectId && pathname && pathname.includes(`/${projectId}/`)) {
       const newPath = pathname.replace(
         `/${projectId}/`,
         `/${project.project_id}/`
@@ -123,7 +125,7 @@ function ProjectBoard() {
                   onShare={() => setShareModal(true)}
                   onExitProject={() =>
                     mutation.mutate({
-                      projectId: project.project_id,
+                      selectedProjectId: project.project_id,
                     })
                   }
                   isSelected={activeProject?.project_id === project.project_id}

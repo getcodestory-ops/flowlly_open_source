@@ -51,7 +51,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { projectId } = useParams() as { projectId: string | undefined };
+  const params = useParams();
 
   const {
     session,
@@ -110,6 +110,8 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
 
   useEffect(() => {
     if (userProjects.length === 0) return;
+    const projectId = params?.projectId;
+
     if (projectId) {
       const project = userProjects.find(
         (project) => project.project_id === projectId
@@ -152,7 +154,9 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
   }, [chatEntitities, setActiveChatEntity]);
 
   const switchProject = (project: ProjectEntity) => {
-    if (pathname && pathname.includes(`/${projectId}/`)) {
+    const projectId = params ? params?.projectId : null;
+
+    if (projectId && pathname && pathname.includes(`/${projectId}/`)) {
       const newPath = pathname.replace(
         `/${projectId}/`,
         `/${project.project_id}/`
