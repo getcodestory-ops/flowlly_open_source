@@ -52,62 +52,62 @@ const menuItems: {
     label: "Projects",
     fnKey: "project",
     icon: <Building2 className="h-5 w-5" />,
-    link: "/projects",
+    link: "projects",
   },
   {
     label: "Dashboard",
     fnKey: "dashboard",
     icon: <Home className="h-5 w-5" />,
-    link: "/dashboard",
+    link: "dashboard",
   },
 
   {
     label: "Schedule",
     fnKey: "schedule",
     icon: <Calendar className="h-5 w-5" />,
-    link: "/schedule",
+    link: "schedule",
   },
   {
     label: "Assignments",
     fnKey: "assignments",
     icon: <BrainCircuit className="h-5 w-5" />,
-    link: "/assignments",
+    link: "assignments",
   },
   {
     label: "Agent",
     fnKey: "agent",
     icon: <MessageSquareCode className="h-5 w-5" />,
-    link: "/agent",
+    link: "agent",
   },
   {
     label: "Documents",
     fnKey: "updates",
     icon: <Package className="h-5 w-5" />,
-    link: "/documents",
+    link: "documents",
   },
   {
     label: "Members",
     fnKey: "members",
     icon: <Users2 className="h-5 w-5" />,
-    link: "/members",
+    link: "members",
   },
   {
     label: "Integration",
     fnKey: "integrations",
     icon: <Workflow className="h-5 w-5" />,
-    link: "/integrations",
+    link: "integrations",
   },
   {
     label: "Configuration",
     fnKey: "configuration",
     icon: <FileClock className="h-5 w-5" />,
-    link: "/configuration",
+    link: "configuration",
   },
 ];
 
 const AllMenuButtons = () => {
   const params = useParams();
-  const projectId = params ? params.project : null;
+  const projectId = params ? params.projectId : null;
 
   const { setAppView, appView } = useStore((state) => ({
     setAppView: state.setAppView,
