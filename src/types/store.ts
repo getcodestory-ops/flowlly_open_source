@@ -58,6 +58,8 @@ export type AppView =
   | "members"
   | "folders"
   | "integrations"
+  | "assignments"
+  | "configuration"
   | "changePassword";
 
 export type State = {

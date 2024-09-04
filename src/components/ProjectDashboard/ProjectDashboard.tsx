@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { useToast } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
@@ -5,7 +7,7 @@ import ShareProjectModal from "../Schedule/ShareProjectModal";
 import { deleteProject } from "@/api/projectRoutes";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { AddNewProjectButton } from "../Schedule/AddNewProjectModal";
-
+import { usePathname, useRouter, useParams } from "next/navigation";
 import { Button } from "../ui/button";
 import {
   Card,
@@ -32,9 +34,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ProjectEntity } from "@/types/projects";
 
 function ProjectBoard() {
   const [isShareOpen, setShareModal] = useState<boolean>(false);
+  const pathname = usePathname();
+  const { projectId } = useParams() as { projectId: string | undefined };
+  const router = useRouter();
   const toast = useToast();
   const queryClient = useQueryClient();
   const { userProjects, activeProject, setActiveProject, session } = useStore(
@@ -72,8 +79,20 @@ function ProjectBoard() {
     },
   });
 
+  const switchProject = (project: ProjectEntity) => {
+    if (pathname && pathname.includes(`/${projectId}/`)) {
+      const newPath = pathname.replace(
+        `/${projectId}/`,
+        `/${project.project_id}/`
+      );
+      router.push(newPath);
+    }
+
+    setActiveProject(project);
+  };
+
   return (
-    <div className="h-full overflow-y-scroll custom-scrollbar bg-brand-light p-4 rounded-lg flex items-start">
+    <ScrollArea className="h-full bg-brand-light p-4 rounded-lg flex items-start">
       <ShareProjectModal
         isShareOpen={isShareOpen}
         shareModalClose={() => {
@@ -99,7 +118,7 @@ function ProjectBoard() {
                   projectName={project.name}
                   date={project.last_update}
                   onClick={() => {
-                    setActiveProject(project);
+                    switchProject(project);
                   }}
                   onShare={() => setShareModal(true)}
                   onExitProject={() =>
@@ -114,7 +133,7 @@ function ProjectBoard() {
           </>
         )}
       </div>
-    </div>
+    </ScrollArea>
   );
 }
 

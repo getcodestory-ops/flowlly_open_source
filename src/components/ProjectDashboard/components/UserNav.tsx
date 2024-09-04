@@ -30,7 +30,7 @@ export function UserNav({}: { email: string }) {
   const onLogout = async () => {
     await supabase.auth.signOut();
     setAppView("login");
-    router.push("/");
+    router.push("/applogin");
   };
   return (
     <>

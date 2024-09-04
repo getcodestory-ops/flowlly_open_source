@@ -1,30 +1,32 @@
-// CSVUploader.tsx
+"use client";
 
 import React from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
-  Flex,
-  Button,
-  Input,
-  Text,
-  Modal,
-  ModalOverlay,
-  ModalBody,
-  ModalCloseButton,
-  ModalFooter,
-  ModalContent,
-  ModalHeader,
   Select,
-  Spinner,
-  Icon,
-  Heading,
-  Box,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   Tooltip,
-} from "@chakra-ui/react";
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { CreateNewActivity } from "@/types/activities";
 import { useCSVUploader } from "./useCsvUpload";
-import { FiUpload } from "react-icons/fi";
+import { Upload, Loader2 } from "lucide-react";
 
-const CsvUploadIcon: React.FC = () => {
+export default function CSVUploader() {
   const {
     fileRef,
     isModalOpen,
@@ -33,7 +35,6 @@ const CsvUploadIcon: React.FC = () => {
     headerMappings,
     isPending,
     selectedFile,
-    setHeaderMappings,
     setSelectedFile,
     handleHeaderMappingChange,
     handleCsvFileHeaderCheck,
@@ -41,118 +42,93 @@ const CsvUploadIcon: React.FC = () => {
     handleUpload,
   } = useCSVUploader();
 
-  // useEffect(() => {
-  //   if (selectedFile === null) return;
-  //   handleCsvFileHeaderCheck();
-  // }, [selectedFile]);
-
   return (
-    <Flex direction={"column"}>
-      <Flex
-        border="1px solid"
-        borderRadius={"lg"}
-        align={"center"}
-        position={"relative"}
-        // gap={2}
-        height={selectedFile ? "" : 6}
-        color="brand.light"
-        bg={"brand.dark"}
-        _hover={selectedFile ? {} : { bg: "brand.light", color: "white" }}
-        direction={"row"}
-        alignItems={"center"}
-        justifyContent={"center"}
-        cursor="pointer"
-      >
-        <Tooltip label="Upload CSV file" aria-label="A tooltip">
-          <Flex>
-            <Flex alignItems={"center"} px={"2"}>
-              <Icon as={FiUpload} />
-            </Flex>
-            <Input
-              type="file"
-              accept=".csv"
-              ref={fileRef}
-              py={1}
-              position="absolute"
-              opacity={0}
-              onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
-              cursor={"pointer"}
-            />
-          </Flex>
+    <div className="flex flex-col">
+      <div className="relative flex items-center justify-center border rounded-lg cursor-pointer hover:bg-primary hover:text-primary-foreground">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center px-2">
+              <Upload className="w-4 h-4" />
+              <Input
+                type="file"
+                accept=".csv"
+                ref={fileRef}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+              />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Upload CSV file</p>
+          </TooltipContent>
         </Tooltip>
-        <Flex>
-          {selectedFile !== null ? (
-            <Button
-              onClick={handleCsvFileHeaderCheck}
-              size="xs"
-              bg={"brand.accent"}
-            >
-              process
-            </Button>
-          ) : null}
-        </Flex>
-      </Flex>
+        {selectedFile !== null && (
+          <Button
+            onClick={handleCsvFileHeaderCheck}
+            size="sm"
+            className="bg-accent text-accent-foreground"
+          >
+            Process
+          </Button>
+        )}
+      </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
-            {isPending
-              ? "processing"
-              : "We did not find corresponding headers, please match them manually"}
-          </ModalHeader>
-          <ModalCloseButton />
+      <Dialog open={isModalOpen} onOpenChange={setModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {isPending
+                ? "Processing"
+                : "We did not find corresponding headers, please match them manually"}
+            </DialogTitle>
+          </DialogHeader>
           {!isPending && (
             <>
-              <ModalBody>
+              <div className="space-y-4">
                 {unmatchedHeaders.map((header, index) => (
-                  <Flex key={`${header}-${index}`}>
+                  <div
+                    key={`${header}-${index}`}
+                    className="flex items-center space-x-2"
+                  >
                     <span>{header}</span>
                     <Select
-                      placeholder="Select corresponding header"
                       value={headerMappings[header] || ""}
-                      onChange={(e) => {
+                      onValueChange={(value) =>
                         handleHeaderMappingChange(
                           header,
-                          e.target.value as keyof CreateNewActivity
-                        );
-                      }}
+                          value as keyof CreateNewActivity
+                        )
+                      }
                     >
-                      {csvHeaders.map((key, index) => (
-                        <option
-                          key={`${key}-${index}`}
-                          value={key}
-                          color="black"
-                          onChange={() =>
-                            setHeaderMappings((prev) => ({
-                              ...prev,
-                              [key]: header,
-                            }))
-                          }
-                        >
-                          {key}
-                        </option>
-                      ))}
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select corresponding header" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {csvHeaders.map((key, index) => (
+                          <SelectItem key={`${key}-${index}`} value={key}>
+                            {key}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
                     </Select>
-                  </Flex>
+                  </div>
                 ))}
-              </ModalBody>
-
-              <ModalFooter>
-                <Button colorScheme="blue" mr={3} onClick={handleUpload}>
-                  Upload
-                </Button>
-                <Button variant="ghost" onClick={() => setModalOpen(false)}>
+              </div>
+              <DialogFooter>
+                <Button onClick={handleUpload}>Upload</Button>
+                <Button variant="outline" onClick={() => setModalOpen(false)}>
                   Cancel
                 </Button>
-              </ModalFooter>
+              </DialogFooter>
             </>
           )}
-          {isPending && <Spinner />}
-        </ModalContent>
-      </Modal>
-    </Flex>
+          {isPending && (
+            <div className="flex justify-center">
+              <Loader2 className="w-6 h-6 animate-spin" />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
   );
-};
-
-export default CsvUploadIcon;
+}

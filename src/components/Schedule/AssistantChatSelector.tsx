@@ -1,111 +1,80 @@
-import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Flex,
-  Icon,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  MenuDivider,
-  Text,
-} from "@chakra-ui/react";
+import React, { useState } from "react";
 import { useStore } from "@/utils/store";
-import { FiPlus } from "react-icons/fi";
-import { useQuery } from "@tanstack/react-query";
-import { getAgentChatEntities } from "@/api/agentRoutes";
+import { Plus, ChevronDown, MessageSquare } from "lucide-react";
 import AddNewChatEntity from "./AddNewChatEntity";
-import { IoChevronDown } from "react-icons/io5";
-import { BsChatLeftDots } from "react-icons/bs";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const AssistantChatSelector = () => {
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
   const onOpen = () => setIsOpen(true);
 
-  const {
-    session,
-    activeProject,
-    activeChatEntity,
-    setActiveChatEntity,
-    chatEntities,
-  } = useStore((state) => ({
-    session: state.session,
-    activeProject: state.activeProject,
-    activeChatEntity: state.activeChatEntity,
-    setActiveChatEntity: state.setActiveChatEntity,
-    chatEntities: state.chatEntities,
-  }));
+  const { activeChatEntity, setActiveChatEntity, chatEntities } = useStore(
+    (state) => ({
+      activeChatEntity: state.activeChatEntity,
+      setActiveChatEntity: state.setActiveChatEntity,
+      chatEntities: state.chatEntities,
+    })
+  );
 
   return (
-    <Flex flexDirection={"column"} borderColor={"gray.200"} fontSize={"xs"}>
-      <Menu>
-        <MenuButton
-          as={Button}
-          rightIcon={<IoChevronDown />}
-          size={"xs"}
-          bg={"white"}
-          _hover={{ bg: "brand.dark", color: "white" }}
-        >
-          Saved Chats
-        </MenuButton>
-        <MenuList>
-          <MenuItem>
-            <AddNewChatEntity isOpen={isOpen} onClose={onClose} />
-            <Flex
-              align="center"
-              justify="center"
-              gap="2"
-              p="2"
-              width="full"
-              bg="none"
-              _hover={{ bg: "none", color: "brand.dark" }}
-              onClick={onOpen}
-              cursor="pointer"
-              borderRadius="md"
-            >
-              <Icon as={FiPlus} />
-              <Text noOfLines={{ base: 2, md: 1 }} width="full">
-                New Chat
-              </Text>
-            </Flex>
-          </MenuItem>
-          <MenuDivider />
-          <Flex
-            flexDir="column"
-            maxH="60vh"
-            overflow={"auto"}
-            className="custom-scrollbar"
+    <div className="flex flex-col text-xs">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-white hover:bg-gray-100"
           >
+            Saved Chats
+            <ChevronDown className="ml-2 h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56">
+          <DropdownMenuItem onSelect={onOpen} className="focus:bg-gray-100">
+            <AddNewChatEntity isOpen={isOpen} onClose={onClose} />
+            <div className="flex items-center justify-center gap-2 p-2 w-full hover:text-gray-900 cursor-pointer rounded-md">
+              <Plus className="h-4 w-4" />
+              <span className="truncate">New Chat</span>
+            </div>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <ScrollArea className="h-[60vh]">
             {chatEntities &&
               chatEntities.map((chatEntity, index) => (
-                <MenuItem
+                <DropdownMenuItem
                   key={`chat-${chatEntity.id}-index-${index}`}
-                  onClick={() => setActiveChatEntity(chatEntity)}
-                  _hover={{ bg: "gray.100" }}
+                  onSelect={() => setActiveChatEntity(chatEntity)}
+                  className="focus:bg-gray-100"
                 >
-                  <Flex
-                    alignItems={"center"}
-                    w="full"
-                    justifyContent={"space-between"}
-                  >
-                    <Flex alignItems={"center"}>
-                      <Icon as={BsChatLeftDots} mr={4} />
-                      <Text
-                        fontWeight={
-                          chatEntity.id === activeChatEntity?.id ? "bold" : ""
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center">
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      <span
+                        className={
+                          chatEntity.id === activeChatEntity?.id
+                            ? "font-bold"
+                            : ""
                         }
                       >
                         {chatEntity.chat_name}
-                      </Text>
-                    </Flex>
-                  </Flex>
-                </MenuItem>
+                      </span>
+                    </div>
+                  </div>
+                </DropdownMenuItem>
               ))}
-          </Flex>
-        </MenuList>
-      </Menu>
-    </Flex>
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 };
 

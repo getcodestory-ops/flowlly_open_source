@@ -1,50 +1,29 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Box,
-  Flex,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  MenuDivider,
-  Button,
-  Heading,
-  Icon,
-  Text,
-  Grid,
-  GridItem,
   Table,
-  Thead,
-  Tbody,
-  Tfoot,
-  Tr,
-  Th,
-  Td,
-  TableCaption,
-  TableContainer,
-} from "@chakra-ui/react";
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useStore } from "@/utils/store";
-import FileHandler from "./FileHandler";
-import CSVUploader from "@/components/Schedule/CSVUpload/CSVUploader";
 import { MemberEntity } from "@/types/members";
-import { FiEdit, FiSave } from "react-icons/fi";
-import { MdOutlineDeleteOutline } from "react-icons/md";
-import { IoIosCloseCircleOutline } from "react-icons/io";
-import ProjectChats from "@/components/ProjectChats/ProjectChats";
+import { Edit, Save, Trash2, X } from "lucide-react";
 import { usePhoneRegistration } from "@/components/PhoneRegistration/usePhoneRegistration";
 import ConsentModal from "@/components/PhoneRegistration/ConsentModal";
-import { useDisclosure } from "@chakra-ui/react";
-import PhoneInput, { isPossiblePhoneNumber } from "react-phone-number-input";
+import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 
-function ProjectSetup({ settingView }: { settingView?: string }) {
-  const { activeProject, appView, setAppView } = useStore((state) => ({
+export default function ProjectSetup() {
+  const { activeProject } = useStore((state) => ({
     activeProject: state.activeProject,
-    appView: state.appView,
-    setAppView: state.setAppView,
   }));
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [settingsView, setSettingsView] = useState<string>("folders");
 
   const {
     registerPhoneNumber,
@@ -61,312 +40,260 @@ function ProjectSetup({ settingView }: { settingView?: string }) {
     updatememberDetails,
   } = usePhoneRegistration();
 
-  const handleAddMemberClick = () => {
-    setAddingMember(!addingMember);
-  };
+  const [isConsentModalOpen, setIsConsentModalOpen] = useState(false);
 
-  const folderAndFIles = () => {
-    return (
-      <Grid templateColumns="repeat(2, 1fr)" gap={"24"} mt={"8"}>
-        <GridItem colSpan={1}>
-          <Flex direction={"column"}>
-            <Text fontSize={"14px"} as={"b"} mb={"4"}></Text>
-            <FileHandler />
-          </Flex>
-        </GridItem>
-        <GridItem colSpan={1}>
-          <Flex direction={"column"}>
-            <Text fontSize={"14px"} as={"b"} mb={"4"}>
-              Schedule Files
-            </Text>
-            <CSVUploader />
-          </Flex>
-        </GridItem>
-      </Grid>
-    );
-  };
+  const handleAddMemberClick = () => setAddingMember(!addingMember);
 
-  const projectMembers = () => {
-    // Ensure members.data is a valid array
-    if (!members?.data || !Array.isArray(members.data)) {
-      return null; // or some fallback UI
-    }
-
-    return (
-      <Flex direction={"column"} pt={"4"} overflow={"auto"}>
-        <ConsentModal isOpen={isOpen} onOpen={onOpen} onClose={onClose} />
-        <Flex>
-          <Button
-            size={"xs"}
-            bg={"brand.light"}
-            _hover={{ bg: "brand.dark", color: "white" }}
-            onClick={handleAddMemberClick}
-          >
-            Add Member
-          </Button>
-        </Flex>
-
-        <TableContainer mt={"4"}>
-          <Table variant="unstyled">
-            <Thead>
-              <Tr>
-                <Th>First Name</Th>
-                <Th>Last Name</Th>
-                <Th>Email</Th>
-                <Th>Phone Number</Th>
-                <Th>Enroll IN SMS</Th>
-                <Th>Role</Th>
-                <Th>Language</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {addingMember && (
-                <Tr fontSize={"sm"}>
-                  <Td>
-                    <input
+  const renderProjectMembers = () => (
+    <div className="flex flex-col pt-4 overflow-auto">
+      <ConsentModal
+        isOpen={isConsentModalOpen}
+        onOpen={() => setIsConsentModalOpen(true)}
+        onClose={() => setIsConsentModalOpen(false)}
+      />
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleAddMemberClick}
+        className="self-start mb-4"
+      >
+        Add Member
+      </Button>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>First Name</TableHead>
+            <TableHead>Last Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Phone Number</TableHead>
+            <TableHead>Enroll IN SMS</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Language</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {addingMember && (
+            <TableRow>
+              <TableCell>
+                <Input
+                  type="text"
+                  placeholder="First Name"
+                  value={newMember.first_name}
+                  onChange={(e) => handleInputChange(e, "first_name")}
+                />
+              </TableCell>
+              <TableCell>
+                <Input
+                  type="text"
+                  placeholder="Last Name"
+                  value={newMember.last_name}
+                  onChange={(e) => handleInputChange(e, "last_name")}
+                />
+              </TableCell>
+              <TableCell>
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={newMember.email}
+                  onChange={(e) => handleInputChange(e, "email")}
+                />
+              </TableCell>
+              <TableCell>
+                <PhoneInput
+                  international
+                  defaultCountry="US"
+                  value={newMember.phone}
+                  onChange={(value) =>
+                    handleInputChange({ target: { value } }, "phone")
+                  }
+                />
+              </TableCell>
+              <TableCell>
+                <Checkbox
+                  checked={newMember.enable_sms}
+                  onCheckedChange={(checked) => {
+                    handleInputChange({ target: { checked } }, "enable_sms");
+                    if (checked) setIsConsentModalOpen(true);
+                  }}
+                />
+              </TableCell>
+              <TableCell>
+                <Input
+                  type="text"
+                  placeholder="Role"
+                  value={newMember.role}
+                  onChange={(e) => handleInputChange(e, "role")}
+                />
+              </TableCell>
+              <TableCell>
+                <Input
+                  type="text"
+                  placeholder="Language"
+                  value={newMember.language}
+                  onChange={(e) => handleInputChange(e, "language")}
+                />
+              </TableCell>
+              <TableCell>
+                <Button variant="ghost" size="icon" onClick={handleSaveMember}>
+                  <Save className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleAddMemberClick}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </TableCell>
+            </TableRow>
+          )}
+          {members?.data?.map((member: MemberEntity) => (
+            <TableRow key={member.id}>
+              {editMember?.id !== member.id ? (
+                <>
+                  <TableCell>{member.first_name}</TableCell>
+                  <TableCell>{member.last_name}</TableCell>
+                  <TableCell>{member.email}</TableCell>
+                  <TableCell>{member.phone}</TableCell>
+                  <TableCell>
+                    {!member.phone ? (
+                      <span className="font-bold">
+                        Add phone number to enroll
+                      </span>
+                    ) : (
+                      <Checkbox
+                        checked={
+                          !!member?.phone_registration?.[0]?.phone_number
+                        }
+                        onCheckedChange={(checked) =>
+                          registerPhoneNumber(!!checked, member.phone)
+                        }
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell>{member.role}</TableCell>
+                  <TableCell>{member?.language ?? "English"}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const { phone_registration, ...otherProps } = member;
+                        setEditMember({ ...otherProps });
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => deleteMember(member.email)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </>
+              ) : (
+                <>
+                  <TableCell>
+                    <Input
                       type="text"
                       placeholder="First Name"
-                      value={newMember.first_name}
-                      onChange={(e) => handleInputChange(e, "first_name")}
+                      value={editMember.first_name}
+                      onChange={(e) => handleMemberEdit(e, "first_name")}
                     />
-                  </Td>
-                  <Td>
-                    <input
+                  </TableCell>
+                  <TableCell>
+                    <Input
                       type="text"
                       placeholder="Last Name"
-                      value={newMember.last_name}
-                      onChange={(e) => handleInputChange(e, "last_name")}
+                      value={editMember.last_name}
+                      onChange={(e) => handleMemberEdit(e, "last_name")}
                     />
-                  </Td>
-                  <Td>
-                    <input
+                  </TableCell>
+                  <TableCell>
+                    <Input
                       type="email"
                       placeholder="Email"
-                      value={newMember.email}
-                      onChange={(e) => handleInputChange(e, "email")}
+                      value={editMember.email}
+                      onChange={(e) => handleMemberEdit(e, "email")}
                     />
-                  </Td>
-                  <Td>
+                  </TableCell>
+                  <TableCell>
                     <PhoneInput
                       international
                       defaultCountry="US"
-                      value={newMember.phone}
-                      onChange={(e) => handleInputChange(e, "phone")}
-                    />
-                  </Td>
-                  <Td>
-                    <input
-                      type="checkbox"
-                      checked={newMember.enable_sms}
-                      onChange={(e) =>
-                        handleInputChange(e, "enable_sms", onOpen)
+                      value={editMember.phone}
+                      onChange={(value) =>
+                        handleMemberEdit({ target: { value } }, "phone")
                       }
                     />
-                  </Td>
-                  <Td>
-                    <input
+                  </TableCell>
+                  <TableCell>
+                    <Checkbox
+                      checked={editMember.enable_sms}
+                      onCheckedChange={(checked) => {
+                        handleMemberEdit({ target: { checked } }, "enable_sms");
+                        if (checked) setIsConsentModalOpen(true);
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Input
                       type="text"
                       placeholder="Role"
-                      value={newMember.role}
-                      onChange={(e) => handleInputChange(e, "role")}
+                      value={editMember.role}
+                      onChange={(e) => handleMemberEdit(e, "role")}
                     />
-                  </Td>
-                  <Td>
-                    <input
+                  </TableCell>
+                  <TableCell>
+                    <Input
                       type="text"
                       placeholder="Language"
-                      value={newMember.language}
-                      onChange={(e) => handleInputChange(e, "language")}
+                      value={editMember.language}
+                      onChange={(e) => handleMemberEdit(e, "language")}
                     />
-                  </Td>
-                  <Td>
-                    <Icon
-                      as={FiSave}
-                      onClick={handleSaveMember}
-                      mr={"4"}
-                      cursor={"pointer"}
-                    />
-                    <Icon
-                      as={IoIosCloseCircleOutline}
-                      onClick={handleAddMemberClick}
-                      cursor={"pointer"}
-                    />
-                  </Td>
-                </Tr>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={updatememberDetails}
+                    >
+                      <Save className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setAddingMember(false);
+                        setEditMember(null);
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </>
               )}
-              {members?.data.map((member: MemberEntity) => (
-                <Tr key={member.id} fontSize={"sm"}>
-                  {editMember?.id !== member.id && (
-                    <>
-                      <Td>{member.first_name}</Td>
-                      <Td>{member.last_name}</Td>
-                      <Td>{member.email}</Td>
-                      <Td>{member.phone}</Td>
-                      <Td>
-                        {!member.phone && <b>Add phone number to enroll</b>}
-                        {member.phone && (
-                          <input
-                            type="checkbox"
-                            checked={
-                              !!member?.phone_registration?.[0]?.phone_number ??
-                              false
-                            }
-                            onChange={(e) =>
-                              registerPhoneNumber(e, member.phone)
-                            }
-                          ></input>
-                        )}
-                      </Td>
-                      <Td>{member.role}</Td>
-                      <Td>{member?.language ?? "English"}</Td>
-                      <Td>
-                        <Flex>
-                          <Flex
-                            mr={"4"}
-                            cursor={"pointer"}
-                            onClick={() => {
-                              const { phone_registration, ...otherProps } =
-                                member;
-                              setEditMember({
-                                ...otherProps,
-                              });
-                            }}
-                          >
-                            <FiEdit />
-                          </Flex>
-                          <Flex
-                            cursor={"pointer"}
-                            onClick={() => deleteMember(member.email)}
-                          >
-                            <MdOutlineDeleteOutline />
-                          </Flex>
-                        </Flex>
-                      </Td>
-                    </>
-                  )}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
 
-                  {editMember?.id === member.id && (
-                    <>
-                      <Td>
-                        <input
-                          type="text"
-                          placeholder="First Name"
-                          value={editMember.first_name}
-                          onChange={(e) => handleMemberEdit(e, "first_name")}
-                        />
-                      </Td>
-                      <Td>
-                        <input
-                          type="text"
-                          placeholder="Last Name"
-                          value={editMember.last_name}
-                          onChange={(e) => handleMemberEdit(e, "last_name")}
-                        />
-                      </Td>
-                      <Td>
-                        <input
-                          type="email"
-                          placeholder="Email"
-                          value={editMember.email}
-                          onChange={(e) => handleMemberEdit(e, "email")}
-                        />
-                      </Td>
-                      <Td>
-                        <PhoneInput
-                          international
-                          defaultCountry="US"
-                          value={editMember.phone}
-                          onChange={(e) => handleMemberEdit(e, "phone")}
-                        />
-                      </Td>
-
-                      <Td>
-                        <input
-                          type="checkbox"
-                          checked={editMember.enable_sms}
-                          onChange={(e) =>
-                            handleMemberEdit(e, "enable_sms", onOpen)
-                          }
-                        />
-                      </Td>
-                      <Td>
-                        <input
-                          type="text"
-                          placeholder="Role"
-                          value={editMember.role}
-                          onChange={(e) => handleMemberEdit(e, "role")}
-                        />
-                      </Td>
-                      <Td>
-                        <input
-                          type="text"
-                          placeholder="Language"
-                          value={newMember.language}
-                          onChange={(e) => handleInputChange(e, "language")}
-                        />
-                      </Td>
-                      <Td>
-                        <Icon
-                          as={FiSave}
-                          onClick={updatememberDetails}
-                          mr={"4"}
-                          cursor={"pointer"}
-                        />
-                        <Icon
-                          as={IoIosCloseCircleOutline}
-                          onClick={() => {
-                            setAddingMember(false);
-                            setEditMember(null);
-                          }}
-                          cursor={"pointer"}
-                        />
-                      </Td>
-                    </>
-                  )}
-                  {/* <>{editMember && editMember.email}</> */}
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
-      </Flex>
+  if (!activeProject) {
+    return (
+      <div className="flex items-center justify-center h-full text-3xl font-black text-primary">
+        Select or create a project at the top left corner
+      </div>
     );
-  };
+  }
 
   return (
-    <Flex
-      direction={"column"}
-      w={"100%"}
-      bg={"brand.background"}
-      h="full"
-      rounded={"xl"}
-      p={"4"}
-    >
-      {activeProject ? (
-        <Flex direction={"column"}>
-          <Flex direction={"column"} justifyContent={"space-between"}>
-            <Flex className="menu" gap="4"></Flex>
-          </Flex>
-          <Flex>
-            {appView === "folders" && folderAndFIles()}
-            {appView === "members" && projectMembers()}
-          </Flex>
-          {/* //{setting === "chats" && <ProjectChats />} */}
-        </Flex>
-      ) : (
-        <Flex
-          fontSize={"3xl"}
-          fontWeight={"black"}
-          color={"brand.mid"}
-          justifyContent={"center"}
-          alignItems={"center"}
-          h={"100%"}
-        >
-          Select or create a project at the top left corner
-        </Flex>
-      )}
-    </Flex>
+    <div className="w-full h-full bg-background rounded-xl p-4">
+      {renderProjectMembers()}
+    </div>
   );
 }
-
-export default ProjectSetup;

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import ScheduleInsights from "./ScheduleInsights";
 import { Button } from "@/components/ui/button";
 import ScheduleGanttInterface from "./ScheduleGanttInterface";
@@ -21,6 +22,24 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
     taskToView: state.taskToView,
     setTaskToView: state.setTaskToView,
   }));
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const [activeTab, setActiveTab] = useState(
+    (searchParams && searchParams.get("scheduleView")) || "list"
+  );
+
+  useEffect(() => {
+    const view = searchParams && searchParams.get("scheduleView");
+    if (view === "gantt" || view === "list") {
+      setActiveTab(view);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    router.push(`?scheduleView=${value}`);
+  };
 
   const handleAddActivity = () => {
     onOpen();
@@ -54,18 +73,17 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
       </div>
 
       <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
         defaultValue="list"
-        className="flex flex-col h-full overflow-y-scroll p-2   "
+        className="flex flex-col h-full  p-2 w-full"
       >
         <TabsList className="grid grid-cols-2 w-48 ">
           <TabsTrigger value="list">List</TabsTrigger>
           <TabsTrigger value="gantt">Gantt</TabsTrigger>
         </TabsList>
-        <TabsContent
-          value="list"
-          className="flex h-full overflow-scroll  gap-4  "
-        >
-          <Card className="overflow-y-scroll flex-stretch w-full ">
+        <TabsContent value="list" className="flex h-full   gap-4  ">
+          <Card className=" flex-stretch w-full ">
             <CardHeader>
               <CardTitle className="text-3xl">Project Activities</CardTitle>
             </CardHeader>
@@ -74,7 +92,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="gantt" className="flex-1 overflow-scroll">
+        <TabsContent value="gantt" className="w-[calc(100vw-70px)] ">
           <Card>
             <CardContent>
               <ScheduleGanttInterface />

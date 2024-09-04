@@ -11,9 +11,7 @@ const ConfigureDailyUpdate = () => {
 
   return (
     <>
-      {isOpen && (
-        <UpdateDailyUpdateScheduleModal isOpen={isOpen} onClose={onClose} />
-      )}
+      {isOpen && <UpdateDailyUpdateScheduleModal />}
       {!hovered ? (
         <Flex>
           <Tooltip

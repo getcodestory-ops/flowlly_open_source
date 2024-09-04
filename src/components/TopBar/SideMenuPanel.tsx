@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from "react";
+"use client";
 
+import React, { use, useEffect } from "react";
 import { useStore } from "@/utils/store";
 import { useQuery } from "@tanstack/react-query";
-
 import { getActivities } from "@/api/activity_routes";
-
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
-import UpdateDailyUpdateScheduleModal from "../Schedule/ConfigureTaskQueue/ConfigureDailyUpdateModal";
-
+import { useParams } from "next/navigation";
 import Link from "next/link";
+
 import {
   Home,
   Package,
@@ -18,6 +17,7 @@ import {
   MessageSquareCode,
   Workflow,
   FileClock,
+  BrainCircuit,
 } from "lucide-react";
 
 import {
@@ -28,74 +28,91 @@ import {
 import { AppView } from "@/types/store";
 
 export function SideMenuPanel() {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const onClose = () => setIsOpen(false);
   return (
     <>
       <SetUseStoreData />
       <div className="px-1 py-4 flex flex-col items-center bg-white h-full rounded-xl custom-shadow">
-        {isOpen && (
-          <UpdateDailyUpdateScheduleModal isOpen={isOpen} onClose={onClose} />
-        )}
         <aside className="inset-y-0 hidden w-14 flex-col bg-background sm:flex w-full">
           <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
             <AllMenuButtons />
           </nav>
         </aside>
-        <MenuButton
-          isSelected={false}
-          onClick={() => setIsOpen(true)}
-          label="Configuration"
-          icon={<FileClock className="h-5 w-5" />}
-        />
       </div>
     </>
   );
 }
 
-const menuItems: { label: string; fnKey: AppView; icon: React.ReactNode }[] = [
+const menuItems: {
+  label: string;
+  fnKey: AppView;
+  icon: React.ReactNode;
+  link: string;
+}[] = [
   {
     label: "Projects",
     fnKey: "project",
     icon: <Building2 className="h-5 w-5" />,
+    link: "/projects",
   },
   {
     label: "Dashboard",
     fnKey: "dashboard",
     icon: <Home className="h-5 w-5" />,
+    link: "/dashboard",
   },
+
   {
     label: "Schedule",
     fnKey: "schedule",
     icon: <Calendar className="h-5 w-5" />,
+    link: "/schedule",
+  },
+  {
+    label: "Assignments",
+    fnKey: "assignments",
+    icon: <BrainCircuit className="h-5 w-5" />,
+    link: "/assignments",
   },
   {
     label: "Agent",
     fnKey: "agent",
     icon: <MessageSquareCode className="h-5 w-5" />,
+    link: "/agent",
   },
   {
     label: "Documents",
     fnKey: "updates",
     icon: <Package className="h-5 w-5" />,
+    link: "/documents",
   },
   {
     label: "Members",
     fnKey: "members",
     icon: <Users2 className="h-5 w-5" />,
+    link: "/members",
   },
   {
     label: "Integration",
     fnKey: "integrations",
     icon: <Workflow className="h-5 w-5" />,
+    link: "/integrations",
+  },
+  {
+    label: "Configuration",
+    fnKey: "configuration",
+    icon: <FileClock className="h-5 w-5" />,
+    link: "/configuration",
   },
 ];
 
 const AllMenuButtons = () => {
+  const { projectId } = useParams() as { projectId: string | undefined };
+
   const { setAppView, appView } = useStore((state) => ({
     setAppView: state.setAppView,
     appView: state.appView,
   }));
+
   return (
     <>
       {menuItems.map((item) => (
@@ -105,6 +122,7 @@ const AllMenuButtons = () => {
           onClick={() => setAppView(item.fnKey)}
           label={item.label}
           icon={item.icon}
+          link={`/project/${projectId}/${item.link}`}
         />
       ))}
     </>
@@ -115,11 +133,13 @@ const MenuButton = ({
   isSelected,
   onClick,
   label,
+  link,
   icon,
 }: {
   isSelected: boolean;
   onClick: () => void;
   label: string;
+  link: string;
   icon: React.ReactNode;
 }) => {
   return (
@@ -127,7 +147,7 @@ const MenuButton = ({
       <TooltipTrigger asChild>
         <div className="flex flex-col text-center justify-center items-center my-1">
           <Link
-            href="#"
+            href={link}
             className={`flex h-8 w-8 items-center justify-center rounded-2xl transition-colors ${
               isSelected
                 ? "text-foreground font-semibold bg-primary"

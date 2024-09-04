@@ -1,9 +1,7 @@
-import React, { useEffect, useRef } from "react";
-import { Flex, Grid, GridItem } from "@chakra-ui/react";
+import React, { useEffect } from "react";
 import { useStore } from "@/utils/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SideMenuPanel } from "@/components/TopBar/SideMenuPanel";
-import AiActions from "@/components/AiActions/AiActions";
 import ScheduleInterface from "./ScheduleInterface";
 import { useRouter } from "next/router";
 import supabase from "@/utils/supabaseClient";
@@ -15,6 +13,9 @@ import ProjectBoard from "@/components/ProjectDashboard/ProjectDashboard";
 import ProjectInfoDisplay from "@/components/ProjectDashboard/ProjectInfoDisplay";
 import ScheduleSummaryView from "@/components/Schedule/ScheduleSummaryView";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import ChatComponent from "@/components/ChatInput/ChatComponet";
+import ConstructionDashboard from "@/components/ProjectDashboard/ConstructionDashboard";
 const queryClient = new QueryClient();
 
 export default function MainLayout({
@@ -93,9 +94,9 @@ export default function MainLayout({
           <TooltipProvider>
             <div className="w-full h-full overflow-auto">
               {(appView === "login" || appView === "changePassword") && (
-                <Flex w="100vw" h="100vh">
+                <div className=" flex flex-col w-[100vw] h-[100vh] ">
                   {children}
-                </Flex>
+                </div>
               )}
 
               {appView !== "login" && appView !== "changePassword" && (
@@ -115,60 +116,20 @@ export default function MainLayout({
 
 const MainDisplayInLayout = ({ appView }: { appView: string }) => {
   return (
-    <Flex gap="2" p="1" w="full" flexGrow={1} overflow="auto">
+    <div className="flex gap-2 p-1 w-full h-full overflow-hidden">
       <div className="w-12 border-r">
         <SideMenuPanel />
       </div>
 
-      <Flex flexGrow={1} overflow={"hidden"}>
-        <Grid
-          h="full"
-          w="full"
-          templateRows="repeat(15, 1fr)"
-          templateColumns="repeat(13, 1fr)"
-          gap={4}
-          bg={"white"}
-          rounded={"xl"}
-          boxShadow={"lg"}
-        >
-          {appView === "dashboard" && (
-            <GridItem rowSpan={15} colSpan={13}>
-              {<ScheduleSummaryView />}
-            </GridItem>
-          )}
-          {appView === "schedule" && (
-            <GridItem rowSpan={15} colSpan={13}>
-              <ScheduleInterface />
-            </GridItem>
-          )}
-          {appView === "agent" && (
-            <GridItem rowSpan={15} colSpan={13}>
-              <AiActions />
-            </GridItem>
-          )}
-
-          {appView === "updates" && (
-            <GridItem rowSpan={15} colSpan={13}>
-              <DocumentFolderModule />
-            </GridItem>
-          )}
-          {appView === "project" && (
-            <GridItem rowSpan={15} colSpan={13} h="full">
-              <ProjectBoard />
-            </GridItem>
-          )}
-          {(appView === "members" || appView === "folders") && (
-            <GridItem rowSpan={15} colSpan={13}>
-              <ProjectSetup />
-            </GridItem>
-          )}
-          {appView === "integrations" && (
-            <GridItem rowSpan={15} colSpan={13}>
-              <Integration />
-            </GridItem>
-          )}
-        </Grid>
-      </Flex>
-    </Flex>
+      <ScrollArea className="flex-grow">
+        {appView === "dashboard" && <ConstructionDashboard />}
+        {appView === "schedule" && <ScheduleInterface />}
+        {appView === "agent" && <ChatComponent />}
+        {appView === "updates" && <DocumentFolderModule />}
+        {appView === "project" && <ProjectBoard />}
+        {appView === "members" && <ProjectSetup />}
+        {appView === "integrations" && <Integration />}
+      </ScrollArea>
+    </div>
   );
 };

@@ -20,6 +20,12 @@ import {
 
 import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AddNewProjectModalContent } from "@/components/Schedule/AddNewProjectModal";
+import {
+  usePathname,
+  useSearchParams,
+  useRouter,
+  useParams,
+} from "next/navigation";
 
 import {
   Popover,
@@ -33,6 +39,7 @@ import { getProjects } from "@/api/projectRoutes";
 import { RiTeamLine } from "react-icons/ri";
 import { MembersModal } from "@/components/MembersModal/MembersModal";
 import { getAgentChatEntities } from "@/api/agentRoutes";
+import { ProjectEntity } from "@/types/projects";
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
@@ -41,6 +48,11 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<
 interface TeamSwitcherProps extends PopoverTriggerProps {}
 
 export function ProjectSwitcher({ className }: TeamSwitcherProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { projectId } = useParams() as { projectId: string | undefined };
+
   const {
     session,
     userProjects,
@@ -98,8 +110,17 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
 
   useEffect(() => {
     if (userProjects.length === 0) return;
+    if (projectId) {
+      const project = userProjects.find(
+        (project) => project.project_id === projectId
+      );
+      if (project) {
+        setActiveProject(project);
+      }
+    } else {
+    }
 
-    setActiveProject(userProjects[0]);
+    //add the project id to the url
   }, [userProjects.length, userProjects, setActiveProject]);
 
   useEffect(() => {
@@ -129,6 +150,19 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
       setChatEntities([]);
     }
   }, [chatEntitities, setActiveChatEntity]);
+
+  const switchProject = (project: ProjectEntity) => {
+    if (pathname && pathname.includes(`/${projectId}/`)) {
+      const newPath = pathname.replace(
+        `/${projectId}/`,
+        `/${project.project_id}/`
+      );
+      router.push(newPath);
+    }
+
+    setActiveProject(project);
+    setOpen(false);
+  };
 
   const [open, setOpen] = useState(false);
   const [showNewTeamDialog, setShowNewTeamDialog] = useState(false);
@@ -171,8 +205,10 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
                       <CommandItem
                         key={project.project_id}
                         onSelect={() => {
-                          setActiveProject(project);
-                          setOpen(false);
+                          switchProject(project);
+                          // setActiveProject(project);
+
+                          // setOpen(false);
                         }}
                         className="text-sm"
                       >
@@ -235,13 +271,5 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
         projectAccessId={activeProject?.project_id}
       />
     </>
-  );
-}
-
-export default function Switcher() {
-  return (
-    <ProjectSwitcher />
-    // <QueryClientProvider client={queryClient}>
-    // </QueryClientProvider>
   );
 }
