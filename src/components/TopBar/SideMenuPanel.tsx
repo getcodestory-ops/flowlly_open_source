@@ -106,7 +106,8 @@ const menuItems: {
 ];
 
 const AllMenuButtons = () => {
-  const { projectId } = useParams() as { projectId: string | undefined };
+  const params = useParams();
+  const projectId = params ? params.project : null;
 
   const { setAppView, appView } = useStore((state) => ({
     setAppView: state.setAppView,
@@ -122,7 +123,7 @@ const AllMenuButtons = () => {
           onClick={() => setAppView(item.fnKey)}
           label={item.label}
           icon={item.icon}
-          link={`/project/${projectId}/${item.link}`}
+          link={projectId ? `/project/${projectId}/${item.link}` : `/project`}
         />
       ))}
     </>
