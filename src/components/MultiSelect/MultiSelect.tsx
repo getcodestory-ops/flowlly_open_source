@@ -41,7 +41,7 @@ const MultiSelect = ({
   }, [existingSelection]);
 
   const handleSelect = (optionId: string) => {
-    const updatedSelection = selectedOptions.includes(optionId)
+    const updatedSelection = selectedOptions?.includes(optionId)
       ? selectedOptions.filter((id) => id !== optionId)
       : [...selectedOptions, optionId];
     setSelectedOptions(updatedSelection);
@@ -70,7 +70,7 @@ const MultiSelect = ({
         >
           {title}
           <Badge variant="secondary" className="ml-2">
-            {selectedOptions.length}
+            {selectedOptions?.length}
           </Badge>
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -106,7 +106,7 @@ const MultiSelect = ({
                 <Check
                   className={cn(
                     "mr-2 h-4 w-4",
-                    selectedOptions.includes(option.id)
+                    selectedOptions?.includes(option.id)
                       ? "opacity-100"
                       : "opacity-0"
                   )}
