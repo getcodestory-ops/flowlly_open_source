@@ -23,7 +23,7 @@ const signIn = async (formData: FormData) => {
     }
     throw new Error(message);
   }
-  return redirect("/protected");
+  return redirect("/project");
 };
 
 export default async function Login({
@@ -35,7 +35,7 @@ export default async function Login({
   const { data } = await supabase.auth.getUser();
 
   if (data.user) {
-    redirect("/protected");
+    redirect("/project");
   }
 
   return <LoginLayout signIn={signIn} />;

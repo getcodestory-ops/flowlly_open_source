@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from "react";
+import { Check, ChevronDown, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
-  Text,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuOptionGroup,
-  MenuItemOption,
-  Button,
-  Flex,
-  Divider,
-  Badge,
-  Icon,
-  IconButton,
-  Box,
-} from "@chakra-ui/react";
-import { BiCaretDown } from "react-icons/bi";
-import { IoFunnel, IoClose } from "react-icons/io5";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface MultiSelectProps {
   title: string;
@@ -33,15 +32,20 @@ const MultiSelect = ({
   onChange = () => {},
   existingSelection = [],
 }: MultiSelectProps) => {
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [open, setOpen] = useState(false);
+  const [selectedOptions, setSelectedOptions] =
+    useState<string[]>(existingSelection);
 
-  const handleOptionSelect = (selected: string | string[]) => {
-    const list = Array.isArray(selected)
-      ? selected
-      : [...selectedOptions, selected];
+  useEffect(() => {
+    setSelectedOptions(existingSelection);
+  }, [existingSelection]);
 
-    setSelectedOptions(list);
-    onChange(list);
+  const handleSelect = (optionId: string) => {
+    const updatedSelection = selectedOptions.includes(optionId)
+      ? selectedOptions.filter((id) => id !== optionId)
+      : [...selectedOptions, optionId];
+    setSelectedOptions(updatedSelection);
+    onChange(updatedSelection);
   };
 
   const handleClear = () => {
@@ -49,114 +53,71 @@ const MultiSelect = ({
     onChange([]);
   };
 
-  useEffect(() => {
-    //console.log("loading multiselect");
-    setSelectedOptions(existingSelection);
-  }, [existingSelection]);
+  const handleSelectAll = () => {
+    const allIds = options.map((option) => option.id);
+    setSelectedOptions(allIds);
+    onChange(allIds);
+  };
 
   return (
-    <Flex direction={"column"} overflow="scroll" maxHeight={"64"}>
-      <Flex gap="4" align={"center"}>
-        <Menu closeOnSelect={false}>
-          <MenuButton
-            as={Button}
-            colorScheme="brand.accent"
-            variant={"outline"}
-            rightIcon={<Icon as={BiCaretDown} />}
-            maxW={"2xs"}
-          >
-            <Flex align="center" gap="2">
-              <Text noOfLines={1}>{title}</Text>
-
-              <Badge bg="brand.accent" color="black">
-                {selectedOptions && selectedOptions.length}
-              </Badge>
-            </Flex>
-          </MenuButton>
-          <MenuList minWidth="xs" maxW={"sm"}>
-            <Box
-              maxHeight={"64"}
-              overflowY={"scroll"}
-              className="custom-scrollbar"
-            >
-              <MenuOptionGroup
-                value={selectedOptions ?? []}
-                onChange={handleOptionSelect}
-                type="checkbox"
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between"
+        >
+          {title}
+          <Badge variant="secondary" className="ml-2">
+            {selectedOptions.length}
+          </Badge>
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] p-0">
+        <Command>
+          <CommandInput placeholder={`Search ${title.toLowerCase()}...`} />
+          <CommandEmpty>No option found.</CommandEmpty>
+          <CommandGroup>
+            <div className="flex justify-between p-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSelectAll}
+                className="text-xs"
               >
-                <Flex
-                  direction={"column"}
-                  gap="2"
-                  px="4"
-                  py="2"
-                  overflow={"scroll"}
-                >
-                  <Flex justify={"space-between"} align="center">
-                    <Flex gap="2" align={"center"}>
-                      <Icon as={IoFunnel} />
-                      <Text size="md" noOfLines={1} fontWeight={"medium"}>
-                        {title}
-                      </Text>
-                    </Flex>
-                    <Flex flexShrink={0} gap="2">
-                      <Button
-                        size="xs"
-                        variant="link"
-                        colorScheme="yellow"
-                        onClick={() =>
-                          handleOptionSelect(options.map((o) => o.id))
-                        }
-                      >
-                        Select All
-                      </Button>
-
-                      <Button
-                        size="xs"
-                        variant="link"
-                        colorScheme="yellow"
-                        onClick={handleClear}
-                      >
-                        Clear
-                      </Button>
-                    </Flex>
-                  </Flex>
-                </Flex>
-
-                <Divider />
-
-                {options &&
-                  options.length > 0 &&
-                  options.map((activities, index) => (
-                    // <Flex>{option.label ?? index}</Flex>
-                    <MenuItemOption
-                      key={`option_${activities.id ?? index}`}
-                      value={activities.id ?? index}
-                      _focus={{ bg: "yellow.100" }}
-                      _hover={{ bg: "yellow.100" }}
-                      transition={"background 0.3s ease"}
-                    >
-                      {activities.label ?? index}
-                    </MenuItemOption>
-                  ))}
-              </MenuOptionGroup>
-            </Box>
-          </MenuList>
-        </Menu>
-
-        {selectedOptions && selectedOptions.length > 0 && (
-          <IconButton
-            aria-label="Clear"
-            size="xs"
-            colorScheme="yellow"
-            rounded={"full"}
-            icon={<Icon as={IoClose} />}
-            ml="-8"
-            mt="-8"
-            onClick={handleClear}
-          />
-        )}
-      </Flex>
-    </Flex>
+                Select All
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClear}
+                className="text-xs"
+              >
+                Clear
+              </Button>
+            </div>
+            {options.map((option) => (
+              <CommandItem
+                key={option.id}
+                onSelect={() => handleSelect(option.id)}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    selectedOptions.includes(option.id)
+                      ? "opacity-100"
+                      : "opacity-0"
+                  )}
+                />
+                {option.label}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 };
 

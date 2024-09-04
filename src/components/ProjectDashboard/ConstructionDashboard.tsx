@@ -13,6 +13,7 @@ import {
   CircleIcon,
 } from "lucide-react";
 import ScheduleNotifications from "../Notifications/ScheduleNotifications";
+import { ScrollArea } from "@radix-ui/react-scroll-area";
 
 export default function ConstructionDashboard() {
   // Mock data - replace with actual data fetching in a real application

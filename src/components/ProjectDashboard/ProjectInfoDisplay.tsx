@@ -1,8 +1,7 @@
 "use client";
 import React from "react";
 import { Archivo_Black } from "next/font/google";
-import { Search } from "@/components/ProjectDashboard/components/Search";
-import ProjectSwitcher from "@/components/ProjectDashboard/components/ProjectSwitcher";
+import { ProjectSwitcher } from "@/components/ProjectDashboard/components/ProjectSwitcher";
 import { UserNav } from "@/components/ProjectDashboard/components/UserNav";
 import HeaderNotification from "../Notifications/HeaderNotification";
 import MediaRecorderButton from "../ChatInput/MediaRecorderButton";

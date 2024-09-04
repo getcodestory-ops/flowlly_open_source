@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import ScheduleUIView from "@/components/Schedule/ScheduleViewLeftPanel";
 import { useStore } from "@/utils/store";
@@ -17,7 +19,7 @@ function ScheduleInterface({ view }: { view?: string | string[] }) {
   }));
 
   return (
-    <div className="w-full h-full overflow-hidden">
+    <div>
       {activeProject ? (
         <ScheduleUIView uiView={view} />
       ) : (

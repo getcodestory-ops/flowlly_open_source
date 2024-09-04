@@ -241,10 +241,7 @@ export const usePhoneRegistration = () => {
     },
   });
 
-  const registerPhoneNumber = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    phone_number?: string
-  ) => {
+  const registerPhoneNumber = (checked: boolean, phone_number?: string) => {
     if (!phone_number) {
       toast({
         title: "Error",
@@ -257,7 +254,7 @@ export const usePhoneRegistration = () => {
       return;
     }
 
-    if (e.target.checked) {
+    if (checked) {
       mutation.mutate(phone_number);
       return;
     }

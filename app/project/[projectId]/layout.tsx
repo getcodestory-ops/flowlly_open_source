@@ -1,4 +1,4 @@
-import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata = {
   title: "Construction Documentation",
@@ -12,7 +12,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-background text-foreground">{children}</body>
+      <body className="bg-background text-foreground">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
