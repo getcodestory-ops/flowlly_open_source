@@ -18,6 +18,8 @@ import {
   Workflow,
   FileClock,
   BrainCircuit,
+  ClipboardList,
+  Folder,
 } from "lucide-react";
 
 import {
@@ -55,11 +57,17 @@ const menuItems: {
     link: "projects",
   },
   {
-    label: "Dashboard",
-    fnKey: "dashboard",
-    icon: <Home className="h-5 w-5" />,
-    link: "dashboard",
+    label: "Ai jobs",
+    fnKey: "assignments",
+    icon: <ClipboardList className="h-5 w-5" />,
+    link: "assignments",
   },
+  // {
+  //   label: "Dashboard",
+  //   fnKey: "dashboard",
+  //   icon: <Home className="h-5 w-5" />,
+  //   link: "dashboard",
+  // },
 
   {
     label: "Schedule",
@@ -67,14 +75,9 @@ const menuItems: {
     icon: <Calendar className="h-5 w-5" />,
     link: "schedule",
   },
+
   {
-    label: "Assignments",
-    fnKey: "assignments",
-    icon: <BrainCircuit className="h-5 w-5" />,
-    link: "assignments",
-  },
-  {
-    label: "Agent",
+    label: "Chat",
     fnKey: "agent",
     icon: <MessageSquareCode className="h-5 w-5" />,
     link: "agent",
@@ -82,7 +85,7 @@ const menuItems: {
   {
     label: "Documents",
     fnKey: "updates",
-    icon: <Package className="h-5 w-5" />,
+    icon: <Folder className="h-5 w-5" />,
     link: "documents",
   },
   {

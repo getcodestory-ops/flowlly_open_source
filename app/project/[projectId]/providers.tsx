@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useStore } from "@/utils/store";
 import { useRouter } from "next/navigation";
 import supabase from "@/utils/supabaseClient";
+import { Toaster } from "@/components/ui/toaster";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <Toaster />
       <TooltipProvider>
         <div className="flex flex-col w-[100vw] h-[100vh]">
           <div className="h-[65px] w-[100vw] overlow-hidden">

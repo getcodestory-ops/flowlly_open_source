@@ -236,3 +236,28 @@ export const getPendingVoiceNotes = async (
 
   return response.data;
 };
+
+export const deletePendingVoiceNote = async ({
+  session,
+  projectId,
+  chatEntityId,
+}: {
+  session: Session;
+  projectId: string;
+  chatEntityId: string;
+}) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/stream/history/${projectId}`;
+  const response = await axios.delete(url, {
+    params: { chat_entity_id: chatEntityId },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  if (!response.data) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.data;
+};
