@@ -1,20 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useToast } from "@chakra-ui/react";
+import { useToast } from "../ui/use-toast";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
-import { keyframes } from "@chakra-ui/system";
 import {
   streamVoiceNote,
   getPendingVoiceNotes,
   endVoiceNote,
+  deletePendingVoiceNote,
 } from "@/api/agentRoutes";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+
 import { Mic, X, TrashIcon, AudioLines } from "lucide-react";
 import {
   Popover,
@@ -24,6 +20,38 @@ import {
 import StreamComponent from "../StreamResponse/StreamAgentChat";
 
 function PendingVoiceNote() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const session = useStore((state) => state.session);
+  const activeProject = useStore((state) => state.activeProject);
+  const activityChatEntity = useStore((state) => state.activeChatEntity);
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: deletePendingVoiceNote,
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: "Your voice history was successfully deleted!",
+      });
+      queryClient.invalidateQueries({ queryKey: ["pendingVoiceNotes"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+      });
+    },
+  });
+
+  function cleanHistory() {
+    if (!session || !activeProject || !activityChatEntity) return;
+    mutate({
+      session,
+      projectId: activeProject.project_id,
+      chatEntityId: activityChatEntity.id,
+    });
+  }
+
   return (
     <div className="flex items-center space-x-4 p-4 bg-background rounded-lg ">
       <div className="relative">
@@ -37,7 +65,7 @@ function PendingVoiceNote() {
           className="absolute -top-2 -right-2 h-4 w-4 rounded-full shadow-md hover:bg-destructive/90"
           aria-label="Delete voice note"
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4" onClick={cleanHistory} />
         </Button>
       </div>
       <div>
@@ -54,7 +82,7 @@ function PendingVoiceNote() {
 
 const MediaStreamerButton: React.FC = () => {
   const queryClient = useQueryClient();
-  const toast = useToast();
+  const { toast } = useToast();
 
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
@@ -74,10 +102,7 @@ const MediaStreamerButton: React.FC = () => {
       toast({
         title: "Success",
         description: "Your Note was successfully sent!",
-        position: "bottom-right",
-        status: "success",
         duration: 9000,
-        isClosable: true,
       });
       setResponseStreamId(data.agent_response);
     },
@@ -85,9 +110,7 @@ const MediaStreamerButton: React.FC = () => {
       toast({
         title: "Error",
         description: error.message,
-        status: "error",
         duration: 9000,
-        isClosable: true,
       });
     },
   });
@@ -98,10 +121,7 @@ const MediaStreamerButton: React.FC = () => {
       toast({
         title: "Success",
         description: "Your voice note is being processed now !",
-        position: "bottom-right",
-        status: "success",
         duration: 9000,
-        isClosable: true,
       });
       setResponseStreamId(data.agent_response);
     },
@@ -109,9 +129,7 @@ const MediaStreamerButton: React.FC = () => {
       toast({
         title: "Error",
         description: error.message,
-        status: "error",
         duration: 9000,
-        isClosable: true,
       });
     },
   });
@@ -149,11 +167,6 @@ const MediaStreamerButton: React.FC = () => {
 
     try {
       mutate({ session, projectId: activeProject?.project_id, formData });
-      // Store the chat_entity_id if it's new
-      //   if (!activityChatEntity?.id) {
-      //     // Update your state or store with the new chat_entity_id
-      //     updateChatEntityId(response.data.chat_entity_id);
-      //   }
     } catch (error) {
       console.error("Error sending audio chunk:", error);
     }
@@ -194,6 +207,7 @@ const MediaStreamerButton: React.FC = () => {
     if (mediaRecorder) {
       mediaRecorder.stop();
       setRecording(false);
+      queryClient.invalidateQueries({ queryKey: ["pendingVoiceNotes"] });
     }
   };
 
@@ -230,6 +244,7 @@ const MediaStreamerButton: React.FC = () => {
         </PopoverTrigger>
         <PopoverContent className="min-w-[50vw]">
           <div className="space-y-6">
+            {/* <ProjectEventCreationForm /> */}
             <div className="flex space-x-4 items-center">
               <Button
                 variant={recording ? "destructive" : "default"}

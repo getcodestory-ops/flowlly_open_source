@@ -1,11 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ChevronDown,
   CheckCircle,
   XCircle,
   ChevronRight,
   ArrowUpDown,
+  RefreshCw,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -23,16 +25,26 @@ type NodeData = {
   id: string;
   title: string;
   description: string;
-  completed: boolean;
+  status:
+    | "pending"
+    | "completed"
+    | "running"
+    | "failed"
+    | "skipped"
+    | "cancelled"
+    | "retry";
   output: string;
   children?: NodeData[];
 };
+import { useQuery } from "@tanstack/react-query";
+import { getProjectEvents } from "@/api/taskQueue";
+import { useStore } from "@/utils/store";
 
 type GraphData = {
   id: string;
   name: string;
   description: string;
-  createdAt: Date;
+  timestamp: string;
   nodes: NodeData[];
 };
 
@@ -48,26 +60,51 @@ type NodeProps = {
   isSelected: boolean;
 };
 
+// map pending" | "completed" | "running" | "failed" | "skipped" | "cancelled" | "retry" with lucide react icons and colors
+
+const colorMapping = {
+  pending: {
+    icon: <Clock className="text-blue-500" size={20} />,
+    border: "border-2 border-blue-500",
+  },
+  completed: {
+    icon: <CheckCircle className="text-green-500" size={20} />,
+    border: "border-2 border-green-500",
+  },
+  running: {
+    icon: <RefreshCw className="text-yellow-500 animate-spin" size={20} />,
+    border: "border-2 border-yellow-500",
+  },
+  failed: {
+    icon: <XCircle className="text-red-500" size={20} />,
+    border: "border-2 border-red-500",
+  },
+  skipped: {
+    icon: <XCircle className="text-gray-500" size={20} />,
+    border: "border-2 border-gray-500",
+  },
+  cancelled: {
+    icon: <XCircle className="text-gray-500" size={20} />,
+    border: "border-2 border-gray-500",
+  },
+  retry: {
+    icon: <RefreshCw className="text-yellow-500" size={20} />,
+    border: "border-2 border-yellow-500",
+  },
+};
+
 const Node: React.FC<NodeProps> = ({ node, isLast, onSelect, isSelected }) => (
   <div className="flex flex-col items-center">
     <div
       className={`w-64 p-4 rounded-lg shadow-md cursor-pointer transition-all duration-200 ease-in-out
-        ${
-          node.completed
-            ? "border-2 border-green-500"
-            : "border-2 border-red-500"
-        }
+        ${colorMapping[node.status].border || "border-2 border-gray-200"}
         ${isSelected ? "bg-blue-100 scale-105" : "hover:bg-gray-100"}`}
       onClick={() => onSelect(node)}
     >
       <h3 className="text-lg font-semibold mb-2">{node.title}</h3>
       <p className="text-sm text-gray-600">{node.description}</p>
       <div className="mt-2 flex justify-end">
-        {node.completed ? (
-          <CheckCircle className="text-green-500" size={20} />
-        ) : (
-          <XCircle className="text-red-500" size={20} />
-        )}
+        {colorMapping[node.status].icon || <Clock size={20} />}
       </div>
     </div>
     {!isLast && (
@@ -110,14 +147,15 @@ const renderNodes = (
         onSelectNode={onSelectNode}
         selectedNode={selectedNode}
       />
-      {node.children && node.children.length > 0 && (
+      <ChevronDown className="text-gray-400" size={24} />
+      {/* {node.children && node.children.length > 0 && (
         <>
           <div className="h-12 flex items-center justify-center">
             <ChevronDown className="text-gray-400" size={24} />
           </div>
           {renderNodes(node.children, onSelectNode, selectedNode)}
         </>
-      )}
+      )} */}
     </div>
   ));
 };
@@ -147,7 +185,7 @@ const GraphList: React.FC<{
           </TableHead>
           <TableHead>Description</TableHead>
           <TableHead className="w-[150px]">
-            <Button variant="ghost" onClick={() => onSort("createdAt")}>
+            <Button variant="ghost" onClick={() => onSort("timestamp")}>
               Created At <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
           </TableHead>
@@ -156,10 +194,10 @@ const GraphList: React.FC<{
       </TableHeader>
       <TableBody>
         {sortedGraphs.map((graph) => (
-          <TableRow key={graph.id}>
+          <TableRow key={graph.id} onClick={() => onSelectGraph(graph.id)}>
             <TableCell className="font-medium">{graph.name}</TableCell>
             <TableCell>{graph.description}</TableCell>
-            <TableCell>{graph.createdAt.toLocaleDateString()}</TableCell>
+            <TableCell>{new Date(graph.timestamp).toLocaleString()}</TableCell>
             <TableCell>
               <Button
                 variant="outline"
@@ -188,7 +226,7 @@ const Breadcrumbs: React.FC<{
           onClick={onBackToList}
           className="text-sm font-medium text-gray-700 hover:text-blue-600"
         >
-          Assignments
+          Ai jobs
         </Button>
       </li>
       {currentGraph && (
@@ -212,102 +250,133 @@ export default function AssignmentHome() {
     direction: "asc",
   });
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
+  const [graphs, setGraphs] = useState<GraphData[] | null>(null);
+  const [currentGraph, setCurrentGraph] = useState<GraphData | null>(null);
+  const session = useStore((state) => state.session);
+  const activeProject = useStore((state) => state.activeProject);
 
-  const graphs: GraphData[] = [
-    {
-      id: "1",
-      name: "Project Alpha",
-      description: "Main project workflow",
-      createdAt: new Date(2023, 5, 15),
-      nodes: [
-        {
-          id: "1",
-          title: "Start",
-          description: "Begin the process",
-          completed: true,
-          output: "Project Alpha initialized successfully.",
-          children: [
-            {
-              id: "2a",
-              title: "Process Data A",
-              description: "Analyze set A",
-              completed: true,
-              output:
-                "Data set A processed:\n- 1000 records analyzed\n- 3 anomalies detected\n- 97% accuracy achieved",
-            },
-            {
-              id: "2b",
-              title: "Process Data B",
-              description: "Analyze set B",
-              completed: false,
-              output:
-                "Data set B processing in progress:\n- 500 out of 1500 records analyzed\n- Estimated completion time: 2 hours",
-            },
-          ],
-        },
-        {
-          id: "3",
-          title: "Merge Results",
-          description: "Combine processed data",
-          completed: false,
-          output: "Waiting for all data sets to be processed before merging.",
-          children: [
-            {
-              id: "4",
-              title: "Generate Report",
-              description: "Create final output",
-              completed: false,
-              output: "Report generation pending. Awaiting merged results.",
-            },
-          ],
-        },
-        {
-          id: "5",
-          title: "Send Notification",
-          description: "Alert stakeholders",
-          completed: false,
-          output: "Notification will be sent once the report is generated.",
-        },
-      ],
+  const { data } = useQuery({
+    queryKey: ["projectEvents"],
+    queryFn: () => {
+      if (!session || !activeProject) return [];
+      return getProjectEvents({
+        session: session,
+        projectId: activeProject.project_id,
+      });
     },
-    {
-      id: "2",
-      name: "Project Beta",
-      description: "Secondary project tasks",
-      createdAt: new Date(2023, 6, 1),
-      nodes: [
-        {
-          id: "1",
-          title: "Initialize",
-          description: "Set up project",
-          completed: true,
-          output:
-            "Project Beta initialization complete. Environment configured.",
-          children: [
-            {
-              id: "2",
-              title: "Gather Requirements",
-              description: "Collect project specs",
-              completed: true,
-              output:
-                "Requirements gathered:\n1. User authentication\n2. Data visualization\n3. Real-time updates\n4. Mobile responsiveness",
-            },
-          ],
-        },
-        {
-          id: "3",
-          title: "Development",
-          description: "Build features",
-          completed: false,
-          output:
-            "Development in progress:\n- User authentication: 100%\n- Data visualization: 60%\n- Real-time updates: 30%\n- Mobile responsiveness: 45%",
-        },
-      ],
-    },
-  ];
+    enabled: !!session && !!activeProject,
+  });
 
-  const currentGraph =
-    graphs.find((graph) => graph.id === currentGraphId) || null;
+  useEffect(() => {
+    if (data) {
+      setGraphs(data);
+      // setCurrentGraphId(data[0].id);
+      console.log(data);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (graphs) {
+      const graph = graphs?.find((g) => g.id === currentGraphId);
+      setCurrentGraph(graph || null);
+    }
+  }, [currentGraphId]);
+
+  // const graphs: GraphData[] = [
+  //   {
+  //     id: "1",
+  //     name: "Project Alpha",
+  //     description: "Main project workflow",
+  //     timestamp: new Date(2023, 5, 15),
+  //     nodes: [
+  //       {
+  //         id: "1",
+  //         title: "Start",
+  //         description: "Begin the process",
+  //         status: "completed",
+  //         output: "Project Alpha initialized successfully.",
+  //         children: [
+  //           {
+  //             id: "2a",
+  //             title: "Process Data A",
+  //             description: "Analyze set A",
+  //             status: "completed",
+  //             output:
+  //               "Data set A processed:\n- 1000 records analyzed\n- 3 anomalies detected\n- 97% accuracy achieved",
+  //           },
+  //           {
+  //             id: "2b",
+  //             title: "Process Data B",
+  //             description: "Analyze set B",
+  //             status: "in-progress",
+  //             output:
+  //               "Data set B processing in progress:\n- 500 out of 1500 records analyzed\n- Estimated completion time: 2 hours",
+  //           },
+  //         ],
+  //       },
+  //       {
+  //         id: "3",
+  //         title: "Merge Results",
+  //         description: "Combine processed data",
+  //         status: "failed",
+  //         output: "Waiting for all data sets to be processed before merging.",
+  //         children: [
+  //           {
+  //             id: "4",
+  //             title: "Generate Report",
+  //             description: "Create final output",
+  //             status: "in-progress",
+  //             output: "Report generation pending. Awaiting merged results.",
+  //           },
+  //         ],
+  //       },
+  //       {
+  //         id: "5",
+  //         title: "Send Notification",
+  //         description: "Alert stakeholders",
+  //         status: "in-progress",
+  //         output: "Notification will be sent once the report is generated.",
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     id: "2",
+  //     name: "Project Beta",
+  //     description: "Secondary project tasks",
+  //     timestamp: new Date(2023, 6, 1),
+  //     nodes: [
+  //       {
+  //         id: "1",
+  //         title: "Initialize",
+  //         description: "Set up project",
+  //         status: "completed",
+  //         output:
+  //           "Project Beta initialization complete. Environment configured.",
+  //         children: [
+  //           {
+  //             id: "2",
+  //             title: "Gather Requirements",
+  //             description: "Collect project specs",
+  //             status: "completed",
+  //             output:
+  //               "Requirements gathered:\n1. User authentication\n2. Data visualization\n3. Real-time updates\n4. Mobile responsiveness",
+  //           },
+  //         ],
+  //       },
+  //       {
+  //         id: "3",
+  //         title: "Development",
+  //         description: "Build features",
+  //         status: "in-progress",
+  //         output:
+  //           "Development in progress:\n- User authentication: 100%\n- Data visualization: 60%\n- Real-time updates: 30%\n- Mobile responsiveness: 45%",
+  //       },
+  //     ],
+  //   },
+  // ];
+
+  // const currentGraph =
+  //   graphs.find((graph) => graph.id === currentGraphId) || null;
 
   const handleSort = (key: keyof GraphData) => {
     setSortConfig((prevConfig) => ({
@@ -322,6 +391,10 @@ export default function AssignmentHome() {
   const handleSelectNode = (node: NodeData) => {
     setSelectedNode(node);
   };
+
+  if (!graphs) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="container mx-auto p-4">
@@ -352,7 +425,7 @@ export default function AssignmentHome() {
                 <p className="text-gray-600 mb-4">{selectedNode.description}</p>
                 <ScrollArea className="h-[calc(100vh-350px)] border rounded p-4">
                   <pre className="whitespace-pre-wrap">
-                    {selectedNode.output}
+                    {JSON.stringify(selectedNode.output, null, 2)}
                   </pre>
                 </ScrollArea>
               </div>

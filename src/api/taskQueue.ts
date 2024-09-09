@@ -1,6 +1,7 @@
 import { type Session } from "@supabase/supabase-js";
 import { AddTaskQueue, TaskQueue } from "@/types/taskQueue";
 import { Notification } from "@/types/notification";
+import { CreateEvent } from "@/types/projectEvents";
 import axios from "axios";
 
 export const getTaskQueue = async (
@@ -122,4 +123,38 @@ export const reRunTask = async ({
     }
   );
   return respone.data;
+};
+
+export const createNewProjectEvent = async ({
+  session,
+  projectId,
+  projectEvent,
+}: {
+  session: Session;
+  projectId: string;
+  projectEvent: CreateEvent;
+}) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/${projectId}`;
+  const response = await axios.post(url, projectEvent, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+  return response.data;
+};
+
+export const getProjectEvents = async ({
+  session,
+  projectId,
+}: {
+  session: Session;
+  projectId: string;
+}) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/${projectId}`;
+  const response = await axios.get(url, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+  return response.data;
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,47 +10,53 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useQuery } from "@tanstack/react-query";
+import { getNotifications } from "@/api/notification";
+import { useStore } from "@/utils/store";
+import { formatDistanceToNow, parseISO } from "date-fns";
 
 interface Notification {
   id: string;
   title: string;
   message: string;
   timestamp: string;
-  read: boolean;
+  read: "read" | "unread";
+}
+
+function convertIsoToTimeAgo(dateString?: string) {
+  if (!dateString) return "";
+
+  const utcDate = parseISO(`${dateString}Z`);
+  const timeAgo = formatDistanceToNow(utcDate, {
+    addSuffix: true,
+  });
+  return timeAgo;
 }
 
 export default function HeaderNotification() {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: "1",
-      title: "New Message",
-      message: "You have a new message from John Doe.",
-      timestamp: "5m ago",
-      read: false,
-    },
-    {
-      id: "2",
-      title: "Payment Received",
-      message: "Your account has been credited $50.",
-      timestamp: "1h ago",
-      read: false,
-    },
-    {
-      id: "3",
-      title: "Profile Update",
-      message: "Your profile has been successfully updated.",
-      timestamp: "2h ago",
-      read: false,
-    },
-  ]);
+  const session = useStore((state) => state.session);
+  const activeProject = useStore((state) => state.activeProject);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const { data } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => {
+      if (!session || !activeProject) return [];
+      return getNotifications(session, activeProject.project_id);
+    },
+    refetchInterval: 20000,
+    enabled: !!session && !!activeProject,
+  });
 
-  const markAsRead = (id: string) => {
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-  };
+  useEffect(() => {
+    if (data) {
+      setNotifications(data);
+      setUnreadCount(
+        data.filter((n: Notification) => n.read !== "read").length
+      );
+    }
+  }, [data]);
 
   return (
     <DropdownMenu>
@@ -71,10 +77,10 @@ export default function HeaderNotification() {
               No new notifications
             </div>
           ) : (
-            notifications.map((notification) => (
+            notifications.map((notification: Notification, index) => (
               <DropdownMenuItem
-                key={notification.id}
-                onSelect={() => markAsRead(notification.id)}
+                key={index}
+                // onSelect={() => markAsRead(notification.id)}
               >
                 <div
                   className={`w-full ${notification.read ? "opacity-50" : ""}`}
@@ -84,7 +90,7 @@ export default function HeaderNotification() {
                     {notification.message}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    {notification.timestamp}
+                    {convertIsoToTimeAgo(notification.timestamp)}
                   </div>
                 </div>
               </DropdownMenuItem>

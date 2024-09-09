@@ -30,6 +30,7 @@ import {
 import { AutosizeTextarea } from "@/components/ui/autosize-textarea";
 import StreamComponent from "../StreamResponse/StreamAgentChat";
 import MediaStreamerButton from "./MediaStreamButton";
+import ProjectEventCreationForm from "../ProjectEvent/ProjectEventCreationForm";
 
 const pulseAnimation = keyframes`
   0% { transform: scale(1); opacity: 1; }
@@ -167,6 +168,20 @@ const MediaRecorderButton: React.FC = () => {
 
   return (
     <div className="flex   px-2 space-x-3 rounded-lg justify-center items-center ">
+      <div className="flex items-center py-1">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="secondary" size="icon">
+              <MdOutlineRecordVoiceOver className="size-4" color="black" />
+              <span className="sr-only">Create Meeting</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-full ">
+            <ProjectEventCreationForm />
+          </PopoverContent>
+        </Popover>
+      </div>
+
       <MediaStreamerButton />
       <div className="flex items-center py-1">
         <Popover>
