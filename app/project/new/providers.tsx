@@ -4,13 +4,11 @@ import React, { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ProjectInfoDisplay from "@/components/ProjectDashboard/ProjectInfoDisplay";
-import { SideMenuPanel } from "@/components/TopBar/SideMenuPanel";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useStore } from "@/utils/store";
 import { useRouter } from "next/navigation";
 import supabase from "@/utils/supabaseClient";
 import { Toaster } from "@/components/ui/toaster";
-import { ProjectSwitcher } from "@/components/ProjectDashboard/components/ProjectSwitcher";
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
