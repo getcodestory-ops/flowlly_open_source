@@ -82,17 +82,19 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
           <TabsTrigger value="list">List</TabsTrigger>
           <TabsTrigger value="gantt">Gantt</TabsTrigger>
         </TabsList>
-        <TabsContent value="list" className="flex h-full   gap-4  ">
+        <TabsContent value="list" className="flex h-full  gap-2  ">
           <Card className=" flex-stretch w-full ">
             <CardHeader>
-              <CardTitle className="text-3xl">Project Activities</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Project Activities
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ScheduleInsights />
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="gantt" className="w-[calc(100vw-70px)] ">
+        <TabsContent value="gantt" className=" w-[calc(100vw-70px)] ">
           <Card>
             <CardContent>
               <ScheduleGanttInterface />

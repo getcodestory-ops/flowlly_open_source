@@ -239,7 +239,7 @@ export default function ProjectEventCreationForm() {
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>(
     []
   );
-  const [startDate, setStartDate] = useState<Date>();
+  const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>();
 
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
@@ -265,54 +265,54 @@ export default function ProjectEventCreationForm() {
 
   // Mock existing events (replace with actual data fetching in a real application)
   const existingEvents: Event[] = [
-    {
-      id: "1",
-      name: "Team Meeting",
-      participants: [
-        {
-          id: "101",
-          firstName: "John",
-          lastName: "Doe",
-          email: "john@example.com",
-        },
-        {
-          id: "102",
-          firstName: "Jane",
-          lastName: "Smith",
-          email: "jane@example.com",
-        },
-      ],
-      recurrence: "weekly",
-      startDate: "2023-06-15",
-      endDate: "2023-12-31",
-      startTime: "09:00",
-      duration: "60",
-      participationLink: "https://meet.example.com/team-meeting",
-    },
-    {
-      id: "2",
-      name: "Project Review",
-      participants: [
-        {
-          id: "103",
-          firstName: "Alice",
-          lastName: "Johnson",
-          email: "alice@example.com",
-        },
-        {
-          id: "104",
-          firstName: "Bob",
-          lastName: "Brown",
-          email: "bob@example.com",
-        },
-      ],
-      recurrence: "monthly",
-      startDate: "2023-06-20",
-      endDate: "2024-06-20",
-      startTime: "14:00",
-      duration: "90",
-      participationLink: "https://meet.example.com/project-review",
-    },
+    // {
+    //   id: "1",
+    //   name: "Team Meeting",
+    //   participants: [
+    //     {
+    //       id: "101",
+    //       firstName: "John",
+    //       lastName: "Doe",
+    //       email: "john@example.com",
+    //     },
+    //     {
+    //       id: "102",
+    //       firstName: "Jane",
+    //       lastName: "Smith",
+    //       email: "jane@example.com",
+    //     },
+    //   ],
+    //   recurrence: "weekly",
+    //   startDate: "2023-06-15",
+    //   endDate: "2023-12-31",
+    //   startTime: "09:00",
+    //   duration: "60",
+    //   participationLink: "https://meet.example.com/team-meeting",
+    // },
+    // {
+    //   id: "2",
+    //   name: "Project Review",
+    //   participants: [
+    //     {
+    //       id: "103",
+    //       firstName: "Alice",
+    //       lastName: "Johnson",
+    //       email: "alice@example.com",
+    //     },
+    //     {
+    //       id: "104",
+    //       firstName: "Bob",
+    //       lastName: "Brown",
+    //       email: "bob@example.com",
+    //     },
+    //   ],
+    //   recurrence: "monthly",
+    //   startDate: "2023-06-20",
+    //   endDate: "2024-06-20",
+    //   startTime: "14:00",
+    //   duration: "90",
+    //   participationLink: "https://meet.example.com/project-review",
+    // },
   ];
 
   const { mutate } = useMutation({
@@ -362,7 +362,7 @@ export default function ProjectEventCreationForm() {
       );
       setSelectedParticipants([]);
       setRecurrence("once");
-      setStartDate(undefined);
+      setStartDate(new Date());
       setEndDate(undefined);
       setStartTime(
         format(roundToNearestMinutes(new Date(), { nearestTo: 30 }), "HH:mm")
@@ -454,7 +454,7 @@ export default function ProjectEventCreationForm() {
   };
 
   return (
-    <ScrollArea className="w-full h-[calc(100vh-150px)] ">
+    <ScrollArea className="w-full max-h-[calc(100vh-150px)] ">
       <div>
         <Card className="w-full">
           <CardHeader>
@@ -535,62 +535,61 @@ export default function ProjectEventCreationForm() {
                     </SelectContent>
                   </Select>
                 </div>
-                {recurrence !== "once" && (
-                  <div className="grid grid-cols-2 gap-4">
-                    {recurrence === "weekly" && (
-                      <div className="space-y-2 col-span-2">
-                        <Label htmlFor="weeklyRecurrenceDay">On</Label>
-                        <Select
-                          value={weeklyRecurrenceDay}
-                          onValueChange={setWeeklyRecurrenceDay}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select day" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {[
-                              "Sunday",
-                              "Monday",
-                              "Tuesday",
-                              "Wednesday",
-                              "Thursday",
-                              "Friday",
-                              "Saturday",
-                            ].map((day) => (
-                              <SelectItem key={day} value={day}>
-                                {day}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                    <div className="space-y-2 ">
-                      <Label className="mr-2">Start Date </Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={
-                              !startDate ? "text-muted-foreground" : ""
-                            }
-                          >
-                            {startDate
-                              ? format(startDate, "PPP")
-                              : "Pick a date"}
-                            <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={startDate}
-                            onSelect={setStartDate}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {recurrence === "weekly" && (
+                    <div className="space-y-2 col-span-2">
+                      <Label htmlFor="weeklyRecurrenceDay">On</Label>
+                      <Select
+                        value={weeklyRecurrenceDay}
+                        onValueChange={setWeeklyRecurrenceDay}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select day" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[
+                            "Sunday",
+                            "Monday",
+                            "Tuesday",
+                            "Wednesday",
+                            "Thursday",
+                            "Friday",
+                            "Saturday",
+                          ].map((day) => (
+                            <SelectItem key={day} value={day}>
+                              {day}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
+                  )}
+                  <div className="space-y-2 ">
+                    <Label className="mr-2">
+                      {recurrence === "once" ? "Meeting Date" : "Start Date"}{" "}
+                    </Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={!startDate ? "text-muted-foreground" : ""}
+                        >
+                          {startDate ? format(startDate, "PPP") : "Pick a date"}
+                          <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={startDate}
+                          onSelect={(date) => setStartDate(date as Date)}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  {recurrence !== "once" && (
                     <div className="space-y-2">
                       <Label className="mr-2">End Date </Label>
                       <Popover>
@@ -607,14 +606,14 @@ export default function ProjectEventCreationForm() {
                           <Calendar
                             mode="single"
                             selected={endDate}
-                            onSelect={setEndDate}
+                            onSelect={(date) => setEndDate(date as Date)}
                             initialFocus
                           />
                         </PopoverContent>
                       </Popover>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

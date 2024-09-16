@@ -10,7 +10,7 @@ export default function ChatComponent() {
       <Card className="h-full w-full rounded-2xl">
         <CardHeader className="p-4 h-[50px]">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl font-bold">AI Actions</CardTitle>
+            <CardTitle className="text-sm font-medium">Chat</CardTitle>
             <AssistantChatSelector />
           </div>
         </CardHeader>

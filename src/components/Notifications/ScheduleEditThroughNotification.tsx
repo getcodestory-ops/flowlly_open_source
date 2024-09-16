@@ -1,38 +1,29 @@
-import React, { useEffect } from "react";
-import {
-  Flex,
-  Text,
-  IconButton,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Icon,
-} from "@chakra-ui/react";
+import React from "react";
+import { useToast } from "@/components/ui/use-toast";
 import { Notification } from "@/types/notification";
 import { getAgentChats } from "@/api/agentRoutes";
 import { useStore } from "@/utils/store";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@chakra-ui/react";
 import MarkdownRenderer from "../Markdown/MarkdownRenderer";
 import { FaCheck } from "react-icons/fa";
 import { VscChromeClose } from "react-icons/vsc";
-import {
-  getScheduleRevisions,
-  updateActivityRevision,
-  rejectRevision,
-  getScheduleRevisionsById,
-} from "@/api/schedule_routes";
+import { updateActivityRevision, rejectRevision } from "@/api/schedule_routes";
 import { Revision } from "@/types/activities";
-import { FaCircleDot } from "react-icons/fa6";
 import ChatSenderDisplay from "../ChatInput/ChatSenderDisplay";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 
 interface ScheduleEditThroughNotificationProps {
   isOpen: boolean;
@@ -47,31 +38,26 @@ function ScheduleEditThroughNotification({
 }: ScheduleEditThroughNotificationProps) {
   const session = useStore((state) => state.session);
   const activeProject = useStore((state) => state.activeProject);
-  const toast = useToast();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: chats, isLoading } = useQuery({
     queryKey: ["agentChats", session, notification?.chat_id],
     queryFn: () => {
       if (!session) {
         toast({
-          title: "Error",
-          description: "Please refresh the page and try again!",
-          status: "error",
-          duration: 4000,
-          isClosable: true,
+          title: "Session Error",
+          description: "No session found",
         });
         return Promise.reject("refresh session");
       }
 
       if (!notification?.chat_id) {
         toast({
-          title: "Warning",
-          description: "The notification does not have associated data!",
-          status: "warning",
-          duration: 1000,
-          isClosable: true,
+          title: "Chat Error",
+          description: "No chat found",
         });
+
         return Promise.reject("select a chat");
       }
 
@@ -90,20 +76,14 @@ function ScheduleEditThroughNotification({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["scheduleRevision"] });
       toast({
-        title: "Success",
+        title: "Revision Updated",
         description: "Revision Updated",
-        status: "success",
-        duration: 9000,
-        isClosable: true,
       });
     },
     onError: (error: Error) => {
       toast({
         title: "Error",
         description: error.message,
-        status: "error",
-        duration: 9000,
-        isClosable: true,
       });
     },
   });
@@ -122,152 +102,109 @@ function ScheduleEditThroughNotification({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["scheduleRevision"] });
       toast({
-        title: "Success",
+        title: "Revision Updated",
         description: "Revision Updated",
-        status: "success",
-        duration: 9000,
-        isClosable: true,
       });
     },
     onError: (error: Error) => {
       toast({
         title: "Error",
         description: error.message,
-        status: "error",
-        duration: 9000,
-        isClosable: true,
       });
     },
   });
 
-  //   const ids = chats
-  //     ?.map((chat) => {
-  //       if (!chat.message.content || typeof chat.message.content == "string")
-  //         return;
-
-  //       return chat.message.content.map((content) => content.revision_id);
-  //     })
-  //     .flat()
-  //     .filter((id) => id !== undefined) as string[];
-
-  //   console.log("ids", ids);
-
-  //   const { data: scheduleRevision } = useQuery({
-  //     queryKey: ["scheduleRevisionByIds", activeProject, ids],
-  //     queryFn: () => {
-  //       if (!session?.access_token || !activeProject || !ids) {
-  //         toast({
-  //           title: "Error",
-  //           description: "No active project or session",
-  //           status: "error",
-  //           duration: 9000,
-  //           isClosable: true,
-  //         });
-  //         return Promise.reject("No active project or session");
-  //       }
-  //       return getScheduleRevisionsById(session, activeProject.project_id, ids);
-  //     },
-  //     enabled: !!session?.access_token,
-  //   });
-
-  //   useEffect(() => {
-  //     if (!scheduleRevision) return;
-  //     console.log("scheduleRevision", scheduleRevision);
-  //   }, [scheduleRevision]);
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="6xl">
-      <ModalOverlay />
-      <ModalContent maxH="3xl" overflow={"scroll"}>
-        <ModalHeader>Action Items</ModalHeader>
-        <ModalBody>
-          {isLoading && <Text>Loading...</Text>}
-          {chats &&
-            chats.map((chat) => (
-              <Flex key={chat.id} p={2} borderBottomWidth="1px">
-                {chat.message && (
-                  <Flex flexDirection={"column"}>
-                    <Flex alignItems={"center"} gap="2">
-                      <ChatSenderDisplay sender={chat.sender} />
-                    </Flex>
-                    {typeof chat.message.content === "string" && (
-                      <Flex borderLeft="2px solid #e5e5e5" ml="2">
-                        <MarkdownRenderer content={chat.message.content} />
-                      </Flex>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-h-[768px]   overflow-auto max-w-screen-xl w-full">
+        <DialogHeader>
+          <DialogTitle>Action Items</DialogTitle>
+        </DialogHeader>
+        {isLoading && <p>Loading...</p>}
+        {chats &&
+          chats.map((chat) => (
+            <div key={chat.id} className="p-2 border-b border-gray-200">
+              {chat.message && (
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <ChatSenderDisplay sender={chat.sender} />
+                  </div>
+                  {typeof chat.message.content === "string" && (
+                    <div className="border-l-2 border-gray-200 ml-2">
+                      <MarkdownRenderer content={chat.message.content} />
+                    </div>
+                  )}
+                  {chat.message.content &&
+                    chat.message.content.length > 0 &&
+                    typeof chat.message.content === "object" &&
+                    chat.sender === "Flowlly-schedule-update" && (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Reason</TableHead>
+                            <TableHead>Impact on Start Date</TableHead>
+                            <TableHead>Impact on End Date</TableHead>
+                            <TableHead>Approve/Reject</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {chat.message.content.map((content, index) => (
+                            <TableRow key={index}>
+                              <TableCell>{content.name}</TableCell>
+                              <TableCell>{content.reason}</TableCell>
+                              <TableCell>
+                                {content.impact_on_start_date}
+                              </TableCell>
+                              <TableCell>
+                                {content.impact_on_end_date}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
+                                  {content.revision_id && (
+                                    <FaCheck
+                                      className="cursor-pointer text-xs"
+                                      onClick={() => {
+                                        if (content.revision_id) {
+                                          approveImpact.mutate({
+                                            id: content?.revision_id,
+                                            revision: {
+                                              impact_on_start_date:
+                                                content.impact_on_start_date ??
+                                                0,
+                                              impact_on_end_date:
+                                                content.impact_on_end_date ?? 0,
+                                            },
+                                          });
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                  {content.revision_id && (
+                                    <VscChromeClose
+                                      className="cursor-pointer text-xs"
+                                      onClick={() => {
+                                        if (content.revision_id) {
+                                          rejectImpact.mutate(
+                                            content?.revision_id
+                                          );
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
                     )}
-                    {chat.message.content &&
-                      chat.message.content.length > 0 &&
-                      typeof chat.message.content === "object" &&
-                      chat.sender === "Flowlly-schedule-update" && (
-                        <Table variant="simple">
-                          <Thead>
-                            <Tr>
-                              <Th>Name</Th>
-                              <Th>Reason</Th>
-                              <Th>Impact on Start Date</Th>
-                              <Th>Impact on End Date</Th>
-                              <Th>Approve/Reject</Th>
-                            </Tr>
-                          </Thead>
-                          <Tbody>
-                            {chat.message.content.map((content, index) => (
-                              <Tr key={index}>
-                                <Td>{content.name}</Td>
-                                <Td>{content.reason}</Td>
-                                <Td>{content.impact_on_start_date}</Td>
-                                <Td>{content.impact_on_end_date}</Td>
-                                <Td>
-                                  <Flex gap="2">
-                                    {content.revision_id && (
-                                      <Icon
-                                        size="xs"
-                                        as={FaCheck}
-                                        cursor="pointer"
-                                        onClick={() => {
-                                          if (content.revision_id) {
-                                            approveImpact.mutate({
-                                              id: content?.revision_id,
-                                              revision: {
-                                                impact_on_start_date:
-                                                  content.impact_on_start_date ??
-                                                  0,
-                                                impact_on_end_date:
-                                                  content.impact_on_end_date ??
-                                                  0,
-                                              },
-                                            });
-                                          }
-                                        }}
-                                      />
-                                    )}
-                                    {content.revision_id && (
-                                      <Icon
-                                        size="xs"
-                                        cursor="pointer"
-                                        as={VscChromeClose}
-                                        onClick={() => {
-                                          if (content.revision_id) {
-                                            rejectImpact.mutate(
-                                              content?.revision_id
-                                            );
-                                          }
-                                        }}
-                                      />
-                                    )}
-                                  </Flex>
-                                </Td>
-                              </Tr>
-                            ))}
-                          </Tbody>
-                        </Table>
-                      )}
-                  </Flex>
-                )}
-              </Flex>
-            ))}
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+                </div>
+              )}
+            </div>
+          ))}
+      </DialogContent>
+    </Dialog>
   );
 }
 

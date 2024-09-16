@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { ScrollArea } from "../ui/scroll-area";
+import { set } from "date-fns";
 
 interface MultiSelectProps {
   title: string;
@@ -33,11 +35,10 @@ const MultiSelect = ({
   existingSelection = [],
 }: MultiSelectProps) => {
   const [open, setOpen] = useState(false);
-  const [selectedOptions, setSelectedOptions] =
-    useState<string[]>(existingSelection);
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
   useEffect(() => {
-    setSelectedOptions(existingSelection);
+    if (existingSelection) setSelectedOptions(existingSelection);
   }, [existingSelection]);
 
   const handleSelect = (optionId: string) => {
@@ -75,7 +76,7 @@ const MultiSelect = ({
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="">
         <Command>
           <CommandInput placeholder={`Search ${title.toLowerCase()}...`} />
           <CommandEmpty>No option found.</CommandEmpty>
@@ -98,22 +99,26 @@ const MultiSelect = ({
                 Clear
               </Button>
             </div>
-            {options.map((option) => (
-              <CommandItem
-                key={option.id}
-                onSelect={() => handleSelect(option.id)}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    selectedOptions?.includes(option.id)
-                      ? "opacity-100"
-                      : "opacity-0"
-                  )}
-                />
-                {option.label}
-              </CommandItem>
-            ))}
+            <ScrollArea className="flex max-h-96 flex-col overflow-y-auto ">
+              <div className="mr-6">
+                {options.map((option) => (
+                  <CommandItem
+                    key={option.id}
+                    onSelect={() => handleSelect(option.id)}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        selectedOptions?.includes(option.id)
+                          ? "opacity-100"
+                          : "opacity-0"
+                      )}
+                    />
+                    {option.label}
+                  </CommandItem>
+                ))}
+              </div>
+            </ScrollArea>
           </CommandGroup>
         </Command>
       </PopoverContent>
