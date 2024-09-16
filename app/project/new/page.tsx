@@ -2,15 +2,15 @@
 
 import React, { useEffect, useState } from "react";
 import { useStore } from "@/utils/store";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import supabase from "@/utils/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { AddNewProjectModalContent } from "@/components/Schedule/AddNewProjectModal";
 import { PlusCircledIcon } from "@radix-ui/react-icons";
 import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+
 export default function MainLayout() {
   const router = useRouter();
-  const pathname = usePathname();
   const [showNewTeamDialog, setShowNewTeamDialog] = useState(false);
 
   const { setSessionToken } = useStore((state) => ({

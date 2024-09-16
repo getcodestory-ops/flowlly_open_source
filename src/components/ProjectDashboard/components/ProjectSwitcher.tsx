@@ -49,7 +49,6 @@ interface TeamSwitcherProps extends PopoverTriggerProps {}
 
 export function ProjectSwitcher({ className }: TeamSwitcherProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const params = useParams();
 
