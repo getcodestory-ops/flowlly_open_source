@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useStore } from "@/utils/store";
 import { useRouter, usePathname } from "next/navigation";
 import supabase from "@/utils/supabaseClient";
-import { getProjects } from "@/api/projectRoutes";
-import { Loader2 } from "lucide-react";
-
+import { Button } from "@/components/ui/button";
+import { AddNewProjectModalContent } from "@/components/Schedule/AddNewProjectModal";
+import { PlusCircledIcon } from "@radix-ui/react-icons";
+import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 export default function MainLayout() {
   const router = useRouter();
   const pathname = usePathname();
+  const [showNewTeamDialog, setShowNewTeamDialog] = useState(false);
 
   const { setSessionToken } = useStore((state) => ({
     setSessionToken: state.setSession,
@@ -23,18 +25,6 @@ export default function MainLayout() {
         router.replace("/applogin");
       } else {
         setSessionToken(data?.session);
-        const projects = await getProjects(data?.session);
-
-        if (projects.length > 0) {
-          const activeProject = projects[0];
-          if (activeProject) {
-            router.replace(`/project/${activeProject.project_id}/assignments`);
-          } else {
-            router.replace("/");
-          }
-        } else {
-          router.replace("/");
-        }
       }
     }
     loginCheck();
@@ -42,7 +32,15 @@ export default function MainLayout() {
 
   return (
     <div className="flex items-center justify-center h-screen">
-      <Loader2 size="64" className="animate-spin" />
+      <AlertDialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
+        <AlertDialogTrigger asChild>
+          <Button>
+            <PlusCircledIcon className="mr-2 h-5 w-5" />
+            Create Project
+          </Button>
+        </AlertDialogTrigger>
+        <AddNewProjectModalContent setIsOpen={setShowNewTeamDialog} />
+      </AlertDialog>
     </div>
   );
 }

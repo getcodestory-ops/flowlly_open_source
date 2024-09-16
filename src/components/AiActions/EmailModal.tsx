@@ -1,40 +1,38 @@
+"use client";
+
 import React, { useState } from "react";
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  FormControl,
-  FormLabel,
-  Input,
-  useDisclosure,
-  Box,
-  Tag,
-  TagCloseButton,
-  TagLabel,
-  useToast,
-} from "@chakra-ui/react";
 import { IoMdSend } from "react-icons/io";
 import { distributeEmails } from "@/api/agentRoutes";
 import { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/use-toast";
+import { X } from "lucide-react";
 
-const EmailModal = ({
-  content,
-  sessionToken,
-  editor,
-  subject = "Minutes of the Meeting",
-}: {
+interface EmailModalProps {
   content?: string;
   sessionToken?: Session;
   editor?: any;
   subject?: string;
+}
+
+const EmailModal: React.FC<EmailModalProps> = ({
+  content,
+  sessionToken,
+  editor,
+  subject = "Minutes of the Meeting",
 }) => {
-  const toast = useToast();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { toast } = useToast();
+  const [isOpen, setIsOpen] = useState(false);
   const [emails, setEmails] = useState<string[]>([]);
   const [emailInput, setEmailInput] = useState("");
 
@@ -50,7 +48,6 @@ const EmailModal = ({
   };
 
   const handleDistributeEmails = () => {
-    //"Distributing emailsa", emails, sessionToken);
     if (!sessionToken || emails.length === 0) return;
     if (content) distributeEmails(sessionToken, content, emails, subject);
     else if (editor)
@@ -59,78 +56,75 @@ const EmailModal = ({
       toast({
         title: "Error",
         description: "No content found to send",
-        status: "error",
-        duration: 9000,
-        isClosable: true,
+        variant: "destructive",
       });
       return;
     }
     toast({
       title: "Emails sent",
       description: "The minutes of the meeting have been sent to the emails",
-      status: "success",
-      duration: 9000,
-      isClosable: true,
     });
-    onClose();
+    setIsOpen(false);
   };
 
   return (
     <>
-      <Button variant={"ghost"} onClick={onOpen}>
+      <Button variant="ghost" onClick={() => setIsOpen((state) => !state)}>
         <IoMdSend className="mr-2" />
         Distribute {subject}
       </Button>
 
-      <Modal isOpen={isOpen} onClose={onClose} size={"xl"}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Add User Emails</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <FormControl>
-              <FormLabel>Email address</FormLabel>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add User Emails</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email
+              </Label>
               <Input
+                id="email"
                 type="email"
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
                 placeholder="Enter email"
+                className="col-span-3"
               />
-              <Button className="mt-4" onClick={handleAddEmail}>
-                Add Email
-              </Button>
-            </FormControl>
-            <Box mt={4}>
-              {emails.map((email) => (
-                <Tag
-                  key={email}
-                  size="md"
-                  borderRadius="full"
-                  variant="solid"
-                  colorScheme="blue"
-                  mr={2}
-                  mt={2}
+            </div>
+            <Button onClick={handleAddEmail} className="ml-auto">
+              Add Email
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-4">
+            {emails.map((email) => (
+              <Badge key={email} variant="secondary">
+                {email}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="ml-2 h-4 w-4 p-0"
+                  onClick={() => handleRemoveEmail(email)}
                 >
-                  <TagLabel>{email}</TagLabel>
-                  <TagCloseButton onClick={() => handleRemoveEmail(email)} />
-                </Tag>
-              ))}
-            </Box>
-          </ModalBody>
-
-          <ModalFooter>
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsOpen(false)}>
+              Cancel
+            </Button>
             <Button
               disabled={emails.length === 0}
               onClick={handleDistributeEmails}
             >
               Distribute Emails
             </Button>
-            <Button variant="ghost" onClick={onClose}>
-              Cancel
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

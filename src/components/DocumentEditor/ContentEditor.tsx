@@ -4,8 +4,9 @@ import UnderLine from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import ImageResize from "tiptap-extension-resize-image";
 import { Markdown } from "tiptap-markdown";
-import { Button, Flex } from "@chakra-ui/react";
+import { Button } from "../ui/button";
 import Toolbar from "./ToolBar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface EditorBlockProps {
   content: string | any;
@@ -42,47 +43,7 @@ const ContentEditor = ({
   });
 
   return (
-    <Flex
-      w="full"
-      maxH="90vh"
-      flexDir="column"
-      overflowY="auto"
-      sx={{
-        h1: {
-          fontSize: "4xl",
-          fontWeight: "bold",
-        },
-        h2: {
-          fontSize: "3xl",
-          marginTop: "1rem",
-          marginBottom: "1rem",
-        },
-        h3: {
-          fontSize: "2xl",
-
-          marginTop: "1.5rem",
-        },
-        h4: {
-          fontSize: "xl",
-        },
-        h5: {
-          fontSize: "lg",
-        },
-        h6: {
-          fontSize: "md",
-        },
-        p: {
-          fontSize: "sm",
-          fontWeight: "normal",
-          margin: "0.5rem 0",
-        },
-        li: {
-          fontSize: "sm",
-          fontWeight: "normal",
-          marginLeft: "2rem",
-        },
-      }}
-    >
+    <div className=" max-h-[90vh] flex flex-col  ">
       {editor && (
         <>
           <Toolbar
@@ -91,29 +52,34 @@ const ContentEditor = ({
             documentType={documentType}
           />
           <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-            <Flex gap="2">
+            <div className="flex gap-2 p-1 bg-background border rounded-md shadow-sm">
               <Button
                 size="sm"
+                variant={editor.isActive("bold") ? "default" : "secondary"}
                 onClick={() => editor.chain().focus().toggleMark("bold").run()}
-                colorScheme={editor.isActive("bold") ? "blue" : "gray"}
               >
                 Bold
               </Button>
               <Button
                 size="sm"
+                variant={editor.isActive("italic") ? "default" : "secondary"}
                 onClick={() =>
                   editor.chain().focus().toggleMark("italic").run()
                 }
-                colorScheme={editor.isActive("italic") ? "blue" : "gray"}
               >
                 Italic
               </Button>
-            </Flex>
+            </div>
           </BubbleMenu>
-          <EditorContent editor={editor} className="m-4 " />
+          <ScrollArea className="h-[75vh]">
+            <EditorContent
+              editor={editor}
+              className="m-4 w-full prose prose-sm sm:prose lg: prose-lg xl:prose-2xl"
+            />
+          </ScrollArea>
         </>
       )}
-    </Flex>
+    </div>
   );
 };
 

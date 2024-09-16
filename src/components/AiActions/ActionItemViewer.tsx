@@ -83,7 +83,7 @@ function ActionItemViewer({ results }: ActionItemInterface) {
       <Toaster />
       {activity_addition && activity_addition.length > 0 && (
         <div className="my-4">
-          <h2 className="text-center m-2 text-xl">
+          <h2 className=" m-2 text-xl font-bold">
             New activities to be added in schedule{" "}
           </h2>
           <Table>
@@ -119,8 +119,8 @@ function ActionItemViewer({ results }: ActionItemInterface) {
       )}
 
       {activity_deletion && activity_deletion.length > 0 && (
-        <div className="my-4">
-          <h2 className="text-center m-2 text-xl">Activity Additions</h2>
+        <div className="my-8">
+          <h2 className="m-2 text-xl font-bold">Activities to be deleted</h2>
           <Table>
             <TableHeader>
               <TableRow>
@@ -146,8 +146,7 @@ function ActionItemViewer({ results }: ActionItemInterface) {
 
       {activity_modification && activity_modification.length > 0 && (
         <div className="my-4">
-          <h2 className="text-center m-2 text-xl">
-            {" "}
+          <h2 className="m-2 text-xl font-bold">
             Existing activities to be changed
           </h2>
           <Table>

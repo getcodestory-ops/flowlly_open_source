@@ -94,7 +94,7 @@ function ProjectBoard() {
   };
 
   return (
-    <ScrollArea className="h-full bg-brand-light p-4 rounded-lg flex items-start">
+    <ScrollArea className="h-full bg-brand-light p-4 rounded-lg flex items-start ">
       <ShareProjectModal
         isShareOpen={isShareOpen}
         shareModalClose={() => {
@@ -104,7 +104,7 @@ function ProjectBoard() {
       <div>
         {userProjects && (
           <>
-            <div className="text-3xl bold">Projects</div>
+            <div className="text-sm font-medium pl-4">Projects</div>
             <div className="w-full p-4 grid gap-[20px] grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               <AddNewProjectButton>
                 <Button

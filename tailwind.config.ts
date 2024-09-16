@@ -1,13 +1,13 @@
-import type { Config } from "tailwindcss"
+import type { Config } from "tailwindcss";
 
 const config = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
-	],
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -72,9 +72,120 @@ const config = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            color: "#333",
+            a: {
+              color: "#3182ce",
+              "&:hover": {
+                color: "#2c5282",
+              },
+            },
+            h1: {
+              color: "#1a202c",
+              fontWeight: "700",
+              fontSize: "1.75rem",
+              lineHeight: "1.2",
+              marginTop: "1.25rem",
+              marginBottom: "0.75rem",
+            },
+            h2: {
+              color: "#2d3748",
+              fontWeight: "600",
+              fontSize: "1.5rem",
+              lineHeight: "1.3",
+              marginTop: "1rem",
+              marginBottom: "0.5rem",
+            },
+            h3: {
+              color: "#4a5568",
+              fontWeight: "600",
+              fontSize: "1.25rem",
+              lineHeight: "1.4",
+              marginTop: "0.75rem",
+              marginBottom: "0.5rem",
+            },
+            h4: {
+              color: "#4a5568",
+              fontWeight: "600",
+              fontSize: "1.125rem",
+              lineHeight: "1.5",
+              marginTop: "0.75rem",
+              marginBottom: "0.5rem",
+            },
+            h5: {
+              color: "#4a5568",
+              fontWeight: "600",
+              fontSize: "1rem",
+              lineHeight: "1.5",
+              marginTop: "0.625rem",
+              marginBottom: "0.375rem",
+            },
+            h6: {
+              color: "#4a5568",
+              fontWeight: "600",
+              fontSize: "0.875rem",
+              lineHeight: "1.5",
+              marginTop: "0.625rem",
+              marginBottom: "0.375rem",
+            },
+            p: {
+              fontSize: "1rem",
+              lineHeight: "1.625",
+              marginTop: "0.75rem",
+              marginBottom: "0.75rem",
+            },
+            ul: {
+              marginTop: "0.5rem",
+              marginBottom: "0.5rem",
+            },
+            ol: {
+              marginTop: "0.5rem",
+              marginBottom: "0.5rem",
+            },
+            li: {
+              fontSize: "1rem",
+              lineHeight: "1.625",
+              marginTop: "0.25rem",
+              marginBottom: "0.25rem",
+            },
+            blockquote: {
+              fontStyle: "italic",
+              color: "#718096",
+              borderLeftWidth: "4px",
+              borderLeftColor: "#e2e8f0",
+              paddingLeft: "1rem",
+            },
+            code: {
+              color: "#805ad5",
+              fontWeight: "600",
+            },
+            pre: {
+              backgroundColor: "#f7fafc",
+              padding: "1rem",
+              borderRadius: "0.375rem",
+            },
+            strong: {
+              color: "#2d3748",
+              fontWeight: "700",
+            },
+            img: {
+              marginTop: "1rem",
+              marginBottom: "1rem",
+              borderRadius: "0.375rem",
+            },
+            hr: {
+              borderColor: "#e2e8f0",
+              marginTop: "2rem",
+              marginBottom: "2rem",
+            },
+          },
+        },
+      },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-} satisfies Config
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+} satisfies Config;
 
-export default config
+export default config;
