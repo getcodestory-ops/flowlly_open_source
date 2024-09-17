@@ -20,12 +20,15 @@ export const getProjects = async (
         Authorization: `Bearer ${session.access_token}`,
       },
     });
+    console.log("response", response?.data);
     if (response.data?.projects) {
       return response.data?.projects;
+    } else {
+      return [];
     }
-    throw new Error("No projects were found!");
   } catch (e) {
-    throw new Error("Activity does not have child activities!");
+    console.log(e);
+    throw new Error("something went wrong");
   }
 };
 

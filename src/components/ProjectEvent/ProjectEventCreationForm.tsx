@@ -454,7 +454,7 @@ export default function ProjectEventCreationForm() {
   };
 
   return (
-    <ScrollArea className="w-full max-h-[calc(100vh-150px)] ">
+    <ScrollArea className="w-full h-[calc(100vh-150px)] ">
       <div>
         <Card className="w-full">
           <CardHeader>
@@ -627,7 +627,7 @@ export default function ProjectEventCreationForm() {
                       {Array.from({ length: 48 }, (_, i) => {
                         const date = addMinutes(
                           new Date().setHours(0, 0, 0, 0),
-                          i * 30
+                          i * 15
                         );
                         return (
                           <SelectItem key={i} value={format(date, "HH:mm")}>
