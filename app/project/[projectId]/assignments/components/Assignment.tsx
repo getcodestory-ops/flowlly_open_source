@@ -85,6 +85,7 @@ type GraphData = {
   id: string;
   name: string;
   description: string;
+  metadata: {};
   created_at: string;
   nodes: NodeData[];
   run_time: string;
@@ -287,17 +288,34 @@ const GraphList: React.FC<{
       },
       {
         accessorKey: "created_at",
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="p-0"
-          >
-            Created At
-          </Button>
-        ),
-        cell: (info) => new Date(info.getValue() as string).toLocaleString(),
+        header: "Frequency",
+        cell: (info) => {
+          if (info.getValue()) {
+            const schedule = info.getValue();
+            return schedule;
+          } else {
+            return "N/A";
+          }
+        },
       },
+      {
+        accessorKey: "time",
+        header: "Last update",
+        cell: (info) => info.getValue(),
+      },
+      // {
+      //   accessorKey: "created_at",
+      //   header: ({ column }) => (
+      //     <Button
+      //       variant="ghost"
+      //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      //       className="p-0"
+      //     >
+      //       Created At
+      //     </Button>
+      //   ),
+      //   cell: (info) => new Date(info.getValue() as string).toLocaleString(),
+      // },
       {
         accessorKey: "time",
         header: "Meeting Time",
@@ -782,7 +800,7 @@ export default function AssignmentHome() {
                   <p className="text-gray-600 mb-4">
                     {selectedNode.description}
                   </p>
-                  <ScrollArea className="h-[calc(100vh-200px)] p-4 ">
+                  <ScrollArea className="h-[calc(100vh-220px)] p-4 ">
                     {selectedNode.id.toLocaleLowerCase() ===
                       "write_meeting_minutes" &&
                       selectedNode.status === "completed" && (
@@ -799,9 +817,9 @@ export default function AssignmentHome() {
                       "write_meeting_minutes" &&
                       selectedNode.id.toLocaleLowerCase() !==
                         "determine_action_items" && (
-                        <pre className="text-sm text-gray-700">
+                        <div className="text-sm text-gray-700 ">
                           {JSON.stringify(selectedNode.output, null, 2)}
-                        </pre>
+                        </div>
                       )}
                   </ScrollArea>
                 </div>
