@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   ChevronDown,
   CheckCircle,
@@ -35,6 +35,8 @@ import {
   ColumnDef,
   SortingState,
   flexRender,
+  getExpandedRowModel,
+  Row,
 } from "@tanstack/react-table";
 import { useQuery } from "@tanstack/react-query";
 import { getProjectEvents } from "@/api/taskQueue";
@@ -129,6 +131,13 @@ type NodeProps = {
   isSelected: boolean;
 };
 
+interface ScheduleTableRow {
+  id: string;
+  schedule?: EventSchedule["schedule"];
+  result?: EventResult["result"];
+  subRows?: ScheduleTableRow[];
+}
+
 // map pending" | "completed" | "running" | "failed" | "skipped" | "cancelled" | "retry" with lucide react icons and colors
 
 const colorMapping = {
@@ -167,7 +176,14 @@ const Node: React.FC<NodeProps> = ({ node, isLast, onSelect, isSelected }) => (
     <div
       className={`w-64 p-4 rounded-lg shadow-md cursor-pointer transition-all duration-200 ease-in-out
         ${colorMapping[node.status].border || "border-2 border-gray-200"}
-        ${isSelected ? "bg-blue-100 scale-105" : "hover:bg-gray-100"}`}
+        ${isSelected ? "bg-blue-100 scale-105" : "hover:bg-gray-100"}
+        ${
+          node.id.toLocaleLowerCase() === "write_meeting_minutes" ||
+          node.id.toLocaleLowerCase() === "determine_action_items"
+            ? "opacity-100"
+            : "opacity-50"
+        }
+        `}
       onClick={() => onSelect(node)}
     >
       <h3 className="text-md font-semibold mb-2">{node.title}</h3>
@@ -185,6 +201,10 @@ const Node: React.FC<NodeProps> = ({ node, isLast, onSelect, isSelected }) => (
       >
         {node.status.charAt(0).toUpperCase() + node.status.slice(1)}
       </span>
+      {(node.id.toLocaleLowerCase() === "write_meeting_minutes" ||
+        node.id.toLocaleLowerCase() === "determine_action_items") && (
+        <Badge className="mt-1"> content available </Badge>
+      )}
       <div className="mt-2 flex justify-end">
         {colorMapping[node.status].icon || <Clock size={20} />}
       </div>
@@ -230,14 +250,6 @@ const renderNodes = (
         selectedNode={selectedNode}
       />
       <ChevronDown className="text-gray-400" size={24} />
-      {/* {node.children && node.children.length > 0 && (
-        <>
-          <div className="h-12 flex items-center justify-center">
-            <ChevronDown className="text-gray-400" size={24} />
-          </div>
-          {renderNodes(node.children, onSelectNode, selectedNode)}
-        </>
-      )} */}
     </div>
   ));
 };
@@ -389,46 +401,116 @@ const EventScheduleList: React.FC<{
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
 
-  const columns = useMemo<ColumnDef<EventSchedule>[]>(
+  // Transform graphs into table data
+  const tableData: ScheduleTableRow[] = useMemo(
+    () =>
+      graphs.map((eventSchedule) => ({
+        id: eventSchedule.id,
+        schedule: eventSchedule.schedule,
+        subRows: eventSchedule.event_result.map((eventResult) => ({
+          id: eventResult.result.id,
+          result: eventResult.result,
+        })),
+      })),
+    [graphs]
+  );
+
+  const columns = useMemo<ColumnDef<ScheduleTableRow>[]>(
     () => [
       {
-        accessorKey: "schedule",
+        id: "expander",
+        header: () => null,
+        cell: ({ row }) =>
+          row.getCanExpand() ? (
+            <Button
+              variant="ghost"
+              onClick={row.getToggleExpandedHandler()}
+              className="p-0"
+            >
+              {row.getIsExpanded() ? (
+                <ChevronDown className="ml-2 h-4 w-4" />
+              ) : (
+                <ChevronRight className="ml-2 h-4 w-4" />
+              )}
+            </Button>
+          ) : null,
+      },
+      {
+        accessorKey: "main",
         header: ({ column }) => (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="p-0"
           >
-            Meeting Time
+            Meeting Start Date
           </Button>
         ),
-        cell: (info) => {
-          const schedule = info.getValue() as EventSchedule["schedule"];
-          return (
-            new Date(schedule?.start).toDateString() +
-            " , " +
-            new Date(schedule?.start).toLocaleTimeString()
-          );
+        cell: ({ row }) => {
+          if (row.original.schedule) {
+            const schedule = row.original.schedule;
+            return new Date(schedule.start).toDateString();
+          } else if (row.original.result) {
+            const result = row.original.result;
+            return (
+              new Date(result.timestamp).toLocaleString() + " - " + result.name
+            );
+          } else {
+            return null;
+          }
         },
-        // new Date(info.getValue()?.start as string).toLocaleString(),
       },
+      // Add other columns as needed
     ],
     []
   );
 
-  const table = useReactTable({
-    data: graphs,
+  const table = useReactTable<ScheduleTableRow>({
+    data: tableData,
     columns,
     state: {
       sorting,
       globalFilter,
+      expanded: true,
     },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    getSubRows: (row) => row.subRows,
   });
+
+  const renderRow = (row: Row<ScheduleTableRow>) => (
+    <React.Fragment key={row.id}>
+      <TableRow
+        onClick={() => {
+          if (row.original.subRows) {
+            row.toggleExpanded();
+          } else if (row.original.result) {
+            // This is an EventResult row
+            const eventResult = graphs
+              .flatMap((schedule) => schedule.event_result)
+              .find((er) => er.result.id === row.original.result?.id);
+            if (eventResult) {
+              onSelectGraph(eventResult);
+            }
+          }
+        }}
+        className={cn(
+          "cursor-pointer hover:bg-gray-100",
+          row.depth > 0 && "bg-gray-50"
+        )}
+      >
+        {row.getVisibleCells().map((cell) => (
+          <TableCell key={cell.id}>
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </TableCell>
+        ))}
+      </TableRow>
+    </React.Fragment>
+  );
 
   return (
     <div className="w-full">
@@ -469,19 +551,7 @@ const EventScheduleList: React.FC<{
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows.length > 0 ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                onClick={() => onSelectGraph(row.original?.event_result[0])}
-                className="cursor-pointer hover:bg-gray-100"
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
+            table.getRowModel().rows.map(renderRow)
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="text-center">
@@ -650,101 +720,6 @@ export default function AssignmentHome() {
   useEffect(() => {
     if (!sheetOpen) setCurrentResult(null);
   }, [sheetOpen]);
-  // const graphs: GraphData[] = [
-  //   {
-  //     id: "1",
-  //     name: "Project Alpha",
-  //     description: "Main project workflow",
-  //     timestamp: new Date(2023, 5, 15),
-  //     nodes: [
-  //       {
-  //         id: "1",
-  //         title: "Start",
-  //         description: "Begin the process",
-  //         status: "completed",
-  //         output: "Project Alpha initialized successfully.",
-  //         children: [
-  //           {
-  //             id: "2a",
-  //             title: "Process Data A",
-  //             description: "Analyze set A",
-  //             status: "completed",
-  //             output:
-  //               "Data set A processed:\n- 1000 records analyzed\n- 3 anomalies detected\n- 97% accuracy achieved",
-  //           },
-  //           {
-  //             id: "2b",
-  //             title: "Process Data B",
-  //             description: "Analyze set B",
-  //             status: "in-progress",
-  //             output:
-  //               "Data set B processing in progress:\n- 500 out of 1500 records analyzed\n- Estimated completion time: 2 hours",
-  //           },
-  //         ],
-  //       },
-  //       {
-  //         id: "3",
-  //         title: "Merge Results",
-  //         description: "Combine processed data",
-  //         status: "failed",
-  //         output: "Waiting for all data sets to be processed before merging.",
-  //         children: [
-  //           {
-  //             id: "4",
-  //             title: "Generate Report",
-  //             description: "Create final output",
-  //             status: "in-progress",
-  //             output: "Report generation pending. Awaiting merged results.",
-  //           },
-  //         ],
-  //       },
-  //       {
-  //         id: "5",
-  //         title: "Send Notification",
-  //         description: "Alert stakeholders",
-  //         status: "in-progress",
-  //         output: "Notification will be sent once the report is generated.",
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     id: "2",
-  //     name: "Project Beta",
-  //     description: "Secondary project tasks",
-  //     timestamp: new Date(2023, 6, 1),
-  //     nodes: [
-  //       {
-  //         id: "1",
-  //         title: "Initialize",
-  //         description: "Set up project",
-  //         status: "completed",
-  //         output:
-  //           "Project Beta initialization complete. Environment configured.",
-  //         children: [
-  //           {
-  //             id: "2",
-  //             title: "Gather Requirements",
-  //             description: "Collect project specs",
-  //             status: "completed",
-  //             output:
-  //               "Requirements gathered:\n1. User authentication\n2. Data visualization\n3. Real-time updates\n4. Mobile responsiveness",
-  //           },
-  //         ],
-  //       },
-  //       {
-  //         id: "3",
-  //         title: "Development",
-  //         description: "Build features",
-  //         status: "in-progress",
-  //         output:
-  //           "Development in progress:\n- User authentication: 100%\n- Data visualization: 60%\n- Real-time updates: 30%\n- Mobile responsiveness: 45%",
-  //       },
-  //     ],
-  //   },
-  // ];
-
-  // const currentGraph =
-  //   graphs.find((graph) => graph.id === currentGraphId) || null;
 
   const handleSort = (key: keyof GraphData) => {
     setSortConfig((prevConfig) => ({

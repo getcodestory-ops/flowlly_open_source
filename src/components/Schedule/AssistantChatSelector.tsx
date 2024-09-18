@@ -39,13 +39,12 @@ const AssistantChatSelector = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          <DropdownMenuItem onSelect={onOpen} className="focus:bg-gray-100">
-            <AddNewChatEntity isOpen={isOpen} onClose={onClose} />
-            <div className="flex items-center justify-center gap-2 p-2 w-full hover:text-gray-900 cursor-pointer rounded-md">
+          <AddNewChatEntity />
+          {/* <div className="flex items-center justify-center gap-2 p-2 w-full hover:text-gray-900 cursor-pointer rounded-md">
               <Plus className="h-4 w-4" />
               <span className="truncate">New Chat</span>
-            </div>
-          </DropdownMenuItem>
+            </div> */}
+
           <DropdownMenuSeparator />
           <ScrollArea className="h-[60vh]">
             {chatEntities &&

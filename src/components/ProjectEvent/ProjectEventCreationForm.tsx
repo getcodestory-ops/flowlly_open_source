@@ -624,14 +624,14 @@ export default function ProjectEventCreationForm() {
                       <SelectValue placeholder="Select start time" />
                     </SelectTrigger>
                     <SelectContent>
-                      {Array.from({ length: 48 }, (_, i) => {
+                      {Array.from({ length: 96 }, (_, i) => {
                         const date = addMinutes(
                           new Date().setHours(0, 0, 0, 0),
                           i * 15
                         );
                         return (
                           <SelectItem key={i} value={format(date, "HH:mm")}>
-                            {format(date, "h:mm a")}
+                            {format(date, "p")}
                           </SelectItem>
                         );
                       })}

@@ -1,48 +1,35 @@
 import React, { useState } from "react";
 import {
-  Box,
-  Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  Input,
-  Textarea,
-  useToast,
-} from "@chakra-ui/react";
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { createChatEntity } from "@/api/agentRoutes";
 
-interface AddNewChatEntityProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-function AddNewChatEntity({ isOpen, onClose }: AddNewChatEntityProps) {
+function AddNewChatEntity() {
   const { session, activeProject } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
   }));
-  const toast = useToast();
+  const { toast } = useToast();
 
-  const [chatName, setchatName] = useState<string>("");
-  const [chatDescription, setchatDescription] = useState<string>("");
+  const [chatName, setChatName] = useState("");
+  const [chatDescription, setChatDescription] = useState("");
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: () => {
       if (!session || !activeProject) {
         toast({
+          variant: "destructive",
           title: "Error",
           description: "No session or active project",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          position: "bottom-right",
         });
         return Promise.reject("No session or active project");
       }
@@ -53,61 +40,53 @@ function AddNewChatEntity({ isOpen, onClose }: AddNewChatEntityProps) {
       });
     },
     onError: (error) => {
-      console.log(error);
+      console.error(error);
     },
     onSuccess: () => {
       toast({
         title: "Success",
         description: "Chat entity created",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom-right",
       });
       queryClient.invalidateQueries({ queryKey: ["chatEntityList"] });
+      // Clear input fields after success
+      setChatName("");
+      setChatDescription("");
     },
   });
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Create New Chat Entity</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Box mb={4}>
+    <Popover>
+      <PopoverTrigger>
+        <Button>Add New Chat Entity</Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-96">
+        <div className="p-4">
+          <h2 className="text-lg font-medium">Create New Chat Entity</h2>
+          <div className="space-y-4 mt-4">
             <Input
               placeholder="Chat Name"
               value={chatName}
-              onChange={(e) => {
-                setchatName(e.target.value);
-              }}
+              onChange={(e) => setChatName(e.target.value)}
             />
-          </Box>
-          <Textarea
-            placeholder="Chat Description"
-            value={chatDescription}
-            onChange={(e) => setchatDescription(e.target.value)}
-          />
-        </ModalBody>
-
-        <ModalFooter>
-          <Button
-            colorScheme="blue"
-            mr={3}
-            onClick={() => {
-              mutation.mutate();
-              onClose();
-            }}
-          >
-            Save
-          </Button>
-          <Button variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+            <Textarea
+              placeholder="Chat Description"
+              value={chatDescription}
+              onChange={(e) => setChatDescription(e.target.value)}
+            />
+          </div>
+          <div className="flex justify-end space-x-2 mt-4">
+            <Button
+              onClick={() => {
+                mutation.mutate();
+              }}
+            >
+              Save
+            </Button>
+            <Button variant="ghost">Cancel</Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
