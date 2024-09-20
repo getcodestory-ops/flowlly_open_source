@@ -205,7 +205,7 @@ export function ReRunChatAction({ id }: { id: string }) {
         <PopoverContent className="w-[300px] p-0">
           <Command>
             <CommandInput
-              placeholder="Search available actions..."
+              placeholder="Search available actions...."
               className="h-9"
             />
             <CommandList>
