@@ -104,9 +104,7 @@ export default function ProjectSetup() {
                   international
                   defaultCountry="US"
                   value={newMember.phone}
-                  onChange={(value) =>
-                    handleInputChange({ target: { value } }, "phone")
-                  }
+                  onChange={(value) => handleInputChange(value, "phone")}
                 />
               </TableCell>
               <TableCell>
@@ -224,10 +222,10 @@ export default function ProjectSetup() {
                     <PhoneInput
                       international
                       defaultCountry="US"
-                      value={editMember.phone}
-                      onChange={(value) =>
-                        handleMemberEdit({ target: { value } }, "phone")
-                      }
+                      value={editMember.phone ?? ""}
+                      onChange={(value) => {
+                        handleMemberEdit(value, "phone");
+                      }}
                     />
                   </TableCell>
                   <TableCell>
