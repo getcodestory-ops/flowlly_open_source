@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
-import { FileSearch, Maximize } from "lucide-react";
+import { FileSearch, Maximize, Trash } from "lucide-react";
 
 import { useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -148,6 +148,7 @@ const FilesHeader = () => {
         <TableHead className="hidden md:table-cell">File Name</TableHead>
         <TableHead className="hidden sm:table-cell">Type</TableHead>
         <TableHead className="hidden md:table-cell">Date</TableHead>
+        <TableHead className="hidden md:table-cell">Trash</TableHead>
       </TableRow>
     </TableHeader>
   );
@@ -164,35 +165,38 @@ const FileRow = ({
   currentFile: any;
 }) => {
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <TableRow
-          onMouseEnter={() => setCurrentFile(resource)}
-          className={`hover:bg-blue-100 cursor-pointer ${
-            currentFile?.id === resource.id ? "bg-blue-100" : ""
-          }`}
-        >
-          <TableCell>
+    <TableRow
+      onMouseEnter={() => setCurrentFile(resource)}
+      className={`hover:bg-blue-100  ${
+        currentFile?.id === resource.id ? "bg-blue-100" : ""
+      }`}
+    >
+      <Dialog>
+        <DialogTrigger asChild>
+          <TableCell className="cursor-pointer">
             <div className="flex flex-row justify-start gap-4">
               <FileMediaIcon fileExt={resource.metadata.extension + ""} />
               <div className="font-medium">{resource.file_name}</div>
             </div>
           </TableCell>
-          <TableCell className="hidden sm:table-cell">
-            <Badge variant="secondary">{resource.metadata.extension}</Badge>
-          </TableCell>
-          <TableCell className="hidden md:table-cell">
-            {formatDate(resource.created_at)}
-          </TableCell>
-        </TableRow>
-      </DialogTrigger>
-      <DialogContent
-        className="max-w-6xl flex flex-col items-center justify-center"
-        aria-describedby="file viewer"
-      >
-        <MediaDialogContent resource={resource} />
-      </DialogContent>
-    </Dialog>
+        </DialogTrigger>
+        <DialogContent
+          className="max-w-6xl flex flex-col items-center justify-center"
+          aria-describedby="file viewer"
+        >
+          <MediaDialogContent resource={resource} />
+        </DialogContent>
+      </Dialog>
+      <TableCell className="hidden sm:table-cell">
+        <Badge variant="secondary">{resource.metadata.extension}</Badge>
+      </TableCell>
+      <TableCell className="hidden md:table-cell">
+        {formatDate(resource.created_at)}
+      </TableCell>
+      <TableCell className="cursor-pointer hidden md:table-cell">
+        <Trash size={16} />
+      </TableCell>
+    </TableRow>
   );
 };
 

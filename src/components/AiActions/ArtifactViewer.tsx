@@ -153,6 +153,7 @@ function TaskResultDisplay({
 }
 
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
+import { RefreshCcw } from "lucide-react";
 
 const availableActions = [
   {
@@ -260,7 +261,11 @@ function ArtifactViewer({
     "log_action_items",
   ];
 
-  const { data: task_result } = useQuery({
+  const {
+    data: task_result,
+    refetch,
+    isRefetching,
+  } = useQuery({
     queryKey: [
       `taskResult${childTaskId}`,
       childTaskId,
@@ -290,6 +295,16 @@ function ArtifactViewer({
                 <AccordionTrigger>Results </AccordionTrigger>
                 <AccordionContent>
                   <div className="ml-2 border-l-2">
+                    <Button
+                      onClick={() => refetch()}
+                      size="icon"
+                      variant="ghost"
+                    >
+                      <RefreshCcw
+                        size="12"
+                        className={`${isRefetching ? "animate-spin" : ""}`}
+                      />
+                    </Button>
                     {task_result.task_results.map(
                       (task_output: any, index: number) => (
                         <div
