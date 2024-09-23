@@ -1,7 +1,7 @@
 import { type Session } from "@supabase/supabase-js";
 import axios from "axios";
 
-import { ContainerResources } from "@/types/document";
+import { ContainerResources, StorageResourceEntity } from "@/types/document";
 //types---------------------------------------------------------------------------------------------------------------
 enum reqType {
   FOLDER = "subfolder",
@@ -31,6 +31,26 @@ type CreateFolderSubFolderProp = {
 };
 
 //apis----------------------------------------------------------------------------------------------------------------
+
+export const fetchResource = async (
+  session: Session | null,
+  projectId: string | undefined,
+  resourceId: string
+): Promise<StorageResourceEntity | undefined> => {
+  if (!session || !projectId) {
+    return;
+  }
+
+  const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/resource/${projectId}/${resourceId}`;
+
+  const response = await axios.get(baseUrl, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  return response.data;
+};
 
 export const fetchFolders = async (
   session: Session,
