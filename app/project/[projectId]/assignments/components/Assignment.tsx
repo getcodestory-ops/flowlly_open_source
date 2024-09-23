@@ -43,6 +43,8 @@ import { getProjectEvents } from "@/api/taskQueue";
 import { useStore } from "@/utils/store";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge"; // shadcn component
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { ResourceTextViewer } from "@/components/DocumentEditor/ResourceTextViewer";
 
 type ActionData = Array<{
   activity_addition: Array<{
@@ -77,7 +79,7 @@ type NodeData = {
     | "skipped"
     | "cancelled"
     | "retry";
-  output: string | Record<string, unknown> | ActionData;
+  output: string | any | ActionData;
   children?: NodeData[];
 };
 
@@ -179,8 +181,9 @@ const Node: React.FC<NodeProps> = ({ node, isLast, onSelect, isSelected }) => (
         ${colorMapping[node.status].border || "border-2 border-gray-200"}
         ${isSelected ? "bg-blue-100 scale-105" : "hover:bg-gray-100"}
         ${
-          node.id.toLocaleLowerCase() === "write_meeting_minutes" ||
-          node.id.toLocaleLowerCase() === "determine_action_items"
+          node.id.toLocaleLowerCase() === "determine_action_items" ||
+          node.id.toLocaleLowerCase() === "record_meeting" ||
+          node.id.toLocaleLowerCase() === "save_minutes_in_project_documents"
             ? "opacity-100"
             : "opacity-50"
         }
@@ -202,8 +205,10 @@ const Node: React.FC<NodeProps> = ({ node, isLast, onSelect, isSelected }) => (
       >
         {node.status.charAt(0).toUpperCase() + node.status.slice(1)}
       </span>
-      {(node.id.toLocaleLowerCase() === "write_meeting_minutes" ||
-        node.id.toLocaleLowerCase() === "determine_action_items") && (
+      {(node.id.toLocaleLowerCase() === "determine_action_items" ||
+        node.id.toLocaleLowerCase() === "record_meeting" ||
+        node.id.toLocaleLowerCase() ===
+          "save_minutes_in_project_documents") && (
         <Badge className="mt-1"> content available </Badge>
       )}
       <div className="mt-2 flex justify-end">
@@ -765,72 +770,100 @@ export default function AssignmentHome() {
       />
 
       <div
-        className={`fixed z-10 right-1 lg:w-3/4  h-[calc(100vh-140px)]   bg-background  transform transition-transform duration-300 ease-in-out border rounded-lg p-2 ${
+        className={`fixed flex  z-10 right-1 lg:w-full  h-full top-0   transform transition-transform duration-300 ease-in-out border rounded-lg p-2 ${
           sheetOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {currentGraph && currentResult && (
-          <div className="flex flex-col lg:flex-row gap-4 ">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSheetOpen(false)}
-            >
-              <X className="h-6 w-6" />
-            </Button>
+        <div
+          onClick={() => setSheetOpen(false)}
+          className="w-full h-full  opacity-50 absolute top-0 left-0"
+        ></div>
+        <div className="container  z-10">
+          {currentGraph && currentResult && (
+            <div className="flex flex-col lg:flex-row gap-4 py-8 bg-background">
+              <Card className=" p-6 w-96 ">
+                <ScrollArea className="h-[calc(100vh-100px)]">
+                  <div className="flex flex-col items-center space-y-4 min-w-max p-2">
+                    {renderNodes(
+                      currentResult.result.nodes,
+                      handleSelectNode,
+                      selectedNode
+                    )}
+                  </div>
+                </ScrollArea>
+              </Card>
 
-            <Card className="flex-1 p-6 max-w-96 h-[calc(100vh-160px)]">
-              <ScrollArea className="h-[calc(100vh-200px)]">
-                <div className="flex flex-col items-center space-y-4 min-w-max p-2">
-                  {renderNodes(
-                    currentResult.result.nodes,
-                    handleSelectNode,
-                    selectedNode
-                  )}
-                </div>
-              </ScrollArea>
-            </Card>
-
-            <Card className="flex-1 p-6 max-w-screen-lg h-[calc(100vh-160px)]">
-              {selectedNode ? (
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">
-                    {selectedNode.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    {selectedNode.description}
+              <Card className="flex-1 p-6 w-screen-xl ">
+                {selectedNode ? (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">
+                      {selectedNode.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      {selectedNode.description}
+                    </p>
+                    <ScrollArea className="h-[calc(100vh-150px)] p-4 ">
+                      {selectedNode.id.toLocaleLowerCase() ===
+                        "record_meeting" &&
+                        selectedNode.status === "completed" && (
+                          <div>
+                            {typeof selectedNode.output === "object" &&
+                              selectedNode.output?.url && (
+                                <AspectRatio ratio={1}>
+                                  <video controls>
+                                    <source
+                                      src={selectedNode.output?.url}
+                                      type="video/mp4"
+                                    />
+                                    Your browser does not support the video tag
+                                  </video>
+                                </AspectRatio>
+                              )}
+                          </div>
+                        )}
+                      {selectedNode.id.toLocaleLowerCase() ===
+                        "write_meeting_minutes" &&
+                        selectedNode.status === "completed" && (
+                          <ContentEditor content={selectedNode.output} />
+                        )}
+                      {selectedNode.id.toLocaleLowerCase() ===
+                        "determine_action_items" &&
+                        selectedNode.status === "completed" && (
+                          <ActionItemViewer
+                            results={selectedNode.output as ActionData}
+                          />
+                        )}
+                      {selectedNode.id.toLocaleLowerCase() ===
+                        "save_minutes_in_project_documents" &&
+                        selectedNode.status === "completed" && (
+                          <ResourceTextViewer
+                            resource_id={selectedNode.output?.resource_id}
+                          />
+                        )}
+                      {selectedNode.id.toLocaleLowerCase() !==
+                        "write_meeting_minutes" &&
+                        selectedNode.id.toLocaleLowerCase() !==
+                          "determine_action_items" &&
+                        selectedNode.id.toLocaleLowerCase() !==
+                          "record_meeting" &&
+                        selectedNode.id.toLocaleLowerCase() !==
+                          "save_minutes_in_project_documents" && (
+                          <div className="text-sm text-gray-700 ">
+                            {JSON.stringify(selectedNode.id)}
+                            {JSON.stringify(selectedNode.output, null, 2)}
+                          </div>
+                        )}
+                    </ScrollArea>
+                  </div>
+                ) : (
+                  <p className="text-gray-500">
+                    Select a node to view its output.
                   </p>
-                  <ScrollArea className="h-[calc(100vh-220px)] p-4 ">
-                    {selectedNode.id.toLocaleLowerCase() ===
-                      "write_meeting_minutes" &&
-                      selectedNode.status === "completed" && (
-                        <ContentEditor content={selectedNode.output} />
-                      )}
-                    {selectedNode.id.toLocaleLowerCase() ===
-                      "determine_action_items" &&
-                      selectedNode.status === "completed" && (
-                        <ActionItemViewer
-                          results={selectedNode.output as ActionData}
-                        />
-                      )}
-                    {selectedNode.id.toLocaleLowerCase() !==
-                      "write_meeting_minutes" &&
-                      selectedNode.id.toLocaleLowerCase() !==
-                        "determine_action_items" && (
-                        <div className="text-sm text-gray-700 ">
-                          {JSON.stringify(selectedNode.output, null, 2)}
-                        </div>
-                      )}
-                  </ScrollArea>
-                </div>
-              ) : (
-                <p className="text-gray-500">
-                  Select a node to view its output.
-                </p>
-              )}
-            </Card>
-          </div>
-        )}
+                )}
+              </Card>
+            </div>
+          )}
+        </div>
       </div>
 
       {!currentGraph && (

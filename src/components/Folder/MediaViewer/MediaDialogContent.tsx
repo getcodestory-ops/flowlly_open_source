@@ -16,6 +16,7 @@ export const MediaDialogContent: React.FC<MediaDialogContentProps> = ({
   const fileExt = metadata?.extension?.toLowerCase();
 
   const { onSubmit, isPending } = useStorageTextFileSave(resource?.id);
+
   switch (fileExt) {
     case ".jpg":
     case ".jpeg":

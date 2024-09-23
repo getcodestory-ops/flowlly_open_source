@@ -1,5 +1,5 @@
 import "./globals.css";
-
+import { CSPostHogProvider } from "./providers";
 export const metadata = {
   title: "Construction Documentation",
   description: "Your personal assistant for construction professionals",
@@ -12,7 +12,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-background text-foreground">{children}</body>
+      <CSPostHogProvider>
+        <body className="bg-background text-foreground">{children}</body>
+      </CSPostHogProvider>
     </html>
   );
 }
