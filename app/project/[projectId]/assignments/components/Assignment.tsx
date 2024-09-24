@@ -87,7 +87,14 @@ type GraphData = {
   id: string;
   name: string;
   description: string;
-  metadata: {};
+  metadata: {
+    frequency: string;
+    time: string;
+    duration: string;
+    time_zone: string;
+    online_link: string;
+    recurrence_day: string;
+  };
   created_at: string;
   nodes: NodeData[];
   run_time: string;
@@ -292,12 +299,30 @@ const GraphList: React.FC<{
         cell: (info) => info.getValue(),
       },
       {
-        accessorKey: "created_at",
+        accessorKey: "metadata",
         header: "Frequency",
         cell: (info) => {
           if (info.getValue()) {
-            const schedule = info.getValue();
-            return schedule;
+            const schedule = info.getValue() as GraphData["metadata"];
+
+            return schedule.frequency || "N/A";
+          } else {
+            return "N/A";
+          }
+        },
+      },
+      {
+        accessorKey: "metadata",
+        header: "Meeting Day",
+        cell: (info) => {
+          if (info.getValue()) {
+            const schedule = info.getValue() as GraphData["metadata"];
+
+            return schedule.frequency == "weekly"
+              ? schedule.recurrence_day
+              : schedule.frequency == "once"
+              ? schedule.recurrence_day
+              : "N/A";
           } else {
             return "N/A";
           }
@@ -305,26 +330,21 @@ const GraphList: React.FC<{
       },
       {
         accessorKey: "time",
-        header: "Last update",
-        cell: (info) => info.getValue(),
-      },
-      // {
-      //   accessorKey: "created_at",
-      //   header: ({ column }) => (
-      //     <Button
-      //       variant="ghost"
-      //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      //       className="p-0"
-      //     >
-      //       Created At
-      //     </Button>
-      //   ),
-      //   cell: (info) => new Date(info.getValue() as string).toLocaleString(),
-      // },
-      {
-        accessorKey: "time",
         header: "Meeting Time",
         cell: (info) => info.getValue(),
+      },
+      {
+        accessorKey: "created_at",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0"
+          >
+            Created At
+          </Button>
+        ),
+        cell: (info) => new Date(info.getValue() as string).toLocaleString(),
       },
     ],
     []
