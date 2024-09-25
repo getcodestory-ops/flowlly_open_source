@@ -131,7 +131,7 @@ export default function ConstructionDashboard() {
               ) : (
                 <CloudRainIcon className="h-6 w-6" />
               )}
-              Today's Weather
+              Today&apos;s Weather
             </CardTitle>
           </CardHeader>
           <CardContent>

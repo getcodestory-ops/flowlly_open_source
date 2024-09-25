@@ -13,8 +13,6 @@ function ActivityEditView() {
     taskToView: state.taskToView,
   }));
 
-  if (!taskToView) return null;
-
   const dateAdjustment = (date: string) => {
     let currentDate = new Date(date);
     currentDate.setDate(currentDate.getDate() + 1);
@@ -22,10 +20,10 @@ function ActivityEditView() {
   };
 
   const [startDate, onStartChange] = useState<Value>(
-    dateAdjustment(taskToView.start)
+    taskToView ? dateAdjustment(taskToView.start) : null
   );
   const [endDate, onEndChange] = useState<Value>(
-    dateAdjustment(taskToView.end)
+    taskToView ? dateAdjustment(taskToView.end) : null
   );
 
   const durantionCalculation = (startDate: Date, endDate: Date) => {
@@ -33,6 +31,8 @@ function ActivityEditView() {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
+
+  if (!taskToView) return null;
 
   return (
     <Flex

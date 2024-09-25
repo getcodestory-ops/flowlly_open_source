@@ -796,9 +796,18 @@ export default function AssignmentHome() {
       >
         <div
           onClick={() => setSheetOpen(false)}
-          className="w-full h-full  opacity-50 absolute top-0 left-0"
+          className="w-full h-full bg-background opacity-70 absolute top-0 left-0"
         ></div>
         <div className="container  z-10">
+          <div className="fixed  translate-y-8  ">
+            <Button
+              onClick={() => setSheetOpen(false)}
+              variant="ghost"
+              className="text-gray-500"
+            >
+              <X size={24} />
+            </Button>
+          </div>
           {currentGraph && currentResult && (
             <div className="flex flex-col lg:flex-row gap-4 py-8 bg-background">
               <Card className=" p-6 w-96 ">
@@ -868,9 +877,10 @@ export default function AssignmentHome() {
                           "record_meeting" &&
                         selectedNode.id.toLocaleLowerCase() !==
                           "save_minutes_in_project_documents" && (
-                          <div className="text-sm text-gray-700 ">
-                            {JSON.stringify(selectedNode.id)}
-                            {JSON.stringify(selectedNode.output, null, 2)}
+                          <div className="text-sm text-gray-700 whitespace-pre-line">
+                            {typeof selectedNode.output === "string"
+                              ? selectedNode.output
+                              : JSON.stringify(selectedNode.output, null, 2)}
                           </div>
                         )}
                     </ScrollArea>
