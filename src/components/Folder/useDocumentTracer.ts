@@ -11,12 +11,12 @@ export const useDocumentTracer = (nodeId: string) => {
     session: state.session,
   }));
 
-  if (!session || !activeProject) {
-    return null;
-  }
   const { data: traces } = useQuery({
     queryKey: ["traces", activeProject, nodeId, session],
     queryFn: () => {
+      if (!activeProject || !session) {
+        return null;
+      }
       return getNodeTraces(session, activeProject.project_id, nodeId);
     },
   });

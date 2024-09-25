@@ -11,14 +11,15 @@ const AddActivityChildren = () => {
   const taskToView = useStore((state) => state.taskToView);
   const activeProject = useStore((state) => state.activeProject);
 
-  if (!taskToView || !session) return null;
   const { mutate, isPending, data } = useMutation({
-    mutationFn: () =>
-      createProject(session!, {
+    mutationFn: () => {
+      if (!session || !taskToView) return Promise.reject("No session or task");
+      return createProject(session!, {
         name: taskToView.name,
         description: taskToView.description,
         project_type: taskToView.id,
-      }),
+      });
+    },
     onError: (error: any) => {
       if (error && error.response && error.response.data) {
         toast({
@@ -41,6 +42,7 @@ const AddActivityChildren = () => {
       });
     },
   });
+  if (!taskToView || !session) return null;
 
   return (
     <Button
