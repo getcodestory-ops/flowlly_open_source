@@ -11,6 +11,7 @@ import {
   ArrowUp,
   Clock,
   CircleCheck,
+  PencilIcon,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -345,6 +346,19 @@ const GraphList: React.FC<{
           </Button>
         ),
         cell: (info) => new Date(info.getValue() as string).toLocaleString(),
+      },
+      {
+        accessorKey: "id",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0"
+          >
+            Edit
+          </Button>
+        ),
+        cell: (info) => <PencilIcon size={16} />,
       },
     ],
     []
@@ -754,7 +768,7 @@ export default function AssignmentHome() {
       setCurrentResult(null);
     }
     setSheetOpen(false);
-  }, [currentGraphId]);
+  }, [currentGraphId, graphs]);
 
   useEffect(() => {
     if (currentResult) setSheetOpen(true);

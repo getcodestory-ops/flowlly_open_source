@@ -9,6 +9,22 @@ interface UpdateScheduleContent {
 export interface Antartifact {
   content?: string;
   result?: string;
+  context?: {
+    context: string;
+    metadata: {
+      date?: string;
+      type?: string;
+      file_name?: string;
+      file_sha1?: string;
+      file_size?: number;
+      chunk_size?: number;
+      document_id?: string;
+      page_number: number;
+      total_pages?: number;
+      chunk_overlap?: number;
+      summarization?: string;
+    };
+  }[];
   attributes?: {
     identifier?: string;
     title?: string;
@@ -49,6 +65,7 @@ export interface CreateAgentChatEntity {
   project_id: string;
   chat_name: string;
   chat_details?: string;
+  folder_id?: string;
 }
 
 export interface AgentChatEntity {

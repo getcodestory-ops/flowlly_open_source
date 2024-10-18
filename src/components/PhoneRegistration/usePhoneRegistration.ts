@@ -11,12 +11,12 @@ import {
   createNewMemberEntry,
   updateMemberEntity,
 } from "@/api/membersRoutes";
-import { useToast } from "@chakra-ui/react";
+import { useToast } from "@/components/ui/use-toast";
 import { MemberEntity } from "@/types/members";
 
 export const usePhoneRegistration = () => {
   const queryClient = useQueryClient();
-  const toast = useToast();
+  const { toast } = useToast();
   const [newMember, setNewMember] = useState({
     first_name: "",
     last_name: "",
@@ -84,10 +84,7 @@ export const usePhoneRegistration = () => {
         toast({
           title: "Error",
           description: "No session or active project",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          position: "bottom-right",
+          variant: "destructive",
         });
         return Promise.reject("No session or active project");
       }
@@ -100,20 +97,13 @@ export const usePhoneRegistration = () => {
       toast({
         title: "Error",
         description: error.response?.data.detail ?? "Something went wrong",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom-right",
+        variant: "destructive",
       });
     },
     onSuccess: () => {
       toast({
         title: "Success",
         description: "Phone Number successfully registered !",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom-right",
       });
       queryClient.invalidateQueries({ queryKey: ["memberList"] });
     },
@@ -125,10 +115,7 @@ export const usePhoneRegistration = () => {
         toast({
           title: "Error",
           description: "No session or active project",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          position: "bottom-right",
+          variant: "destructive",
         });
         return Promise.reject("No session or active project");
       }
@@ -142,20 +129,14 @@ export const usePhoneRegistration = () => {
       toast({
         title: "Error",
         description: error.response?.data.detail ?? "Something went wrong",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom-right",
+        variant: "destructive",
       });
     },
     onSuccess: () => {
       toast({
         title: "Success",
         description: "Phone Number successfully registered !",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom-right",
+        variant: "destructive",
       });
       queryClient.invalidateQueries({ queryKey: ["memberList"] });
     },
@@ -167,10 +148,7 @@ export const usePhoneRegistration = () => {
         toast({
           title: "Error",
           description: "No session or active project",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          position: "bottom-right",
+          variant: "destructive",
         });
         return Promise.reject("No session or active project");
       }
@@ -184,20 +162,14 @@ export const usePhoneRegistration = () => {
       toast({
         title: "Error",
         description: error.response?.data.detail ?? "Something went wrong",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom-right",
+        variant: "destructive",
       });
     },
     onSuccess: () => {
       toast({
         title: "Success",
         description: "Phone Number successfully removed !",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom-right",
+        variant: "destructive",
       });
       queryClient.invalidateQueries({ queryKey: ["memberList"] });
     },
@@ -209,10 +181,7 @@ export const usePhoneRegistration = () => {
         toast({
           title: "Error",
           description: "No session or active project",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          position: "bottom-right",
+          variant: "destructive",
         });
         return Promise.reject("No session or active project");
       }
@@ -222,20 +191,14 @@ export const usePhoneRegistration = () => {
       toast({
         title: "Error",
         description: error.response?.data.detail ?? "Something went wrong",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom-right",
+        variant: "destructive",
       });
     },
     onSuccess: () => {
       toast({
         title: "Success",
         description: "Member successfully removed !",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom-right",
+        variant: "destructive",
       });
       queryClient.invalidateQueries({ queryKey: ["memberList"] });
     },
@@ -246,10 +209,7 @@ export const usePhoneRegistration = () => {
       toast({
         title: "Error",
         description: "Phone number is required",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom-right",
+        variant: "destructive",
       });
       return;
     }

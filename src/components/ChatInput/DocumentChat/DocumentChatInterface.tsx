@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useLayoutEffect } from "react";
-import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
-import AgentMessageInteractiveView from "../AiActions/AgentMessageInteractiveView";
+import AgentMessageInteractiveView from "@/components/AiActions/AgentMessageInteractiveView";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -8,8 +7,13 @@ import { CornerDownLeft, MessageCircleMore } from "lucide-react";
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
+import { useDocumentChat } from "./useDocumentChat";
 
-export default function AssistantChatInterface() {
+export default function DocumentChatInterface({
+  folderId,
+}: {
+  folderId: string;
+}) {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -20,7 +24,7 @@ export default function AssistantChatInterface() {
     chatInput,
     currentTaskId,
     session,
-  } = useScheduleUpdate();
+  } = useDocumentChat(folderId);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -40,7 +44,7 @@ export default function AssistantChatInterface() {
 
   return (
     <div>
-      <ScrollArea className="px-4 h-[calc(100vh-270px)]" ref={chatContainerRef}>
+      <ScrollArea className="px-4 h-[calc(100vh-300px)]" ref={chatContainerRef}>
         {chats &&
           chats.length > 0 &&
           chats.map((history, index) => (

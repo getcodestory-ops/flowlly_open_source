@@ -101,22 +101,23 @@ const MultiSelect = ({
             </div>
             <ScrollArea className="flex max-h-96 flex-col overflow-y-auto ">
               <div className="mr-6">
-                {options.map((option) => (
-                  <CommandItem
-                    key={option.id}
-                    onSelect={() => handleSelect(option.id)}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        selectedOptions?.includes(option.id)
-                          ? "opacity-100"
-                          : "opacity-0"
-                      )}
-                    />
-                    {option.label}
-                  </CommandItem>
-                ))}
+                {options &&
+                  options.map((option) => (
+                    <CommandItem
+                      key={option.id}
+                      onSelect={() => handleSelect(option.id)}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          selectedOptions?.includes(option.id)
+                            ? "opacity-100"
+                            : "opacity-0"
+                        )}
+                      />
+                      {option.label}
+                    </CommandItem>
+                  ))}
               </div>
             </ScrollArea>
           </CommandGroup>

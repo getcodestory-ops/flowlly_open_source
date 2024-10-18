@@ -49,7 +49,7 @@ import { FilesContent } from "../Folder/FilesTable";
 
 export const DocumentFolderModule = () => {
   return (
-    <div className="h-full overflow-y-scroll custom-scrollbar p-4 rounded-lg flex items-start">
+    <div className="h-full container  p-4 rounded-lg flex items-start">
       <DatabasePageLayout />
     </div>
   );

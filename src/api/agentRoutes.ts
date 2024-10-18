@@ -12,39 +12,35 @@ interface AgentTask {
   sessionToken: Session;
 }
 
-// export const submitTaskToAgent = async (
-//   sessionToken: Session,
-//   agent_task: string,
-//   brain_id: string
-// ): Promise<AgentInterfaceProps["agent_history"]> => {
-//   try {
-//     const body = {
-//       task: agent_task,
-//       brain_id: brain_id,
-//     };
+export const talkToAgent = async ({
+  session,
+  agentTask,
+  brainId,
+  chatId,
+  projectId,
+}: {
+  session: Session;
+  agentTask: string;
+  brainId: string | null;
+  chatId: string;
+  projectId: string;
+}) => {
+  const scheduleProps = {
+    task: agentTask,
+    brain_id: brainId,
+    chat_entity_id: chatId,
+    project_id: projectId,
+  };
 
-//     const response = await fetch(
-//       `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat`,
-//       {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${sessionToken.access_token}`,
-//         },
-//         body: JSON.stringify(body),
-//       }
-//     );
-
-//     if (!response.ok) {
-//       throw new Error("Network response was not ok");
-//     }
-
-//     const data = await response.json();
-//     return data.agent_response;
-//   } catch (error) {
-//     throw new Error("Network response was not ok");
-//   }
-// };
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/schedule`;
+  const response = await axios.post(url, scheduleProps, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+  return response.data;
+};
 
 export const createChatEntity = async (
   sessionToken: Session,
@@ -74,11 +70,54 @@ export const createChatEntity = async (
   }
 };
 
+export const createDocumentChatEntity = async (
+  sessionToken: Session,
+  chat_entity: CreateAgentChatEntity
+) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat_entity/folder`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionToken.access_token}`,
+        },
+        body: JSON.stringify(chat_entity),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    const data = await response.json();
+    return data.chat_entity;
+  } catch (error) {
+    throw new Error("Network response was not ok");
+  }
+};
+
 export const getAgentChatEntities = async (
   session: Session,
   projectId: string
 ): Promise<AgentChatEntity[]> => {
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat_entity/${projectId}`;
+  const response = await axios.get(url, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+  return response.data.chat_entities;
+};
+
+export const getDocumentChatEntities = async (
+  session: Session,
+  projectId: string,
+  folderId: string
+): Promise<AgentChatEntity[]> => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat_entities/folder/${projectId}/${folderId}`;
   const response = await axios.get(url, {
     headers: {
       "Content-Type": "application/json",

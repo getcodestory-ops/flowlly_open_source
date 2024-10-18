@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { useToast } from "@chakra-ui/react";
+import { useState } from "react";
 import { useStore } from "@/utils/store";
 import { getTaskStatus } from "@/api/schedule_routes";
 import { talkToAgent } from "@/api/agentRoutes";
@@ -7,9 +6,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAgentChats } from "@/api/agentRoutes";
 import { Session } from "@supabase/supabase-js";
 import { isTokenExpired } from "@/utils/isTokenExpired";
+import { useToast } from "@/components/ui/use-toast";
 
-export function useScheduleUpdate() {
-  const toast = useToast();
+export function useDocumentChat(folderId: string) {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [chatInput, setChatInput] = useState<string>("");
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
@@ -32,38 +32,13 @@ export function useScheduleUpdate() {
     return response;
   };
 
-  // const { data: taskStatus } = useQuery({
-  //   queryKey: ["taskStatus", currentTaskId, session],
-  //   queryFn: () => getStatusAndUpdateChats(session, currentTaskId),
-  //   refetchInterval: 1000,
-  //   enabled: !!session && !!currentTaskId,
-  // });
-
-  // useEffect(() => {
-  //   if (!taskStatus) return;
-  //   if (taskStatus.status === "completed") {
-  //     queryClient.invalidateQueries({ queryKey: ["agentChats"] });
-  //     toast({
-  //       title: "Success",
-  //       description: `Task completed successfully!`,
-  //       status: "success",
-  //       duration: 4000,
-  //       isClosable: true,
-  //       position: "bottom-right",
-  //     });
-  //     setCurrentTaskId(null);
-  //   }
-  // }, [taskStatus]);
-
   const { mutate, isPending, data } = useMutation({
     mutationFn: talkToAgent,
     onError: (error) => {
       toast({
         title: "Error",
         description: error.message,
-        status: "error",
-        duration: 4000,
-        isClosable: true,
+        variant: "destructive",
       });
     },
     onSuccess: (data) => {
@@ -80,20 +55,16 @@ export function useScheduleUpdate() {
         toast({
           title: "Error",
           description: "Please refresh the page and try again!",
-          status: "error",
-          duration: 4000,
-          isClosable: true,
+          variant: "destructive",
         });
         return Promise.reject("refresh session");
       } else {
         if (isTokenExpired(session)) {
           toast({
-            title: "warning",
+            title: "Warning",
             description:
               "Your session has expired. Please refresh the page and try again!",
-            status: "warning",
-            duration: 4000,
-            isClosable: true,
+            variant: "destructive",
           });
           return Promise.reject("refresh session");
         }
@@ -103,9 +74,7 @@ export function useScheduleUpdate() {
         toast({
           title: "Warning",
           description: "Select a chat to start!",
-          status: "warning",
-          duration: 1000,
-          isClosable: true,
+          variant: "destructive",
         });
         return Promise.reject("select a chat");
       }
@@ -123,7 +92,7 @@ export function useScheduleUpdate() {
     mutate({
       session,
       agentTask: chatInput,
-      brainId: selectedContext?.id ?? null,
+      brainId: folderId ?? null,
       chatId: activeChatEntity.id,
       projectId: activeProject?.project_id,
     });

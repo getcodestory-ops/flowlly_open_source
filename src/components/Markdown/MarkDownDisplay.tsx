@@ -1,9 +1,6 @@
 // MarkdownRenderer.tsx
-import React, { useState } from "react";
+import React from "react";
 import ReactMarkdown from "react-markdown";
-import {
-  Box,
-} from "@chakra-ui/react";
 
 interface MarkdownRendererProps {
   content: string;
@@ -14,50 +11,94 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
   content,
   collapse = false,
 }) => {
-  const [show, setShow] = useState(collapse);
-
-  const handleToggle = () => setShow(!show);
-
   return (
-    <Box
-      p={2}
-      borderRadius="lg"
-      sx={{
-        h1: {
-          fontSize: "4xl",
-          fontWeight: "bold",
-        },
-        h2: {
-          fontSize: "3xl",
-        },
-        h3: {
-          fontSize: "2xl",
-          marginTop: "2rem",
-          marginBottom: "1rem",
-        },
-        h4: {
-          fontSize: "xl",
-        },
-        h5: {
-          fontSize: "lg",
-        },
-        h6: {
-          fontSize: "md",
-        },
-        p: {
-          fontSize: "sm",
-          fontWeight: "normal",
-          margin: "0.5rem 0",
-        },
-        li: {
-          fontSize: "sm",
-          fontWeight: "normal",
-          margin: "0.75rem 1.5rem",
-        },
+    <div
+      style={{
+        padding: "8px",
+        borderRadius: "8px",
+        overflow: "hidden", // Ensures content doesn't overflow the container
       }}
     >
-      <ReactMarkdown>{content}</ReactMarkdown>
-    </Box>
+      <ReactMarkdown
+        components={{
+          h1: ({ node, ...props }) => (
+            <h1
+              style={{
+                fontSize: "2.25rem",
+                fontWeight: "bold",
+                margin: "1rem 0",
+              }}
+              {...props}
+            />
+          ),
+          h2: ({ node, ...props }) => (
+            <h2 style={{ fontSize: "1.875rem", margin: "1rem 0" }} {...props} />
+          ),
+          h3: ({ node, ...props }) => (
+            <h3
+              style={{
+                fontSize: "1.5rem",
+                marginTop: "2rem",
+                marginBottom: "1rem",
+              }}
+              {...props}
+            />
+          ),
+          h4: ({ node, ...props }) => (
+            <h4 style={{ fontSize: "1.25rem", margin: "1rem 0" }} {...props} />
+          ),
+          h5: ({ node, ...props }) => (
+            <h5 style={{ fontSize: "1.125rem", margin: "1rem 0" }} {...props} />
+          ),
+          h6: ({ node, ...props }) => (
+            <h6 style={{ fontSize: "1rem", margin: "1rem 0" }} {...props} />
+          ),
+          p: ({ node, ...props }) => (
+            <p
+              style={{
+                fontSize: "0.875rem",
+                fontWeight: "normal",
+                margin: "0.5rem 0",
+                overflowWrap: "break-word", // Allows long words to break
+                wordWrap: "break-word", // Legacy support for older browsers
+                hyphens: "auto", // Adds hyphens where appropriate
+              }}
+              {...props}
+            />
+          ),
+          li: ({ node, ...props }) => (
+            <li
+              style={{
+                fontSize: "0.875rem",
+                fontWeight: "normal",
+                margin: "0.75rem 1.5rem",
+                overflowWrap: "break-word",
+                wordWrap: "break-word",
+                hyphens: "auto",
+              }}
+              {...props}
+            />
+          ),
+          code: ({ node, className, ...props }) => (
+            <code
+              style={{
+                padding: "1em",
+                backgroundColor: "#f6f8fa",
+                borderRadius: "3px",
+                fontSize: "85%",
+                overflowX: "auto",
+                display: "block",
+                whiteSpace: "pre-wrap",
+                wordWrap: "break-word",
+              }}
+              {...props}
+            />
+          ),
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
   );
 };
 

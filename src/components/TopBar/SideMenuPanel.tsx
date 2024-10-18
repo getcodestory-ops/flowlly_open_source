@@ -57,10 +57,10 @@ const menuItems: {
     link: "projects",
   },
   {
-    label: "Ai jobs",
-    fnKey: "assignments",
+    label: "Workbench",
+    fnKey: "workbench",
     icon: <ClipboardList className="h-5 w-5" />,
-    link: "assignments",
+    link: "workbench",
   },
   // {
   //   label: "Dashboard",
