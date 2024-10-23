@@ -1,4 +1,3 @@
-import { Flex, Icon } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -58,25 +57,19 @@ function TaskResultDisplay({
   switch (task_function) {
     case "invoke_reference":
       return (
-        <Flex
-          justifyContent={"center"}
-          alignItems={"center"}
-          gap="4"
-          p="2"
-          borderRadius={"lg"}
-        >
-          <Icon as={FaRegDotCircle} fontSize={"sm"} color="green.400" />
+        <div className="flex justify-center items-center gap-4 p-2 rounded-lg ">
+          <FaRegDotCircle className="text-sm text-green-400" />
 
           <div
             className="flex flex-col"
             // key={results.results.slice(0, 5) ?? ""}
           >
             {typeof results.results === "string" ? (
-              <div>
+              <div className="wrap p-4 w-full max-w-[80vw] overflow-wrap-break-word">
                 <MarkDownDisplay content={results.results} />
               </div>
             ) : (
-              <div>
+              <div className="wrap p-4 w-1/2">
                 {results.results?.result && (
                   <MarkDownDisplay content={results.results.result} />
                 )}
@@ -92,7 +85,7 @@ function TaskResultDisplay({
               />
             )}
           </div>
-        </Flex>
+        </div>
       );
 
     case "log_action_items":
@@ -100,16 +93,10 @@ function TaskResultDisplay({
     case "schedule_removal":
     case "schedule_update":
       return (
-        <Flex
-          justifyContent={"center"}
-          alignItems={"center"}
-          gap="4"
-          p="2"
-          borderRadius={"lg"}
-        >
+        <div className="flex justify-center items-center gap-4 p-2 rounded-lg ">
           {/* <Icon as={FaRegDotCircle} fontSize={"sm"} color="green.400" /> */}
           <ActionItemViewer results={results.results ?? []} />
-        </Flex>
+        </div>
       );
 
     case "log_minutes":
@@ -140,7 +127,7 @@ function TaskResultDisplay({
     case "log_daily":
     case "log_safety":
       return (
-        <div className="p-8">
+        <div className="flex wrap justify-center items-center gap-4 p-2 rounded-lg">
           {results.results?.content && (
             <MarkDownDisplay content={results.results.content} />
           )}
@@ -148,7 +135,7 @@ function TaskResultDisplay({
       );
 
     default:
-      return <Flex>{task_function}</Flex>;
+      return <div>{task_function}</div>;
   }
 }
 

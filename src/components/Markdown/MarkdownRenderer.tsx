@@ -1,6 +1,7 @@
 // MarkdownRenderer.tsx
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   Box,
   Heading,
@@ -29,6 +30,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     <Box mx="auto" p={2} borderRadius="lg" overflow="hidden">
       <Collapse startingHeight={60} in={show}>
         <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
           components={{
             h1: ({ node, ...props }) => (
               <Heading as="h1" size="2xl" my={4} {...props} />

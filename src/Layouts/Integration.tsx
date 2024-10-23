@@ -16,13 +16,17 @@ import {
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default function Integration() {
-  const [isConnected, setIsConnected] = useState(false);
+  const [procoreConnected, setProcoreConnected] = useState(false);
+  const [microsoftConnected, setMicrosoftConnected] = useState(false);
   const [syncProjects, setSyncProjects] = useState(false);
   const [syncInterval, setSyncInterval] = useState("60");
 
-  const handleConnect = () => {
-    // In a real implementation, this would initiate the OAuth flow with Procore
-    setIsConnected(!isConnected);
+  const handleProcoreConnect = () => {
+    setProcoreConnected(!procoreConnected);
+  };
+
+  const handleMicrosoftConnect = () => {
+    setMicrosoftConnected(!microsoftConnected);
   };
 
   const handleSave = () => {
@@ -31,8 +35,9 @@ export default function Integration() {
   };
 
   return (
-    <div className="p-4">
-      <Card className="w-full max-w-3xl ">
+    <div className="p-4 space-y-4">
+      {/* Procore Integration Card */}
+      <Card className="w-full max-w-3xl">
         <CardHeader>
           <CardTitle>Procore Integration</CardTitle>
           <CardDescription>
@@ -41,24 +46,26 @@ export default function Integration() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center space-x-2">
-            {isConnected ? (
+            {procoreConnected ? (
               <CheckCircle2 className="h-5 w-5 text-green-500" />
             ) : (
               <AlertCircle className="h-5 w-5 text-yellow-500" />
             )}
             <span className="text-sm font-medium">
-              {isConnected
+              {procoreConnected
                 ? "Connected to Procore"
                 : "Not connected to Procore"}
             </span>
           </div>
           <Button
-            onClick={handleConnect}
-            variant={isConnected ? "destructive" : "default"}
+            onClick={handleProcoreConnect}
+            variant={procoreConnected ? "destructive" : "default"}
           >
-            {isConnected ? "Disconnect from Procore" : "Connect to Procore"}
+            {procoreConnected
+              ? "Disconnect from Procore"
+              : "Connect to Procore"}
           </Button>
-          {isConnected && (
+          {procoreConnected && (
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <Switch
@@ -82,12 +89,53 @@ export default function Integration() {
             </div>
           )}
         </CardContent>
-        <CardFooter>
-          <Button onClick={handleSave} disabled={!isConnected}>
-            Save Settings
-          </Button>
-        </CardFooter>
       </Card>
+
+      {/* Microsoft Integration Card */}
+      <Card className="w-full max-w-3xl">
+        <CardHeader>
+          <CardTitle>Microsoft Integration</CardTitle>
+          <CardDescription>
+            Connect and manage your Microsoft account integration
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center space-x-2">
+            {microsoftConnected ? (
+              <CheckCircle2 className="h-5 w-5 text-green-500" />
+            ) : (
+              <AlertCircle className="h-5 w-5 text-yellow-500" />
+            )}
+            <span className="text-sm font-medium">
+              {microsoftConnected
+                ? "Connected to Microsoft"
+                : "Not connected to Microsoft"}
+            </span>
+          </div>
+          <Button
+            onClick={handleMicrosoftConnect}
+            variant={microsoftConnected ? "destructive" : "default"}
+          >
+            {microsoftConnected
+              ? "Disconnect from Microsoft"
+              : "Connect to Microsoft"}
+          </Button>
+          {microsoftConnected && (
+            <div className="space-y-4">
+              {/* Add Microsoft-specific settings here */}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Save Settings Button */}
+      <Button
+        onClick={handleSave}
+        disabled={!procoreConnected && !microsoftConnected}
+        className="mt-4"
+      >
+        Save Settings
+      </Button>
     </div>
   );
 }

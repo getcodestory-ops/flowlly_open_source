@@ -28,7 +28,7 @@ export default function MainLayout() {
         if (projects.length > 0) {
           const activeProject = projects[0];
           if (activeProject) {
-            router.replace(`/project/${activeProject.project_id}/assignments`);
+            router.replace(`/project/${activeProject.project_id}/workbench`);
           } else {
             router.replace("/");
           }

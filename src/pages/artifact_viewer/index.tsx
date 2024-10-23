@@ -1,55 +1,25 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Heading,
-  FormControl,
-  FormLabel,
-  Input,
-  Button,
-  useToast,
-  Flex,
-  Center,
-  Image,
-} from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import supabase from "@/utils/supabaseClient";
 import { Session } from "@supabase/supabase-js";
 import { getAgentChatHistoryItem } from "@/api/agentRoutes";
 import { Antartifact } from "@/types/agentChats";
 import ArtifactViewer from "@/components/AiActions/ArtifactViewer";
-import colors from "../../styles/theme";
-import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
+import Image from "next/image";
 
 const queryClient = new QueryClient();
-const theme = extendTheme({
-  colors,
-  styles: {
-    global: {
-      "&::-webkit-scrollbar": {
-        width: "10px",
-      },
-      "&::-webkit-scrollbar-track": {
-        backgroundColor: "transparent", // This hides the track
-      },
-      "&::-webkit-scrollbar-thumb": {
-        backgroundColor: "#888", // Change this color for your desired thumb color
-        borderRadius: "5px",
-      },
-      "&::-webkit-scrollbar-thumb:hover": {
-        backgroundColor: "#555",
-      },
-      scrollbarWidth: "none", // This will hide the scrollbar for Firefox
-    },
-  },
-});
 
 function Viewer() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [sessionToken, setSessionToken] = useState<Session | null>();
   const [chatData, setChatData] = useState<Antartifact | null>();
-  const toast = useToast();
+  const { toast } = useToast();
   const router = useRouter();
 
   const handleLogin = async (email: string, password: string) => {
@@ -66,10 +36,7 @@ function Viewer() {
       toast({
         title: error.message,
         description: message,
-        status: "error",
         duration: 5000,
-        isClosable: true,
-        position: "top-right",
       });
       return;
     }
@@ -142,120 +109,76 @@ function Viewer() {
   const { projectId, childTaskId } = router.query;
 
   return (
-    <ChakraProvider theme={theme}>
-      <QueryClientProvider client={queryClient}>
-        <Flex
-          height="100vh"
-          justifyContent={"center"}
-          alignItems="center"
-          width="100vw"
-          bg="brand.dark"
-        >
-          {sessionToken && (
-            <Flex w={"100vw"}>
-              <Center
-                p="2"
-                width="full"
-                height="100vh"
-                display="flex"
-                alignItems="center"
-                flexDirection="column"
-              >
-                <Box
-                  p={6}
-                  borderRadius={8}
-                  width="full"
-                  color="white"
-                  overflow="scroll"
-                >
-                  {typeof projectId === "string" &&
-                    typeof childTaskId === "string" && (
-                      <ArtifactViewer
-                        projectId={projectId}
-                        childTaskId={childTaskId}
-                        sessionToken={sessionToken}
-                      />
-                    )}
-                </Box>
-              </Center>
-            </Flex>
-          )}
-          {!sessionToken && (
-            <Flex w={"100vw"}>
-              <Center
-                p="2"
-                width="full"
-                height="100vh"
-                bg="brand.dark"
-                display="flex"
-                alignItems="center"
-                flexDirection="column"
-              >
-                <Box p={6} borderRadius={8} width="full">
-                  <Heading
-                    size="xl"
-                    mb={4}
-                    textAlign="center"
-                    fontWeight="bold"
-                    letterSpacing="tight"
-                    color="brand.accent"
-                    display="flex"
-                    alignItems="center"
-                    flexDirection="column"
+    <QueryClientProvider client={queryClient}>
+      <div className="flex h-screen justify-center items-center w-screen bg-background">
+        {sessionToken && (
+          <div className="w-full">
+            <div className="p-2 w-full h-screen flex items-center flex-col">
+              <div className="p-6 rounded-lg w-full text-foreground overflow-auto ">
+                {typeof projectId === "string" &&
+                  typeof childTaskId === "string" && (
+                    <ArtifactViewer
+                      projectId={projectId}
+                      childTaskId={childTaskId}
+                      sessionToken={sessionToken}
+                    />
+                  )}
+              </div>
+            </div>
+          </div>
+        )}
+        {!sessionToken && (
+          <div className="w-full">
+            <div className="p-2 w-full h-screen bg-background flex items-center flex-col">
+              <div className="p-6 rounded-lg w-full">
+                <h1 className="text-3xl mb-4 text-center font-bold tracking-tight text-primary flex items-center flex-col">
+                  <Image
+                    src="https://qfktimnmlcnfowxuoune.supabase.co/storage/v1/object/public/logos/logo_full.svg"
+                    alt="logo"
+                    width={240}
+                    height={60}
+                    className="mb-4"
+                  />
+                  AI Project Management Assistant
+                </h1>
+              </div>
+              <div className="p-8 bg-card rounded-md w-80 m-8 text-card-foreground">
+                <div className="mb-4">
+                  <Label htmlFor="email">Email address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="mb-4">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyUp={(e) => {
+                      if (e.key === "Enter") {
+                        handleLogin(email, password);
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="secondary"
+                    onClick={() => handleLogin(email, password)}
+                    className="mt-4"
                   >
-                    <Image
-                      src="https://qfktimnmlcnfowxuoune.supabase.co/storage/v1/object/public/logos/logo_full.svg"
-                      alt="logo"
-                      w={60}
-                      mb={4}
-                    />
-                    AI Project Management Assistant
-                  </Heading>
-                </Box>
-                <Box
-                  p={8}
-                  backgroundColor="brand.mid"
-                  borderRadius="md"
-                  width="sm"
-                  m="8"
-                  textColor="white"
-                >
-                  <FormControl id="email" mb="4">
-                    <FormLabel>Email address</FormLabel>
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </FormControl>
-                  <FormControl id="password" mb="4">
-                    <FormLabel>Password</FormLabel>
-                    <Input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      onKeyUp={(e) => {
-                        if (e.key === "Enter") {
-                          handleLogin(email, password);
-                        }
-                      }}
-                    />
-                    <Button
-                      colorScheme="gray"
-                      textColor="black"
-                      onClick={() => handleLogin(email, password)}
-                      mt={4}
-                    >
-                      Login with Email
-                    </Button>
-                  </FormControl>
-                </Box>
-              </Center>
-            </Flex>
-          )}
-        </Flex>
-      </QueryClientProvider>
-    </ChakraProvider>
+                    Login with Email
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </QueryClientProvider>
   );
 }
 

@@ -178,6 +178,40 @@ export const uploadFileInFolder = async (
   return response.data;
 };
 
+export const createDocumentInFolder = async (
+  session: Session,
+  projectId: string,
+  fileName: string,
+  folderId: string,
+  callBack?: (data: any) => void
+) => {
+  if (!session) {
+    return;
+  }
+  const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/text/file/${projectId}`;
+
+  const response = await axios.post<GetFolderFileProp>(
+    baseUrl,
+    {
+      file_name: fileName,
+      folder_id: folderId,
+      project_access_id: projectId,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (callBack) {
+    callBack(response.data);
+  }
+
+  return response.data;
+};
+
 export const deleteFolder = async (
   session: Session,
   projectId: string,
@@ -201,6 +235,69 @@ export const deleteFolder = async (
   }
 
   return response.data;
+};
+
+//_________________________
+
+export const deleteFile = async ({
+  session,
+  projectId,
+  fileId,
+}: {
+  session: Session;
+  projectId: string;
+  fileId: string;
+}) => {
+  if (!session) {
+    return;
+  }
+
+  const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/file/${projectId}`;
+
+  const params = {
+    file_id: fileId,
+  };
+
+  const response = await axios.delete(baseUrl, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    params,
+  });
+
+  return response.data;
+};
+export const uploadImageForEditor = async ({
+  session,
+  projectId,
+  file,
+}: {
+  session: Session;
+  projectId: string;
+  file: File;
+}) => {
+  if (!session) {
+    throw new Error("No session provided");
+  }
+
+  const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/image/${projectId}`;
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await axios.post(baseUrl, formData, {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    throw error;
+  }
 };
 
 //helpers------------------------------------------------------------------------------------------------------------

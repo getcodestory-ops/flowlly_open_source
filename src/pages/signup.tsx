@@ -38,7 +38,7 @@ export default function Signup() {
         title: "Signup successful",
         description: "You have been signed up successfully.",
       });
-      router.push("/assignments");
+      router.push("/workbench");
     } catch (error) {
       toast({
         title: " Signup failed",

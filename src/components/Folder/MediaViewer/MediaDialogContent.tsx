@@ -1,9 +1,18 @@
+import { useState } from "react";
 import { StorageResourceEntity } from "@/types/document";
-import { FileText } from "lucide-react";
+import { FileText, ExternalLink, Download } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import ContentEditor from "@/components/DocumentEditor/ContentEditor";
-
 import { useStorageTextFileSave } from "@/components/DocumentEditor/useStorageTextSave";
+
+// Update the import for react-pdf
+// import { Document, Page, pdfjs } from "react-pdf";
+// import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+// import "react-pdf/dist/esm/Page/TextLayer.css";
+
+// // Set up the worker
+// pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+
 interface MediaDialogContentProps {
   resource: StorageResourceEntity;
 }
@@ -16,6 +25,13 @@ export const MediaDialogContent: React.FC<MediaDialogContentProps> = ({
   const fileExt = metadata?.extension?.toLowerCase();
 
   const { onSubmit, isPending } = useStorageTextFileSave(resource?.id);
+
+  const [numPages, setNumPages] = useState<number | null>(null);
+  const [pageNumber, setPageNumber] = useState(1);
+
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+    setNumPages(numPages);
+  }
 
   switch (fileExt) {
     case ".jpg":
@@ -65,6 +81,33 @@ export const MediaDialogContent: React.FC<MediaDialogContentProps> = ({
     case ".txt":
       return (
         <ContentEditor content={metadata?.content} saveFunction={onSubmit} />
+      );
+    case ".pdf":
+      return (
+        <>
+          <div className="flex flex-col items-center justify-center p-4">
+            <FileText className="text-4xl mb-2" />
+            <p className="mb-4">PDF Viewer</p>
+            <a
+              href={url}
+              download={file_name}
+              className="flex items-center px-4 py-2 mb-4 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+            >
+              Download PDF
+              <Download className="ml-2 h-4 w-4" />
+            </a>
+            <div className="w-full max-w-3xl h-96 border border-gray-300 rounded">
+              <iframe
+                src={`https://docs.google.com/viewer?url=${encodeURIComponent(
+                  url
+                )}&embedded=true`}
+                className="w-full h-full"
+                title="PDF Viewer"
+              />
+            </div>
+          </div>
+          <DescriptionContent description={description} />
+        </>
       );
     default:
       return (

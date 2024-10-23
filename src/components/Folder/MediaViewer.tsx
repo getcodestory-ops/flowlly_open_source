@@ -7,6 +7,11 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import ContentEditor from "../DocumentEditor/ContentEditor";
 import { useStorageTextFileSave } from "../DocumentEditor/useStorageTextSave";
 import { useDocumentTracer } from "./useDocumentTracer";
+import { Document, Page, pdfjs } from "react-pdf";
+import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+import "react-pdf/dist/esm/Page/TextLayer.css";
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
   resource,
@@ -15,6 +20,9 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
   const fileExt = metadata?.extension?.toLowerCase();
   const { onSubmit, isPending } = useStorageTextFileSave(resource?.id);
   const traces = useDocumentTracer(resource?.id);
+
+  const [numPages, setNumPages] = useState<number | null>(null);
+  const [pageNumber, setPageNumber] = useState(1);
 
   const renderPreview = () => {
     switch (fileExt) {
@@ -89,12 +97,53 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
             </DialogContent>
           </Dialog>
         );
+      case ".pdf":
+        return (
+          <Dialog>
+            <DialogTrigger asChild>
+              <div className="flex items-center justify-center cursor-pointer">
+                <div className="flex flex-row items-center gap-4">
+                  <File className="text-2xl" />
+                  <div>Click to view PDF</div>
+                </div>
+              </div>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <Document
+                file={url}
+                onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+              >
+                <Page pageNumber={pageNumber} />
+              </Document>
+              <div className="flex justify-between items-center mt-4">
+                <button
+                  onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
+                  disabled={pageNumber <= 1}
+                >
+                  Previous
+                </button>
+                <p>
+                  Page {pageNumber} of {numPages}
+                </p>
+                <button
+                  onClick={() =>
+                    setPageNumber((prev) => Math.min(prev + 1, numPages || 1))
+                  }
+                  disabled={pageNumber >= (numPages || 1)}
+                >
+                  Next
+                </button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
       default:
         return (
           <div className="flex items-center justify-center ">
             <div className="flex flex-row items-center gap-4">
               <File className="text-2xl" />
               <div>Sorry No Preview Available</div>
+              <div>{fileExt}</div>
             </div>
           </div>
         );

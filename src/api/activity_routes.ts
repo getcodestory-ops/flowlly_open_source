@@ -13,7 +13,6 @@ export const getActivities = async (
   date: string = getCurrentDateFormatted(),
   probability: number = 0.0
 ): Promise<ActivityEntity[]> => {
-
   const query = {
     date: date,
     probability: probability,
@@ -48,7 +47,7 @@ export const createActivity = async (
 export const updateActivity = async (
   session: Session,
   projectId: string,
-  activity: ActivityEntity
+  activity: ActivityEntity | UpdateActivityTypes
 ) => {
   if (!session.access_token) return null;
 
@@ -66,6 +65,7 @@ export const updateActivity = async (
     status: activity.status,
     owner: activity.owner,
     progress: activity.progress,
+    active: "active" in activity ? activity.active : true,
   };
 
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project/${projectId}/update_activity`;

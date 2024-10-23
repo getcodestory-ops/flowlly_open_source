@@ -49,13 +49,14 @@ import { FilesContent } from "../Folder/FilesTable";
 
 export const DocumentFolderModule = () => {
   return (
-    <div className="h-full overflow-y-scroll custom-scrollbar p-4 rounded-lg flex items-start">
+    <div className="h-full container  p-4 rounded-lg flex items-start">
       <DatabasePageLayout />
     </div>
   );
 };
 
 export function DatabasePageLayout() {
+  const queryClient = useQueryClient();
   const { session, activeProject } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
@@ -85,6 +86,8 @@ export function DatabasePageLayout() {
             );
             if (rootFolder) {
               setRootId(rootFolder.id);
+              // Only set root folder if no current folder structure exists
+
               setCurrentFolderStructure({
                 folderId: rootFolder.id,
                 folderName: isProjectWide
@@ -100,6 +103,7 @@ export function DatabasePageLayout() {
       return Promise.reject("No session or access token");
     },
     enabled: !!session && !!activeProject,
+    refetchOnWindowFocus: false, // Disable automatic refetch on window focus
   });
 
   if (!session) {
@@ -334,6 +338,7 @@ const FolderDetails: React.FC<
       <FilesContent
         files={files}
         folderId={currentFolderStructure.folderId}
+        folderName={currentFolderStructure.folderName}
         session={session}
         activeProject={activeProject}
       />

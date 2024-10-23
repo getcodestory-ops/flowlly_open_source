@@ -1,10 +1,13 @@
-import React, { useState } from "react";
-import Link from "next/link";
-import { FileSearch, Maximize, Trash } from "lucide-react";
-
-import { useRef } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-
+import React, { useEffect, useRef, useState } from "react";
+import {
+  FileSearch,
+  Maximize,
+  Trash,
+  ChevronLeft,
+  ChevronRight,
+  MessageCircle,
+} from "lucide-react";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { StorageResourceEntity } from "@/types/document";
 //components
 import { Button } from "@/components/ui/button";
@@ -30,63 +33,167 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { uploadFileInFolder } from "@/api/folderRoutes";
+import { uploadFileInFolder, createDocumentInFolder } from "@/api/folderRoutes";
 import { useToast } from "@/components/ui/use-toast";
 
 import { MediaViewer } from "../Folder/MediaViewer";
 import { FileMediaIcon } from "./FileMediaIcon";
-
+import { deleteFile } from "@/api/folderRoutes";
 import { formatDate } from "@/utils/calculations";
+import PlatformChatComponent from "../ChatInput/PlatformChat/PlatformChatComponent";
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
 
 export const FilesContent = ({
   files,
   folderId,
+  folderName,
   session,
   activeProject,
 }: {
   files: StorageResourceEntity[];
   folderId: string;
+  folderName: string;
   session: any;
   activeProject: any;
 }) => {
   const [currentFile, setCurrentFile] = useState<null | StorageResourceEntity>(
     null
   );
+  const [currentPage, setCurrentPage] = useState(1);
+  const filesPerPage = 10; // Adjust this number as needed
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const indexOfLastFile = currentPage * filesPerPage;
+  const indexOfFirstFile = indexOfLastFile - filesPerPage;
+  const currentFiles = files.slice(indexOfFirstFile, indexOfLastFile);
+
+  const totalPages = Math.ceil(files.length / filesPerPage);
+
+  const chatRef = useRef<HTMLDivElement>(null);
+
+  // useEffect(() => {
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     if (
+  //       chatRef.current &&
+  //       !chatRef.current.contains(event.target as Node) &&
+  //       isChatOpen &&
+  //       !isClosing
+  //     ) {
+  //       setIsClosing(true);
+  //       setTimeout(() => {
+  //         setIsChatOpen(false);
+  //         setIsClosing(false);
+  //       }, 300); // Match this with the CSS transition duration
+  //     }
+  //   };
+
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, [isChatOpen, isClosing]);
+
   return (
-    <div className="grid gap-4 md:gap-8 grid-cols-2 xl:grid-cols-3">
-      <Card className="xl:col-span-2">
-        <CardHeader className="flex flex-row items-center">
-          <div className="grid gap-2">
-            <CardTitle>All Files</CardTitle>
-            <CardDescription>
-              Recent files in the selected category.
-            </CardDescription>
-          </div>
-          <AddFileInFolderButton
+    <div className="relative">
+      <div className="grid gap-4 md:gap-8 grid-cols-2 xl:grid-cols-3">
+        <Card className="xl:col-span-3">
+          <CardHeader className="flex flex-row items-center">
+            <div className="grid gap-2">
+              <CardTitle>All Files</CardTitle>
+              <CardDescription>
+                Recent files in the selected category.
+              </CardDescription>
+            </div>
+            <AddFileInFolderButton
+              folderId={folderId}
+              session={session}
+              activeProject={activeProject}
+            />
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <FilesHeader />
+              <TableBody>
+                {currentFiles.map((file, i) => (
+                  <FileRow
+                    key={i}
+                    resource={file}
+                    email={session.user.email}
+                    setCurrentFile={setCurrentFile}
+                    currentFile={currentFile}
+                    session={session}
+                    activeProject={activeProject}
+                  />
+                ))}
+                {files.length === 0 && <EmptyFileRow />}
+              </TableBody>
+            </Table>
+            <div className="flex justify-between items-center mt-4">
+              <div className="text-sm text-gray-500">
+                Showing {indexOfFirstFile + 1}-
+                {Math.min(indexOfLastFile, files.length)} of {files.length}{" "}
+                files
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        {/* <FilePreviewCard resource={currentFile} /> */}
+      </div>
+
+      {/* Floating chat button */}
+      <Button
+        className="fixed bottom-4 right-4 rounded-full w-auto h-auto p-2 flex items-center gap-2"
+        onClick={() => setIsChatOpen(!isChatOpen)}
+      >
+        <div className="bg-primary text-primary-foreground rounded-full p-2">
+          <MessageCircle size={24} />
+        </div>
+        <span className="pr-2">Look for answers in {folderName}</span>
+      </Button>
+
+      {/* Chat component */}
+      {(isChatOpen || isClosing) && (
+        <div
+          ref={chatRef}
+          className={`fixed bottom-20 right-4 w-[calc(100vw-200px)] z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden transition-opacity duration-300 ${
+            isClosing ? "opacity-0" : "opacity-100"
+          }`}
+        >
+          <PlatformChatComponent
             folderId={folderId}
-            session={session}
-            activeProject={activeProject}
+            folderName={folderName}
+            chatTarget="folder"
           />
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <FilesHeader />
-            <TableBody>
-              {files.map((file, i) => (
-                <FileRow
-                  key={i}
-                  resource={file}
-                  email={session.user.email}
-                  setCurrentFile={setCurrentFile}
-                  currentFile={currentFile}
-                />
-              ))}
-              {files.length === 0 && <EmptyFileRow />}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-      <FilePreviewCard resource={currentFile} />
+        </div>
+      )}
     </div>
   );
 };
@@ -158,12 +265,30 @@ const FileRow = ({
   resource,
   setCurrentFile,
   currentFile,
+  session,
+  activeProject,
 }: {
   resource: any;
   email: string;
   setCurrentFile: (resource: any) => void;
   currentFile: any;
+  session: any;
+  activeProject: any;
 }) => {
+  const queryClient = useQueryClient();
+
+  const { mutate } = useMutation({
+    mutationFn: deleteFile,
+    onError: (error) => {
+      console.error(error);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [`fetchFiles-${resource.folder_id}`],
+      });
+    },
+  });
+
   return (
     <TableRow
       onMouseEnter={() => setCurrentFile(resource)}
@@ -194,7 +319,16 @@ const FileRow = ({
         {formatDate(resource.created_at)}
       </TableCell>
       <TableCell className="cursor-pointer hidden md:table-cell">
-        <Trash size={16} />
+        <Trash
+          size={16}
+          onClick={() =>
+            mutate({
+              session,
+              projectId: activeProject.project_id,
+              fileId: resource.id,
+            })
+          }
+        />
       </TableCell>
     </TableRow>
   );
@@ -212,6 +346,7 @@ const AddFileInFolderButton = ({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [textFileName, setTextFileName] = useState("");
 
   const handleFileUpload = (e: any) => {
     const file = fileInputRef.current?.files?.[0];
@@ -229,21 +364,46 @@ const AddFileInFolderButton = ({
         });
         toast({
           title: "File Uploaded Successfully",
-          description: `File  uploaded successfully`,
+          description: `File uploaded successfully`,
           duration: 20000,
         });
       }
     );
   };
 
+  const handleCreateTextFile = () => {
+    if (!textFileName) return;
+
+    // Create a new text file with the given name
+    const file = new File([""], textFileName + ".txt", { type: "text/plain" });
+
+    uploadFileInFolder(
+      session,
+      activeProject.project_id,
+      file,
+      folderId,
+      (data) => {
+        queryClient.invalidateQueries({
+          queryKey: [`fetchFiles-${folderId}`],
+        });
+        toast({
+          title: "Text File Created Successfully",
+          description: `Text file "${textFileName}.txt" created successfully`,
+          duration: 20000,
+        });
+        setTextFileName("");
+      }
+    );
+  };
+
   return (
-    <div className="ml-auto gap-1">
+    <div className="ml-auto flex gap-2">
       <input
         type="file"
         ref={fileInputRef}
         onChange={handleFileUpload}
         style={{ display: "none" }}
-        //single file at a time
+        accept=".bmp,.csv,.doc,.docx,.eml,.epub,.heic,.html,.jpeg,.png,.md,.msg,.odt,.org,.p7s,.pdf,.png,.ppt,.pptx,.rst,.rtf,.tiff,.txt,.tsv,.xls,.xlsx,.xml"
         multiple={false}
       />
       <Button
@@ -251,8 +411,26 @@ const AddFileInFolderButton = ({
         size="sm"
         variant="default"
       >
-        + File
+        + Upload File
       </Button>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button size="sm" variant="default">
+            + Text File
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80">
+          <div className="flex flex-col gap-4">
+            <Input
+              type="text"
+              placeholder="Enter file name"
+              value={textFileName}
+              onChange={(e) => setTextFileName(e.target.value)}
+            />
+            <Button onClick={handleCreateTextFile}>Create Document</Button>
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };

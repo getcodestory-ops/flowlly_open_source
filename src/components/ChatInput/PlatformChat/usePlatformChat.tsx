@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { useToast } from "@chakra-ui/react";
+import { useState } from "react";
 import { useStore } from "@/utils/store";
 import { getTaskStatus } from "@/api/schedule_routes";
 import { talkToAgent } from "@/api/agentRoutes";
@@ -7,10 +6,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAgentChats } from "@/api/agentRoutes";
 import { Session } from "@supabase/supabase-js";
 import { isTokenExpired } from "@/utils/isTokenExpired";
-import { createChatEntity } from "@/api/agentRoutes";
+import { useToast } from "@/components/ui/use-toast";
+import { createPlatformChatEntity } from "@/api/agentRoutes";
 
-export function useScheduleUpdate() {
-  const toast = useToast();
+export function usePlatformChat(folderId: string, chatTarget: string) {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [chatInput, setChatInput] = useState<string>("");
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
@@ -33,6 +33,22 @@ export function useScheduleUpdate() {
     return response;
   };
 
+  const { mutate, isPending, data } = useMutation({
+    mutationFn: talkToAgent,
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["agentChats"] });
+      setChatInput("");
+      setCurrentTaskId(data.agent_response);
+    },
+  });
+
   const createChatEntityMutation = useMutation({
     mutationFn: () => {
       if (!session || !activeProject) {
@@ -43,10 +59,16 @@ export function useScheduleUpdate() {
         });
         return Promise.reject("No session or active project");
       }
-      return createChatEntity(session, {
+      return createPlatformChatEntity(session, {
         project_id: activeProject.project_id,
-        chat_name: "New Chat",
-        chat_details: "Automated chat",
+        chat_name:
+          chatTarget === "schedule" ? "Schedule Chat" : "New Document Chat",
+        chat_details:
+          chatTarget === "schedule"
+            ? "Automated chat for schedule interaction"
+            : "Automated chat for document interaction",
+        relation_id: folderId,
+        relation_type: chatTarget,
       });
     },
     onError: (error) => {
@@ -56,33 +78,15 @@ export function useScheduleUpdate() {
         description: "Failed to create chat entity",
         variant: "destructive",
       });
-      return Promise.reject("Failed to create chat entity");
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Chat entity created",
-      });
-      queryClient.invalidateQueries({ queryKey: ["chatEntityList"] });
-      useStore.setState({ activeChatEntity: data });
-    },
-  });
-
-  const { mutate, isPending, data } = useMutation({
-    mutationFn: talkToAgent,
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        status: "error",
-        duration: 4000,
-        isClosable: true,
-      });
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["agentChats"] });
-      setChatInput("");
-      setCurrentTaskId(data.agent_response);
+      toast({
+        title: "Success",
+        description: "New chat entity created",
+      });
+      queryClient.invalidateQueries({ queryKey: ["documentChatEntityList"] });
+      // Set the newly created chat entity as active
+      useStore.setState({ activeChatEntity: data });
     },
   });
 
@@ -93,20 +97,16 @@ export function useScheduleUpdate() {
         toast({
           title: "Error",
           description: "Please refresh the page and try again!",
-          status: "error",
-          duration: 4000,
-          isClosable: true,
+          variant: "destructive",
         });
         return Promise.reject("refresh session");
       } else {
         if (isTokenExpired(session)) {
           toast({
-            title: "warning",
+            title: "Warning",
             description:
               "Your session has expired. Please refresh the page and try again!",
-            status: "warning",
-            duration: 4000,
-            isClosable: true,
+            variant: "destructive",
           });
           return Promise.reject("refresh session");
         }
@@ -116,9 +116,7 @@ export function useScheduleUpdate() {
         toast({
           title: "Warning",
           description: "Select a chat to start!",
-          status: "warning",
-          duration: 1000,
-          isClosable: true,
+          variant: "destructive",
         });
         return Promise.reject("select a chat");
       }
@@ -158,9 +156,10 @@ export function useScheduleUpdate() {
     mutate({
       session,
       agentTask: chatInput,
-      brainId: selectedContext?.id ?? null,
+      brainId: folderId ?? null,
       chatId: currentActiveChatEntity.id,
       projectId: activeProject?.project_id,
+      responseType: chatTarget ?? "folder",
     });
   };
 
@@ -176,5 +175,6 @@ export function useScheduleUpdate() {
     onOpen,
     currentTaskId,
     session,
+    createChatEntityMutation,
   };
 }

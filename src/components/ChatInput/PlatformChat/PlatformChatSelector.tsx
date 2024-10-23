@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useStore } from "@/utils/store";
 import { Plus, ChevronDown, MessageSquare } from "lucide-react";
-import AddNewChatEntity from "./AddNewChatEntity";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,26 +10,50 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getPlatformChatEntities } from "@/api/agentRoutes";
+import AddNewPlatformChatEntity from "./AddNewPlatformChatEntity";
+import { toast } from "@/components/ui/use-toast";
 
-const AssistantChatSelector = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const onClose = () => setIsOpen(false);
-  const onOpen = () => setIsOpen(true);
+const PlatformChatSelector = ({
+  folderId,
+  chatTarget,
+}: {
+  folderId: string;
+  chatTarget?: string;
+}) => {
+  const queryClient = useQueryClient();
 
-  const { activeChatEntity, setActiveChatEntity, chatEntities } = useStore(
-    (state) => ({
+  const { activeChatEntity, setActiveChatEntity, activeProject, session } =
+    useStore((state) => ({
       activeChatEntity: state.activeChatEntity,
       setActiveChatEntity: state.setActiveChatEntity,
-      chatEntities: state.chatEntities,
-    })
-  );
+      activeProject: state.activeProject,
+      session: state.session,
+    }));
 
-  //if activeChatEntity not among chatEntities, set it to the first chatEntity
+  const { data: chatEntities, isLoading: chatsLoading } = useQuery({
+    queryKey: ["documentChatEntityList", session, activeProject],
+    queryFn: () => {
+      if (!session || !activeProject) {
+        return Promise.reject("No session or active project");
+      }
+      return getPlatformChatEntities(
+        session,
+        activeProject.project_id,
+        folderId,
+        chatTarget
+      );
+    },
+  });
+
   useEffect(() => {
-    if (activeChatEntity && !chatEntities.includes(activeChatEntity)) {
+    if (chatEntities && chatEntities.length > 0) {
       setActiveChatEntity(chatEntities[0]);
+    } else {
+      setActiveChatEntity(null);
     }
-  }, [chatEntities, activeChatEntity, setActiveChatEntity]);
+  }, [chatEntities, setActiveChatEntity]);
 
   return (
     <div className="flex flex-col text-xs">
@@ -46,11 +69,7 @@ const AssistantChatSelector = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          <AddNewChatEntity />
-          {/* <div className="flex items-center justify-center gap-2 p-2 w-full hover:text-gray-900 cursor-pointer rounded-md">
-              <Plus className="h-4 w-4" />
-              <span className="truncate">New Chat</span>
-            </div> */}
+          <AddNewPlatformChatEntity folderId={folderId} />
 
           <DropdownMenuSeparator />
           <ScrollArea className="h-[60vh]">
@@ -84,4 +103,4 @@ const AssistantChatSelector = () => {
   );
 };
 
-export default AssistantChatSelector;
+export default PlatformChatSelector;
