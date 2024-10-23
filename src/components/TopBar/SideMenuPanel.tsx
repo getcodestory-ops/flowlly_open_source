@@ -20,6 +20,7 @@ import {
   BrainCircuit,
   ClipboardList,
   Folder,
+  CircleGauge,
 } from "lucide-react";
 
 import {
@@ -57,17 +58,17 @@ const menuItems: {
     link: "projects",
   },
   {
+    label: "Dashboard",
+    fnKey: "dashboard",
+    icon: <CircleGauge className="h-5 w-5" />,
+    link: "dashboard",
+  },
+  {
     label: "Workbench",
     fnKey: "workbench",
     icon: <ClipboardList className="h-5 w-5" />,
     link: "workbench",
   },
-  // {
-  //   label: "Dashboard",
-  //   fnKey: "dashboard",
-  //   icon: <Home className="h-5 w-5" />,
-  //   link: "dashboard",
-  // },
 
   {
     label: "Schedule",
