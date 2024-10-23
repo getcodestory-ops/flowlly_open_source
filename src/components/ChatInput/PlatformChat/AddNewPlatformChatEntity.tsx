@@ -10,9 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
-import { createDocumentChatEntity } from "@/api/agentRoutes";
+import { createPlatformChatEntity } from "@/api/agentRoutes";
 
-function AddNewDocumentChatEntity({ folderId }: { folderId: string }) {
+function AddNewPlatformChatEntity({ folderId }: { folderId: string }) {
   const { session, activeProject } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
@@ -33,11 +33,12 @@ function AddNewDocumentChatEntity({ folderId }: { folderId: string }) {
         });
         return Promise.reject("No session or active project");
       }
-      return createDocumentChatEntity(session, {
+      return createPlatformChatEntity(session, {
         project_id: activeProject.project_id,
         chat_name: chatName,
         chat_details: chatDescription,
-        folder_id: folderId,
+        relation_id: folderId,
+        relation_type: "folder",
       });
     },
     onError: (error) => {
@@ -91,4 +92,4 @@ function AddNewDocumentChatEntity({ folderId }: { folderId: string }) {
   );
 }
 
-export default AddNewDocumentChatEntity;
+export default AddNewPlatformChatEntity;

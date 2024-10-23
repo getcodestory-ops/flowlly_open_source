@@ -7,12 +7,14 @@ import { CornerDownLeft, MessageCircleMore } from "lucide-react";
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
-import { useDocumentChat } from "./useDocumentChat";
+import { usePlatformChat } from "./usePlatformChat";
 
-export default function DocumentChatInterface({
+export default function PlatformChatInterface({
   folderId,
+  chatTarget,
 }: {
   folderId: string;
+  chatTarget: string;
 }) {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -24,7 +26,7 @@ export default function DocumentChatInterface({
     chatInput,
     currentTaskId,
     session,
-  } = useDocumentChat(folderId);
+  } = usePlatformChat(folderId, chatTarget);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {

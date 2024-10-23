@@ -40,7 +40,7 @@ import { MediaViewer } from "../Folder/MediaViewer";
 import { FileMediaIcon } from "./FileMediaIcon";
 import { deleteFile } from "@/api/folderRoutes";
 import { formatDate } from "@/utils/calculations";
-import DocumentChatComponent from "../ChatInput/DocumentChat/DocumentChatComponent";
+import PlatformChatComponent from "../ChatInput/PlatformChat/PlatformChatComponent";
 
 import {
   Popover,
@@ -52,11 +52,13 @@ import { Input } from "@/components/ui/input";
 export const FilesContent = ({
   files,
   folderId,
+  folderName,
   session,
   activeProject,
 }: {
   files: StorageResourceEntity[];
   folderId: string;
+  folderName: string;
   session: any;
   activeProject: any;
 }) => {
@@ -75,27 +77,27 @@ export const FilesContent = ({
 
   const chatRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        chatRef.current &&
-        !chatRef.current.contains(event.target as Node) &&
-        isChatOpen &&
-        !isClosing
-      ) {
-        setIsClosing(true);
-        setTimeout(() => {
-          setIsChatOpen(false);
-          setIsClosing(false);
-        }, 300); // Match this with the CSS transition duration
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     if (
+  //       chatRef.current &&
+  //       !chatRef.current.contains(event.target as Node) &&
+  //       isChatOpen &&
+  //       !isClosing
+  //     ) {
+  //       setIsClosing(true);
+  //       setTimeout(() => {
+  //         setIsChatOpen(false);
+  //         setIsClosing(false);
+  //       }, 300); // Match this with the CSS transition duration
+  //     }
+  //   };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isChatOpen, isClosing]);
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, [isChatOpen, isClosing]);
 
   return (
     <div className="relative">
@@ -168,10 +170,13 @@ export const FilesContent = ({
 
       {/* Floating chat button */}
       <Button
-        className="fixed bottom-4 right-4 rounded-full w-12 h-12 p-0"
+        className="fixed bottom-4 right-4 rounded-full w-auto h-auto p-2 flex items-center gap-2"
         onClick={() => setIsChatOpen(!isChatOpen)}
       >
-        <MessageCircle size={24} />
+        <div className="bg-primary text-primary-foreground rounded-full p-2">
+          <MessageCircle size={24} />
+        </div>
+        <span className="pr-2">Look for answers in {folderName}</span>
       </Button>
 
       {/* Chat component */}
@@ -182,7 +187,11 @@ export const FilesContent = ({
             isClosing ? "opacity-0" : "opacity-100"
           }`}
         >
-          <DocumentChatComponent folderId={folderId} />
+          <PlatformChatComponent
+            folderId={folderId}
+            folderName={folderName}
+            chatTarget="folder"
+          />
         </div>
       )}
     </div>
@@ -394,7 +403,7 @@ const AddFileInFolderButton = ({
         ref={fileInputRef}
         onChange={handleFileUpload}
         style={{ display: "none" }}
-        accept=".pdf"
+        accept=".bmp,.csv,.doc,.docx,.eml,.epub,.heic,.html,.jpeg,.png,.md,.msg,.odt,.org,.p7s,.pdf,.png,.ppt,.pptx,.rst,.rtf,.tiff,.txt,.tsv,.xls,.xlsx,.xml"
         multiple={false}
       />
       <Button
@@ -402,7 +411,7 @@ const AddFileInFolderButton = ({
         size="sm"
         variant="default"
       >
-        + PDF
+        + Upload File
       </Button>
       <Popover>
         <PopoverTrigger asChild>

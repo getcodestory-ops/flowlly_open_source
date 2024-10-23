@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ScheduleInsights from "./ScheduleInsights";
 import { Button } from "@/components/ui/button";
@@ -12,15 +12,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { X } from "lucide-react";
 import { useStore } from "@/utils/store";
+import PlatformChatComponent from "../ChatInput/PlatformChat/PlatformChatComponent";
+import { MessageCircle } from "lucide-react";
+import Draggable from "react-draggable";
 
 function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
   const onOpen = () => setIsOpen(true);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const chatRef = useRef<HTMLDivElement>(null);
   const { syncSchedule } = useScheduleSync();
-  const { taskToView, setTaskToView } = useStore((state) => ({
+  const { taskToView, setTaskToView, activeProject } = useStore((state) => ({
     taskToView: state.taskToView,
     setTaskToView: state.setTaskToView,
+    activeProject: state.activeProject,
   }));
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -45,11 +52,17 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
     onOpen();
   };
 
+  const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
+
+  const handleDrag = (e: any, data: { x: number; y: number }) => {
+    setButtonPosition({ x: data.x, y: data.y });
+  };
+
   return (
     <div className="w-full h-full flex flex-col ">
       <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
 
-      <div className=" flex  justify-end gap-8 items-center absolute right-8 ">
+      <div className=" flex  justify-end gap-8 items-center absolute right-8 z-50 bg-background px-2  rounded-lg">
         <div>
           <CustomDatePicker />
         </div>
@@ -124,6 +137,51 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
           </CardContent>
         </Card>
       </div>
+      <Draggable position={buttonPosition} onStop={handleDrag} bounds="parent">
+        <div className="fixed bottom-4 right-4">
+          <Button
+            className="rounded-full w-auto h-auto p-2 flex items-center gap-2"
+            onClick={() => setIsChatOpen(!isChatOpen)}
+          >
+            <div className="bg-primary text-primary-foreground rounded-full p-2">
+              <MessageCircle size={24} />
+            </div>
+            <span className="pr-2">update schedule</span>
+          </Button>
+        </div>
+      </Draggable>
+
+      {(isChatOpen || isClosing) && (
+        <div
+          ref={chatRef}
+          className={`fixed bottom-20 right-4 w-[calc(100vw-200px)] z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden transition-opacity duration-300 ${
+            isClosing ? "opacity-0" : "opacity-100"
+          }`}
+        >
+          {activeProject && (
+            <PlatformChatComponent
+              folderId={activeProject?.project_id}
+              folderName="Schedule"
+              chatTarget="schedule"
+            />
+          )}
+          <div className="fixed p-2 z-50 top-0 ">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => {
+                setIsClosing(true);
+                setTimeout(() => {
+                  setIsChatOpen(false);
+                  setIsClosing(false);
+                }, 300);
+              }}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

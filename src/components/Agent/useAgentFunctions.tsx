@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAgentChats } from "@/api/agentRoutes";
 import { Session } from "@supabase/supabase-js";
 import { isTokenExpired } from "@/utils/isTokenExpired";
+import { createChatEntity } from "@/api/agentRoutes";
 
 export function useScheduleUpdate() {
   const toast = useToast();
@@ -32,28 +33,40 @@ export function useScheduleUpdate() {
     return response;
   };
 
-  // const { data: taskStatus } = useQuery({
-  //   queryKey: ["taskStatus", currentTaskId, session],
-  //   queryFn: () => getStatusAndUpdateChats(session, currentTaskId),
-  //   refetchInterval: 1000,
-  //   enabled: !!session && !!currentTaskId,
-  // });
-
-  // useEffect(() => {
-  //   if (!taskStatus) return;
-  //   if (taskStatus.status === "completed") {
-  //     queryClient.invalidateQueries({ queryKey: ["agentChats"] });
-  //     toast({
-  //       title: "Success",
-  //       description: `Task completed successfully!`,
-  //       status: "success",
-  //       duration: 4000,
-  //       isClosable: true,
-  //       position: "bottom-right",
-  //     });
-  //     setCurrentTaskId(null);
-  //   }
-  // }, [taskStatus]);
+  const createChatEntityMutation = useMutation({
+    mutationFn: () => {
+      if (!session || !activeProject) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "No session or active project",
+        });
+        return Promise.reject("No session or active project");
+      }
+      return createChatEntity(session, {
+        project_id: activeProject.project_id,
+        chat_name: "New Chat",
+        chat_details: "Automated chat",
+      });
+    },
+    onError: (error) => {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "Failed to create chat entity",
+        variant: "destructive",
+      });
+      return Promise.reject("Failed to create chat entity");
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Chat entity created",
+      });
+      queryClient.invalidateQueries({ queryKey: ["chatEntityList"] });
+      useStore.setState({ activeChatEntity: data });
+    },
+  });
 
   const { mutate, isPending, data } = useMutation({
     mutationFn: talkToAgent,
@@ -116,7 +129,29 @@ export function useScheduleUpdate() {
   });
 
   const handleChatSubmit = async () => {
-    if (!session || !activeProject || !activeChatEntity?.id) {
+    if (!session || !activeProject) {
+      toast({
+        title: "Error",
+        description: "No session or active project",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!activeChatEntity?.id) {
+      // Create a new chat entity before submitting the chat
+      await createChatEntityMutation.mutateAsync();
+    }
+
+    // Ensure we have an active chat entity after potential creation
+    const currentActiveChatEntity = useStore.getState().activeChatEntity;
+
+    if (!currentActiveChatEntity?.id) {
+      toast({
+        title: "Error",
+        description: "Failed to create or retrieve chat entity",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -124,7 +159,7 @@ export function useScheduleUpdate() {
       session,
       agentTask: chatInput,
       brainId: selectedContext?.id ?? null,
-      chatId: activeChatEntity.id,
+      chatId: currentActiveChatEntity.id,
       projectId: activeProject?.project_id,
     });
   };

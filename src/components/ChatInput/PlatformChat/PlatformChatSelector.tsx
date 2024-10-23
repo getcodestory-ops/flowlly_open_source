@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useStore } from "@/utils/store";
 import { Plus, ChevronDown, MessageSquare } from "lucide-react";
-import { createDocumentChatEntity } from "@/api/agentRoutes";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,46 +11,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getDocumentChatEntities } from "@/api/agentRoutes";
-import AddNewDocumentChatEntity from "./AddNewDocumentChatEntity";
+import { getPlatformChatEntities } from "@/api/agentRoutes";
+import AddNewPlatformChatEntity from "./AddNewPlatformChatEntity";
 import { toast } from "@/components/ui/use-toast";
 
-const DocumentChatSelector = ({ folderId }: { folderId: string }) => {
+const PlatformChatSelector = ({
+  folderId,
+  chatTarget,
+}: {
+  folderId: string;
+  chatTarget?: string;
+}) => {
   const queryClient = useQueryClient();
-
-  const createDefaultChatEntity = useMutation({
-    mutationFn: () => {
-      if (!session || !activeProject) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "No session or active project",
-        });
-        return Promise.reject("No session or active project");
-      }
-      return createDocumentChatEntity(session, {
-        project_id: activeProject.project_id,
-        chat_name: "Default Chat",
-        chat_details: "Automatically created default chat",
-        folder_id: folderId,
-      });
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Success",
-        description: "Chat entity created",
-      });
-      queryClient.invalidateQueries({ queryKey: ["documentChatEntityList"] });
-      setActiveChatEntity(data);
-    },
-    onError: (error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Error creating chat entity",
-      });
-    },
-  });
 
   const { activeChatEntity, setActiveChatEntity, activeProject, session } =
     useStore((state) => ({
@@ -67,10 +38,11 @@ const DocumentChatSelector = ({ folderId }: { folderId: string }) => {
       if (!session || !activeProject) {
         return Promise.reject("No session or active project");
       }
-      return getDocumentChatEntities(
+      return getPlatformChatEntities(
         session,
         activeProject.project_id,
-        folderId
+        folderId,
+        chatTarget
       );
     },
   });
@@ -97,11 +69,7 @@ const DocumentChatSelector = ({ folderId }: { folderId: string }) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          <AddNewDocumentChatEntity folderId={folderId} />
-          {/* <div className="flex items-center justify-center gap-2 p-2 w-full hover:text-gray-900 cursor-pointer rounded-md">
-              <Plus className="h-4 w-4" />
-              <span className="truncate">New Chat</span>
-            </div> */}
+          <AddNewPlatformChatEntity folderId={folderId} />
 
           <DropdownMenuSeparator />
           <ScrollArea className="h-[60vh]">
@@ -135,4 +103,4 @@ const DocumentChatSelector = ({ folderId }: { folderId: string }) => {
   );
 };
 
-export default DocumentChatSelector;
+export default PlatformChatSelector;

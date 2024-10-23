@@ -4,6 +4,10 @@ import UnderLine from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import ImageResize from "tiptap-extension-resize-image";
 import { Markdown } from "tiptap-markdown";
+import Table from "@tiptap/extension-table";
+import TableRow from "@tiptap/extension-table-row";
+import TableCell from "@tiptap/extension-table-cell";
+import TableHeader from "@tiptap/extension-table-header";
 import { Button } from "../ui/button";
 import Toolbar from "./ToolBar";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -28,6 +32,12 @@ const ContentEditor = ({
       UnderLine,
       ImageResize,
       TextAlign,
+      Table.configure({
+        resizable: true,
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
     ],
     editorProps: {
       attributes: {

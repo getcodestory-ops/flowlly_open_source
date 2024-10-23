@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useStore } from "@/utils/store";
 import { Plus, ChevronDown, MessageSquare } from "lucide-react";
 import AddNewChatEntity from "./AddNewChatEntity";
@@ -24,6 +24,13 @@ const AssistantChatSelector = () => {
       chatEntities: state.chatEntities,
     })
   );
+
+  //if activeChatEntity not among chatEntities, set it to the first chatEntity
+  useEffect(() => {
+    if (activeChatEntity && !chatEntities.includes(activeChatEntity)) {
+      setActiveChatEntity(chatEntities[0]);
+    }
+  }, [chatEntities, activeChatEntity, setActiveChatEntity]);
 
   return (
     <div className="flex flex-col text-xs">
