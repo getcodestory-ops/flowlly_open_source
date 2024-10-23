@@ -267,6 +267,38 @@ export const deleteFile = async ({
 
   return response.data;
 };
+export const uploadImageForEditor = async ({
+  session,
+  projectId,
+  file,
+}: {
+  session: Session;
+  projectId: string;
+  file: File;
+}) => {
+  if (!session) {
+    throw new Error("No session provided");
+  }
+
+  const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/image/${projectId}`;
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await axios.post(baseUrl, formData, {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    throw error;
+  }
+};
 
 //helpers------------------------------------------------------------------------------------------------------------
 

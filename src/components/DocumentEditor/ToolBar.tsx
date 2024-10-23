@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Text, Spinner } from "@chakra-ui/react";
+
 import {
   Select,
   SelectContent,
@@ -18,6 +18,9 @@ import {
   FaCode,
   FaUndo,
   FaRedo,
+  FaTable,
+  FaSpinner,
+  FaImage,
 } from "react-icons/fa";
 
 import pdfMake from "pdfmake/build/pdfmake";
@@ -30,6 +33,15 @@ import EmailModal from "../AiActions/EmailModal";
 import { useStore } from "@/utils/store";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { uploadImageForEditor } from "@/api/folderRoutes";
+import { useToast } from "@/components/ui/use-toast";
 
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
@@ -46,6 +58,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
 }) => {
   const [saveStatus, setSaveStatus] = useState("Saved");
   const sessionToken = useStore((state) => state.session);
+  const activeProject = useStore((state) => state.activeProject);
+  const { toast } = useToast();
+  const [isUploading, setIsUploading] = useState(false);
 
   const deBounceSave = useDebounce(() => {
     setSaveStatus("Saving");
@@ -78,6 +93,53 @@ const Toolbar: React.FC<ToolbarProps> = ({
       pdfMake.createPdf(documentDefinition).download("minutes.pdf");
     }
   }, [editor]);
+
+  const [tableRows, setTableRows] = useState(3);
+  const [tableCols, setTableCols] = useState(3);
+
+  const [imageUrl, setImageUrl] = useState("");
+
+  const handleImageUpload = async (file: File) => {
+    if (!sessionToken) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to upload images.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    if (!activeProject?.project_id) {
+      toast({
+        title: "Error",
+        description: "No active project found.",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      const result = await uploadImageForEditor({
+        session: sessionToken,
+        projectId: activeProject?.project_id,
+        file,
+      });
+      editor.chain().focus().setImage({ src: result.url }).run();
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully.",
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast({
+        title: "Error",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   if (!editor) {
     return null;
@@ -150,6 +212,62 @@ const Toolbar: React.FC<ToolbarProps> = ({
         >
           <FaCode />
         </Button>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost">
+              <FaTable className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80">
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <h4 className="font-medium leading-none">Insert Table</h4>
+                <p className="text-sm text-muted-foreground">
+                  Set the number of rows and columns for your table.
+                </p>
+              </div>
+              <div className="grid gap-2">
+                <div className="grid grid-cols-3 items-center gap-4">
+                  <Label htmlFor="rows">Rows</Label>
+                  <Input
+                    id="rows"
+                    type="number"
+                    className="col-span-2 h-8"
+                    value={tableRows}
+                    onChange={(e) => setTableRows(Number(e.target.value))}
+                  />
+                </div>
+                <div className="grid grid-cols-3 items-center gap-4">
+                  <Label htmlFor="columns">Columns</Label>
+                  <Input
+                    id="columns"
+                    type="number"
+                    className="col-span-2 h-8"
+                    value={tableCols}
+                    onChange={(e) => setTableCols(Number(e.target.value))}
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={() => {
+                  editor
+                    .chain()
+                    .focus()
+                    .insertTable({
+                      rows: tableRows,
+                      cols: tableCols,
+                      withHeaderRow: true,
+                    })
+                    .run();
+                }}
+              >
+                Insert Table
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+
         <Separator orientation="vertical" />
         <Button
           variant={"ghost"}
@@ -168,6 +286,59 @@ const Toolbar: React.FC<ToolbarProps> = ({
           <FaFileDownload />
         </Button>
 
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" disabled={isUploading}>
+              {isUploading ? (
+                <FaSpinner className="h-4 w-4 animate-spin" />
+              ) : (
+                <FaImage className="h-4 w-4" />
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80">
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <h4 className="font-medium leading-none">Insert Image</h4>
+                <p className="text-sm text-muted-foreground">
+                  Upload an image or enter a URL.
+                </p>
+              </div>
+              <div className="grid gap-2">
+                <Input
+                  id="imageUpload"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      handleImageUpload(file);
+                    }
+                  }}
+                />
+                <div className="- or -" />
+                <Input
+                  id="imageUrl"
+                  type="text"
+                  placeholder="Image URL"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                />
+              </div>
+              <Button
+                onClick={() => {
+                  if (imageUrl) {
+                    editor.chain().focus().setImage({ src: imageUrl }).run();
+                    setImageUrl("");
+                  }
+                }}
+              >
+                Insert Image from URL
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+
         {sessionToken && (
           <EmailModal
             editor={editor}
@@ -177,13 +348,13 @@ const Toolbar: React.FC<ToolbarProps> = ({
         )}
         <Separator orientation="vertical" />
 
-        <Text fontSize="sm" color={saveStatus === "Saving" ? "white" : "white"}>
+        <div className="font-sm text-white">
           {saveStatus?.toLowerCase() === "saved" ? (
             saveStatus
           ) : (
-            <Spinner size="sm" />
+            <FaSpinner className="h-4 w-4 animate-spin" />
           )}
-        </Text>
+        </div>
       </div>
     </div>
   );

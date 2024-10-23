@@ -18,21 +18,24 @@ export const talkToAgent = async ({
   brainId,
   chatId,
   projectId,
+  responseType = "general",
 }: {
   session: Session;
   agentTask: string;
   brainId: string | null;
   chatId: string;
   projectId: string;
+  responseType?: string;
 }) => {
   const scheduleProps = {
     task: agentTask,
     brain_id: brainId,
     chat_entity_id: chatId,
     project_id: projectId,
+    response_type: responseType,
   };
 
-  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/schedule`;
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat`;
   const response = await axios.post(url, scheduleProps, {
     headers: {
       "Content-Type": "application/json",
@@ -70,13 +73,13 @@ export const createChatEntity = async (
   }
 };
 
-export const createDocumentChatEntity = async (
+export const createPlatformChatEntity = async (
   sessionToken: Session,
   chat_entity: CreateAgentChatEntity
 ) => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat_entity/folder`,
+      `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat_entity/relation`,
       {
         method: "POST",
         headers: {
@@ -112,13 +115,16 @@ export const getAgentChatEntities = async (
   return response.data.chat_entities;
 };
 
-export const getDocumentChatEntities = async (
+export const getPlatformChatEntities = async (
   session: Session,
   projectId: string,
-  folderId: string
+  folderId: string,
+  chatTarget?: string
 ): Promise<AgentChatEntity[]> => {
-  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat_entities/folder/${projectId}/${folderId}`;
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat_entities/relation/${projectId}/${folderId}`;
+  const params = chatTarget ? { relation_type: chatTarget } : {};
   const response = await axios.get(url, {
+    params,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${session.access_token}`,

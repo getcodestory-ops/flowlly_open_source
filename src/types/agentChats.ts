@@ -65,7 +65,8 @@ export interface CreateAgentChatEntity {
   project_id: string;
   chat_name: string;
   chat_details?: string;
-  folder_id?: string;
+  relation_id?: string;
+  relation_type?: string;
 }
 
 export interface AgentChatEntity {

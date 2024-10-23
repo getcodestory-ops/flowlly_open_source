@@ -20,10 +20,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { updateActivityRevision } from "@/api/schedule_routes";
 import { useArchiveActivity } from "@/utils/useArchiveActivity";
-import { Revision } from "@/types/activities";
+import {
+  ActivityEntity,
+  Revision,
+  UpdateActivityTypes,
+} from "@/types/activities";
 import { Input } from "@/components/ui/input";
 import AddNewActivityModal from "../Schedule/AddNewActivityModal";
 import { Textarea } from "@/components/ui/textarea";
+import { updateActivity } from "@/api/activity_routes";
+
 interface ActionItemInterface {
   results: Array<{
     activity_addition: Array<{
@@ -91,8 +97,30 @@ function ActionItemViewer({ results }: ActionItemInterface) {
     },
   });
 
+  const { mutate: updateActivityMutation } = useMutation({
+    mutationFn: (activity: UpdateActivityTypes) => {
+      if (!activity || !activeProject) return Promise.reject("No activity");
+      return updateActivity(session!, activeProject.project_id, activity);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast({
+        title: "Error updating activity",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Activity updated",
+        description: "Activity has been updated",
+      });
+      queryClient.invalidateQueries({ queryKey: ["activityList"] });
+    },
+  });
+
   const [editableModifications, setEditableModifications] = useState(
-    activity_modification.map((activity) => ({
+    (activity_modification || []).map((activity) => ({
       ...activity,
       isEditing: false,
       editedRevision: activity.revision ? { ...activity.revision } : null,
@@ -106,6 +134,7 @@ function ActionItemViewer({ results }: ActionItemInterface) {
           ? {
               ...item,
               isEditing: !item.isEditing,
+              revision: item.isEditing ? item.editedRevision : item.revision,
               editedRevision: item.revision ? { ...item.revision } : null,
             }
           : item
@@ -134,14 +163,19 @@ function ActionItemViewer({ results }: ActionItemInterface) {
   };
 
   const handleApprove = (activity: (typeof editableModifications)[0]) => {
-    if (activity.id && activity.editedRevision) {
-      approveImpact.mutate({
-        id: activity.id,
-        revision: {
-          impact_on_start_date: activity.editedRevision.impact_on_start_date,
-          impact_on_end_date: activity.editedRevision.impact_on_end_date,
-        },
-      });
+    if (activity.id) {
+      const currentRevision = activity.revision;
+      // console.log(currentRevision, activity.editedRevision, activity.revision);
+      if (currentRevision) {
+        approveImpact.mutate({
+          id: activity.id,
+          revision: {
+            impact_on_start_date: currentRevision.impact_on_start_date,
+            impact_on_end_date: currentRevision.impact_on_end_date,
+          },
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["activityList"] });
     }
   };
 
@@ -158,7 +192,7 @@ function ActionItemViewer({ results }: ActionItemInterface) {
   };
 
   const [editableAdditions, setEditableAdditions] = useState(
-    activity_addition.map((activity) => ({
+    (activity_addition || []).map((activity) => ({
       ...activity,
       isEditing: false,
       isNew: false,
@@ -185,12 +219,56 @@ function ActionItemViewer({ results }: ActionItemInterface) {
 
   const handleAdditionApprove = (activity: (typeof editableAdditions)[0]) => {
     // Implement the logic to approve the addition
-    console.log("Approving addition:", activity);
+    toast({
+      title: "Approving addition",
+      description: "Approving addition",
+    });
+
+    if (activity.id) {
+      updateActivityMutation({
+        id: activity.id,
+        name: activity.name,
+        description: activity.description,
+        start: activity.start,
+        end: activity.end,
+        status: "In Progress",
+        duration: 0,
+        active: true,
+      });
+    } else {
+      toast({
+        title: "Error approving addition",
+        description: "Activity ID not found",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleAdditionReject = (activity: (typeof editableAdditions)[0]) => {
     // Implement the logic to reject the addition
-    console.log("Rejecting addition:", activity);
+    toast({
+      title: "Rejecting addition",
+      description: "Rejecting addition",
+    });
+
+    if (activity.id) {
+      updateActivityMutation({
+        id: activity.id,
+        name: activity.name,
+        description: activity.description,
+        start: activity.start,
+        end: activity.end,
+        status: "Not Started",
+        duration: 0,
+        active: false,
+      });
+    } else {
+      toast({
+        title: "Error rejecting addition",
+        description: "Activity ID not found",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleAddNewActivity = () => {
@@ -352,7 +430,10 @@ function ActionItemViewer({ results }: ActionItemInterface) {
                   <TableCell>{activity.name}</TableCell>
                   <TableCell>
                     <Button variant="outline" size="icon">
-                      <CheckIcon className="h-w w-4" />
+                      <CheckIcon
+                        className="h-w w-4"
+                        // onClick={() => handleAdditionReject(activity)}
+                      />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -380,12 +461,12 @@ function ActionItemViewer({ results }: ActionItemInterface) {
             <TableBody>
               {editableModifications.map((activity, index) => (
                 <TableRow key={`modification-${index}`}>
-                  {activity.editedRevision && (
+                  {activity.revision && (
                     <>
                       <TableCell>
                         {activity.isEditing ? (
                           <Input
-                            value={activity.editedRevision.name}
+                            value={activity.editedRevision?.name || ""}
                             onChange={(e) =>
                               handleInputChange(
                                 index,
@@ -395,13 +476,13 @@ function ActionItemViewer({ results }: ActionItemInterface) {
                             }
                           />
                         ) : (
-                          activity.editedRevision.name
+                          activity.revision.name
                         )}
                       </TableCell>
                       <TableCell>
                         {activity.isEditing ? (
                           <Textarea
-                            value={activity.editedRevision.reason}
+                            value={activity.editedRevision?.reason || ""}
                             onChange={(e) =>
                               handleInputChange(
                                 index,
@@ -411,14 +492,16 @@ function ActionItemViewer({ results }: ActionItemInterface) {
                             }
                           />
                         ) : (
-                          activity.editedRevision.reason
+                          activity.revision.reason
                         )}
                       </TableCell>
                       <TableCell>
                         {activity.isEditing ? (
                           <Input
                             type="number"
-                            value={activity.editedRevision.impact_on_start_date}
+                            value={
+                              activity.editedRevision?.impact_on_start_date || 0
+                            }
                             onChange={(e) =>
                               handleInputChange(
                                 index,
@@ -428,14 +511,16 @@ function ActionItemViewer({ results }: ActionItemInterface) {
                             }
                           />
                         ) : (
-                          activity.editedRevision.impact_on_start_date
+                          activity.revision.impact_on_start_date
                         )}
                       </TableCell>
                       <TableCell>
                         {activity.isEditing ? (
                           <Input
                             type="number"
-                            value={activity.editedRevision.impact_on_end_date}
+                            value={
+                              activity.editedRevision?.impact_on_end_date || 0
+                            }
                             onChange={(e) =>
                               handleInputChange(
                                 index,
@@ -445,7 +530,7 @@ function ActionItemViewer({ results }: ActionItemInterface) {
                             }
                           />
                         ) : (
-                          activity.editedRevision.impact_on_end_date
+                          activity.revision.impact_on_end_date
                         )}
                       </TableCell>
                       <TableCell>

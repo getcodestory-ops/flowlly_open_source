@@ -1,6 +1,7 @@
 // MarkdownRenderer.tsx
 import React from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface MarkdownRendererProps {
   content: string;
@@ -20,6 +21,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
       }}
     >
       <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
         components={{
           h1: ({ node, ...props }) => (
             <h1
@@ -75,6 +77,39 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
                 overflowWrap: "break-word",
                 wordWrap: "break-word",
                 hyphens: "auto",
+              }}
+              {...props}
+            />
+          ),
+
+          table: ({ node, ...props }) => (
+            <table
+              style={{
+                borderCollapse: "collapse",
+                width: "100%",
+                margin: "1rem 0",
+              }}
+              {...props}
+            />
+          ),
+          th: ({ node, ...props }) => (
+            <th
+              style={{
+                border: "1px solid #ddd",
+                padding: "8px",
+                backgroundColor: "#f2f2f2",
+                fontWeight: "bold",
+                textAlign: "left",
+              }}
+              {...props}
+            />
+          ),
+
+          td: ({ node, ...props }) => (
+            <td
+              style={{
+                border: "1px solid #ddd",
+                padding: "8px",
               }}
               {...props}
             />

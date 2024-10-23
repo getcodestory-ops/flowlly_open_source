@@ -57,6 +57,7 @@ export interface UpdateActivityTypes {
   status?: string | boolean;
   // creation_time?: string;
   // created_by?: string;
+  active?: boolean;
   owner?: string[];
   progress?: number;
 }
