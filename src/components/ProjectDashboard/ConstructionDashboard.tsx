@@ -45,6 +45,15 @@ import {
 } from "lucide-react";
 import ScheduleNotifications from "../Notifications/ScheduleNotifications";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
+// import {
+//   change_orders,
+//   delay_factors,
+//   rfi,
+//   risk_register,
+//   task_progress,
+//   trade_assessment,
+//   weekly_priorities,
+// } from "@/demo/demo_data";
 import {
   change_orders,
   delay_factors,
@@ -53,11 +62,11 @@ import {
   task_progress,
   trade_assessment,
   weekly_priorities,
-} from "@/demo/demo_data";
+} from "@/demo/etro_data";
 import DashboardRightPanel from "./LeftPanel";
 
 export default function ConstructionDashboard() {
-  const [selectedWeek, setSelectedWeek] = useState("38");
+  const [selectedWeek, setSelectedWeek] = useState("40");
   interface ChangeOrder {
     date: string;
     description: string;
@@ -186,11 +195,11 @@ export default function ConstructionDashboard() {
   ];
 
   const weeks_in_number = [
-    { week: "38", week_name: "September 17 - September 23" },
-    { week: "39", week_name: "September 24 - October 1" },
-    { week: "40", week_name: "October 2 - October 8" },
-    { week: "41", week_name: "October 9 - October 15" },
-    { week: "42", week_name: "October 16 - October 22" },
+    // { week: "38", week_name: "September 17 - September 23" },
+    // { week: "39", week_name: "September 24 - October 1" },
+    { week: "40", week_name: "October 8 - October 14" },
+    { week: "41", week_name: "October 15 - October 21" },
+    { week: "42", week_name: "October 22 - October 28" },
   ];
 
   const handleWeekChange = (value: any) => {
@@ -399,6 +408,140 @@ export default function ConstructionDashboard() {
           </Card>
 
           <Card>
+            <CardContent className="h-80">
+              <Tabs defaultValue="priorities" className="w-full mt-2">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="priorities">Priorities</TabsTrigger>
+                  <TabsTrigger value="delays">Delay Factors</TabsTrigger>
+                  <TabsTrigger value="trades">Trades</TabsTrigger>
+                </TabsList>
+                <TabsContent
+                  value="priorities"
+                  className="h-[320px] overflow-auto"
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <LandPlotIcon className="h-6 w-6" />
+                      Week Priorities
+                    </CardTitle>
+                  </CardHeader>
+                  <div>
+                    {weeklyPriorities && (
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="text-sm ">
+                            <TableHead>Priority</TableHead>
+                            <TableHead>Description</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody className="text-sm">
+                          {Object.keys(weeklyPriorities).map((week) => (
+                            // Assuming week is the key for each week's data, like "38"
+                            <React.Fragment key={week}>
+                              {weeklyPriorities[week].priorities.map(
+                                (priority, index) => (
+                                  <TableRow key={index}>
+                                    <TableCell>{priority.topic}</TableCell>
+                                    <TableCell>
+                                      {priority.description}
+                                    </TableCell>
+                                  </TableRow>
+                                )
+                              )}
+                            </React.Fragment>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </div>
+                </TabsContent>
+                <TabsContent value="delays" className="h-[320px] overflow-auto">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <AlarmClockCheckIcon className="h-6 w-6" />
+                      Delay Factors
+                    </CardTitle>
+                  </CardHeader>
+                  <div>
+                    {delayFactors && (
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="text-sm ">
+                            <TableHead>Factor</TableHead>
+                            <TableHead>Reason</TableHead>
+                            <TableHead>Date</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody className="text-sm">
+                          {Object.keys(delayFactors).map((week) =>
+                            Object.keys(delayFactors[week]).map((date) =>
+                              delayFactors[week][date].map(
+                                (order: any, index: any) => (
+                                  <TableRow key={index}>
+                                    <TableCell>{order.factor}</TableCell>
+                                    <TableCell>{`${order.description.substring(
+                                      0,
+                                      25
+                                    )}${
+                                      order.description.length > 25 ? "..." : ""
+                                    }`}</TableCell>
+                                    <TableCell>{date}</TableCell>{" "}
+                                    {/* Use date from the inner loop */}
+                                  </TableRow>
+                                )
+                              )
+                            )
+                          )}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </div>
+                </TabsContent>
+                <TabsContent value="trades" className="h-[320px] overflow-auto">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrafficConeIcon className="h-6 w-6" />
+                      Trades Tracking
+                    </CardTitle>
+                  </CardHeader>
+                  <div>
+                    {tradesAssessment && (
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="text-sm ">
+                            <TableHead>Trade</TableHead>
+                            <TableHead>Risk Score</TableHead>
+                            <TableHead>Details</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody className="text-sm">
+                          {Object.keys(tradesAssessment).map((week) =>
+                            Object.keys(tradesAssessment[week]).map((date) =>
+                              tradesAssessment[week][date].map(
+                                (order: any, index: any) => (
+                                  <TableRow key={index}>
+                                    <TableCell>{order.Trade}</TableCell>
+                                    <TableCell>{order["Risk score"]}</TableCell>
+                                    <TableCell>
+                                      {`${order.Rationale.substring(0, 25)}${
+                                        order.Rationale.length > 25 ? "..." : ""
+                                      }`}
+                                    </TableCell>
+                                  </TableRow>
+                                )
+                              )
+                            )
+                          )}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <LandPlotIcon className="h-6 w-6" />
@@ -434,7 +577,7 @@ export default function ConstructionDashboard() {
                 )}
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
           <Card className="md:col-span-2 lg:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -480,92 +623,101 @@ export default function ConstructionDashboard() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircleQuestionIcon className="h-6 w-6" />
-                RFI's
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="h-80 overflow-auto ">
-              <div>
-                {weeklyRFI && (
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="text-sm ">
-                        <TableHead>RFI</TableHead>
-                        <TableHead>Latest Update</TableHead>
-                        <TableHead>Date</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody className="text-sm">
-                      {Object.keys(weeklyRFI).map((week) =>
-                        Object.keys(weeklyRFI[week]).map((date) =>
-                          weeklyRFI[week][date].map(
-                            (order: any, index: any) => (
-                              <TableRow key={index}>
-                                <TableCell>{order.RFI}</TableCell>
-                                <TableCell>{`${order.description.substring(
-                                  0,
-                                  25
-                                )}${
-                                  order.description.length > 25 ? "..." : ""
-                                }`}</TableCell>
-                                <TableCell>{date}</TableCell>{" "}
-                                {/* Use date from the inner loop */}
-                              </TableRow>
+            <CardContent className="h-80 ">
+              <Tabs defaultValue="rfi" className="w-full mt-2">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="rfi">RFIs</TabsTrigger>
+                  <TabsTrigger value="change_order">Change Orders</TabsTrigger>
+                </TabsList>
+                <TabsContent value="rfi" className="h-[320px] overflow-auto">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MessageCircleQuestionIcon className="h-6 w-6" />
+                      RFIs
+                    </CardTitle>
+                  </CardHeader>
+                  <div>
+                    {weeklyRFI && (
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="text-sm ">
+                            <TableHead>RFI</TableHead>
+                            <TableHead>Latest Update</TableHead>
+                            <TableHead>Date</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody className="text-sm">
+                          {Object.keys(weeklyRFI).map((week) =>
+                            Object.keys(weeklyRFI[week]).map((date) =>
+                              weeklyRFI[week][date].map(
+                                (order: any, index: any) => (
+                                  <TableRow key={index}>
+                                    <TableCell>{order.RFI}</TableCell>
+                                    <TableCell>{`${order.description.substring(
+                                      0,
+                                      25
+                                    )}${
+                                      order.description.length > 25 ? "..." : ""
+                                    }`}</TableCell>
+                                    <TableCell>{date}</TableCell>{" "}
+                                    {/* Use date from the inner loop */}
+                                  </TableRow>
+                                )
+                              )
                             )
-                          )
-                        )
-                      )}
-                    </TableBody>
-                  </Table>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ReplaceAllIcon className="h-6 w-6" />
-                Change Orders
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="h-80 overflow-auto ">
-              <div>
-                {changeOrdersByWeek && (
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="text-sm  ">
-                        <TableHead>Change Order</TableHead>
-                        <TableHead>Latest Update</TableHead>
-                        <TableHead>Date</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody className="text-sm ">
-                      {Object.keys(changeOrdersByWeek).map((changeOrder) =>
-                        changeOrdersByWeek[changeOrder].map(
-                          (order: any, index: any) => (
-                            <TableRow key={index}>
-                              <TableCell>{changeOrder}</TableCell>
-                              <TableCell>{`${order.description.substring(
-                                0,
-                                25
-                              )}${
-                                order.description.length > 25 ? "..." : ""
-                              }`}</TableCell>
-                              <TableCell>{order.date}</TableCell>
-                            </TableRow>
-                          )
-                        )
-                      )}
-                    </TableBody>
-                  </Table>
-                )}
-              </div>
+                          )}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </div>
+                </TabsContent>
+                <TabsContent
+                  value="change_order"
+                  className="h-[320px] overflow-auto"
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <ReplaceAllIcon className="h-6 w-6" />
+                      Change Orders
+                    </CardTitle>
+                  </CardHeader>
+                  <div>
+                    {changeOrdersByWeek && (
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="text-sm  ">
+                            <TableHead>Change Order</TableHead>
+                            <TableHead>Latest Update</TableHead>
+                            <TableHead>Date</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody className="text-sm ">
+                          {Object.keys(changeOrdersByWeek).map((changeOrder) =>
+                            changeOrdersByWeek[changeOrder].map(
+                              (order: any, index: any) => (
+                                <TableRow key={index}>
+                                  <TableCell>{changeOrder}</TableCell>
+                                  <TableCell>{`${order.description.substring(
+                                    0,
+                                    25
+                                  )}${
+                                    order.description.length > 25 ? "..." : ""
+                                  }`}</TableCell>
+                                  <TableCell>{order.date}</TableCell>
+                                </TableRow>
+                              )
+                            )
+                          )}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
 
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlarmClockCheckIcon className="h-6 w-6" />
@@ -597,7 +749,7 @@ export default function ConstructionDashboard() {
                                   order.description.length > 25 ? "..." : ""
                                 }`}</TableCell>
                                 <TableCell>{date}</TableCell>{" "}
-                                {/* Use date from the inner loop */}
+                              
                               </TableRow>
                             )
                           )
@@ -608,9 +760,9 @@ export default function ConstructionDashboard() {
                 )}
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrafficConeIcon className="h-6 w-6" />
@@ -651,7 +803,7 @@ export default function ConstructionDashboard() {
                 )}
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
       </div>
     </>
@@ -721,53 +873,53 @@ export default function ConstructionDashboard() {
 //       </CardContent>
 //     </Card>
 
-//     {/* Meetings Card */}
-//     <Card>
-//       <CardHeader>
-//         <CardTitle className="flex items-center gap-2">
-//           <CalendarIcon className="h-6 w-6" />
-//           Meetings
-//         </CardTitle>
-//       </CardHeader>
-//       <CardContent>
-//         <Tabs defaultValue="upcoming" className="w-full">
-//           <TabsList className="grid w-full grid-cols-2">
-//             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-//             <TabsTrigger value="completed">Completed</TabsTrigger>
-//           </TabsList>
-//           <TabsContent value="upcoming">
-//             <ul className="space-y-2">
-//               {meetings.upcoming.map((meeting) => (
-//                 <li
-//                   key={meeting.id}
-//                   className="bg-white p-3 rounded-md shadow"
-//                 >
-//                   <p className="font-semibold">{meeting.title}</p>
-//                   <p className="text-sm text-gray-500">
-//                     {meeting.date} at {meeting.time}
-//                   </p>
-//                 </li>
-//               ))}
-//             </ul>
-//           </TabsContent>
-//           <TabsContent value="completed">
-//             <ul className="space-y-2">
-//               {meetings.completed.map((meeting) => (
-//                 <li
-//                   key={meeting.id}
-//                   className="bg-white p-3 rounded-md shadow"
-//                 >
-//                   <p className="font-semibold">{meeting.title}</p>
-//                   <p className="text-sm text-gray-500">
-//                     {meeting.date} at {meeting.time}
-//                   </p>
-//                 </li>
-//               ))}
-//             </ul>
-//           </TabsContent>
-//         </Tabs>
-//       </CardContent>
-//     </Card>
+// {/* Meetings Card */}
+// <Card>
+//   <CardHeader>
+//     <CardTitle className="flex items-center gap-2">
+//       <CalendarIcon className="h-6 w-6" />
+//       Meetings
+//     </CardTitle>
+//   </CardHeader>
+//   <CardContent>
+//     <Tabs defaultValue="upcoming" className="w-full">
+//       <TabsList className="grid w-full grid-cols-2">
+//         <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+//         <TabsTrigger value="completed">Completed</TabsTrigger>
+//       </TabsList>
+//       <TabsContent value="upcoming">
+//         <ul className="space-y-2">
+//           {meetings.upcoming.map((meeting) => (
+//             <li
+//               key={meeting.id}
+//               className="bg-white p-3 rounded-md shadow"
+//             >
+//               <p className="font-semibold">{meeting.title}</p>
+//               <p className="text-sm text-gray-500">
+//                 {meeting.date} at {meeting.time}
+//               </p>
+//             </li>
+//           ))}
+//         </ul>
+//       </TabsContent>
+//       <TabsContent value="completed">
+//         <ul className="space-y-2">
+//           {meetings.completed.map((meeting) => (
+//             <li
+//               key={meeting.id}
+//               className="bg-white p-3 rounded-md shadow"
+//             >
+//               <p className="font-semibold">{meeting.title}</p>
+//               <p className="text-sm text-gray-500">
+//                 {meeting.date} at {meeting.time}
+//               </p>
+//             </li>
+//           ))}
+//         </ul>
+//       </TabsContent>
+//     </Tabs>
+//   </CardContent>
+// </Card>
 
 //     {/* Tasks Card */}
 //     <Card className="md:col-span-2 lg:col-span-2">
