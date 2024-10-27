@@ -30,12 +30,12 @@ export const statuses = [
     icon: TimerIcon,
   },
   {
-    value: "On Schedule",
-    label: "On Schedule",
+    value: "In Progress",
+    label: "In Progress",
     icon: HeartFilledIcon,
   },
   {
-    value: "Pending",
+    value: "pending",
     label: "Pending",
     icon: StopwatchIcon,
   },

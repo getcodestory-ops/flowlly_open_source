@@ -117,7 +117,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
       </Tabs>
 
       <div
-        className={`fixed  right-0 h-full w-3/4 max-w-2xl bg-background shadow-lg transform transition-transform duration-300 ease-in-out ${
+        className={`fixed z-50 right-0 h-full w-3/4 max-w-2xl bg-background shadow-lg transform transition-transform duration-300 ease-in-out ${
           taskToView ? "translate-x-0" : "translate-x-full"
         }`}
       >
