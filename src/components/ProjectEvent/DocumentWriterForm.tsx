@@ -198,7 +198,7 @@ export default function DocumentWriterForm() {
                     required
                   />
                 </div>
-
+                {/* 
                 <div className="space-y-2">
                   <Label htmlFor="searchQuery">What to search</Label>
                   <Input
@@ -207,10 +207,12 @@ export default function DocumentWriterForm() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     required
                   />
-                </div>
+                </div> */}
 
                 <div className="space-y-2">
-                  <Label htmlFor="writePrompt">Write prompt</Label>
+                  <Label htmlFor="writePrompt">
+                    Write description of the report you want to create
+                  </Label>
                   <Textarea
                     id="writePrompt"
                     value={writePrompt}
