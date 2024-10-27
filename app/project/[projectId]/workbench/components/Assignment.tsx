@@ -13,6 +13,7 @@ import {
   CircleCheck,
   PencilIcon,
   X,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +38,7 @@ import {
   SortingState,
   flexRender,
   getExpandedRowModel,
+  getPaginationRowModel,
   Row,
 } from "@tanstack/react-table";
 import { useQuery } from "@tanstack/react-query";
@@ -46,6 +48,21 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge"; // shadcn component
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { ResourceTextViewer } from "@/components/DocumentEditor/ResourceTextViewer";
+import CreateJob from "./CreateJob";
+import { Calendar, dateFnsLocalizer, Views, View } from "react-big-calendar";
+import format from "date-fns/format";
+import parse from "date-fns/parse";
+import startOfWeek from "date-fns/startOfWeek";
+import getDay from "date-fns/getDay";
+// import addWeeks from "date-fns/addWeeks";
+// import setDay from "date-fns/setDay";
+// import setHours from "date-fns/setHours";
+// import setMinutes from "date-fns/setMinutes";
+import enUS from "date-fns/locale/en-US";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { addDays } from "date-fns";
+import { DataTablePagination } from "@/components/Schedule/ScheduleTable/DataTablePagination";
 
 type ActionData = Array<{
   activity_addition: Array<{
@@ -94,7 +111,7 @@ type GraphData = {
     duration: string;
     time_zone: string;
     online_link: string;
-    recurrence_day: string;
+    recurrence_day?: string;
   };
   created_at: string;
   nodes: NodeData[];
@@ -272,10 +289,195 @@ const renderNodes = (
 
 //
 
+const locales = {
+  "en-US": enUS,
+};
+
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales,
+});
+
+const dayMapping: { [key: string]: number } = {
+  sunday: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+};
+
+const CalendarView: React.FC<{
+  graphs: GraphData[];
+  onSelectGraph: (graphId: string) => void; // Change the type here
+}> = ({ graphs, onSelectGraph }) => {
+  const [view, setView] = useState<View>(Views.MONTH);
+  const [date, setDate] = useState(new Date());
+
+  const handleViewChange = (newView: View) => {
+    setView(newView);
+  };
+
+  const handleNavigate = (action: "PREV" | "NEXT" | "TODAY") => {
+    switch (action) {
+      case "PREV":
+        setDate((prevDate) => addDays(prevDate, -1));
+        break;
+      case "NEXT":
+        setDate((prevDate) => addDays(prevDate, 1));
+        break;
+      case "TODAY":
+        setDate(new Date());
+        break;
+    }
+  };
+
+  const generateRecurringEvents = (graph: GraphData) => {
+    const events = [];
+    const startDate = new Date(graph.created_at);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 84); // Generate events for the next 12 weeks (84 days)
+
+    const frequency = graph.metadata.frequency;
+    const meetingDay = graph.metadata.recurrence_day?.toLowerCase();
+    const meetingTime = graph.metadata.time;
+    if (frequency === "weekly" && meetingDay && meetingTime) {
+      let currentDate = new Date(startDate);
+      currentDate.setDate(
+        currentDate.getDate() +
+          ((dayMapping[meetingDay] + 7 - currentDate.getDay()) % 7)
+      );
+      const [hours, minutes] = meetingTime.split(":").map(Number);
+      while (currentDate <= endDate) {
+        const eventStart = new Date(currentDate);
+        eventStart.setHours(hours, minutes);
+        const eventEnd = new Date(eventStart);
+        eventEnd.setHours(eventEnd.getHours() + 1);
+
+        events.push({
+          id: `${graph.id}-${currentDate.toISOString()}`,
+          title: graph.name,
+          start: eventStart,
+          end: eventEnd,
+          allDay: false,
+          resource: graph,
+        });
+
+        currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000); // Add 7 days
+      }
+    } else if (frequency === "once") {
+      const eventStart = new Date(startDate);
+      const [hours, minutes] = (graph.metadata.time || "00:00")
+        .split(":")
+        .map(Number);
+      eventStart.setHours(hours, minutes);
+
+      const eventEnd = new Date(eventStart);
+      eventEnd.setHours(eventEnd.getHours() + 1);
+
+      events.push({
+        id: graph.id,
+        title: graph.name,
+        start: eventStart,
+        end: eventEnd,
+        allDay: false,
+        resource: graph,
+      });
+    }
+
+    return events;
+  };
+
+  const events = useMemo(() => {
+    return graphs.flatMap(generateRecurringEvents);
+  }, [graphs]);
+
+  const handleSelectEvent = (event: any) => {
+    console.log("Selected event:", event);
+    const eventResult = event.resource; // Assuming event.resource is of type EventResult
+    onSelectGraph(eventResult.id); // Pass the EventResult
+  };
+  const CustomToolbar = (toolbar: any) => {
+    const goToBack = () => {
+      toolbar.onNavigate("PREV");
+    };
+
+    const goToNext = () => {
+      toolbar.onNavigate("NEXT");
+    };
+
+    const goToCurrent = () => {
+      toolbar.onNavigate("TODAY");
+    };
+
+    return (
+      <div className="flex items-center justify-between p-2 bg-background border-b">
+        <div className="space-x-2">
+          <Button variant="ghost" size="sm" onClick={goToBack}>
+            Back
+          </Button>
+          <Button variant="ghost" size="sm" onClick={goToCurrent}>
+            Today
+          </Button>
+          <Button variant="ghost" size="sm" onClick={goToNext}>
+            Next
+          </Button>
+        </div>
+        <div className="text-sm font-medium">{toolbar.label}</div>
+        <div className="space-x-2">
+          {["month", "week", "day", "agenda"].map((viewOption) => (
+            <Button
+              key={viewOption}
+              variant={toolbar.view === viewOption ? "default" : "ghost"}
+              size="sm"
+              onClick={() => toolbar.onView(viewOption)}
+              className="capitalize"
+            >
+              {viewOption}
+            </Button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div style={{ height: "700px" }}>
+      <Calendar
+        localizer={localizer}
+        events={events}
+        startAccessor="start"
+        endAccessor="end"
+        style={{ height: "100%" }}
+        views={["month", "week", "day", "agenda"]}
+        view={view}
+        onView={handleViewChange}
+        onSelectEvent={handleSelectEvent}
+        date={date}
+        onNavigate={(date) => setDate(date)}
+        eventPropGetter={(event) => ({
+          style: {
+            backgroundColor: "#facc15",
+            color: "black",
+          },
+        })}
+        components={{
+          toolbar: CustomToolbar,
+        }}
+      />
+    </div>
+  );
+};
+
 const GraphList: React.FC<{
   graphs: GraphData[];
   onSelectGraph: (graphId: string) => void;
-}> = ({ graphs, onSelectGraph }) => {
+  setCurrentResult: (result: EventResult | null) => void; // Add this prop
+}> = ({ graphs, onSelectGraph, setCurrentResult }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
 
@@ -376,77 +578,98 @@ const GraphList: React.FC<{
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   });
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
-        <Input
-          value={globalFilter ?? ""}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          placeholder="Search..."
-          className="max-w-sm"
-        />
-      </div>
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id} className="whitespace-nowrap">
-                  {header.isPlaceholder ? null : (
-                    <div
-                      className={
-                        header.column.getCanSort()
-                          ? "cursor-pointer select-none flex items-center"
-                          : ""
-                      }
-                      onClick={
-                        header.column.getCanSort()
-                          ? header.column.getToggleSortingHandler()
-                          : undefined
-                      }
-                    >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
+      <Tabs defaultValue="calendar">
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+            <TabsTrigger value="table">Table View</TabsTrigger>
+          </TabsList>
+          <CreateJob />
+        </div>
+        <TabsContent value="table">
+          <div className="flex items-center py-4 justify-between">
+            <Input
+              value={globalFilter ?? ""}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              placeholder="Search..."
+              className="max-w-sm"
+            />
+          </div>
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id} className="whitespace-nowrap">
+                      {header.isPlaceholder ? null : (
+                        <div
+                          className={
+                            header.column.getCanSort()
+                              ? "cursor-pointer select-none flex items-center"
+                              : ""
+                          }
+                          onClick={
+                            header.column.getCanSort()
+                              ? header.column.getToggleSortingHandler()
+                              : undefined
+                          }
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                          {header.column.getIsSorted() === "asc" ? (
+                            <ArrowUp className="ml-2 h-4 w-4" />
+                          ) : header.column.getIsSorted() === "desc" ? (
+                            <ArrowDown className="ml-2 h-4 w-4" />
+                          ) : null}
+                        </div>
                       )}
-                      {header.column.getIsSorted() === "asc" ? (
-                        <ArrowUp className="ml-2 h-4 w-4" />
-                      ) : header.column.getIsSorted() === "desc" ? (
-                        <ArrowDown className="ml-2 h-4 w-4" />
-                      ) : null}
-                    </div>
-                  )}
-                </TableHead>
+                    </TableHead>
+                  ))}
+                </TableRow>
               ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.length > 0 ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                onClick={() => onSelectGraph(row.original.id)}
-                className="cursor-pointer hover:bg-gray-100"
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.length > 0 ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    onClick={() => onSelectGraph(row.original.id)}
+                    className="cursor-pointer hover:bg-gray-100"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="text-center">
+                    No results found.
                   </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="text-center">
-                No results found.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+          <div className="pt-4">
+            <DataTablePagination table={table} />
+          </div>
+        </TabsContent>
+        <TabsContent value="calendar">
+          <CalendarView graphs={graphs} onSelectGraph={onSelectGraph} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
@@ -912,7 +1135,11 @@ export default function AssignmentHome() {
 
       {!currentGraph && (
         <Card className="p-6">
-          <GraphList graphs={graphs} onSelectGraph={setCurrentGraphId} />
+          <GraphList
+            graphs={graphs}
+            onSelectGraph={setCurrentGraphId}
+            setCurrentResult={setCurrentResult} // Pass this prop
+          />
         </Card>
       )}
 

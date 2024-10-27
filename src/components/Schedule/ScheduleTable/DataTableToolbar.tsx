@@ -72,11 +72,10 @@ export function DataTableToolbar<TData>({
                 selected={startDate}
                 onSelect={(newDate) => {
                   newDate && setStartDate(newDate);
-                  table
-                    .getColumn("start")
-                    ?.setFilterValue(
-                      newDate ? format(newDate, "yyyy-MM-dd") : undefined
-                    );
+                  table.getColumn("start")?.setFilterValue({
+                    start: newDate ? format(newDate, "yyyy-MM-dd") : undefined,
+                    end: endDate ? format(endDate, "yyyy-MM-dd") : undefined,
+                  });
                 }}
               />
             </PopoverContent>
@@ -102,11 +101,12 @@ export function DataTableToolbar<TData>({
                 selected={endDate}
                 onSelect={(newDate) => {
                   newDate && setEndDate(newDate);
-                  table
-                    .getColumn("end")
-                    ?.setFilterValue(
-                      newDate ? format(newDate, "yyyy-MM-dd") : undefined
-                    );
+                  table.getColumn("end")?.setFilterValue({
+                    start: startDate
+                      ? format(startDate, "yyyy-MM-dd")
+                      : undefined,
+                    end: newDate ? format(newDate, "yyyy-MM-dd") : undefined,
+                  });
                 }}
               />
             </PopoverContent>

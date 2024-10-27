@@ -7,8 +7,8 @@ export const activityEntityToTask = (activity: ActivityEntity): Task => {
     type: "task", // Assuming a default type of 'STANDARD' for demonstration
     name: activity.status === null ? activity.name : activity.name,
     // : activity.name + " " + "(" + activity.status + ")",
-    start: new Date(activity.start),
-    end: new Date(activity.end),
+    start: new Date(`${activity.start}T23:59:59Z`) as Date,
+    end: new Date(`${activity.end}T23:59:59Z`) as Date,
     progress: activity.progress,
     project: activity.project_id,
     dependencies: activity.dependencies,

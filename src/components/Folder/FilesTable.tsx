@@ -348,27 +348,37 @@ const AddFileInFolderButton = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [textFileName, setTextFileName] = useState("");
 
-  const handleFileUpload = (e: any) => {
-    const file = fileInputRef.current?.files?.[0];
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    if (!file) return;
-
-    uploadFileInFolder(
-      session,
-      activeProject.project_id,
-      file,
-      folderId,
-      (data) => {
-        queryClient.invalidateQueries({
-          queryKey: [`fetchFiles-${folderId}`],
-        });
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        await uploadFileInFolder(
+          session,
+          activeProject.project_id,
+          file,
+          folderId
+        );
+      } catch (error) {
+        console.error(`Error uploading file ${file.name}:`, error);
         toast({
-          title: "File Uploaded Successfully",
-          description: `File uploaded successfully`,
-          duration: 20000,
+          title: "File Upload Error",
+          description: `Failed to upload ${file.name}`,
+          variant: "destructive",
         });
       }
-    );
+    }
+
+    queryClient.invalidateQueries({
+      queryKey: [`fetchFiles-${folderId}`],
+    });
+    toast({
+      title: "Files Uploaded Successfully",
+      description: `${files.length} file(s) uploaded successfully`,
+      duration: 5000,
+    });
   };
 
   const handleCreateTextFile = () => {
@@ -404,14 +414,14 @@ const AddFileInFolderButton = ({
         onChange={handleFileUpload}
         style={{ display: "none" }}
         accept=".bmp,.csv,.doc,.docx,.eml,.epub,.heic,.html,.jpeg,.png,.md,.msg,.odt,.org,.p7s,.pdf,.png,.ppt,.pptx,.rst,.rtf,.tiff,.txt,.tsv,.xls,.xlsx,.xml"
-        multiple={false}
+        multiple={true}
       />
       <Button
         onClick={() => fileInputRef.current?.click()}
         size="sm"
         variant="default"
       >
-        + Upload File
+        + Upload Files
       </Button>
       <Popover>
         <PopoverTrigger asChild>

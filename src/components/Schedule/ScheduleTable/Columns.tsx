@@ -36,8 +36,17 @@ export const columns: ColumnDef<ActivityEntityWithMembers>[] = [
       <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row }) => {
+      const hasHistory =
+        Array.isArray(row.original.history) &&
+        row.original.history.length > 0 &&
+        row.original.history[0] !== null;
+
       return (
-        <div className="flex space-x-2 w-[500px]">
+        <div
+          className={`flex space-x-2 w-[500px] ${
+            hasHistory ? "bg-yellow-100" : ""
+          }`}
+        >
           <span className="w-[500px] font-medium truncate ">
             {row.getValue("name")}
           </span>
@@ -89,11 +98,18 @@ export const columns: ColumnDef<ActivityEntityWithMembers>[] = [
         </div>
       );
     },
-    filterFn: (row, id, value) => {
-      if (!value) return true;
-      const rowDate = new Date(row.getValue(id));
-      const filterDate = new Date(value);
-      return rowDate > filterDate;
+    filterFn: (row, id, filterValue) => {
+      if (!filterValue) return true;
+      const activityStart = new Date(row.getValue("start"));
+      const activityEnd = new Date(row.getValue("end"));
+      const filterStart = filterValue.start
+        ? new Date(filterValue.start)
+        : new Date(-8640000000000000); // Earliest date
+      const filterEnd = filterValue.end
+        ? new Date(filterValue.end)
+        : new Date(8640000000000000); // Latest date
+
+      return activityStart <= filterEnd && activityEnd >= filterStart;
     },
   },
   {
@@ -108,11 +124,18 @@ export const columns: ColumnDef<ActivityEntityWithMembers>[] = [
         </div>
       );
     },
-    filterFn: (row, id, value) => {
-      if (!value) return true;
-      const rowDate = new Date(row.getValue(id));
-      const filterDate = new Date(value);
-      return rowDate < filterDate;
+    filterFn: (row, id, filterValue) => {
+      if (!filterValue) return true;
+      const activityStart = new Date(row.getValue("start"));
+      const activityEnd = new Date(row.getValue("end"));
+      const filterStart = filterValue.start
+        ? new Date(filterValue.start)
+        : new Date(-8640000000000000); // Earliest date
+      const filterEnd = filterValue.end
+        ? new Date(filterValue.end)
+        : new Date(8640000000000000); // Latest date
+
+      return activityStart <= filterEnd && activityEnd >= filterStart;
     },
   },
   // {
