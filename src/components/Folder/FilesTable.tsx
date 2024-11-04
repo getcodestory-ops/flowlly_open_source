@@ -229,7 +229,7 @@ export const FilesContent = ({
         <span className="pr-2">Look for answers in {folderName}</span>
       </Button>
 
-      {/* Chat component */}
+      {/* Chat component*/}
       {(isChatOpen || isClosing) && (
         <div
           ref={chatRef}
