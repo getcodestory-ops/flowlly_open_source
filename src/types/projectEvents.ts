@@ -24,6 +24,10 @@ export interface ProjectEventMetadata {
   duration?: number;
   recurrence_day: string;
   time: string;
+  search_query?: string;
+  write_prompt?: string;
+  selected_items?: {};
+  output_folder_id?: string | null;
 }
 
 export interface ProjectEvent {
@@ -31,7 +35,7 @@ export interface ProjectEvent {
   created_at?: string;
   created_by?: string;
   name: string;
-  event_type: "meeting" | "safety_inspection";
+  event_type: "meeting" | "safety_inspection" | "document_writing";
   metadata: ProjectEventMetadata;
 }
 

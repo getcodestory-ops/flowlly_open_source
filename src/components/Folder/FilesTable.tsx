@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageCircle,
+  ArrowUpDown,
 } from "lucide-react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { StorageResourceEntity } from "@/types/document";
@@ -49,6 +50,9 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 
+type SortField = "file_name" | "extension" | "created_at";
+type SortDirection = "asc" | "desc";
+
 export const FilesContent = ({
   files,
   folderId,
@@ -71,9 +75,41 @@ export const FilesContent = ({
   const [isClosing, setIsClosing] = useState(false);
   const indexOfLastFile = currentPage * filesPerPage;
   const indexOfFirstFile = indexOfLastFile - filesPerPage;
-  const currentFiles = files.slice(indexOfFirstFile, indexOfLastFile);
+  const [sortField, setSortField] = useState<SortField>("created_at");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const totalPages = Math.ceil(files.length / filesPerPage);
+  const { toast } = useToast();
+
+  const sortedAndFilteredFiles = files
+    .filter(
+      (file) =>
+        file.file_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        file.metadata.extension.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (sortField === "file_name") {
+        return sortDirection === "asc"
+          ? a.file_name.localeCompare(b.file_name)
+          : b.file_name.localeCompare(a.file_name);
+      }
+      if (sortField === "extension") {
+        return sortDirection === "asc"
+          ? a.metadata.extension.localeCompare(b.metadata.extension)
+          : b.metadata.extension.localeCompare(a.metadata.extension);
+      }
+      return sortDirection === "asc"
+        ? new Date(a.created_at || "").getTime() -
+            new Date(b.created_at || "").getTime()
+        : new Date(b.created_at || "").getTime() -
+            new Date(a.created_at || "").getTime();
+    });
+
+  const currentFiles = sortedAndFilteredFiles.slice(
+    indexOfFirstFile,
+    indexOfLastFile
+  );
+  const totalPages = Math.ceil(sortedAndFilteredFiles.length / filesPerPage);
 
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -117,8 +153,21 @@ export const FilesContent = ({
             />
           </CardHeader>
           <CardContent>
+            <div className="mb-4">
+              <Input
+                placeholder="Search files..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="max-w-sm"
+              />
+            </div>
             <Table>
-              <FilesHeader />
+              <FilesHeader
+                sortField={sortField}
+                sortDirection={sortDirection}
+                setSortField={setSortField}
+                setSortDirection={setSortDirection}
+              />
               <TableBody>
                 {currentFiles.map((file, i) => (
                   <FileRow
@@ -129,6 +178,7 @@ export const FilesContent = ({
                     currentFile={currentFile}
                     session={session}
                     activeProject={activeProject}
+                    folderId={folderId}
                   />
                 ))}
                 {files.length === 0 && <EmptyFileRow />}
@@ -179,7 +229,7 @@ export const FilesContent = ({
         <span className="pr-2">Look for answers in {folderName}</span>
       </Button>
 
-      {/* Chat component */}
+      {/* Chat component*/}
       {(isChatOpen || isClosing) && (
         <div
           ref={chatRef}
@@ -248,13 +298,61 @@ const FilePreviewCard = ({
   );
 };
 
-const FilesHeader = () => {
+const FilesHeader = ({
+  sortField,
+  sortDirection,
+  setSortField,
+  setSortDirection,
+}: {
+  sortField: SortField;
+  sortDirection: SortDirection;
+  setSortField: (field: SortField) => void;
+  setSortDirection: (direction: SortDirection) => void;
+}) => {
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const SortButton = ({
+    field,
+    children,
+  }: {
+    field: SortField;
+    children: React.ReactNode;
+  }) => (
+    <Button
+      variant="ghost"
+      onClick={() => handleSort(field)}
+      className="hover:bg-transparent"
+    >
+      {children}
+      {sortField === field && (
+        <ArrowUpDown
+          className={`ml-2 h-4 w-4 ${
+            sortDirection === "desc" ? "transform rotate-180" : ""
+          }`}
+        />
+      )}
+    </Button>
+  );
+
   return (
     <TableHeader>
       <TableRow>
-        <TableHead className="hidden md:table-cell">File Name</TableHead>
-        <TableHead className="hidden sm:table-cell">Type</TableHead>
-        <TableHead className="hidden md:table-cell">Date</TableHead>
+        <TableHead className="hidden md:table-cell">
+          <SortButton field="file_name">File Name</SortButton>
+        </TableHead>
+        <TableHead className="hidden sm:table-cell">
+          <SortButton field="extension">Type</SortButton>
+        </TableHead>
+        <TableHead className="hidden md:table-cell">
+          <SortButton field="created_at">Date</SortButton>
+        </TableHead>
         <TableHead className="hidden md:table-cell">Trash</TableHead>
       </TableRow>
     </TableHeader>
@@ -267,6 +365,7 @@ const FileRow = ({
   currentFile,
   session,
   activeProject,
+  folderId,
 }: {
   resource: any;
   email: string;
@@ -274,8 +373,11 @@ const FileRow = ({
   currentFile: any;
   session: any;
   activeProject: any;
+  folderId: string;
 }) => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const { mutate } = useMutation({
     mutationFn: deleteFile,
@@ -284,10 +386,24 @@ const FileRow = ({
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: [`fetchFiles-${resource.folder_id}`],
+        queryKey: [`fetchFiles-${folderId}`],
       });
+      toast({
+        title: "File Deleted Successfully",
+        description: `File ${resource.file_name} deleted successfully`,
+        duration: 20000,
+      });
+      setShowDeleteDialog(false);
     },
   });
+
+  const handleDelete = () => {
+    mutate({
+      session,
+      projectId: activeProject.project_id,
+      fileId: resource.id,
+    });
+  };
 
   return (
     <TableRow
@@ -319,16 +435,33 @@ const FileRow = ({
         {formatDate(resource.created_at)}
       </TableCell>
       <TableCell className="cursor-pointer hidden md:table-cell">
-        <Trash
-          size={16}
-          onClick={() =>
-            mutate({
-              session,
-              projectId: activeProject.project_id,
-              fileId: resource.id,
-            })
-          }
-        />
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogTrigger asChild>
+            <Trash size={16} />
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <div className="grid gap-4">
+              <div className="flex flex-col gap-2">
+                <h3 className="text-lg font-semibold">Confirm Deletion</h3>
+                <p className="text-sm text-gray-500">
+                  Are you sure you want to delete {resource.file_name}? This
+                  action cannot be undone.
+                </p>
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteDialog(false)}
+                >
+                  Cancel
+                </Button>
+                <Button variant="destructive" onClick={handleDelete}>
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </TableCell>
     </TableRow>
   );
