@@ -35,6 +35,9 @@ import {
 } from "@/api/folderRoutes";
 import { Folder, File, X } from "lucide-react";
 import DocumentSelector from "./DocumentSelector";
+import { CreateEvent } from "@/types/projectEvents";
+import { createNewProjectEvent } from "@/api/taskQueue";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function DocumentWriterForm() {
   const queryClient = useQueryClient();
@@ -60,6 +63,8 @@ export default function DocumentWriterForm() {
     Array<{ id: string; name: string; type: "folder" | "file" }>
   >([]);
 
+  const [outputFolderId, setOutputFolderId] = useState<string | null>(null);
+
   // Mock folders (replace with actual data fetching in a real application)
   const folders = [
     { id: "1", name: "Project Documents" },
@@ -68,7 +73,15 @@ export default function DocumentWriterForm() {
   ];
 
   const { mutate } = useMutation({
-    mutationFn: () => Promise.resolve(),
+    mutationFn: (createEvent: CreateEvent) => {
+      if (!session || !activeProject?.project_id)
+        return Promise.reject("Session or active project not available");
+      return createNewProjectEvent({
+        session,
+        projectId: activeProject?.project_id,
+        projectEvent: createEvent,
+      });
+    },
     onSuccess: (data) => {
       toast({
         title: "Success",
@@ -101,14 +114,47 @@ export default function DocumentWriterForm() {
       console.error("Session or active project not available");
       return;
     }
-    // const submissionData: CreateDocumentWriter = {
-    //   name,
-    //   folders: selectedFolders,
-    //   search_query: searchQuery,
-    //   write_prompt: writePrompt,
-    //   recurrence,
-    // };
+
+    const createEvent: CreateEvent = {
+      project_event: {
+        name,
+        event_type: "document_writing",
+        metadata: {
+          search_query: searchQuery,
+          write_prompt: writePrompt,
+          recurrence_day: format(startTime, "EEEE"),
+          time: format(startTime, "HH:mm"),
+          frequency: recurrence,
+          selected_items: selectedItems,
+          output_folder_id: outputFolderId,
+        },
+      },
+      event_participants: [
+        {
+          role: "owner",
+          identification: "user_id",
+          metadata: {},
+        },
+      ],
+
+      start_time: format(startTime, "HH:mm"),
+      start_date: format(new Date(), "yyyy-MM-dd"),
+      recurrence: recurrence,
+      time_zone: timeZone,
+      join_now: true,
+    };
+    console.log(
+      name,
+      searchQuery,
+      writePrompt,
+      recurrence,
+      startTime,
+      selectedItems
+    );
+    mutate(createEvent);
+
     console.log("Form submitted:");
+    // onClose();
   };
 
   //     mutate({
@@ -176,6 +222,20 @@ export default function DocumentWriterForm() {
     setSelectedItems((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const { data: outputFolders } = useQuery({
+    queryKey: [
+      "outputFolders",
+      session?.access_token,
+      activeProject?.project_id,
+    ],
+    queryFn: () => {
+      if (!session || !activeProject?.project_id)
+        return Promise.reject("Session or active project not available");
+      return fetchFolders(session, activeProject?.project_id, null, true);
+    },
+    enabled: !!session && !!activeProject,
+  });
+
   return (
     <ScrollArea className="w-full  h-full">
       <div className="flex">
@@ -198,7 +258,7 @@ export default function DocumentWriterForm() {
                     required
                   />
                 </div>
-                {/* 
+
                 <div className="space-y-2">
                   <Label htmlFor="searchQuery">What to search</Label>
                   <Input
@@ -207,7 +267,7 @@ export default function DocumentWriterForm() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     required
                   />
-                </div> */}
+                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="writePrompt">
@@ -250,6 +310,42 @@ export default function DocumentWriterForm() {
                     onChange={(e) => setStartTime(e.target.value)}
                     required
                   />
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="saveToFolder">
+                      Save generated files in a specific folder
+                    </Label>
+                  </div>
+
+                  <div className="space-y-2 ">
+                    <Select
+                      name="outputFolder"
+                      value={outputFolderId || ""}
+                      onValueChange={setOutputFolderId}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select output folder" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {selectedItems.filter((item) => item.type === "folder")
+                          .length === 0 ? (
+                          <SelectItem value="select" disabled>
+                            Please select folders from the right panel
+                          </SelectItem>
+                        ) : (
+                          selectedItems
+                            .filter((item) => item.type === "folder")
+                            .map((item) => (
+                              <SelectItem key={item.id} value={item.id}>
+                                {item.name}
+                              </SelectItem>
+                            ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </CardContent>
             </div>
