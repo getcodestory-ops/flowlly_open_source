@@ -163,6 +163,7 @@ export const uploadFileInFolder = async (
   const formData = new FormData();
   formData.append("file", file);
   formData.append("folder_id", folderId || "");
+  formData.append("extract_method", "unstructured");
 
   const response = await axios.post<GetFolderFileProp>(baseUrl, formData, {
     headers: {
