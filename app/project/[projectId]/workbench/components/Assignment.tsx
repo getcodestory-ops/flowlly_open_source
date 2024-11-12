@@ -14,6 +14,8 @@ import {
   PencilIcon,
   X,
   Plus,
+  FileText,
+  Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -313,7 +315,7 @@ const dayMapping: { [key: string]: number } = {
 
 const CalendarView: React.FC<{
   graphs: GraphData[];
-  onSelectGraph: (graphId: string) => void; // Change the type here
+  onSelectGraph: (graphId: string) => void;
 }> = ({ graphs, onSelectGraph }) => {
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(new Date());
@@ -340,7 +342,7 @@ const CalendarView: React.FC<{
     const events = [];
     const startDate = new Date(graph.created_at);
     const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + 84); // Generate events for the next 12 weeks (84 days)
+    endDate.setDate(endDate.getDate() + 84);
 
     const frequency = graph.metadata.frequency;
     const meetingDay = graph.metadata.recurrence_day?.toLowerCase();
@@ -360,14 +362,23 @@ const CalendarView: React.FC<{
 
         events.push({
           id: `${graph.id}-${currentDate.toISOString()}`,
-          title: graph.name,
+          title: (
+            <div className="flex items-center gap-2">
+              {graph.event_type === "document_writing" ? (
+                <FileText size={14} />
+              ) : (
+                <Video size={14} />
+              )}
+              {graph.name}
+            </div>
+          ),
           start: eventStart,
           end: eventEnd,
           allDay: false,
           resource: graph,
         });
 
-        currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000); // Add 7 days
+        currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
       }
     } else if (frequency === "once") {
       const eventStart = new Date(startDate);
@@ -381,7 +392,16 @@ const CalendarView: React.FC<{
 
       events.push({
         id: graph.id,
-        title: graph.name,
+        title: (
+          <div className="flex items-center gap-2">
+            {graph.event_type === "document_writing" ? (
+              <FileText size={14} />
+            ) : (
+              <Video size={14} />
+            )}
+            {graph.name}
+          </div>
+        ),
         start: eventStart,
         end: eventEnd,
         allDay: false,
@@ -445,6 +465,22 @@ const CalendarView: React.FC<{
     );
   };
 
+  const eventPropGetter = (event: any) => ({
+    style: {
+      backgroundColor:
+        event.resource.event_type === "document_writing"
+          ? "#22c55e"
+          : "#facc15",
+      color:
+        event.resource.event_type === "document_writing" ? "white" : "black",
+      padding: "4px 8px",
+      borderRadius: "4px",
+      display: "flex",
+      alignItems: "center",
+      gap: "4px",
+    },
+  });
+
   return (
     <div style={{ height: "700px" }}>
       <Calendar
@@ -459,12 +495,7 @@ const CalendarView: React.FC<{
         onSelectEvent={handleSelectEvent}
         date={date}
         onNavigate={(date) => setDate(date)}
-        eventPropGetter={(event) => ({
-          style: {
-            backgroundColor: "#facc15",
-            color: "black",
-          },
-        })}
+        eventPropGetter={eventPropGetter}
         components={{
           toolbar: CustomToolbar,
         }}
@@ -1099,6 +1130,14 @@ export default function AssignmentHome() {
                             results={selectedNode.output as ActionData}
                           />
                         )}
+
+                      {selectedNode.id.toLocaleLowerCase() ===
+                        "save_document" &&
+                        selectedNode.status === "completed" && (
+                          <ResourceTextViewer
+                            resource_id={selectedNode.output?.resource_id}
+                          />
+                        )}
                       {selectedNode.id.toLocaleLowerCase() ===
                         "save_minutes_in_project_documents" &&
                         selectedNode.status === "completed" && (
@@ -1113,11 +1152,13 @@ export default function AssignmentHome() {
                         selectedNode.id.toLocaleLowerCase() !==
                           "record_meeting" &&
                         selectedNode.id.toLocaleLowerCase() !==
+                          "save_document" &&
+                        selectedNode.id.toLocaleLowerCase() !==
                           "save_minutes_in_project_documents" && (
                           <div className="text-sm text-gray-700 whitespace-pre-line">
                             {typeof selectedNode.output === "string"
                               ? selectedNode.output
-                              : JSON.stringify(selectedNode.output, null, 2)}
+                              : JSON.stringify(selectedNode.output, null, 4)}
                           </div>
                         )}
                     </ScrollArea>
