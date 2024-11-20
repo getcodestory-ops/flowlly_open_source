@@ -17,11 +17,6 @@ export default function MainLayout() {
     setSessionToken: state.setSession,
   }));
 
-  const onSuccess = () => {
-    setShowNewTeamDialog(false);
-    router.push(`/project`);
-  };
-
   useEffect(() => {
     async function loginCheck() {
       const { data } = await supabase.auth.getSession();
@@ -44,10 +39,7 @@ export default function MainLayout() {
             Create Project
           </Button>
         </AlertDialogTrigger>
-        <AddNewProjectModalContent
-          setIsOpen={setShowNewTeamDialog}
-          onSuccess={onSuccess}
-        />
+        <AddNewProjectModalContent setIsOpen={setShowNewTeamDialog} />
       </AlertDialog>
     </div>
   );

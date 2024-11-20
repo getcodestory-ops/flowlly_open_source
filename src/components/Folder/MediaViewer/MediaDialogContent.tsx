@@ -4,7 +4,6 @@ import { FileText, ExternalLink, Download } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import ContentEditor from "@/components/DocumentEditor/ContentEditor";
 import { useStorageTextFileSave } from "@/components/DocumentEditor/useStorageTextSave";
-import { Table } from "@/components/ui/table";
 
 // Update the import for react-pdf
 // import { Document, Page, pdfjs } from "react-pdf";
@@ -104,33 +103,6 @@ export const MediaDialogContent: React.FC<MediaDialogContentProps> = ({
                 )}&embedded=true`}
                 className="w-full h-full"
                 title="PDF Viewer"
-              />
-            </div>
-          </div>
-          <DescriptionContent description={description} />
-        </>
-      );
-    case ".csv":
-      return (
-        <>
-          <div className="flex flex-col items-center justify-center p-4">
-            <FileText className="text-4xl mb-2" />
-            <p className="mb-4">CSV Viewer</p>
-            <a
-              href={url}
-              download={file_name}
-              className="flex items-center px-4 py-2 mb-4 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-            >
-              Download CSV
-              <Download className="ml-2 h-4 w-4" />
-            </a>
-            <div className="w-full max-w-3xl h-96 border border-gray-300 rounded">
-              <iframe
-                src={`https://docs.google.com/viewer?url=${encodeURIComponent(
-                  url
-                )}&embedded=true`}
-                className="w-full h-full"
-                title="CSV Viewer"
               />
             </div>
           </div>
