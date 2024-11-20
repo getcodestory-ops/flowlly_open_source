@@ -65,6 +65,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { addDays } from "date-fns";
 import { DataTablePagination } from "@/components/Schedule/ScheduleTable/DataTablePagination";
+import MarkDownDisplay from "@/components/Markdown/MarkDownDisplay";
 
 type ActionData = Array<{
   activity_addition: Array<{
@@ -729,24 +730,6 @@ const EventScheduleList: React.FC<{
   const columns = useMemo<ColumnDef<ScheduleTableRow>[]>(
     () => [
       {
-        id: "expander",
-        header: () => null,
-        cell: ({ row }) =>
-          row.getCanExpand() ? (
-            <Button
-              variant="ghost"
-              onClick={row.getToggleExpandedHandler()}
-              className="p-0"
-            >
-              {row.getIsExpanded() ? (
-                <ChevronDown className="ml-2 h-4 w-4" />
-              ) : (
-                <ChevronRight className="ml-2 h-4 w-4" />
-              )}
-            </Button>
-          ) : null,
-      },
-      {
         accessorKey: "main",
         header: ({ column }) => (
           <Button
@@ -754,17 +737,32 @@ const EventScheduleList: React.FC<{
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="p-0"
           >
-            Meeting Start Date
+            Recurrences
           </Button>
         ),
         cell: ({ row }) => {
           if (row.original.schedule) {
             const schedule = row.original.schedule;
-            return new Date(schedule.start).toDateString();
+            const run_time = schedule.time?.[0]?.run_time;
+            if (run_time) {
+              // Create date object using local timezone
+              const localDate = new Date(`2000-01-01T${run_time}Z`);
+
+              return localDate.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+            }
+            return "Upcoming";
           } else if (row.original.result) {
             const result = row.original.result;
+
             return (
-              new Date(result.timestamp).toLocaleString() + " - " + result.name
+              <div className="pl-8">
+                {new Date(result.timestamp).toDateString() +
+                  " - " +
+                  result.name}
+              </div>
             );
           } else {
             return null;
@@ -1007,7 +1005,6 @@ export default function AssignmentHome() {
     if (data) {
       setProjectEvents(data);
       setGraphs(data.map((d: ProjectEvents) => d.project_events));
-      console.log(data);
     }
   }, [data]);
 
@@ -1155,10 +1152,14 @@ export default function AssignmentHome() {
                           "save_document" &&
                         selectedNode.id.toLocaleLowerCase() !==
                           "save_minutes_in_project_documents" && (
-                          <div className="text-sm text-gray-700 whitespace-pre-line">
-                            {typeof selectedNode.output === "string"
-                              ? selectedNode.output
-                              : JSON.stringify(selectedNode.output, null, 4)}
+                          <div className="space-y-4">
+                            {typeof selectedNode.output === "string" ? (
+                              <p className="text-sm text-gray-700 whitespace-pre-line">
+                                {selectedNode.output}
+                              </p>
+                            ) : (
+                              renderJsonValue(selectedNode.output)
+                            )}
                           </div>
                         )}
                     </ScrollArea>
@@ -1195,3 +1196,83 @@ export default function AssignmentHome() {
     </div>
   );
 }
+
+const renderJsonValue = (value: any, depth = 0): JSX.Element => {
+  if (typeof value === "object" && value !== null) {
+    // Filter out empty values and clean up the entries
+    const entries = Object.entries(value).filter(
+      ([_, v]) =>
+        v !== null &&
+        v !== undefined &&
+        (typeof v !== "string" || v.trim() !== "")
+    );
+
+    if (entries.length === 0) return <></>;
+
+    return (
+      <div className={cn("space-y-2", depth > 0 && "ml-4")}>
+        {entries.map(([key, subValue]) => {
+          // Skip rendering if the key is a numeric string
+          if (!isNaN(Number(key))) {
+            return renderJsonValue(subValue, depth);
+          }
+
+          return (
+            <div
+              key={key}
+              className={cn(
+                "border rounded-lg p-4",
+                depth === 0 ? "bg-gray-50" : "bg-white/50"
+              )}
+            >
+              <h4
+                className={cn(
+                  "font-medium capitalize mb-2",
+                  depth === 0
+                    ? "text-sm text-gray-900"
+                    : "text-xs text-gray-700"
+                )}
+              >
+                {key.replace(/_/g, " ")}
+              </h4>
+              <div className="text-sm text-gray-700">
+                {renderJsonValue(subValue, depth + 1)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  } else if (Array.isArray(value)) {
+    // Filter out empty array items
+    const filteredItems = value.filter(
+      (item) =>
+        item !== null &&
+        item !== undefined &&
+        (typeof item !== "string" || item.trim() !== "")
+    );
+
+    if (filteredItems.length === 0) return <></>;
+
+    return (
+      <div className="space-y-2">
+        {filteredItems.map((item) => renderJsonValue(item, depth + 1))}
+      </div>
+    );
+  } else {
+    // Clean up string values
+    const stringValue = String(value).trim();
+    if (!stringValue) return <></>;
+
+    const hasMarkdownSyntax =
+      /[#*`\[\]_~]/.test(stringValue) ||
+      stringValue.includes("\n") ||
+      /\d\.\s/.test(stringValue);
+
+    if (hasMarkdownSyntax) {
+      return <MarkDownDisplay content={stringValue} />;
+    }
+
+    return <p className="text-sm text-gray-700">{stringValue}</p>;
+  }
+};
