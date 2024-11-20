@@ -84,8 +84,10 @@ export function AddNewProjectButton({
 
 export const AddNewProjectModalContent = ({
   setIsOpen,
+  onSuccess,
 }: {
   setIsOpen: (value: boolean) => void;
+  onSuccess?: () => void;
 }) => {
   const { session } = useStore((state) => ({
     session: state.session,
@@ -121,6 +123,7 @@ export const AddNewProjectModalContent = ({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projectList"] });
       queryClient.invalidateQueries({ queryKey: ["initialProjectList"] });
+      onSuccess?.();
     },
   });
 
