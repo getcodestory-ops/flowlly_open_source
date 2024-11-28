@@ -12,11 +12,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { X } from "lucide-react";
 import { useStore } from "@/utils/store";
+import { useViewStore } from "@/utils/store";
 import PlatformChatComponent from "../ChatInput/PlatformChat/PlatformChatComponent";
 import { MessageCircle } from "lucide-react";
 import Draggable from "react-draggable";
 
 function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
+  const { scheduleView, setScheduleView } = useViewStore();
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
   const onOpen = () => setIsOpen(true);
@@ -32,20 +34,8 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState(
-    (searchParams && searchParams.get("scheduleView")) || "list"
-  );
-
-  useEffect(() => {
-    const view = searchParams && searchParams.get("scheduleView");
-    if (view === "gantt" || view === "list") {
-      setActiveTab(view);
-    }
-  }, [searchParams]);
-
   const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    router.push(`?scheduleView=${value}`);
+    setScheduleView(value as "list" | "gantt");
   };
 
   const handleAddActivity = () => {
@@ -88,9 +78,9 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
       </div>
 
       <Tabs
-        value={activeTab}
+        value={scheduleView}
         onValueChange={handleTabChange}
-        defaultValue="list"
+        defaultValue={scheduleView}
         className="flex flex-col h-full  p-2 w-full"
       >
         <TabsList className="grid grid-cols-2 w-48 ">

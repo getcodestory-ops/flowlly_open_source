@@ -6,6 +6,7 @@ import { addDays } from "date-fns";
 import { dayMapping, localizer } from "./calendar-utils";
 import type { GraphData } from "./types";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import { useViewStore } from "@/utils/store";
 
 interface CalendarViewProps {
   graphs: GraphData[];
@@ -60,7 +61,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   graphs,
   onSelectGraph,
 }) => {
-  const [view, setView] = useState<View>(Views.MONTH);
+  const { calendarView, setCalendarView } = useViewStore();
   const [date, setDate] = useState(new Date());
 
   const generateRecurringEvents = (graph: GraphData) => {
@@ -176,8 +177,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         endAccessor="end"
         style={{ height: "100%" }}
         views={["month", "week", "day", "agenda"]}
-        view={view}
-        onView={setView}
+        view={calendarView}
+        onView={setCalendarView}
         onSelectEvent={handleSelectEvent}
         date={date}
         onNavigate={(date) => setDate(date)}

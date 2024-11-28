@@ -45,7 +45,7 @@ export default function DailyJournalForm() {
         description: "Daily journal created successfully!",
         duration: 9000,
       });
-      queryClient.invalidateQueries({ queryKey: ["dailyJournals"] });
+      queryClient.invalidateQueries({ queryKey: ["projectEvents"] });
     },
     onError: (error) => {
       toast({
