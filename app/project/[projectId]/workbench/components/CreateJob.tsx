@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import ProjectEventCreationForm from "@/components/ProjectEvent/ProjectEventCreationForm";
 import DocumentWriterForm from "@/components/ProjectEvent/DocumentWriterForm";
 import DailyJournalForm from "@/components/ProjectEvent/DailyJournalForm";
+import CustomWorkflowForm from "@/components/ProjectEvent/CustomWorkFlow/CustomWorkflowForm";
 
 function CreateJob() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -19,6 +20,9 @@ function CreateJob() {
   const [isDailyJournalDialogOpen, setIsDailyJournalDialogOpen] =
     useState(false);
   const [selectedJobType, setSelectedJobType] = useState<string>("meeting");
+  const [isCustomWorkflowDialogOpen, setIsCustomWorkflowDialogOpen] =
+    useState(false);
+
   return (
     <div className="flex justify-between items-center mb-4">
       <DropdownMenu>
@@ -36,7 +40,7 @@ function CreateJob() {
           >
             New Document Writer
           </DropdownMenuItem>
-          <DropdownMenuItem>Search folders</DropdownMenuItem>
+          {/* <DropdownMenuItem>Search folders</DropdownMenuItem> */}
 
           <DropdownMenuItem
             onSelect={() => {
@@ -46,14 +50,22 @@ function CreateJob() {
           >
             Create New Meeting
           </DropdownMenuItem>
-          <DropdownMenuItem>Update Schedule</DropdownMenuItem>
-          <DropdownMenuItem
+          {/* <DropdownMenuItem>Update Schedule</DropdownMenuItem> */}
+          {/* <DropdownMenuItem
             onSelect={() => {
               setSelectedJobType("dailyJournal");
               setIsDailyJournalDialogOpen(true);
             }}
           >
             New Daily Journal
+          </DropdownMenuItem> */}
+          <DropdownMenuItem
+            onSelect={() => {
+              setSelectedJobType("customWorkflow");
+              setIsCustomWorkflowDialogOpen(true);
+            }}
+          >
+            Custom Workflow
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -63,7 +75,7 @@ function CreateJob() {
         onOpenChange={setIsDialogOpen}
       >
         <DialogContent className="w-full">
-          <ProjectEventCreationForm />
+          <ProjectEventCreationForm onClose={() => setIsDialogOpen(false)} />
         </DialogContent>
       </Dialog>
 
@@ -74,7 +86,9 @@ function CreateJob() {
         onOpenChange={setIsDocumentWriterDialogOpen}
       >
         <DialogContent className="max-w-5xl mx-auto">
-          <DocumentWriterForm />
+          <DocumentWriterForm
+            onClose={() => setIsDocumentWriterDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
 
@@ -84,6 +98,19 @@ function CreateJob() {
       >
         <DialogContent className="w-4xl mx-auto">
           <DailyJournalForm />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={
+          selectedJobType === "customWorkflow" && isCustomWorkflowDialogOpen
+        }
+        onOpenChange={setIsCustomWorkflowDialogOpen}
+      >
+        <DialogContent className="max-w-[90vw]  p-4 ">
+          <CustomWorkflowForm
+            onClose={() => setIsCustomWorkflowDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </div>

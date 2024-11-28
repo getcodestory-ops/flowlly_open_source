@@ -38,8 +38,15 @@ import DocumentSelector from "./DocumentSelector";
 import { CreateEvent } from "@/types/projectEvents";
 import { createNewProjectEvent } from "@/api/taskQueue";
 import { Checkbox } from "@/components/ui/checkbox";
+import { GraphData } from "../../../app/project/[projectId]/workbench/components/types";
 
-export default function DocumentWriterForm() {
+export default function DocumentWriterForm({
+  onClose,
+  editData,
+}: {
+  onClose: () => void;
+  editData?: GraphData;
+}) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const session = useStore((state) => state.session);
@@ -72,7 +79,7 @@ export default function DocumentWriterForm() {
     { id: "3", name: "Research Papers" },
   ];
 
-  const { mutate } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: (createEvent: CreateEvent) => {
       if (!session || !activeProject?.project_id)
         return Promise.reject("Session or active project not available");
@@ -89,6 +96,18 @@ export default function DocumentWriterForm() {
         duration: 9000,
       });
       queryClient.invalidateQueries({ queryKey: ["documentWriters"] });
+
+      // Reset form state
+      setName("");
+      setSearchQuery("");
+      setWritePrompt("");
+      setRecurrence("once");
+      setStartTime(format(new Date(), "yyyy-MM-dd'T'HH:mm"));
+      setSelectedItems([]);
+      setOutputFolderId(null);
+
+      // Close the form
+      onClose();
     },
     onError: (error) => {
       toast({
@@ -125,6 +144,7 @@ export default function DocumentWriterForm() {
           recurrence_day: format(startTime, "EEEE"),
           time: format(startTime, "HH:mm"),
           frequency: recurrence,
+          triggerType: "ui",
           selected_items: selectedItems,
           output_folder_id: outputFolderId,
         },
@@ -255,6 +275,7 @@ export default function DocumentWriterForm() {
                     id="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    disabled={isPending}
                     required
                   />
                 </div>
@@ -350,8 +371,16 @@ export default function DocumentWriterForm() {
               </CardContent>
             </div>
             <CardFooter>
-              <Button type="submit" className="w-full" disabled={!isFormValid}>
-                Create Document Writer
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={!isFormValid || isPending}
+              >
+                {isPending ? (
+                  <span className="spinner">Loading...</span>
+                ) : (
+                  "Create Document Writer"
+                )}
               </Button>
             </CardFooter>
           </form>

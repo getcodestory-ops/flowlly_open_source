@@ -8,14 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { useStore } from "@/utils/store";
 import { cn } from "@/lib/utils";
 

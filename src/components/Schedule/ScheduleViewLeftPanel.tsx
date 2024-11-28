@@ -58,6 +58,8 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
     setButtonPosition({ x: data.x, y: data.y });
   };
 
+  const nodeRef = useRef(null);
+
   return (
     <div className="w-full h-full flex flex-col ">
       <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
@@ -137,8 +139,13 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
           </CardContent>
         </Card>
       </div>
-      <Draggable position={buttonPosition} onStop={handleDrag} bounds="parent">
-        <div className="fixed bottom-4 right-4">
+      <Draggable
+        nodeRef={nodeRef}
+        position={buttonPosition}
+        onStop={handleDrag}
+        bounds="parent"
+      >
+        <div ref={nodeRef} className="fixed bottom-4 right-4">
           <Button
             className="rounded-full w-auto h-auto p-2 flex items-center gap-2"
             onClick={() => setIsChatOpen(!isChatOpen)}
