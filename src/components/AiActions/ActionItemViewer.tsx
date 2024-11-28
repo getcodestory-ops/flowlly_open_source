@@ -67,7 +67,7 @@ function ActionItemViewer({ results }: ActionItemInterface) {
 
   const queryClient = useQueryClient();
   const { activity_addition, activity_deletion, activity_modification } =
-    results[0];
+    results[0] ?? {};
 
   const approveImpact = useMutation({
     mutationFn: (revision: { id: string; revision: Revision }) => {
