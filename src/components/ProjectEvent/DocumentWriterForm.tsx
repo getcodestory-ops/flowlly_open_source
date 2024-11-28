@@ -95,7 +95,9 @@ export default function DocumentWriterForm({
         description: "Document writer created successfully!",
         duration: 9000,
       });
-      queryClient.invalidateQueries({ queryKey: ["documentWriters"] });
+      queryClient.invalidateQueries({
+        queryKey: ["projectEvents"],
+      });
 
       // Reset form state
       setName("");

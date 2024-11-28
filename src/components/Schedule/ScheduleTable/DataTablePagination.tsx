@@ -5,7 +5,7 @@ import {
   DoubleArrowRightIcon,
 } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
-
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useViewStore } from "@/utils/store";
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>;
@@ -22,6 +23,12 @@ interface DataTablePaginationProps<TData> {
 export function DataTablePagination<TData>({
   table,
 }: DataTablePaginationProps<TData>) {
+  const { rowsPerPage, setRowsPerPage } = useViewStore();
+
+  useEffect(() => {
+    table.setPageSize(rowsPerPage);
+  }, []);
+
   return (
     <div className="flex items-center justify-between px-2">
       <div className="flex-1 text-sm text-muted-foreground">
@@ -34,11 +41,13 @@ export function DataTablePagination<TData>({
           <Select
             value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => {
-              table.setPageSize(Number(value));
+              const newSize = Number(value);
+              table.setPageSize(newSize);
+              setRowsPerPage(newSize);
             }}
           >
             <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={table.getState().pagination.pageSize} />
+              <SelectValue placeholder={rowsPerPage} />
             </SelectTrigger>
             <SelectContent side="top">
               {[10, 20, 30, 40, 50].map((pageSize) => (

@@ -11,7 +11,7 @@ import "react-date-picker/dist/DatePicker.css";
 import { getStartEndDateForProject, initTasks } from "./helper";
 import "gantt-task-react/dist/index.css";
 import { Flex } from "@chakra-ui/react";
-import { useStore } from "@/utils/store";
+import { useStore, useViewStore } from "@/utils/store";
 import { deleteActivity } from "@/api/activity_routes";
 import { getCriticalPath } from "@/api/schedule_routes";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -23,7 +23,6 @@ import {
 } from "react-icons/pi";
 
 import { ActivityEntity } from "@/types/activities";
-
 import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
 import AddNewActivityModal from "./AddNewActivityModal";
 import UpdateActivityModal from "./UpdateActivityModal";
@@ -32,6 +31,7 @@ const ScheduleGanttInterface = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [fontSize, setFontSize] = useState(12);
+  const { ganttView, setGanttView } = useViewStore();
   const {
     session,
     activeProject,
@@ -138,15 +138,13 @@ const ScheduleGanttInterface = () => {
     }
   }, [activities]);
 
-  const [view, setView] = React.useState<ViewMode>(ViewMode.Day);
-
   const [isChecked, setIsChecked] = React.useState(true);
   let columnWidth = 65;
-  if (view === ViewMode.Year) {
+  if (ganttView === ViewMode.Year) {
     columnWidth = fontSize * 30;
-  } else if (view === ViewMode.Month) {
+  } else if (ganttView === ViewMode.Month) {
     columnWidth = fontSize * 20;
-  } else if (view === ViewMode.Week) {
+  } else if (ganttView === ViewMode.Week) {
     columnWidth = 250;
   }
 
@@ -276,10 +274,10 @@ const ScheduleGanttInterface = () => {
           />
 
           <ViewSwitcher
-            onViewModeChange={(viewMode) => setView(viewMode)}
+            onViewModeChange={(viewMode) => setGanttView(viewMode)}
             onViewListChange={setIsChecked}
             isChecked={isChecked}
-            View={view}
+            View={ganttView}
           />
         </div>
       </Flex>
@@ -293,7 +291,7 @@ const ScheduleGanttInterface = () => {
       >
         <Gantt
           tasks={tasks}
-          viewMode={view}
+          viewMode={ganttView}
           onDateChange={handleTaskChange}
           onDelete={handleTaskDelete}
           onProgressChange={handleProgressChange}

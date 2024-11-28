@@ -31,6 +31,7 @@ import DocumentWriterForm from "@/components/ProjectEvent/DocumentWriterForm";
 import DailyJournalForm from "@/components/ProjectEvent/DailyJournalForm";
 import CustomWorkflowForm from "@/components/ProjectEvent/CustomWorkFlow/CustomWorkflowForm";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useViewStore } from "@/utils/store";
 
 interface GraphListProps {
   graphs: GraphData[];
@@ -44,6 +45,8 @@ export const GraphList: React.FC<GraphListProps> = ({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const workbenchView = useViewStore((state) => state.workbenchView);
+  const setWorkbenchView = useViewStore((state) => state.setWorkbenchView);
   const [selectedEventType, setSelectedEventType] = useState<string | null>(
     null
   );
@@ -154,7 +157,12 @@ export const GraphList: React.FC<GraphListProps> = ({
 
   return (
     <div className="w-full">
-      <Tabs defaultValue="calendar">
+      <Tabs
+        defaultValue={workbenchView}
+        onValueChange={(value) =>
+          setWorkbenchView(value as "table" | "calendar")
+        }
+      >
         <div className="flex items-center justify-between">
           <TabsList>
             <TabsTrigger value="calendar">Calendar View</TabsTrigger>
