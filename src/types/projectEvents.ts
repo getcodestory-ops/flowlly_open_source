@@ -3,6 +3,17 @@ export interface TimeConfig {
   delivery_time?: string;
 }
 
+export interface EventTrigger {
+  id?: string;
+  created_at?: string;
+  access_by: string;
+  access_key: string;
+  trigger_keyword: string;
+  trigger_by: string;
+  metadata: Record<string, any>;
+  trigger_by_key: string;
+}
+
 export interface RunConfig {
   day: number[];
   start: string;
@@ -17,6 +28,12 @@ export enum ProjectEventType {
   SAFETY_INSPECTION = "safety_inspection",
 }
 
+export type WorkflowNode = {
+  id: string;
+  type: string;
+  config: Record<string, any>;
+};
+export type TriggerType = "email" | "phone" | "ui";
 export interface ProjectEventMetadata {
   online_link?: string;
   location?: string;
@@ -28,6 +45,9 @@ export interface ProjectEventMetadata {
   write_prompt?: string;
   selected_items?: {};
   output_folder_id?: string | null;
+  nodes?: WorkflowNode[];
+  triggerType: TriggerType;
+  startingPrompt?: string;
 }
 
 export interface ProjectEvent {
@@ -35,7 +55,7 @@ export interface ProjectEvent {
   created_at?: string;
   created_by?: string;
   name: string;
-  event_type: "meeting" | "safety_inspection" | "document_writing";
+  event_type: "meeting" | "safety_inspection" | "document_writing" | "custom";
   metadata: ProjectEventMetadata;
 }
 
@@ -85,6 +105,7 @@ export enum EventFrequency {
   MONTHLY = "monthly",
   YEARLY = "yearly",
   CUSTOM = "custom",
+  MANUAL = "manual",
 }
 
 export interface EventSchedule {
@@ -97,6 +118,7 @@ export interface EventSchedule {
 export interface CreateEvent {
   project_event: ProjectEvent;
   event_participants: EventParticipantMetadata[];
+  event_trigger?: EventTrigger;
   auto_join?: boolean;
   duration?: number;
   end_date?: string;

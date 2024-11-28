@@ -158,3 +158,21 @@ export const getProjectEvents = async ({
   });
   return response.data;
 };
+
+export const getEventResult = async ({
+  session,
+  projectId,
+  eventId,
+}: {
+  session: Session;
+  projectId: string;
+  eventId: string;
+}) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/result/${projectId}/${eventId}`;
+  const response = await axios.get(url, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+  return response.data;
+};

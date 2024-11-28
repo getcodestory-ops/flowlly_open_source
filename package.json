@@ -101,6 +101,7 @@
     "react-pdf": "8.0.2",
     "react-phone-number-input": "^3.4.4",
     "react-syntax-highlighter": "^15.5.0",
+    "reactflow": "^11.11.4",
     "recharts": "^2.12.7",
     "remark-gfm": "^4.0.0",
     "shadcn-ui": "^0.8.0",

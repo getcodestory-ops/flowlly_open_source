@@ -37,3 +37,26 @@ export const getApiIntegration = async (
 
   return response.data;
 };
+
+export const createExcelSheet = async (
+  session: Session,
+  project_access_id: string,
+  file_name: string,
+  table_headers: string[]
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/onedrive/create_table/${project_access_id}`;
+  const response = await axios.post(
+    url,
+    {
+      file_name,
+      table_headers,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    }
+  );
+
+  return response.data;
+};

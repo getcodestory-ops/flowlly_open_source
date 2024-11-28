@@ -14,8 +14,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { useStore } from "@/utils/store";
 
 export default function Integration() {
+  const session = useStore((state) => state.session);
+  const activeProject = useStore((state) => state.activeProject);
   const [procoreConnected, setProcoreConnected] = useState(false);
   const [microsoftConnected, setMicrosoftConnected] = useState(false);
   const [syncProjects, setSyncProjects] = useState(false);
@@ -28,10 +31,27 @@ export default function Integration() {
 
   const handleMicrosoftConnect = async () => {
     if (!microsoftConnected) {
-      // Redirect to Microsoft OAuth login
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/microsoft/login`;
+      const sessionToken = session?.access_token;
+      const userId = session?.user?.id;
+      const projectId = activeProject?.project_id;
+      if (!sessionToken || !userId || !projectId) {
+        return;
+      }
+      // Redirect to Microsoft OAuth login with specific scopes for Excel
+      const params = new URLSearchParams({
+        client_id: "5f3afbcd-94ce-4a50-9721-79136b5d4c1e",
+        response_type: "code",
+        redirect_uri:
+          "https://flowlly.eastus.cloudapp.azure.com/microsoft/integration",
+        response_mode: "query",
+        scope:
+          "openid profile Sites.Read.All Files.ReadWrite.All OnlineMeetings.Read Calendars.ReadWrite ",
+        state: sessionToken + "___" + userId + "___" + projectId,
+      });
+
+      const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?${params.toString()}`;
+      window.location.href = authUrl;
     } else {
-      // Disconnect from Microsoft
       try {
         await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/auth/microsoft/disconnect`,
@@ -47,7 +67,7 @@ export default function Integration() {
     }
   };
 
-  // Check Microsoft connection status on component mount
+  // Enhanced Microsoft connection status check
   useEffect(() => {
     const checkMicrosoftConnection = async () => {
       try {
@@ -59,6 +79,15 @@ export default function Integration() {
         );
         const data = await response.json();
         setMicrosoftConnected(data.connected);
+
+        // If we have a success or error message in the URL (after redirect)
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get("auth_status");
+        if (status === "success") {
+          // You might want to show a success toast/message here
+          // Remove the query params
+          window.history.replaceState({}, "", window.location.pathname);
+        }
       } catch (error) {
         console.error("Failed to check Microsoft connection:", error);
       }

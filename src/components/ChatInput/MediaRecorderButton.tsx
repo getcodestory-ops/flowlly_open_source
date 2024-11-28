@@ -31,6 +31,7 @@ import { AutosizeTextarea } from "@/components/ui/autosize-textarea";
 import StreamComponent from "../StreamResponse/StreamAgentChat";
 import MediaStreamerButton from "./MediaStreamButton";
 import ProjectEventCreationForm from "../ProjectEvent/ProjectEventCreationForm";
+import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 
 const pulseAnimation = keyframes`
   0% { transform: scale(1); opacity: 1; }
@@ -46,6 +47,7 @@ const MediaRecorderButton: React.FC = () => {
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
     null
   );
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [textNote, setTextNote] = useState<string>("");
   const [audioModuleTextNote, setAudioModuteTextNote] = useState<string>("");
   const session = useStore((state) => state.session);
@@ -168,18 +170,20 @@ const MediaRecorderButton: React.FC = () => {
 
   return (
     <div className="flex   px-2 space-x-3 rounded-lg justify-center items-center ">
-      <div className="flex items-center py-1">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="secondary" size="icon">
-              <MdOutlineRecordVoiceOver className="size-4" color="black" />
-              <span className="sr-only">Create Meeting</span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-full ">
-            <ProjectEventCreationForm />
-          </PopoverContent>
-        </Popover>
+      <div className="flex items-center py-1 relative">
+        <Button
+          variant="secondary"
+          size="icon"
+          onClick={() => setIsDialogOpen(true)}
+        >
+          <MdOutlineRecordVoiceOver className="size-4" color="black" />
+          <span className="sr-only">Create Meeting</span>
+        </Button>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="absolute top-full w-[40vw] p-2 z-50  border border-gray-200 rounded-lg bg-gradient-to-b from-purple-400 to-blue-600 ">
+            <ProjectEventCreationForm onClose={() => setIsDialogOpen(false)} />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <MediaStreamerButton />

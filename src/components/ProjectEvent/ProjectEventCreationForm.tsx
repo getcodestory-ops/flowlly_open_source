@@ -42,6 +42,7 @@ import { useStore } from "@/utils/store";
 import { CreateEvent } from "@/types/projectEvents";
 import { createNewProjectEvent } from "@/api/taskQueue";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { GraphData } from "../../../app/project/[projectId]/workbench/components/types";
 
 interface Participant {
   id: string;
@@ -221,7 +222,13 @@ function ParticipantSelector({
   );
 }
 
-export default function ProjectEventCreationForm() {
+export default function ProjectEventCreationForm({
+  onClose,
+  editData,
+}: {
+  onClose: () => void;
+  editData?: GraphData;
+}) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const members = useStore((state) => state.members);
@@ -315,7 +322,7 @@ export default function ProjectEventCreationForm() {
     // },
   ];
 
-  const { mutate } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: createNewProjectEvent,
     onSuccess: (data) => {
       toast({
@@ -324,33 +331,6 @@ export default function ProjectEventCreationForm() {
         duration: 9000,
       });
       queryClient.invalidateQueries({ queryKey: ["projectEvents"] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        duration: 9000,
-      });
-    },
-  });
-
-  useEffect(() => {
-    if (selectedEvent) {
-      const event = existingEvents.find((e) => e.id === selectedEvent);
-      if (event) {
-        setMeetingName(event.name);
-        setParticipants(event.participants);
-        setSelectedParticipants(event.participants.map((p) => p.id));
-        setRecurrence(event.recurrence);
-        setStartDate(parse(event.startDate, "yyyy-MM-dd", new Date()));
-        setEndDate(parse(event.endDate, "yyyy-MM-dd", new Date()));
-        setStartTime(event.startTime);
-        setDuration(event.duration);
-        setParticipationLink(event.participationLink || "");
-        setParticipationOption(event.participationLink ? "join" : "record");
-      }
-    } else {
-      // Reset form when no event is selected
       setMeetingName("");
       setParticipants(
         members.map((m) => ({
@@ -370,8 +350,43 @@ export default function ProjectEventCreationForm() {
       setDuration("60");
       setParticipationLink("");
       setParticipationOption("join");
+
+      // Close the form
+      onClose();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        duration: 9000,
+      });
+    },
+  });
+
+  useEffect(() => {
+    if (editData) {
+      setMeetingName(editData.name || "");
+      if (editData.metadata) {
+        setParticipationLink(editData.metadata.online_link || "");
+        setRecurrence(editData.metadata.frequency || "once");
+        setStartTime(
+          editData.metadata.time ||
+            format(
+              roundToNearestMinutes(new Date(), { nearestTo: 30 }),
+              "HH:mm"
+            )
+        );
+        setDuration(editData.metadata.duration?.toString() || "60");
+        setWeeklyRecurrenceDay(
+          editData.metadata.recurrence_day || format(new Date(), "EEEE")
+        );
+      }
+
+      if (editData.event_schedule) {
+        setStartDate(new Date(editData.event_schedule[0].schedule.start));
+      }
     }
-  }, [selectedEvent]);
+  }, [editData]);
 
   useEffect(() => {
     const isValid =
@@ -407,6 +422,7 @@ export default function ProjectEventCreationForm() {
           online_link: participationLink,
           frequency: recurrence,
           time: startTime,
+          triggerType: "ui",
           duration: parseInt(duration ?? 0),
           recurrence_day: weeklyRecurrenceDay,
         },
@@ -467,34 +483,6 @@ export default function ProjectEventCreationForm() {
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="existingEvent">
-                  Select from existing meetings or create a new
-                </Label>
-                <Select
-                  value={selectedEvent || ""}
-                  onValueChange={(value) =>
-                    setSelectedEvent(
-                      value === "create_new_event" ? null : value
-                    )
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Create New Meeting" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="create_new_event">
-                      Create New Meeting
-                    </SelectItem>
-                    {existingEvents.map((event) => (
-                      <SelectItem key={event.id} value={event.id}>
-                        {event.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="meetingName">Meeting Name</Label>
                 <Input
@@ -716,8 +704,18 @@ export default function ProjectEventCreationForm() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button type="submit" className="w-full" disabled={!isFormValid}>
-                {selectedEvent ? "Update Event" : "Create Event"}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={!isFormValid || isPending}
+              >
+                {isPending ? (
+                  <span className="spinner">Loading...</span> // Add spinner here
+                ) : editData ? (
+                  "Update Event"
+                ) : (
+                  "Create Event"
+                )}
               </Button>
             </CardFooter>
           </form>
