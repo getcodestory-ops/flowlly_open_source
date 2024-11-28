@@ -117,25 +117,37 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
     getSubRows: (row) => row.subRows,
   });
 
-  const { data: fetchedEventResult } = useQuery({
-    queryKey: ["eventResult", selectedEventId],
-    queryFn: async () => {
-      if (!session || !activeProject || !selectedEventId) return null;
-      return getEventResult({
-        session,
-        projectId: activeProject.project_id,
-        eventId: selectedEventId,
-      });
-    },
-    enabled: !!session && !!activeProject && !!selectedEventId,
-  });
+  const { data: fetchedEventResult, isLoading: isFetchingEventResult } =
+    useQuery({
+      queryKey: ["eventResult", selectedEventId],
+      queryFn: async () => {
+        if (!session || !activeProject || !selectedEventId) return null;
+        return getEventResult({
+          session,
+          projectId: activeProject.project_id,
+          eventId: selectedEventId,
+        });
+      },
+      enabled: !!session && !!activeProject && !!selectedEventId,
+    });
 
   useEffect(() => {
+    if (isFetchingEventResult) {
+      onSelectGraph({
+        id: "",
+        name: "",
+        status: "",
+        run_time: "",
+        nodes: [{ id: "", title: "loading...", output: "loading..." }],
+        timestamp: "",
+        description: "",
+      } as EventResult);
+    }
     if (fetchedEventResult) {
       onSelectGraph(fetchedEventResult?.result);
       setSelectedEventId(null);
     }
-  }, [fetchedEventResult]);
+  }, [fetchedEventResult, isFetchingEventResult]);
 
   const renderRow = (row: Row<ScheduleTableRow>) => {
     return (

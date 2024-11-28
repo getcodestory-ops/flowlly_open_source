@@ -42,7 +42,7 @@ const ContentEditor = ({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl m-5 focus:outline-none ",
+          "prose prose-sm max-w-none focus:outline-none prose-headings:font-semibold prose-p:leading-relaxed",
       },
     },
     content: content,
@@ -53,7 +53,7 @@ const ContentEditor = ({
   });
 
   return (
-    <div className=" max-h-[90vh] flex flex-col  ">
+    <div className="max-h-[90vh] flex flex-col">
       {editor && (
         <>
           <Toolbar
@@ -66,16 +66,14 @@ const ContentEditor = ({
               <Button
                 size="sm"
                 variant={editor.isActive("bold") ? "default" : "secondary"}
-                onClick={() => editor.chain().focus().toggleMark("bold").run()}
+                onClick={() => editor.chain().setBold().run()}
               >
                 Bold
               </Button>
               <Button
                 size="sm"
                 variant={editor.isActive("italic") ? "default" : "secondary"}
-                onClick={() =>
-                  editor.chain().focus().toggleMark("italic").run()
-                }
+                onClick={() => editor.chain().setItalic().run()}
               >
                 Italic
               </Button>
@@ -84,7 +82,15 @@ const ContentEditor = ({
           <ScrollArea className="h-[75vh]">
             <EditorContent
               editor={editor}
-              className="m-4 w-full prose prose-sm sm:prose lg: prose-lg xl:prose-2xl"
+              className="m-2 w-full prose prose-sm max-w-none 
+                prose-headings:mb-3 prose-headings:mt-2 
+                prose-p:my-2 prose-p:leading-relaxed
+                prose-li:my-0.5 
+                prose-headings:text-gray-800
+                prose-p:text-gray-700
+                prose-strong:text-gray-800
+                prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg
+                [&>*]:max-w-4xl [&>*]:mx-auto px-2"
             />
           </ScrollArea>
         </>

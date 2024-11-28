@@ -113,3 +113,19 @@ export const renderJsonValue = (value: any, depth = 0): JSX.Element => {
     return <p className="text-sm text-gray-700">{stringValue}</p>;
   }
 };
+
+export const truncateObject = (obj: any, maxEntries: number = 5): any => {
+  if (!obj || typeof obj !== "object") return obj;
+
+  if (Array.isArray(obj)) {
+    return obj.slice(0, maxEntries);
+  }
+
+  const entries = Object.entries(obj);
+  if (entries.length <= maxEntries) return obj;
+
+  return Object.fromEntries([
+    ...entries.slice(0, maxEntries),
+    ["...", `${entries.length - maxEntries} more items`],
+  ]);
+};

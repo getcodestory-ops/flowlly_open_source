@@ -134,11 +134,19 @@ export default function AssignmentHome() {
             </Button>
           </div>
           {currentGraph && currentResult && (
-            <ResultViewer
-              currentResult={currentResult}
-              selectedNode={selectedNode}
-              onSelectNode={handleSelectNode}
-            />
+            <div>
+              {!currentResult.nodes ? (
+                <div className="flex items-center justify-center h-screen">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+                </div>
+              ) : (
+                <ResultViewer
+                  currentResult={currentResult}
+                  selectedNode={selectedNode}
+                  onSelectNode={handleSelectNode}
+                />
+              )}
+            </div>
           )}
         </div>
       </div>
