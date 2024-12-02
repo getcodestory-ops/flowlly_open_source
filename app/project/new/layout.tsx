@@ -11,7 +11,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <body className="bg-background text-foreground">
+    <body className=" text-foreground">
       <Providers>{children}</Providers>
     </body>
   );

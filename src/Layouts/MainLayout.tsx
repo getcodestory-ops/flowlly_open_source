@@ -121,7 +121,7 @@ const MainDisplayInLayout = ({ appView }: { appView: string }) => {
         <SideMenuPanel />
       </div>
 
-      <ScrollArea className="flex-grow">
+      <ScrollArea className="flex-grow bg-pink-100">
         {appView === "dashboard" && <ConstructionDashboard />}
         {appView === "schedule" && <ScheduleInterface />}
         {appView === "agent" && <ChatComponent />}

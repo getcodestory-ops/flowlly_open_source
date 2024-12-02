@@ -159,13 +159,15 @@ const ProjectFolder = ({
       <Card
         className={`${
           isSelected
-            ? "bg-blue-100  border-blue-500"
+            ? "bg-gradient-to-b from-indigo-500 to-purple-500 text-white"
             : "hover:bg-blue-50  hover:border-blue-300"
         } `}
       >
         <div onClick={onClick}>
           <CardHeader className="pb-2">
-            <CardDescription>{timeAgo(date)}</CardDescription>
+            <CardDescription className={`${isSelected ? "text-white" : ""} `}>
+              {timeAgo(date)}
+            </CardDescription>
             <CardTitle className="max-h-full flex flex-row items-center gap-3 min-h-7">
               <div className="text-xl h-full overflow-hidden text-ellipsis whitespace-nowrap flex-1 ">
                 {projectName}

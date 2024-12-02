@@ -21,9 +21,10 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
   selectedNode,
   onSelectNode,
 }) => {
+  console.log("currentResult", currentResult);
   return (
-    <ScrollArea className="h-[calc(100vh-100px)] w-full mx-auto bg-gradient-to-b from-purple-400 to-blue-600 rounded-lg">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-2 pb-8 pr-4">
+    <ScrollArea className=" ">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 p-2">
         {currentResult?.nodes
           ?.filter(
             (node) =>
@@ -31,8 +32,23 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
                 "write_meeting_minutes",
                 "write_meeting_outline",
                 "assign_action_items",
+                "join_online_meeting",
+                "download_save_meeting_recording",
+                "distribute_meeting_minutes",
               ].includes(node.id.toLowerCase())
           )
+          .sort((a, b) => {
+            const order = [
+              "save_minutes_in_project_documents",
+              "transcribe_meeting",
+              "record_meeting",
+              "determine_action_items",
+            ];
+            return (
+              order.indexOf(a.id.toLowerCase()) -
+              order.indexOf(b.id.toLowerCase())
+            );
+          })
           .map((node) => (
             <ResultBox key={node.id} node={node} />
           ))}
@@ -70,7 +86,7 @@ const ResultBox: React.FC<ResultBoxProps> = ({ node }) => {
 
   return (
     <Card
-      className={`${baseClassName} ${fullScreenClass} ${
+      className={`border-2 border-black ${baseClassName} ${fullScreenClass} ${
         isFullScreen ? "p-8" : "p-4"
       } ${!isFullScreen ? getNodeColumnSpan(node) : ""}`}
     >
@@ -138,8 +154,9 @@ const getNodeColumnSpan = (node: NodeData): string => {
   const nodeId = node.id.toLowerCase();
   switch (nodeId) {
     case "determine_action_items":
+      return "col-span-1 xl:col-span-2";
     case "transcribe_meeting":
-      return "col-span-1 md:col-span-2";
+      return "col-span-1 md:col-span-1";
     case "record_meeting":
       return "col-span-1 xl:col-span-2";
     case "write_meeting_minutes":

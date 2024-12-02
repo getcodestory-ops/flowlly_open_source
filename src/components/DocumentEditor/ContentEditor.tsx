@@ -53,7 +53,7 @@ const ContentEditor = ({
   });
 
   return (
-    <div className="max-h-[90vh] flex flex-col">
+    <div className="max-h-[90vh] flex flex-col ">
       {editor && (
         <>
           <Toolbar

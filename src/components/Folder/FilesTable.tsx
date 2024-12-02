@@ -223,7 +223,7 @@ export const FilesContent = ({
         className="fixed bottom-4 right-4 rounded-full w-auto h-auto p-2 flex items-center gap-2"
         onClick={() => setIsChatOpen(!isChatOpen)}
       >
-        <div className="bg-primary text-primary-foreground rounded-full p-2">
+        <div className="bg-white text-primary-foreground rounded-full p-2">
           <MessageCircle size={24} />
         </div>
         <span className="pr-2">Look for answers in {folderName}</span>
