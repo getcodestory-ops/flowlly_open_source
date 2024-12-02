@@ -108,7 +108,7 @@ export default function AssignmentHome() {
   }
 
   return (
-    <div className="container mx-auto p-4  border-t border-black">
+    <div className="container mx-auto p-4  border-t border-black ">
       <Breadcrumbs
         currentGraph={currentGraph}
         onBackToList={() => setCurrentGraphId(null)}
