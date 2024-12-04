@@ -169,7 +169,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
             }
           }}
           className={cn(
-            "cursor-pointer hover:bg-gray-100",
+            "cursor-pointer hover:bg-gradient-to-r hover:from-indigo-100 hover:to-purple-500 rounded-lg",
             row.depth > 0 && "bg-gray-50"
           )}
         >

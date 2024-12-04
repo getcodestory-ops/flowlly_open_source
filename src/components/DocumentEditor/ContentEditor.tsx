@@ -11,7 +11,7 @@ import TableHeader from "@tiptap/extension-table-header";
 import { Button } from "../ui/button";
 import Toolbar from "./ToolBar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
+import { HoverExtension } from "./extensions/HoverExtension";
 interface EditorBlockProps {
   content: string | any;
   setContent?: (content: string) => void;
@@ -38,6 +38,7 @@ const ContentEditor = ({
       TableRow,
       TableHeader,
       TableCell,
+      HoverExtension,
     ],
     editorProps: {
       attributes: {

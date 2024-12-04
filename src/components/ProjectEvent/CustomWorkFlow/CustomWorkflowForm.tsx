@@ -94,7 +94,11 @@ export default function CustomWorkflowForm({
                 Next
               </Button>
             ) : (
-              <Button type="submit" disabled={!formData.nodes.length}>
+              <Button
+                type="submit"
+                disabled={!formData.nodes.length}
+                onClick={handleSubmit}
+              >
                 Save Workflow
               </Button>
             )}

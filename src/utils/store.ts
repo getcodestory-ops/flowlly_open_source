@@ -18,6 +18,7 @@ import { Views, View } from "react-big-calendar";
 import { ViewMode } from "@/components/Schedule/gantt-task-react-main/src/types/public-types";
 interface ViewState {
   workbenchView: "table" | "calendar";
+  calendarSubView: "current" | "integrations";
   rowsPerPage: number;
   scheduleView: "list" | "gantt";
   calendarView: View;
@@ -27,6 +28,7 @@ interface ViewState {
   setScheduleView: (view: "list" | "gantt") => void;
   setCalendarView: (view: View) => void;
   setGanttView: (view: ViewMode) => void;
+  setCalendarSubView: (view: "current" | "integrations") => void;
 }
 
 // Create new persisted store
@@ -34,6 +36,7 @@ export const useViewStore = create<ViewState>()(
   persist(
     (set) => ({
       workbenchView: "table",
+      calendarSubView: "current",
       rowsPerPage: 10,
       scheduleView: "list",
       calendarView: Views.WEEK,
@@ -43,6 +46,7 @@ export const useViewStore = create<ViewState>()(
       setScheduleView: (view) => set(() => ({ scheduleView: view })),
       setCalendarView: (view) => set(() => ({ calendarView: view })),
       setGanttView: (view) => set(() => ({ ganttView: view })),
+      setCalendarSubView: (view) => set(() => ({ calendarSubView: view })),
     }),
     {
       name: "view-storage",

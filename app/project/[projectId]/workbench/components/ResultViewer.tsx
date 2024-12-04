@@ -24,7 +24,8 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
   return (
     <ScrollArea className="h-[calc(100vh-100px)] w-full mx-auto bg-gradient-to-b from-purple-400 to-blue-600 rounded-lg">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-2 pb-8 pr-4">
-        {currentResult?.nodes
+        {[...(currentResult?.nodes ?? [])]
+          ?.reverse()
           ?.filter(
             (node) =>
               ![
@@ -136,6 +137,9 @@ const ResultBox: React.FC<ResultBoxProps> = ({ node }) => {
 
 const getNodeColumnSpan = (node: NodeData): string => {
   const nodeId = node.id.toLowerCase();
+  const nodeTitle = node.title.toLowerCase();
+
+  // First check specific node IDs
   switch (nodeId) {
     case "determine_action_items":
     case "transcribe_meeting":
@@ -146,9 +150,15 @@ const getNodeColumnSpan = (node: NodeData): string => {
     case "save_document":
     case "save_minutes_in_project_documents":
       return "col-span-1 md:col-span-2 xl:col-span-3";
-    default:
-      return "col-span-1";
   }
+
+  // Then check titles
+  if (nodeTitle === "reportgeneration" || nodeTitle === "microsoftword") {
+    return "col-span-3";
+  }
+  console.log("nodeTitle", nodeTitle);
+
+  return "col-span-1";
 };
 
 const hasExpandableContent = (node: NodeData): boolean => {

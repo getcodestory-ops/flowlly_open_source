@@ -47,11 +47,11 @@ export const convertToBarTasks = (
   });
 
   // set dependencies
-  barTasks = barTasks.map(task => {
+  barTasks = barTasks.map((task) => {
     const dependencies = task.dependencies || [];
     for (let j = 0; j < dependencies.length; j++) {
       const dependence = barTasks.findIndex(
-        value => value.id === dependencies[j]
+        (value) => value.id === dependencies[j]
       );
       if (dependence !== -1) barTasks[dependence].barChildren.push(task);
     }
@@ -247,7 +247,7 @@ const convertToMilestone = (
 };
 
 const taskXCoordinate = (xDate: Date, dates: Date[], columnWidth: number) => {
-  const index = dates.findIndex(d => d.getTime() >= xDate.getTime()) - 1;
+  const index = dates.findIndex((d) => d.getTime() >= xDate.getTime()) - 1;
 
   const remainderMillis = xDate.getTime() - dates[index].getTime();
   const percentOfInterval =

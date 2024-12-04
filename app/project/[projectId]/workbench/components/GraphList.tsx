@@ -42,7 +42,12 @@ export const GraphList: React.FC<GraphListProps> = ({
   graphs,
   onSelectGraph,
 }) => {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: "created_at",
+      desc: true,
+    },
+  ]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const workbenchView = useViewStore((state) => state.workbenchView);

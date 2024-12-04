@@ -314,10 +314,7 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
 
       addToBranch(updatedNodes);
     } else {
-      // Add to root level only if there are no nodes yet
-      if (formData.nodes.length === 0) {
-        updatedNodes.push(nodeData);
-      }
+      updatedNodes.push(nodeData);
     }
 
     onChange({ nodes: updatedNodes });
@@ -471,14 +468,14 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
           </div>
 
           {/* Only show main Add Step button if no nodes exist */}
-          {!currentNodeType && formData.nodes.length === 0 && (
+          {!currentNodeType && (
             <Button
               variant="outline"
               className="w-full mt-4"
               onClick={() => setCurrentNodeType("validate")}
             >
               <PlusCircle className="h-4 w-4 mr-2" />
-              Add First Step
+              {formData.nodes.length === 0 ? "Add First Step" : "Add Next Step"}
             </Button>
           )}
         </div>
