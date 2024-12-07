@@ -51,10 +51,10 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   const nodeRef = useRef(null);
 
   return (
-    <div className="w-full h-full flex flex-col ">
+    <div className="w-full h-full flex flex-col  pt-2 ">
       <AddNewActivityModal isOpen={isOpen} onClose={onClose} />
 
-      <div className=" flex  justify-end gap-8 items-center absolute right-8 z-50 bg-background px-2  rounded-lg">
+      <div className=" flex  justify-end gap-8 items-center absolute right-8 z-50  px-2  rounded-lg">
         <div>
           <CustomDatePicker />
         </div>
@@ -140,7 +140,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
             className="rounded-full w-auto h-auto p-2 flex items-center gap-2"
             onClick={() => setIsChatOpen(!isChatOpen)}
           >
-            <div className="bg-primary text-primary-foreground rounded-full p-2">
+            <div className="bg-white text-primary-foreground rounded-full p-2">
               <MessageCircle size={24} />
             </div>
             <span className="pr-2">update schedule</span>

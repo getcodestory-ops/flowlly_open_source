@@ -55,7 +55,7 @@ export default function PlatformChatInterface({
                 <Card className="mt-4 bg-background text-foreground">
                   <CardContent className="p-4">
                     <div className="flex items-center mb-1">
-                      <MessageCircleMore className="mr-2 h-6 w-6 text-primary" />
+                      <MessageCircleMore className="mr-2 h-6 w-6 text-indigo-500" />
                       <span className="font-bold">{history.sender}</span>
                       <span className="text-xs ml-2">
                         {history.created_at
@@ -81,7 +81,7 @@ export default function PlatformChatInterface({
       </ScrollArea>
       <div className="px-4 py-2 flex flex-col justify-end">
         {activeProject && (
-          <div className="relative overflow-hidden rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring">
+          <div className="relative overflow-hidden rounded-lg border border-black bg-background focus-within:ring-1 focus-within:ring-ring">
             <Label htmlFor="message" className="sr-only">
               Message
             </Label>

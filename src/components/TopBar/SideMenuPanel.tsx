@@ -34,9 +34,9 @@ export function SideMenuPanel() {
   return (
     <>
       <SetUseStoreData />
-      <div className="px-1 py-4 flex flex-col items-center bg-white h-full rounded-xl custom-shadow">
-        <aside className="inset-y-0 hidden w-14 flex-col bg-background sm:flex w-full">
-          <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
+      <div className=" flex flex-col items-center  h-full rounded-xl custom-shadow">
+        <aside className="inset-y-0 hidden w-14 flex-col  sm:flex w-full">
+          <nav className="flex flex-col items-center gap-4  sm:py-5">
             <AllMenuButtons />
           </nav>
         </aside>
@@ -103,7 +103,7 @@ const menuItems: {
     link: "integrations",
   },
   {
-    label: "Configuration",
+    label: "Config",
     fnKey: "configuration",
     icon: <FileClock className="h-5 w-5" />,
     link: "configuration",
@@ -151,14 +151,15 @@ const MenuButton = ({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex flex-col text-center justify-center items-center my-1">
+        {/* <div className="flex flex-col text-center justify-center items-center my-1"> */}
+        <div
+          className={`flex flex-col text-center justify-center items-center my-1 w-full text-white ${
+            isSelected ? "bg-black" : "hover:bg-white hover:text-black"
+          }`}
+        >
           <Link
             href={link}
-            className={`flex h-8 w-8 items-center justify-center rounded-2xl transition-colors ${
-              isSelected
-                ? "text-foreground font-semibold bg-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            className={`flex h-8 w-8 items-center justify-center rounded-2xl transition-colors `}
             onClick={onClick}
           >
             {icon}
