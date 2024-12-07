@@ -94,7 +94,7 @@ export default function ConstructionDashboard() {
     setIsDrawerOpen(!isDrawerOpen);
   };
 
-  // Mock data - replace with actual data fetching in a real application
+  // Mock data - replace with actual data fetching in a real application!!
   const weatherData = {
     temperature: 72,
     condition: "Partly Cloudy",

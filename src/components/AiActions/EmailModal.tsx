@@ -71,7 +71,7 @@ const EmailModal: React.FC<EmailModalProps> = ({
     <>
       <Button variant="ghost" onClick={() => setIsOpen((state) => !state)}>
         <IoMdSend className="mr-2" />
-        Distribute {subject}
+        Distribute
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>

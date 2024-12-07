@@ -27,7 +27,7 @@ function CreateJob() {
     <div className="flex justify-between items-center mb-4">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button>
+          <Button className="bg-indigo-500 text-white">
             <Plus className="mr-2 h-4 w-4" /> Create Job
           </Button>
         </DropdownMenuTrigger>
