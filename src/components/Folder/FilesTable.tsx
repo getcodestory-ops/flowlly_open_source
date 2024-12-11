@@ -7,6 +7,7 @@ import {
   ChevronRight,
   MessageCircle,
   ArrowUpDown,
+  Folder,
 } from "lucide-react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { StorageResourceEntity } from "@/types/document";
@@ -34,7 +35,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { uploadFileInFolder, createDocumentInFolder } from "@/api/folderRoutes";
+import {
+  uploadFileInFolder,
+  createDocumentInFolder,
+  createSubFolder,
+} from "@/api/folderRoutes";
 import { useToast } from "@/components/ui/use-toast";
 
 import { MediaViewer } from "../Folder/MediaViewer";
@@ -49,22 +54,47 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import { AddNewFolderModal } from "../CreateNewFolderModal/CreateNewFolderModal";
 
 type SortField = "file_name" | "extension" | "created_at";
 type SortDirection = "asc" | "desc";
 
+// Update the ExplorerItem type to include file-specific properties
+type ExplorerItem = {
+  type: "folder" | "file";
+  name: string;
+  created_at: string;
+  id: string;
+} & (
+  | {
+      type: "folder";
+    }
+  | {
+      type: "file";
+      file_name: string;
+      metadata: Record<string, any>;
+      url: string;
+      project_access_id: string;
+      sha: string;
+    }
+);
+
 export const FilesContent = ({
   files,
+  folders,
   folderId,
   folderName,
   session,
   activeProject,
+  onFolderClick,
 }: {
   files: StorageResourceEntity[];
+  folders: any[];
   folderId: string;
   folderName: string;
   session: any;
   activeProject: any;
+  onFolderClick: (folderId: string, folderName: string) => void;
 }) => {
   const [currentFile, setCurrentFile] = useState<null | StorageResourceEntity>(
     null
@@ -78,38 +108,73 @@ export const FilesContent = ({
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [searchTerm, setSearchTerm] = useState("");
+  const queryClient = useQueryClient();
 
   const { toast } = useToast();
 
-  const sortedAndFilteredFiles = files
+  // Update the mapping of files to ExplorerItem
+  const explorerItems: ExplorerItem[] = [
+    ...folders.map((folder) => ({
+      type: "folder" as const,
+      name: folder.name,
+      created_at: folder.created_at,
+      id: folder.id,
+    })),
+    ...files.map((file) => ({
+      type: "file" as const,
+      name: file.file_name,
+      created_at: file.created_at || "",
+      id: file.id,
+      // Include all StorageResourceEntity properties
+      file_name: file.file_name,
+      metadata: file.metadata,
+      url: file.url,
+      project_access_id: file.project_access_id,
+      sha: file.sha,
+    })),
+  ];
+
+  const sortedAndFilteredItems = explorerItems
     .filter(
-      (file) =>
-        file.file_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        file.metadata.extension.toLowerCase().includes(searchTerm.toLowerCase())
+      (item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.type === "file" &&
+          item.metadata?.extension
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()))
     )
     .sort((a, b) => {
+      // Sort folders before files
+      if (a.type !== b.type) {
+        return a.type === "folder" ? -1 : 1;
+      }
+
+      // Then apply the selected sort
       if (sortField === "file_name") {
         return sortDirection === "asc"
-          ? a.file_name.localeCompare(b.file_name)
-          : b.file_name.localeCompare(a.file_name);
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name);
       }
       if (sortField === "extension") {
-        return sortDirection === "asc"
-          ? a.metadata.extension.localeCompare(b.metadata.extension)
-          : b.metadata.extension.localeCompare(a.metadata.extension);
+        if (a.type === "file" && b.type === "file") {
+          const aExt = a.metadata?.extension || "";
+          const bExt = b.metadata?.extension || "";
+          return sortDirection === "asc"
+            ? aExt.localeCompare(bExt)
+            : bExt.localeCompare(aExt);
+        }
+        return 0;
       }
       return sortDirection === "asc"
-        ? new Date(a.created_at || "").getTime() -
-            new Date(b.created_at || "").getTime()
-        : new Date(b.created_at || "").getTime() -
-            new Date(a.created_at || "").getTime();
+        ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        : new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
-  const currentFiles = sortedAndFilteredFiles.slice(
+  const currentItems = sortedAndFilteredItems.slice(
     indexOfFirstFile,
     indexOfLastFile
   );
-  const totalPages = Math.ceil(sortedAndFilteredFiles.length / filesPerPage);
+  const totalPages = Math.ceil(sortedAndFilteredItems.length / filesPerPage);
 
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -137,42 +202,71 @@ export const FilesContent = ({
 
   return (
     <div className="relative">
-      <div className="grid gap-4 md:gap-8 grid-cols-2 xl:grid-cols-3">
-        <Card className="xl:col-span-3">
-          <CardHeader className="flex flex-row items-center">
-            <div className="grid gap-2">
-              <CardTitle>All Files</CardTitle>
-              <CardDescription>
-                Recent files in the selected category.
-              </CardDescription>
-            </div>
+      <Card className="xl:col-span-3">
+        <CardHeader className="flex flex-row items-center">
+          <div className="grid gap-2">
+            <CardTitle>Files & Folders</CardTitle>
+            <CardDescription>Contents of {folderName}</CardDescription>
+          </div>
+          <div className="ml-auto flex gap-2">
+            <AddNewFolderModal
+              parentFolderName={folderName ?? "Other"}
+              onAdd={(name) => {
+                if (!activeProject) return;
+                createSubFolder(
+                  session,
+                  activeProject.project_id,
+                  name,
+                  folderId,
+                  true, // isProjectWide - you might want to pass this as a prop
+                  () => {
+                    // Invalidate the folders query
+                    queryClient.invalidateQueries({
+                      queryKey: [`fetchProjectFolders-${folderId}`],
+                    });
+                  }
+                );
+              }}
+            >
+              <Button variant="default" size="sm">
+                + Add Folder
+              </Button>
+            </AddNewFolderModal>
             <AddFileInFolderButton
               folderId={folderId}
               session={session}
               activeProject={activeProject}
             />
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4">
-              <Input
-                placeholder="Search files..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="max-w-sm"
-              />
-            </div>
-            <Table>
-              <FilesHeader
-                sortField={sortField}
-                sortDirection={sortDirection}
-                setSortField={setSortField}
-                setSortDirection={setSortDirection}
-              />
-              <TableBody>
-                {currentFiles.map((file, i) => (
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <Input
+              placeholder="Search files..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-sm"
+            />
+          </div>
+          <Table>
+            <FilesHeader
+              sortField={sortField}
+              sortDirection={sortDirection}
+              setSortField={setSortField}
+              setSortDirection={setSortDirection}
+            />
+            <TableBody>
+              {currentItems.map((item, i) =>
+                item.type === "folder" ? (
+                  <FolderRow
+                    key={`folder-${i}`}
+                    folder={item}
+                    onFolderClick={onFolderClick}
+                  />
+                ) : (
                   <FileRow
-                    key={i}
-                    resource={file}
+                    key={`file-${i}`}
+                    resource={item as unknown as StorageResourceEntity}
                     email={session.user.email}
                     setCurrentFile={setCurrentFile}
                     currentFile={currentFile}
@@ -180,43 +274,41 @@ export const FilesContent = ({
                     activeProject={activeProject}
                     folderId={folderId}
                   />
-                ))}
-                {files.length === 0 && <EmptyFileRow />}
-              </TableBody>
-            </Table>
-            <div className="flex justify-between items-center mt-4">
-              <div className="text-sm text-gray-500">
-                Showing {indexOfFirstFile + 1}-
-                {Math.min(indexOfLastFile, files.length)} of {files.length}{" "}
-                files
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
+                )
+              )}
+              {currentItems.length === 0 && <EmptyFileRow />}
+            </TableBody>
+          </Table>
+          <div className="flex justify-between items-center mt-4">
+            <div className="text-sm text-gray-500">
+              Showing {indexOfFirstFile + 1}-
+              {Math.min(indexOfLastFile, sortedAndFilteredItems.length)} of{" "}
+              {sortedAndFilteredItems.length} items
             </div>
-          </CardContent>
-        </Card>
-        {/* <FilePreviewCard resource={currentFile} /> */}
-      </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      {/* <FilePreviewCard resource={currentFile} /> */}
 
       {/* Floating chat button */}
       <Button
@@ -598,5 +690,37 @@ const EmptyFilesDisplay = () => {
         later.
       </p>
     </div>
+  );
+};
+
+// Add new FolderRow component
+const FolderRow = ({
+  folder,
+  onFolderClick,
+}: {
+  folder: ExplorerItem;
+  onFolderClick: (folderId: string, folderName: string) => void;
+}) => {
+  return (
+    <TableRow
+      className="hover:bg-blue-100 cursor-pointer"
+      onClick={() => onFolderClick(folder.id, folder.name)}
+    >
+      <TableCell>
+        <div className="flex flex-row justify-start gap-4">
+          <Folder className="h-4 w-4" />
+          <div className="font-medium">{folder.name}</div>
+        </div>
+      </TableCell>
+      <TableCell className="hidden sm:table-cell">
+        <Badge variant="secondary">Folder</Badge>
+      </TableCell>
+      <TableCell className="hidden md:table-cell">
+        {formatDate(folder.created_at)}
+      </TableCell>
+      <TableCell className="hidden md:table-cell">
+        {/* Add folder actions if needed */}
+      </TableCell>
+    </TableRow>
   );
 };

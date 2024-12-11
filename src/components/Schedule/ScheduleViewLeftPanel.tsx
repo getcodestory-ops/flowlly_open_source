@@ -87,7 +87,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
           <TabsTrigger value="list">List</TabsTrigger>
           <TabsTrigger value="gantt">Gantt</TabsTrigger>
         </TabsList>
-        <TabsContent value="list" className="flex h-full  gap-2  ">
+        <TabsContent value="list" className="flex h-full gap-2  ">
           <Card className=" flex-stretch w-full ">
             <CardHeader>
               <CardTitle className="text-sm font-medium">

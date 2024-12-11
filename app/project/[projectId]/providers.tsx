@@ -44,7 +44,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <ProjectInfoDisplay />
           </div>
           <div className="flex w-[100vw] h-[calc(100vh-65px)] overlow-hidden">
-            <div className="w-[50px] h-[calc(100vh-65px)] border-r-2  border-black bg-gradient-to-b from-indigo-500 to-purple-500">
+            <div className="w-[50px] h-[calc(100vh-65px)] border-r-2  bg-gradient-to-b from-indigo-500 to-purple-500">
               <SideMenuPanel />
             </div>
             <ScrollArea className="w-[calc(100vw-50px)] h-[calc(100vh-65px)] overflow-hidden">
