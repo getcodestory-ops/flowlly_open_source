@@ -4,7 +4,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { WorkflowNode } from "../../types";
+import {
+  NodeStatus,
+  NodeType,
+  ReportNodeConfig,
+  WorkflowNode,
+} from "../../types";
 
 interface ReportNodeProps {
   onSave: (node: WorkflowNode) => void;
@@ -13,6 +18,16 @@ interface ReportNodeProps {
 }
 
 export function ReportNode({ onSave, onCancel, editingNode }: ReportNodeProps) {
+  const [config, setConfig] = useState<ReportNodeConfig>({
+    folder_path: "",
+    file_name: "",
+    report_prompt: "",
+    generated_reports: [],
+    next_steps: [],
+    retry_count: 0,
+    max_retries: 0,
+  });
+
   const [folderPath, setFolderPath] = useState(
     (editingNode?.config as any)?.folderPath || ""
   );
@@ -63,13 +78,12 @@ export function ReportNode({ onSave, onCancel, editingNode }: ReportNodeProps) {
             onClick={() => {
               onSave({
                 id: editingNode?.id || crypto.randomUUID(),
-                type: "reportGeneration",
-                config: {
-                  folderPath,
-                  fileName,
-                  reportPrompt,
-                  generatedReports: [], // This will store the generated report metadata during runtime
-                },
+                type: NodeType.REPORT_GENERATION,
+                config,
+                title: "Report Generation",
+                status: NodeStatus.PENDING,
+                timestamp: new Date().toISOString(),
+                retry_count: 0,
               });
             }}
           >

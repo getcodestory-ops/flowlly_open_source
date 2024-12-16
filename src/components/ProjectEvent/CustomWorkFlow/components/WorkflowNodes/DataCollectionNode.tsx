@@ -3,12 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { WorkflowNode } from "../../types";
+import {
+  DataCollectionNodeConfig,
+  NodeStatus,
+  NodeType,
+  WorkflowNode,
+} from "../../types";
 
 interface DataCollectionNodeProps {
   onSave: (node: WorkflowNode) => void;
   onCancel: () => void;
   editingNode?: WorkflowNode;
+  existingNodes?: WorkflowNode[];
 }
 
 export function DataCollectionNode({
@@ -16,6 +22,14 @@ export function DataCollectionNode({
   onCancel,
   editingNode,
 }: DataCollectionNodeProps) {
+  const [config, setConfig] = useState<DataCollectionNodeConfig>({
+    triggerWord: "",
+    prompt: "",
+    next_steps: [],
+    retry_count: 0,
+    max_retries: 0,
+  });
+
   const [triggerWord, setTriggerWord] = useState(
     (editingNode?.config as any)?.triggerWord || ""
   );
@@ -54,12 +68,12 @@ export function DataCollectionNode({
             onClick={() => {
               onSave({
                 id: editingNode?.id || crypto.randomUUID(),
-                type: "dataCollection",
-                config: {
-                  triggerWord,
-                  prompt,
-                  collectedData: [], // This will store the collected data during runtime
-                },
+                type: NodeType.DATA_COLLECTION,
+                title: "Data Collection",
+                config,
+                status: NodeStatus.PENDING,
+                timestamp: new Date().toISOString(),
+                retry_count: 0,
               });
             }}
           >

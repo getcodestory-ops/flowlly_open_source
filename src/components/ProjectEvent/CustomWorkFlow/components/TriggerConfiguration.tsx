@@ -21,7 +21,7 @@ interface TriggerConfigurationProps {
 }
 
 const availablePhones = [
-  { phoneNumber: "+17788003869", type: "reserved" },
+  // { phoneNumber: "+17788003869", type: "reserved" },
   { phoneNumber: "+12344234145", type: "general" },
   { phoneNumber: "+15068001231", type: "general" },
 ];

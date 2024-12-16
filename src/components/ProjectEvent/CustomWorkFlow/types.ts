@@ -49,7 +49,7 @@ export interface ConditionNodeConfig extends BaseNodeConfig {
 }
 
 export interface MicrosoftExcelNodeConfig extends BaseNodeConfig {
-  sheetName: string;
+  sheet_name: string;
   workbookName?: string;
   operation: "update" | "read" | "append";
   range?: string; // e.g., "A1:D10"
@@ -58,7 +58,7 @@ export interface MicrosoftExcelNodeConfig extends BaseNodeConfig {
     sourceField: string;
     dataType: "string" | "number" | "date" | "boolean";
   }[];
-  worksheetId?: string; // Microsoft Graph API worksheet ID
+  table_id?: string; // Microsoft Graph API worksheet ID
   driveId?: string; // Microsoft Graph API drive ID
   fileId?: string; // Microsoft Graph API file ID
 }
@@ -71,6 +71,24 @@ export interface ConversationNodeConfig extends BaseNodeConfig {
     account_sid: string;
     auth_token: string;
   };
+}
+
+export interface DataCollectionNodeConfig extends BaseNodeConfig {
+  triggerWord: string;
+  prompt: string;
+}
+
+export interface TriggerNodeConfig extends BaseNodeConfig {
+  triggerBy: "email_subject" | "phone" | "time" | "ui";
+  triggerKeyword: string;
+  triggerByKey: string;
+}
+
+export interface ReportNodeConfig extends BaseNodeConfig {
+  folder_path: string;
+  file_name: string;
+  report_prompt: string;
+  generated_reports: any[];
 }
 
 interface BranchNodes {
@@ -88,6 +106,7 @@ export enum NodeType {
   EXTRACTION = "extraction",
   EXCEL = "excel",
   REPORT_GENERATION = "report_generation",
+  TRIGGER = "trigger",
 }
 
 export enum NodeStatus {
@@ -135,6 +154,21 @@ export type WorkflowNode = {
   | {
       type: NodeType.CONVERSATION;
       config: ConversationNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.DATA_COLLECTION;
+      config: DataCollectionNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.TRIGGER;
+      config: TriggerNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.REPORT_GENERATION;
+      config: ReportNodeConfig;
       title: string;
     }
 );

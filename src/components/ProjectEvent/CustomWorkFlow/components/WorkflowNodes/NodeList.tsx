@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { WorkflowNode } from "../../types";
+import { NodeType, WorkflowNode } from "../../types";
 import { Edit2, Trash2 } from "lucide-react";
 import { getNodeIcon, getNodeDescription } from "./nodeUtils";
 
@@ -32,7 +32,7 @@ export function NodeList({ nodes, onEdit, onDelete }: NodeListProps) {
               variant="ghost"
               size="icon"
               onClick={() => onEdit(index)}
-              disabled={node.type === "trigger"}
+              disabled={node.type === NodeType.TRIGGER}
             >
               <Edit2 className="h-4 w-4" />
             </Button>
@@ -40,7 +40,7 @@ export function NodeList({ nodes, onEdit, onDelete }: NodeListProps) {
               variant="ghost"
               size="icon"
               onClick={() => onDelete(index)}
-              disabled={node.type === "trigger"}
+              disabled={node.type === NodeType.TRIGGER}
             >
               <Trash2 className="h-4 w-4" />
             </Button>

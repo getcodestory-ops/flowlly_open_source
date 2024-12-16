@@ -297,7 +297,7 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
           <div className="space-y-2">
             <p className="text-sm text-gray-600">{node.title}</p>
             <div className="text-xs text-gray-500">
-              <p>Sheet: {node.config.sheetName}</p>
+              <p>Sheet: {node.config.sheet_name}</p>
               <p>Operation: {node.config.operation}</p>
               {node.config.range && <p>Range: {node.config.range}</p>}
             </div>

@@ -26,10 +26,10 @@ export function MicrosoftExcelNode({
   editingNode,
 }: MicrosoftExcelNodeProps) {
   const [config, setConfig] = useState<MicrosoftExcelNodeConfig>({
-    sheetName: "",
+    sheet_name: "",
     columns: [],
     operation: "update",
-    worksheetId: "",
+    table_id: "",
     next_steps: [],
     retry_count: 0,
     max_retries: 3,
@@ -53,7 +53,7 @@ export function MicrosoftExcelNode({
   const [tableId, setTableId] = useState<string>(
     (editingNode?.config as any)?.tableId || ""
   );
-
+  const [microsoftConnected, setMicrosoftConnected] = useState(false);
   const { data: integration } = useQuery({
     queryKey: ["integration", activeProject?.project_id],
     queryFn: () => getApiIntegration(session!, activeProject?.project_id!),
@@ -90,53 +90,42 @@ export function MicrosoftExcelNode({
     },
   });
 
-  const handleIntegration = async () => {
-    // setLoading(true);
-    // try {
-    //   const projectAccessId = activeProject?.project_id;
-    //   if (!projectAccessId) {
-    //     setIsIntegrated(false);
-    //     return;
-    //   }
-    //   // Initialize OAuth flow
-    //   const authData = await loginWithMicrosoft(
-    //     session!.access_token,
-    //     projectAccessId
-    //   );
-    //   if (authData.authUrl) {
-    //     // Open popup for Microsoft login
-    //     const popup = window.open(
-    //       authData.authUrl,
-    //       "Microsoft Login",
-    //       "width=600,height=600"
-    //     );
-    //     // Listen for OAuth callback
-    //     window.addEventListener("message", async (event) => {
-    //       if (event.data.type === "MICROSOFT_AUTH_CALLBACK") {
-    //         const { code } = event.data;
-    //         popup?.close();
-    //         // Exchange code for token
-    //         await getMicrosoftToken(
-    //           session!.access_token,
-    //           projectAccessId,
-    //           code
-    //         );
-    //         setIsIntegrated(true);
-    //         toast({
-    //           title: "Success",
-    //           description: "Microsoft integration completed successfully",
-    //         });
-    //       }
-    //     });
-    //   }
-    // } catch (error) {
-    //   toast({
-    //     title: "Error",
-    //     description: "Failed to integrate with Microsoft",
-    //     variant: "destructive",
-    //   });
-    // }
-    // setLoading(false);
+  const handleMicrosoftConnect = async () => {
+    if (!microsoftConnected) {
+      const sessionToken = session?.access_token;
+      const userId = session?.user?.id;
+      const projectId = activeProject?.project_id;
+      if (!sessionToken || !userId || !projectId) {
+        return;
+      }
+      // Redirect to Microsoft OAuth login with specific scopes for Excel
+      const params = new URLSearchParams({
+        client_id: "5f3afbcd-94ce-4a50-9721-79136b5d4c1e",
+        response_type: "code",
+        redirect_uri:
+          "https://flowlly.eastus.cloudapp.azure.com/microsoft/integration",
+        response_mode: "query",
+        scope:
+          "openid profile Sites.Read.All Files.ReadWrite.All OnlineMeetings.Read Calendars.ReadWrite ",
+        state: sessionToken + "___" + userId + "___" + projectId,
+      });
+
+      const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?${params.toString()}`;
+      window.location.href = authUrl;
+    } else {
+      try {
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/microsoft/disconnect`,
+          {
+            method: "POST",
+            credentials: "include",
+          }
+        );
+        setMicrosoftConnected(false);
+      } catch (error) {
+        console.error("Failed to disconnect:", error);
+      }
+    }
   };
 
   const createNewExcelSheet = async () => {
@@ -173,7 +162,7 @@ export function MicrosoftExcelNode({
             <div className="text-sm text-yellow-600">
               Microsoft integration is required for Excel operations
             </div>
-            <Button onClick={handleIntegration} disabled={loading}>
+            <Button onClick={handleMicrosoftConnect} disabled={loading}>
               {loading ? "Connecting..." : "Connect to Microsoft"}
             </Button>
           </div>
@@ -270,13 +259,13 @@ export function MicrosoftExcelNode({
                 retry_count: 0,
                 config: {
                   ...config,
-                  sheetName: formattedSheetName,
+                  sheet_name: formattedSheetName,
                   columns: columns.map((column) => ({
                     name: column,
                     sourceField: column,
                     dataType: "string",
                   })),
-                  worksheetId: tableId,
+                  table_id: tableId,
                 },
               });
             }}

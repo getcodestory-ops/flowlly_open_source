@@ -1,8 +1,7 @@
 import React, { useState, useMemo } from "react";
-import { Calendar, Views, View } from "react-big-calendar";
+import { Calendar, View } from "react-big-calendar";
 import { Button } from "@/components/ui/button";
 import { FileText, Video } from "lucide-react";
-import { addDays } from "date-fns";
 import { dayMapping, localizer } from "./calendar-utils";
 import type { GraphData } from "./types";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -177,11 +176,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         endAccessor="end"
         style={{ height: "100%" }}
         views={["month", "week", "day", "agenda"]}
-        view={calendarView}
+        view={calendarView as View}
         onView={setCalendarView}
         onSelectEvent={handleSelectEvent}
         date={date}
-        onNavigate={(date) => setDate(date)}
+        onNavigate={(date: any) => setDate(date)}
         eventPropGetter={eventPropGetter}
         components={{
           toolbar: CustomToolbar,
