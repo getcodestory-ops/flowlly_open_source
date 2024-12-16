@@ -293,54 +293,21 @@ const FolderDetails: React.FC<
     );
   return (
     <div className="w-full p-4">
-      <div className="grid gap-[20px] grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 mb-6">
-        <AddNewFolderModal
-          parentFolderName={currentFolderStructure.folderName ?? "Other"}
-          onAdd={(name) => {
-            if (!activeProject) return;
-            createSubFolder(
-              session,
-              activeProject.project_id,
-              name,
-              currentFolderStructure.folderId,
-              isProjectWide,
-              (data: GetFolderSubFolderProp) => {
-                queryClient.invalidateQueries({
-                  queryKey: [
-                    `fetchProjectFolders-${currentFolderStructure.folderId}`,
-                  ],
-                });
-              }
-            );
-          }}
-        >
-          <Button variant="outline" className="h-15 text-md">
-            + Add Folder
-          </Button>
-        </AddNewFolderModal>
-        {subFolders.map((folder, i) => (
-          <CategoryFolder
-            key={i}
-            categoryName={folder.name}
-            onClick={() => {
-              setCurrentFolderStructure({
-                folderId: folder.id,
-                folderName: folder.name,
-                depth: currentFolderStructure.depth + 1,
-                parent: currentFolderStructure,
-              });
-            }}
-            date={folder.created_at}
-            depth={currentFolderStructure.depth}
-          />
-        ))}
-      </div>
       <FilesContent
         files={files}
+        folders={subFolders || []}
         folderId={currentFolderStructure.folderId}
         folderName={currentFolderStructure.folderName}
         session={session}
         activeProject={activeProject}
+        onFolderClick={(folderId, folderName) => {
+          setCurrentFolderStructure({
+            folderId,
+            folderName,
+            depth: currentFolderStructure.depth + 1,
+            parent: currentFolderStructure,
+          });
+        }}
       />
     </div>
   );

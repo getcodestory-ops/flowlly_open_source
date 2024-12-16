@@ -1,0 +1,79 @@
+import { WorkflowNode } from "@/types/projectEvents";
+
+interface NodeConfig {
+  value: string;
+  label: string;
+  icon: string;
+  getDescription: (node: WorkflowNode) => string;
+}
+
+export const nodeConfigs: Record<string, NodeConfig> = {
+  validate: {
+    value: "validate",
+    label: "Validate Information",
+    icon: "✓",
+    getDescription: (node) =>
+      (node.config as any).validationPrompt?.slice(0, 50) + "...",
+  },
+  conversation: {
+    value: "conversation",
+    label: "Conversation",
+    icon: "💬",
+    getDescription: (node) => (node.config as any).prompt?.slice(0, 50) + "...",
+  },
+  loop: {
+    value: "loop",
+    label: "Loop",
+    icon: "🔄",
+    getDescription: (node) =>
+      `Repeat ${(node.config as any).times || "multiple"} times`,
+  },
+  condition: {
+    value: "condition",
+    label: "Condition",
+    icon: "⋈",
+    getDescription: (node) =>
+      (node.config as any).condition?.slice(0, 50) + "...",
+  },
+  extract: {
+    value: "extract",
+    label: "Extract Data",
+    icon: "⇥",
+    getDescription: (node) =>
+      `Extract ${(node.config as any).columns?.length || 0} columns`,
+  },
+  microsoftExcel: {
+    value: "microsoftExcel",
+    label: "Microsoft Excel",
+    icon: "📊",
+    getDescription: (node) =>
+      (node.config as any).operation || "Excel operation",
+  },
+  dataCollection: {
+    value: "dataCollection",
+    label: "Data Collection",
+    icon: "📝",
+    getDescription: (node) =>
+      `Collect ${(node.config as any).fields?.length || 0} fields`,
+  },
+  reportGeneration: {
+    value: "reportGeneration",
+    label: "Report Generation",
+    icon: "📄",
+    getDescription: (node) =>
+      `Generate report in ${
+        (node.config as any).folderPath || "default folder"
+      }/${(node.config as any).fileName || "report"}`,
+  },
+};
+
+// Helper functions that use the combined config
+export const nodeTypes = Object.values(nodeConfigs).map(({ value, label }) => ({
+  value,
+  label,
+}));
+
+export const getNodeIcon = (type: string) => nodeConfigs[type]?.icon || "•";
+
+export const getNodeDescription = (node: WorkflowNode) =>
+  nodeConfigs[node.type]?.getDescription(node) || "No description available";

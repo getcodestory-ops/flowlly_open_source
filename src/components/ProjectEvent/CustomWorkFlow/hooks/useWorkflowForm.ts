@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNewProjectEvent } from "@/api/taskQueue";
 import { WorkflowFormData } from "../types";
 import { CreateEvent, IdentificationType } from "@/types/projectEvents";
-
+import { useToast } from "@/components/ui/use-toast";
 interface UseWorkflowFormProps {
   session: any;
   activeProject: any;
@@ -16,6 +16,7 @@ export function useWorkflowForm({
   activeProject,
   members,
 }: UseWorkflowFormProps) {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<WorkflowFormData>({
@@ -62,7 +63,7 @@ export function useWorkflowForm({
     return true;
   };
 
-  const { mutate } = useMutation({
+  const { mutate, isPending, isSuccess } = useMutation({
     mutationFn: (createEvent: CreateEvent) => {
       if (!session || !activeProject?.project_id) {
         return Promise.reject("Session or active project not available");
@@ -75,6 +76,10 @@ export function useWorkflowForm({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workflows"] });
+      toast({
+        title: "Workflow created successfully",
+        description: "You can now start the workflow",
+      });
     },
   });
 
@@ -152,5 +157,7 @@ export function useWorkflowForm({
     handleBack,
     handleSubmit,
     updateFormData,
+    isPending,
+    isSuccess,
   };
 }

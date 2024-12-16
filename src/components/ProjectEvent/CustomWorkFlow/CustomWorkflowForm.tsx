@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -20,6 +20,7 @@ import { WorkflowNodes } from "./components/WorkflowNodes/WorkFlowNodes";
 import { useWorkflowForm } from "./hooks/useWorkflowForm";
 import { WorkflowFormData } from "./types";
 import { GraphData } from "../../../../app/project/[projectId]/workbench/components/types";
+import { Loader2 } from "lucide-react";
 
 export default function CustomWorkflowForm({
   onClose,
@@ -42,19 +43,29 @@ export default function CustomWorkflowForm({
     handleSubmit,
     isFormValid,
     updateFormData,
+    isPending,
+    isSuccess,
   } = useWorkflowForm({ session, activeProject, members });
 
   const handleFormUpdate = (updates: Partial<WorkflowFormData>) => {
     updateFormData(updates);
   };
 
+  useEffect(() => {
+    if (isSuccess) {
+      onClose();
+    }
+  }, [isSuccess, onClose]);
+
   return (
     <ScrollArea className="w-full h-full">
       <Card
-        className={`w-full ${currentStep < 2 ? "max-w-2xl" : "w-full"} mx-auto`}
+        className={`w-full ${
+          currentStep < 2 ? "max-w-4xl" : "w-full"
+        } mx-auto `}
       >
         <CardHeader>
-          <CardTitle>Create Custom Workflow</CardTitle>
+          <CardTitle>Deploy a new worker</CardTitle>
           <span className="text-sm mt-2 font-thin ">
             {new Date().toLocaleTimeString()} {formData.timeZone}
           </span>
@@ -66,11 +77,12 @@ export default function CustomWorkflowForm({
               <BasicMetadata formData={formData} onChange={handleFormUpdate} />
             )}
 
-            {currentStep === 1 && (
+            {currentStep === 1 && activeProject && (
               <TriggerConfiguration
                 formData={formData}
                 onChange={handleFormUpdate}
                 members={members}
+                activeProject={activeProject}
               />
             )}
 
@@ -94,8 +106,16 @@ export default function CustomWorkflowForm({
                 Next
               </Button>
             ) : (
-              <Button type="submit" disabled={!formData.nodes.length}>
-                Save Workflow
+              <Button
+                type="button"
+                disabled={!formData.nodes.length || isPending}
+                onClick={handleSubmit}
+              >
+                {isPending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  "Save Workflow"
+                )}
               </Button>
             )}
           </CardFooter>

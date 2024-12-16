@@ -3,7 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { WorkflowNode, ConditionNodeConfig } from "../../types";
+import {
+  WorkflowNode,
+  ConditionNodeConfig,
+  NodeType,
+  NodeStatus,
+} from "../../types";
 
 interface ConditionNodeProps {
   onSave: (node: WorkflowNode) => void;
@@ -20,10 +25,13 @@ export function ConditionNode({
     conditionPrompt: "",
     trueSteps: [],
     falseSteps: [],
+    next_steps: [],
+    retry_count: 0,
+    max_retries: 3,
   });
 
   useEffect(() => {
-    if (editingNode && editingNode.type === "condition") {
+    if (editingNode && editingNode.type === NodeType.CONDITIONAL) {
       setConfig(editingNode.config as ConditionNodeConfig);
     }
   }, [editingNode]);
@@ -56,8 +64,12 @@ export function ConditionNode({
             onClick={() => {
               onSave({
                 id: editingNode?.id || crypto.randomUUID(),
-                type: "condition",
+                type: NodeType.CONDITIONAL,
+                title: "Condition Step",
                 config,
+                status: NodeStatus.PENDING,
+                timestamp: new Date().toISOString(),
+                retry_count: 0,
               });
             }}
             disabled={!config.conditionPrompt}

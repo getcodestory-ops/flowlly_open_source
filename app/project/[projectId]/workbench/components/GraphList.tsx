@@ -42,7 +42,12 @@ export const GraphList: React.FC<GraphListProps> = ({
   graphs,
   onSelectGraph,
 }) => {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: "created_at",
+      desc: true,
+    },
+  ]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const workbenchView = useViewStore((state) => state.workbenchView);
@@ -249,7 +254,7 @@ export const GraphList: React.FC<GraphListProps> = ({
           <CalendarView graphs={graphs} onSelectGraph={onSelectGraph} />
         </TabsContent>
       </Tabs>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      {/* <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent
           className="max-w-2xl"
           aria-describedby="dialog-description"
@@ -281,7 +286,7 @@ export const GraphList: React.FC<GraphListProps> = ({
             />
           )}
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 };

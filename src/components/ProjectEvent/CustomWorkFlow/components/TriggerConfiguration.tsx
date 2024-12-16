@@ -11,22 +11,26 @@ import {
 } from "@/components/ui/select";
 import { WorkflowFormData } from "../types";
 import { AuthorizedUserSelector } from "./AuthorizedUserSelector";
+import { ProjectEntity } from "@/types/projects";
 
 interface TriggerConfigurationProps {
   formData: WorkflowFormData;
   onChange: (updates: Partial<WorkflowFormData>) => void;
   members: any[]; // Replace 'any' with your member type
+  activeProject: ProjectEntity; // Add this line
 }
 
 const availablePhones = [
-  { phoneNumber: "+17788003869", type: "reserved" },
+  // { phoneNumber: "+17788003869", type: "reserved" },
   { phoneNumber: "+12344234145", type: "general" },
+  { phoneNumber: "+15068001231", type: "general" },
 ];
 
 export function TriggerConfiguration({
   formData,
   onChange,
   members,
+  activeProject,
 }: TriggerConfigurationProps) {
   return (
     <div className="space-y-4">
@@ -75,6 +79,7 @@ export function TriggerConfiguration({
           formData={formData}
           onChange={onChange}
           members={members}
+          activeProject={activeProject}
         />
       )}
     </div>
@@ -85,14 +90,15 @@ function PhoneTriggerConfig({
   formData,
   onChange,
   members,
+  activeProject,
 }: TriggerConfigurationProps) {
   return (
     <>
       <div className="space-y-2">
         <Label htmlFor="phoneNumber">Select Phone Number</Label>
         <div className="text-sm text-muted-foreground mb-2">
-          Users will be able to send messages to this phone number to start the
-          workflow for {formData.workflowFor}.
+          Users will be able to send messages to this phone number to start{" "}
+          {formData.workflowFor}.
         </div>
         <Select
           name="triggerByKey"
@@ -104,10 +110,15 @@ function PhoneTriggerConfig({
 
             const accessBy =
               selectedPhoneType === "reserved" ? "any" : "project_access";
+            const accessByKey =
+              selectedPhoneType === "reserved"
+                ? "any"
+                : activeProject.project_id;
 
             onChange({
               triggerByKey: value,
               accessBy,
+              accessByKey,
             });
           }}
         >
@@ -133,6 +144,7 @@ function PhoneTriggerConfig({
             availablePhones.find((p) => p.phoneNumber === formData.triggerByKey)
               ?.type
           }
+          activeProject={activeProject}
         />
       )}
     </>
@@ -144,6 +156,7 @@ function PhoneConfiguration({
   onChange,
   members,
   phoneType,
+  activeProject,
 }: TriggerConfigurationProps & { phoneType?: string }) {
   if (!phoneType) return null;
 
@@ -157,7 +170,7 @@ function PhoneConfiguration({
             onCheckedChange={(checked) =>
               onChange({
                 accessBy: checked ? "any" : "project_access",
-                accessByKey: checked ? "any" : "project_access",
+                accessByKey: checked ? "any" : activeProject.project_id,
               })
             }
           />
@@ -184,7 +197,7 @@ function PhoneConfiguration({
         <div className="space-y-2">
           <Label>Authorized Users</Label>
           <div className="text-sm text-muted-foreground mb-2">
-            Please select users who can trigger this workflow
+            Please select users who can use this worker
           </div>
           <AuthorizedUserSelector
             members={members}

@@ -1,4 +1,4 @@
-import { WorkflowNode } from "../../types";
+import { WorkflowNode, NodeType } from "../../types";
 import {
   Select,
   SelectContent,
@@ -12,23 +12,17 @@ import { ConditionNode } from "./ConditionNode";
 import { ConversationNode } from "./ConversationNode";
 import { LoopNode } from "./LoopNode";
 import { MicrosoftExcelNode } from "./MicrosoftExcelNode";
+import { DataCollectionNode } from "./DataCollectionNode";
+import { nodeTypes } from "./nodeUtils";
+import { ReportNode } from "./ReportNode";
 interface NodeTypeSelectorProps {
   currentNodeType: string;
   setCurrentNodeType: (type: string) => void;
   onSave: (node: WorkflowNode) => void;
   onCancel: () => void;
   editingNode?: WorkflowNode;
-  existingNodes?: WorkflowNode[];
+  existingNodes: WorkflowNode[];
 }
-
-export const nodeTypes = [
-  { value: "validate", label: "Validate Information" },
-  { value: "conversation", label: "Conversation" },
-  { value: "loop", label: "Loop" },
-  { value: "condition", label: "Condition" },
-  { value: "extract", label: "Extract Data" },
-  { value: "microsoftExcel", label: "Microsoft Excel" },
-];
 
 export function NodeTypeSelector({
   currentNodeType,
@@ -86,6 +80,22 @@ export function NodeTypeSelector({
       case "microsoftExcel":
         return (
           <MicrosoftExcelNode
+            onSave={onSave}
+            editingNode={editingNode}
+            onCancel={onCancel}
+          />
+        );
+      case "dataCollection":
+        return (
+          <DataCollectionNode
+            onSave={onSave}
+            editingNode={editingNode}
+            onCancel={onCancel}
+          />
+        );
+      case "reportGeneration":
+        return (
+          <ReportNode
             onSave={onSave}
             editingNode={editingNode}
             onCancel={onCancel}

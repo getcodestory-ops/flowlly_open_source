@@ -43,7 +43,7 @@ import { Label } from "@/components/ui/label";
 import { uploadImageForEditor } from "@/api/folderRoutes";
 import { useToast } from "@/components/ui/use-toast";
 
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+(pdfMake as any).vfs = pdfFonts.vfs;
 
 interface ToolbarProps {
   editor: any;

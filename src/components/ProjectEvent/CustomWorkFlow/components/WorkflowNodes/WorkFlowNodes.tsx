@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
-import { WorkflowFormData, WorkflowNode } from "../../types";
+import {
+  WorkflowFormData,
+  WorkflowNode,
+  FlowCondition,
+  NodeType,
+  BaseNodeConfig,
+  NodeStatus,
+  LoopNodeConfig,
+} from "../../types";
 import { useWorkflowNodes } from "../../hooks/useWorkflowNodes";
 import ReactFlow, {
   Background,
@@ -9,6 +17,7 @@ import ReactFlow, {
   Handle,
   Node,
   Position,
+  MarkerType,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { Button } from "@/components/ui/button";
@@ -21,98 +30,150 @@ interface WorkflowNodesProps {
   onChange: (updates: Partial<WorkflowFormData>) => void;
 }
 
-// Add this helper function to flatten the workflow nodes
-const flattenWorkflowNodes = (
-  nodes: WorkflowNode[],
-  parentNode?: WorkflowNode,
-  branchType?: "success" | "failure"
-) => {
+const flattenWorkflowNodes = (nodes: WorkflowNode[]) => {
   const flatNodes: Array<{
     node: WorkflowNode;
     parent?: WorkflowNode;
-    branchType?: "success" | "failure";
+    condition?: FlowCondition;
     level: number;
   }> = [];
+  const processedNodeIds = new Set<string>();
 
+  const processNode = (
+    node: WorkflowNode,
+    parentNode?: WorkflowNode,
+    condition?: FlowCondition,
+    level: number = 0
+  ) => {
+    // Only process each node once
+    if (!processedNodeIds.has(node.id)) {
+      processedNodeIds.add(node.id);
+      flatNodes.push({
+        node,
+        parent: parentNode,
+        condition,
+        level,
+      });
+
+      const config = node.config as BaseNodeConfig;
+      if (config.next_steps?.length) {
+        config.next_steps.forEach((step) => {
+          const targetNode = nodes.find((n) => n.id === step.target_node_id);
+          if (targetNode) {
+            processNode(targetNode, node, step.condition, level + 1);
+          }
+        });
+      }
+    }
+  };
+
+  // Start with nodes that have no parents
   nodes.forEach((node) => {
-    flatNodes.push({
-      node,
-      parent: parentNode,
-      branchType,
-      level: parentNode ? 1 : 0,
-    });
-
-    if (node.type === "validate") {
-      const config = node.config as any;
-      if (config.successSteps?.length) {
-        flatNodes.push(
-          ...flattenWorkflowNodes(config.successSteps, node, "success")
-        );
-      }
-      if (config.failureSteps?.length) {
-        flatNodes.push(
-          ...flattenWorkflowNodes(config.failureSteps, node, "failure")
-        );
-      }
+    const isChildNode = nodes.some((n) =>
+      (n.config as BaseNodeConfig).next_steps?.some(
+        (step) => step.target_node_id === node.id
+      )
+    );
+    if (!isChildNode) {
+      processNode(node);
     }
   });
 
   return flatNodes;
 };
 
-// Add this helper function to generate hierarchical step numbers
+// Update the generateStepNumber function
 const generateStepNumber = (
   flatNodes: Array<{
     node: WorkflowNode;
     parent?: WorkflowNode;
-    branchType?: "success" | "failure";
+    condition?: FlowCondition;
     level: number;
   }>,
   currentIndex: number
 ): string => {
+  // Simply use sequential numbers for all steps
+  const stepNumber = currentIndex + 1;
   const currentNode = flatNodes[currentIndex];
 
+  // If it's a root node (no parent), just return the number
   if (!currentNode.parent) {
-    // Main flow nodes get simple numbers
-    let mainFlowCount = 1;
-    for (let i = 0; i < currentIndex; i++) {
-      if (!flatNodes[i].parent) mainFlowCount++;
-    }
-    return mainFlowCount.toString();
+    return stepNumber.toString();
   }
 
-  // Find parent's step number
+  // For child nodes, return the number with a reference to parent
   const parentIndex = flatNodes.findIndex(
     (item) => item.node.id === currentNode.parent?.id
   );
-  const parentNumber = generateStepNumber(flatNodes, parentIndex);
+  const parentNumber = parentIndex + 1;
 
-  // Count siblings with same parent and branch type
-  let siblingCount = 1;
-  for (let i = 0; i < currentIndex; i++) {
-    const node = flatNodes[i];
+  const pathType =
+    currentNode.condition === FlowCondition.SUCCESS
+      ? "success path from"
+      : currentNode.condition === FlowCondition.FAILURE
+      ? "failure path from"
+      : "following";
+
+  return `${stepNumber} (${pathType} step ${parentNumber})`;
+};
+
+// Update the CONNECTION_LINE_STYLES
+const CONNECTION_LINE_STYLES = {
+  [FlowCondition.SUCCESS]: "absolute left-4 w-0.5 bg-green-300",
+  [FlowCondition.FAILURE]: "absolute left-4 w-0.5 bg-red-300",
+  [FlowCondition.ALWAYS]: "absolute left-4 w-0.5 bg-gray-300",
+};
+
+// Update the AddNodeContext interface
+interface AddNodeContext {
+  parentId?: string;
+  condition?: FlowCondition;
+}
+
+// Add this helper function at the top level
+const calculateNodePosition = (
+  node: WorkflowNode,
+  nodes: WorkflowNode[],
+  index: number
+) => {
+  let xOffset = 100;
+  let yOffset = index * 150;
+
+  // Find if this node is a child node
+  const parentNode = nodes.find((n) =>
+    (n.config as BaseNodeConfig).next_steps?.some(
+      (step) => step.target_node_id === node.id
+    )
+  );
+
+  if (parentNode) {
+    // Find the parent's position in the nodes array
+    const parentIndex = nodes.indexOf(parentNode);
+
+    // Use parent's y position plus offset for child nodes
+    yOffset = parentIndex * 150 + 150;
+
+    const parentConfig = parentNode.config as BaseNodeConfig;
+    const stepIndex = parentConfig.next_steps.findIndex(
+      (step) => step.target_node_id === node.id
+    );
+
+    // If it's a failure path, position it to the right
     if (
-      node.parent?.id === currentNode.parent?.id &&
-      node.branchType === currentNode.branchType
+      parentConfig.next_steps[stepIndex]?.condition === FlowCondition.FAILURE
     ) {
-      siblingCount++;
+      xOffset = 400;
+    }
+    // If it's a success path, position it slightly to the left
+    else if (
+      parentConfig.next_steps[stepIndex]?.condition === FlowCondition.SUCCESS
+    ) {
+      xOffset = 100;
     }
   }
 
-  return `${parentNumber}.${siblingCount}`;
+  return { x: xOffset, y: yOffset };
 };
-
-// Add this CSS class to your global styles or as a styled component
-const CONNECTION_LINE_STYLES = {
-  success: "absolute left-4 w-0.5 bg-green-300",
-  failure: "absolute left-4 w-0.5 bg-red-300",
-};
-
-// Add this new interface to track where we're adding a node
-interface AddNodeContext {
-  parentId?: string;
-  branchType?: "success" | "failure";
-}
 
 export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
   const {
@@ -132,244 +193,253 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
     null
   );
 
-  // Modify the renderNodeContent function to be simpler since we're flattening the structure
-  const renderNodeContent = (node: WorkflowNode) => {
-    switch (node.type) {
-      case "validate":
-        const validateConfig = node.config as any;
-        return (
-          <div className="space-y-2">
-            <p className="text-sm text-gray-600">
-              {validateConfig.validationPrompt}
-            </p>
-          </div>
-        );
-
-      case "extract":
-        const extractConfig = node.config as any;
-        return (
-          <div className="space-y-2">
-            <div className="flex flex-wrap gap-2">
-              {extractConfig.columns.map((col: any, index: number) => (
-                <span
-                  key={index}
-                  className="px-2 py-1 bg-blue-100 rounded-md text-sm"
-                >
-                  {col.name}: {col.dataType}
-                </span>
-              ))}
-            </div>
-          </div>
-        );
-
-      default:
-        return (
-          <p className="text-sm text-gray-600">Configuration details...</p>
-        );
-    }
-  };
-
-  // Update graph nodes and edges whenever workflow changes
-  useEffect(() => {
-    const flowNodes: Node[] = [];
-    const flowEdges: Edge[] = [];
-
-    const processNodes = (
-      nodes: WorkflowNode[],
-      startX = 250,
-      startY = 0,
-      parentId?: string,
-      branchType?: "success" | "failure"
-    ) => {
-      nodes.forEach((node, index) => {
-        const mainNode: Node = {
-          id: node.id,
-          type: "custom",
-          position: { x: startX + (index % 2) * 300, y: startY + index * 200 },
-          data: {
-            label: node.type,
-            node,
-            onEdit: () => handleEditNode(node.id),
-            onDelete: () => handleDeleteNode(node.id),
-          },
-        };
-        flowNodes.push(mainNode);
-
-        // Connect to parent node ONLY for the first node in a branch
-        if (parentId && index === 0) {
-          flowEdges.push({
-            id: `edge-${parentId}-${branchType}-${node.id}`,
-            source: parentId,
-            target: node.id,
-            type: "smoothstep",
-            animated: true,
-            style: {
-              stroke: branchType === "success" ? "#22c55e" : "#ef4444",
-              strokeWidth: 2,
-            },
-            label: branchType === "success" ? "Valid" : "Invalid",
-            labelStyle: {
-              fill: branchType === "success" ? "#22c55e" : "#ef4444",
-              fontWeight: "bold",
-            },
-          });
-        }
-
-        // Connect sequential nodes within the same branch
-        if (index > 0) {
-          flowEdges.push({
-            id: `edge-${nodes[index - 1].id}-${node.id}`,
-            source: nodes[index - 1].id,
-            target: node.id,
-            type: "smoothstep",
-            animated: true,
-            style: {
-              stroke:
-                branchType === "success"
-                  ? "#22c55e"
-                  : branchType === "failure"
-                  ? "#ef4444"
-                  : "#64748b",
-              strokeWidth: 2,
-            },
-          });
-        }
-
-        // Handle validate node branches
-        if (node.type === "validate") {
-          const config = node.config as any;
-          if (config.successSteps?.length) {
-            processNodes(
-              config.successSteps,
-              mainNode.position.x + 300,
-              mainNode.position.y + 100,
-              node.id,
-              "success"
-            );
-          }
-          if (config.failureSteps?.length) {
-            processNodes(
-              config.failureSteps,
-              mainNode.position.x - 300,
-              mainNode.position.y + 100,
-              node.id,
-              "failure"
-            );
-          }
-        }
-      });
-    };
-
-    processNodes(formData.nodes);
-    setNodes(flowNodes);
-    setEdges(flowEdges);
-  }, [formData.nodes]);
-
-  // Custom Node component for the graph
-  const CustomNode = ({ data }: any) => (
-    <div className="bg-white p-4 rounded-lg shadow-lg border-2 border-primary min-w-[200px]">
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="w-2 h-2 !bg-primary"
-      />
-      <div className="font-semibold capitalize">{data.node.type}</div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="w-2 h-2 !bg-primary"
-      />
-    </div>
-  );
-
-  // Modify handleAddNode to work with the context
+  // Modify handleAddNode to ensure unique IDs
   const handleAddNode = (nodeData: WorkflowNode) => {
     const updatedNodes = [...formData.nodes];
 
+    // Create new node with complete data
+    const newNode: WorkflowNode = {
+      ...nodeData,
+      id: crypto.randomUUID(), // Generate unique ID on frontend
+      status: NodeStatus.PENDING,
+      timestamp: new Date().toISOString(),
+      retry_count: 0,
+    };
+
     if (addNodeContext) {
-      // Add node to the specific branch
-      const { parentId, branchType } = addNodeContext;
-      const addToBranch = (nodes: WorkflowNode[]) => {
-        for (const node of nodes) {
-          if (node.id === parentId && node.type === "validate") {
-            const config = node.config as any;
-            if (branchType === "success") {
-              config.successSteps = [...(config.successSteps || []), nodeData];
-            } else if (branchType === "failure") {
-              config.failureSteps = [...(config.failureSteps || []), nodeData];
-            }
-            return true;
-          }
+      const { parentId, condition } = addNodeContext;
+      const parentNode = updatedNodes.find((node) => node.id === parentId);
 
-          if (node.type === "validate") {
-            const config = node.config as any;
-            if (config.successSteps?.length && addToBranch(config.successSteps))
-              return true;
-            if (config.failureSteps?.length && addToBranch(config.failureSteps))
-              return true;
-          }
-        }
-        return false;
-      };
-
-      addToBranch(updatedNodes);
-    } else {
-      // Add to root level only if there are no nodes yet
-      if (formData.nodes.length === 0) {
-        updatedNodes.push(nodeData);
+      if (parentNode) {
+        parentNode.config.next_steps.push({
+          target_node_id: newNode.id,
+          condition: condition || FlowCondition.ALWAYS,
+          metadata: {},
+        });
       }
     }
 
+    updatedNodes.push(newNode);
     onChange({ nodes: updatedNodes });
     setCurrentNodeType("");
     setAddNodeContext(null);
   };
 
+  const renderNodeContent = (node: WorkflowNode) => {
+    switch (node.type) {
+      case NodeType.VALIDATE:
+        return (
+          <div className="space-y-2">
+            <p className="text-sm text-gray-600">{node.title}</p>
+            <p className="text-xs text-gray-500">
+              {node.config.validationPrompt}
+            </p>
+
+            {/* Show connected steps */}
+            <div className="space-y-2 mt-4">
+              <div className="text-sm font-medium">Connected Steps:</div>
+              {node.config.next_steps.map((step, index) => (
+                <div
+                  key={index}
+                  className={`text-xs ${
+                    step.condition === FlowCondition.SUCCESS
+                      ? "text-green-600"
+                      : step.condition === FlowCondition.FAILURE
+                      ? "text-red-600"
+                      : "text-gray-600"
+                  }`}
+                >
+                  {step.condition === FlowCondition.SUCCESS
+                    ? "✓ If Valid: "
+                    : step.condition === FlowCondition.FAILURE
+                    ? "✗ If Invalid: "
+                    : "→ Always: "}
+                  {
+                    formData.nodes.find(
+                      (n: WorkflowNode) => n.id === step.target_node_id
+                    )?.title
+                  }
+                </div>
+              ))}
+            </div>
+
+            {node.status !== NodeStatus.PENDING && (
+              <div className="text-xs text-gray-500">
+                Status: {node.status}
+                {node.error && <p className="text-red-500">{node.error}</p>}
+              </div>
+            )}
+          </div>
+        );
+
+      case NodeType.EXTRACTION:
+        return (
+          <div className="space-y-2">
+            <p className="text-sm text-gray-600">{node.title}</p>
+            <div className="flex flex-wrap gap-2">
+              {node.config.columns?.map((col: any, index: number) => (
+                <span
+                  key={index}
+                  className="px-2 py-1 bg-blue-100 rounded-md text-xs"
+                >
+                  {col.name}: {col.dataType}
+                </span>
+              ))}
+            </div>
+            {node.status !== NodeStatus.PENDING && (
+              <div className="text-xs text-gray-500">Status: {node.status}</div>
+            )}
+          </div>
+        );
+
+      case NodeType.EXCEL:
+        return (
+          <div className="space-y-2">
+            <p className="text-sm text-gray-600">{node.title}</p>
+            <div className="text-xs text-gray-500">
+              <p>Sheet: {node.config.sheet_name}</p>
+              <p>Operation: {node.config.operation}</p>
+              {node.config.range && <p>Range: {node.config.range}</p>}
+            </div>
+            {node.config.columns && (
+              <div className="flex flex-wrap gap-2">
+                {node.config.columns.map((col: any, index: number) => (
+                  <span
+                    key={index}
+                    className="px-2 py-1 bg-green-100 rounded-md text-xs"
+                  >
+                    {col.name} → {col.sourceField}
+                  </span>
+                ))}
+              </div>
+            )}
+            {node.status !== NodeStatus.PENDING && (
+              <div className="text-xs text-gray-500">
+                Status: {node.status}
+                {node.error && <p className="text-red-500">{node.error}</p>}
+              </div>
+            )}
+          </div>
+        );
+
+      default:
+        return (
+          <div className="space-y-2">
+            <p className="text-sm text-gray-600">{node.title}</p>
+            <p className="text-xs text-gray-500">Status: {node.status}</p>
+          </div>
+        );
+    }
+  };
+
+  // Update useEffect to handle loop node connections
+  useEffect(() => {
+    // Convert workflow nodes to ReactFlow nodes with calculated positions
+    const flowNodes = formData.nodes.map((node, index) => ({
+      id: node.id,
+      type: "custom",
+      position: calculateNodePosition(node, formData.nodes, index),
+      data: node,
+    }));
+
+    // Create edges with updated styling
+    const flowEdges: Edge[] = formData.nodes.flatMap((node) => {
+      const edges: Edge[] = [];
+
+      // Handle regular next_steps connections
+      const config = node.config as BaseNodeConfig;
+      if (config.next_steps) {
+        edges.push(
+          ...config.next_steps.map((step) => ({
+            id: `${node.id}-${step.target_node_id}`,
+            source: node.id,
+            target: step.target_node_id,
+            type: "smoothstep",
+            style: {
+              stroke:
+                step.condition === FlowCondition.SUCCESS
+                  ? "#22c55e"
+                  : step.condition === FlowCondition.FAILURE
+                  ? "#ef4444"
+                  : "#94a3b8",
+              strokeWidth: 2,
+            },
+            animated: true,
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              color:
+                step.condition === FlowCondition.SUCCESS
+                  ? "#22c55e"
+                  : step.condition === FlowCondition.FAILURE
+                  ? "#ef4444"
+                  : "#94a3b8",
+            },
+          }))
+        );
+      }
+
+      // Handle loop node connections
+      if (node.type === NodeType.LOOP) {
+        const loopConfig = node.config as LoopNodeConfig;
+        if (loopConfig.target_node_id) {
+          edges.push({
+            id: `${node.id}-loop-${loopConfig.target_node_id}`,
+            source: node.id,
+            target: loopConfig.target_node_id,
+            type: "smoothstep",
+            animated: true,
+            style: {
+              stroke: "#6366f1",
+              strokeWidth: 2,
+            },
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              color: "#6366f1",
+            },
+          });
+        }
+      }
+
+      return edges;
+    });
+
+    setNodes(flowNodes);
+    setEdges(flowEdges);
+  }, [formData.nodes]);
+
   // Update the render function to show Add Step buttons in appropriate places
   return (
-    <div className="grid grid-cols-3 gap-6 h-[600px]">
+    <div className="grid grid-cols-3 gap-6 h-[calc(100vh-300px)]">
       {/* Document Flow Builder */}
       <ScrollArea className="border rounded-lg p-4 col-span-2">
         <div className="space-y-4">
           <Label>Workflow Steps</Label>
 
-          {/* Node Type Selector - only show when adding */}
-          {currentNodeType && (
-            <NodeTypeSelector
-              currentNodeType={currentNodeType}
-              setCurrentNodeType={setCurrentNodeType}
-              onSave={handleAddNode}
-              onCancel={() => {
-                resetNodeState();
-                setAddNodeContext(null);
-              }}
-              editingNode={getEditingNode()}
-              existingNodes={formData.nodes}
-            />
-          )}
-
-          {/* Flattened Document Flow View */}
+          {/* Move Node Type Selector to the bottom */}
           <div className="space-y-4 mt-6 relative">
             {flattenWorkflowNodes(formData.nodes).map(
               (nodeInfo, index, array) => (
                 <div key={nodeInfo.node.id} className="relative">
-                  {/* Add connection lines for branch relationships */}
-                  {nodeInfo.branchType && (
+                  {/* Connection line styling */}
+                  {nodeInfo.condition && (
                     <div
-                      className={CONNECTION_LINE_STYLES[nodeInfo.branchType]}
+                      className={CONNECTION_LINE_STYLES[nodeInfo.condition]}
                       style={{
-                        top: "-24px", // Adjust based on your spacing
-                        height: "calc(100% + 24px)", // Extend to the next node
+                        top: "-24px",
+                        height: "calc(100% + 24px)",
                       }}
                     />
                   )}
 
+                  {/* Node content */}
                   <div
                     className={`border rounded-lg p-4 bg-white shadow-sm ml-8 ${
-                      nodeInfo.branchType === "success"
+                      nodeInfo.condition === FlowCondition.SUCCESS
                         ? "border-l-4 border-l-green-500"
-                        : nodeInfo.branchType === "failure"
+                        : nodeInfo.condition === FlowCondition.FAILURE
                         ? "border-l-4 border-l-red-500"
+                        : nodeInfo.condition === FlowCondition.ALWAYS
+                        ? "border-l-4 border-l-gray-500"
                         : ""
                     }`}
                   >
@@ -385,17 +455,21 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
                         <span className="px-2 py-1 bg-primary/10 rounded text-sm capitalize">
                           {nodeInfo.node.type}
                         </span>
-                        {nodeInfo.branchType && (
+                        {nodeInfo.condition && (
                           <span
                             className={`text-sm px-2 py-1 rounded ${
-                              nodeInfo.branchType === "success"
+                              nodeInfo.condition === FlowCondition.SUCCESS
                                 ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
+                                : nodeInfo.condition === FlowCondition.FAILURE
+                                ? "bg-red-100 text-red-700"
+                                : "bg-gray-100 text-gray-700"
                             }`}
                           >
-                            {nodeInfo.branchType === "success"
+                            {nodeInfo.condition === FlowCondition.SUCCESS
                               ? "If Valid"
-                              : "If Invalid"}
+                              : nodeInfo.condition === FlowCondition.FAILURE
+                              ? "If Invalid"
+                              : "Next"}
                             {nodeInfo.parent &&
                               ` (from step ${
                                 formData.nodes.indexOf(nodeInfo.parent) + 1
@@ -423,9 +497,9 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
                     {renderNodeContent(nodeInfo.node)}
                   </div>
 
-                  {/* Add "Add Step" button for validate nodes */}
-                  {nodeInfo.node.type === "validate" && !currentNodeType && (
-                    <div className="ml-8 mt-4 grid grid-cols-2 gap-2">
+                  {/* Add Step buttons - Only show if not currently adding a node */}
+                  {!currentNodeType && (
+                    <div className="ml-8 mt-4 mb-6 grid grid-cols-3 gap-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -433,13 +507,13 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
                           setCurrentNodeType("validate");
                           setAddNodeContext({
                             parentId: nodeInfo.node.id,
-                            branchType: "success",
+                            condition: FlowCondition.SUCCESS,
                           });
                         }}
                         className="border-green-500 text-green-700"
                       >
                         <PlusCircle className="h-4 w-4 mr-2" />
-                        Add to Valid Branch
+                        What to do if successful
                       </Button>
                       <Button
                         variant="outline"
@@ -448,18 +522,33 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
                           setCurrentNodeType("validate");
                           setAddNodeContext({
                             parentId: nodeInfo.node.id,
-                            branchType: "failure",
+                            condition: FlowCondition.FAILURE,
                           });
                         }}
                         className="border-red-500 text-red-700"
                       >
                         <PlusCircle className="h-4 w-4 mr-2" />
-                        Add to Invalid Branch
+                        What to do if failed
                       </Button>
+                      {/* <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setCurrentNodeType("validate");
+                          setAddNodeContext({
+                            parentId: nodeInfo.node.id,
+                            condition: FlowCondition.ALWAYS,
+                          });
+                        }}
+                        className="border-gray-500 text-gray-700"
+                      >
+                        <PlusCircle className="h-4 w-4 mr-2" />
+                        Always run this step
+                      </Button> */}
                     </div>
                   )}
 
-                  {/* Only show arrow if not the last item */}
+                  {/* Arrow between nodes */}
                   {index < array.length - 1 && (
                     <div className="flex justify-center my-2 ml-8">
                       <ArrowDown className="h-6 w-6 text-gray-400" />
@@ -470,7 +559,24 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
             )}
           </div>
 
-          {/* Only show main Add Step button if no nodes exist */}
+          {/* Node Type Selector - show at the position where we're adding */}
+          {currentNodeType && (
+            <div className="ml-8 mt-4">
+              <NodeTypeSelector
+                currentNodeType={currentNodeType}
+                setCurrentNodeType={setCurrentNodeType}
+                onSave={handleAddNode}
+                onCancel={() => {
+                  resetNodeState();
+                  setAddNodeContext(null);
+                }}
+                editingNode={getEditingNode()}
+                existingNodes={formData.nodes}
+              />
+            </div>
+          )}
+
+          {/* First node button */}
           {!currentNodeType && formData.nodes.length === 0 && (
             <Button
               variant="outline"
@@ -484,7 +590,7 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
         </div>
       </ScrollArea>
 
-      {/* Graph View */}
+      {/* Update Graph View */}
       <div className="border rounded-lg">
         <ReactFlow
           nodes={nodes}
@@ -503,3 +609,20 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
     </div>
   );
 }
+
+// Update CustomNode component
+const CustomNode = ({ data }: { data: WorkflowNode }) => {
+  return (
+    <div className="border rounded-lg p-4 bg-white min-w-[200px]">
+      <Handle type="target" position={Position.Top} />
+      <Handle type="target" position={Position.Right} id="right" />
+      <div className="space-y-2">
+        <div className="font-medium">{data.title}</div>
+        <div className="text-sm text-gray-500 capitalize">{data.type}</div>
+        <div className="text-xs text-gray-400">{data.status}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} />
+      <Handle type="source" position={Position.Right} id="right" />
+    </div>
+  );
+};

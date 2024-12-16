@@ -3,7 +3,6 @@ import { Flex, Grid, GridItem, Icon, Button, Tooltip } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 import { TbLayoutSidebarLeftExpand } from "react-icons/tb";
 import { PiRobot } from "react-icons/pi";
-import PdfLoader from "../PdfLoader";
 import { getBrains } from "@/api/brainRoutes";
 import { getChatSessions } from "@/api/chatRoutes";
 import { getFirstFiveWords } from "@/utils/getFirstWords";
