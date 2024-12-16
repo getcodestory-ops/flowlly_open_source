@@ -69,6 +69,7 @@
     "@types/react-phone-number-input": "^3.1.37",
     "axios": "^1.5.1",
     "bootstrap": "^5.3.3",
+    "canvas": "^2.11.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "0.2.1",
