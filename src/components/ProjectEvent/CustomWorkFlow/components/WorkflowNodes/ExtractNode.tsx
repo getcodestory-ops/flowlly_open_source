@@ -9,7 +9,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { WorkflowNode, ExtractNodeConfig } from "../../types";
+import {
+  WorkflowNode,
+  ExtractNodeConfig,
+  NodeType,
+  NodeStatus,
+} from "../../types";
 import { Card, CardContent } from "@/components/ui/card";
 import { PlusCircle, Trash2 } from "lucide-react";
 
@@ -28,10 +33,13 @@ export function ExtractNode({
 }: ExtractNodeProps) {
   const [config, setConfig] = useState<ExtractNodeConfig>({
     columns: [],
+    next_steps: [],
+    retry_count: 0,
+    max_retries: 3,
   });
 
   useEffect(() => {
-    if (editingNode && editingNode.type === "extract") {
+    if (editingNode && editingNode.type === NodeType.EXTRACTION) {
       setConfig(editingNode.config as ExtractNodeConfig);
     }
   }, [editingNode]);
@@ -142,8 +150,12 @@ export function ExtractNode({
             onClick={() => {
               onSave({
                 id: editingNode?.id || crypto.randomUUID(),
-                type: "extract",
+                type: NodeType.EXTRACTION,
+                title: "Extract Step",
                 config,
+                status: NodeStatus.PENDING,
+                timestamp: new Date().toISOString(),
+                retry_count: 0,
               });
             }}
             disabled={config.columns.length === 0}

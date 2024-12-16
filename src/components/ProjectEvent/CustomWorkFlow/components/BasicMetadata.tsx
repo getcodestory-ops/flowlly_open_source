@@ -18,7 +18,7 @@ export function BasicMetadata({ formData, onChange }: BasicMetadataProps) {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="name">Workflow Name</Label>
+        <Label htmlFor="name">Worker&apos;s Name</Label>
         <Input
           id="name"
           value={formData.name}
@@ -28,7 +28,7 @@ export function BasicMetadata({ formData, onChange }: BasicMetadataProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="workflowFor">Workflow For</Label>
+        <Label htmlFor="workflowFor">What&apos;s this worker for?</Label>
         <Input
           id="workflowFor"
           value={formData.workflowFor}

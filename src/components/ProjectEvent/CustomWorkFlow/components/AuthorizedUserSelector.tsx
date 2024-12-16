@@ -107,7 +107,7 @@ export function AuthorizedUserSelector({
               className="flex items-center gap-1"
             >
               <span>
-                {member.firstName} {member.lastName}
+                {member.firstName} {member.lastName} ({member.email})
               </span>
               <Button
                 variant="ghost"

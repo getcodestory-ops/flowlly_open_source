@@ -6,7 +6,12 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { getApiIntegration, createExcelSheet } from "@/api/integration_routes";
 import { useStore } from "@/utils/store";
-import { WorkflowNode } from "../../types";
+import {
+  MicrosoftExcelNodeConfig,
+  NodeStatus,
+  NodeType,
+  WorkflowNode,
+} from "../../types";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
 interface MicrosoftExcelNodeProps {
@@ -20,6 +25,15 @@ export function MicrosoftExcelNode({
   onCancel,
   editingNode,
 }: MicrosoftExcelNodeProps) {
+  const [config, setConfig] = useState<MicrosoftExcelNodeConfig>({
+    sheetName: "",
+    columns: [],
+    operation: "update",
+    worksheetId: "",
+    next_steps: [],
+    retry_count: 0,
+    max_retries: 3,
+  });
   const { session, activeProject } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
@@ -249,11 +263,20 @@ export function MicrosoftExcelNode({
 
               onSave({
                 id: editingNode?.id || crypto.randomUUID(),
-                type: "microsoftExcel",
+                type: NodeType.EXCEL,
+                title: "Excel Step",
+                status: NodeStatus.PENDING,
+                timestamp: new Date().toISOString(),
+                retry_count: 0,
                 config: {
+                  ...config,
                   sheetName: formattedSheetName,
-                  columns,
-                  tableId,
+                  columns: columns.map((column) => ({
+                    name: column,
+                    sourceField: column,
+                    dataType: "string",
+                  })),
+                  worksheetId: tableId,
                 },
               });
             }}

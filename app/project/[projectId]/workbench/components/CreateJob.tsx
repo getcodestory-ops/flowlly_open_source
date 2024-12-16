@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import ProjectEventCreationForm from "@/components/ProjectEvent/ProjectEventCreationForm";
 import DocumentWriterForm from "@/components/ProjectEvent/DocumentWriterForm";
 import DailyJournalForm from "@/components/ProjectEvent/DailyJournalForm";
@@ -28,7 +28,7 @@ function CreateJob() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button className="bg-indigo-500 text-white">
-            <Plus className="mr-2 h-4 w-4" /> Create Job
+            <Plus className="mr-2 h-4 w-4" /> Create a worker
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
@@ -65,54 +65,54 @@ function CreateJob() {
               setIsCustomWorkflowDialogOpen(true);
             }}
           >
-            Custom Workflow
+            Deploy a new worker
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog
+      <Sheet
         open={selectedJobType === "meeting" && isDialogOpen}
         onOpenChange={setIsDialogOpen}
       >
-        <DialogContent className="w-full">
+        <SheetContent side="right" className="w-[50vw]">
           <ProjectEventCreationForm onClose={() => setIsDialogOpen(false)} />
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
-      <Dialog
+      <Sheet
         open={
           selectedJobType === "documentWriter" && isDocumentWriterDialogOpen
         }
         onOpenChange={setIsDocumentWriterDialogOpen}
       >
-        <DialogContent className="max-w-5xl mx-auto">
+        <SheetContent side="right" className="w-[50vw]">
           <DocumentWriterForm
             onClose={() => setIsDocumentWriterDialogOpen(false)}
           />
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
-      <Dialog
+      <Sheet
         open={selectedJobType === "dailyJournal" && isDailyJournalDialogOpen}
         onOpenChange={setIsDailyJournalDialogOpen}
       >
-        <DialogContent className="w-4xl mx-auto">
+        <SheetContent side="right" className="w-[50vw]">
           <DailyJournalForm />
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
-      <Dialog
+      <Sheet
         open={
           selectedJobType === "customWorkflow" && isCustomWorkflowDialogOpen
         }
         onOpenChange={setIsCustomWorkflowDialogOpen}
       >
-        <DialogContent className="max-w-[90vw]  p-4 ">
+        <SheetContent side="right" className="w-[90vw]">
           <CustomWorkflowForm
             onClose={() => setIsCustomWorkflowDialogOpen(false)}
           />
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

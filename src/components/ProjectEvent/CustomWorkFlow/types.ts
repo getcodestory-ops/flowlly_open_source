@@ -8,14 +8,33 @@ export interface Participant {
   phoneNumber?: string;
 }
 
-export interface ValidateNodeConfig {
-  validationPrompt: string;
-  validationRules?: string;
-  successSteps: WorkflowNode[];
-  failureSteps: WorkflowNode[];
+export enum FlowCondition {
+  SUCCESS = "success",
+  FAILURE = "failure",
+  ALWAYS = "always",
 }
 
-export interface ExtractNodeConfig {
+export interface FlowStep {
+  target_node_id: string;
+  condition: FlowCondition;
+  metadata: Record<string, any>;
+}
+export interface BaseNodeConfig {
+  next_steps: FlowStep[];
+  retry_count: number;
+  max_retries: number;
+}
+
+export interface LoopNodeConfig extends BaseNodeConfig {
+  target_node_id: string;
+}
+
+export interface ValidateNodeConfig extends BaseNodeConfig {
+  validationPrompt: string;
+  validationRules?: string;
+}
+
+export interface ExtractNodeConfig extends BaseNodeConfig {
   columns: {
     name: string;
     description: string;
@@ -23,13 +42,13 @@ export interface ExtractNodeConfig {
   }[];
 }
 
-export interface ConditionNodeConfig {
+export interface ConditionNodeConfig extends BaseNodeConfig {
   conditionPrompt: string;
   trueSteps: WorkflowNode[];
   falseSteps: WorkflowNode[];
 }
 
-export interface MicrosoftExcelNodeConfig {
+export interface MicrosoftExcelNodeConfig extends BaseNodeConfig {
   sheetName: string;
   workbookName?: string;
   operation: "update" | "read" | "append";
@@ -44,23 +63,81 @@ export interface MicrosoftExcelNodeConfig {
   fileId?: string; // Microsoft Graph API file ID
 }
 
+export interface ConversationNodeConfig extends BaseNodeConfig {
+  message_template?: string;
+  format_as_table: boolean;
+  notification_channels: string[];
+  twilio_config?: {
+    account_sid: string;
+    auth_token: string;
+  };
+}
+
 interface BranchNodes {
   nodes: WorkflowNode[];
 }
 
-export interface WorkflowNode {
-  id: string;
-  type: string;
-  description?: string;
-  ifValid?: BranchNodes;
-  ifInvalid?: BranchNodes;
-  config:
-    | ValidateNodeConfig
-    | ExtractNodeConfig
-    | ConditionNodeConfig
-    | MicrosoftExcelNodeConfig
-    | Record<string, any>;
+export enum NodeType {
+  FUNCTION = "function",
+  CONVERSATION = "conversation",
+  DATA_COLLECTION = "data_collection",
+  VALIDATION = "validation",
+  VALIDATE = "validation",
+  LOOP = "loop",
+  CONDITIONAL = "conditional",
+  EXTRACTION = "extraction",
+  EXCEL = "excel",
+  REPORT_GENERATION = "report_generation",
 }
+
+export enum NodeStatus {
+  PENDING = "pending",
+  RUNNING = "running",
+  COMPLETED = "completed",
+  FAILED = "failed",
+}
+
+export type WorkflowNode = {
+  id: string;
+  status: NodeStatus;
+  timestamp: string;
+  retry_count: number;
+  output?: any;
+  error?: string;
+  input_data?: any;
+  output_data?: any;
+} & (
+  | {
+      type: NodeType.VALIDATE;
+      config: ValidateNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.EXTRACTION;
+      config: ExtractNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.CONDITIONAL;
+      config: ConditionNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.EXCEL;
+      config: MicrosoftExcelNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.LOOP;
+      config: LoopNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.CONVERSATION;
+      config: ConversationNodeConfig;
+      title: string;
+    }
+);
 
 export interface WorkflowFormData {
   name: string;

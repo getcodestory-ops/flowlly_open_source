@@ -9,7 +9,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { WorkflowNode } from "../../types";
+import {
+  WorkflowNode,
+  LoopNodeConfig,
+  NodeType,
+  NodeStatus,
+} from "../../types";
 
 interface LoopNodeProps {
   onSave: (node: WorkflowNode) => void;
@@ -24,9 +29,12 @@ export function LoopNode({
   editingNode,
   existingNodes,
 }: LoopNodeProps) {
-  const [selectedNodeId, setSelectedNodeId] = useState<string>(
-    (editingNode?.config as any)?.targetNodeId || ""
-  );
+  const [config, setConfig] = useState<LoopNodeConfig>({
+    target_node_id: "",
+    retry_count: 0,
+    max_retries: 3,
+    next_steps: [],
+  });
 
   // Get the node number for display
   const getNodeLabel = (node: WorkflowNode, index: number) => {
@@ -35,16 +43,16 @@ export function LoopNode({
   };
 
   // Find the selected node's number for the placeholder
-  const selectedNodeLabel = selectedNodeId
+  const selectedNodeLabel = config.target_node_id
     ? getNodeLabel(
-        existingNodes.find((node) => node.id === selectedNodeId)!,
-        existingNodes.findIndex((node) => node.id === selectedNodeId)
+        existingNodes.find((node) => node.id === config.target_node_id)!,
+        existingNodes.findIndex((node) => node.id === config.target_node_id)
       )
     : "Select a node to loop";
 
   // Get the target node's type for display
-  const targetNodeType = selectedNodeId
-    ? existingNodes.find((node) => node.id === selectedNodeId)?.type
+  const targetNodeType = config.target_node_id
+    ? existingNodes.find((node) => node.id === config.target_node_id)?.type
     : null;
 
   return (
@@ -54,8 +62,13 @@ export function LoopNode({
           <Label htmlFor="targetNode">Select Node to Loop</Label>
           <Select
             name="targetNode"
-            value={selectedNodeId}
-            onValueChange={setSelectedNodeId}
+            value={config.target_node_id}
+            onValueChange={(value) => {
+              setConfig({
+                ...config,
+                target_node_id: value,
+              });
+            }}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select a node to loop">
@@ -84,14 +97,16 @@ export function LoopNode({
           </Button>
           <Button
             type="button"
-            disabled={!selectedNodeId}
+            disabled={!config.target_node_id}
             onClick={() => {
               onSave({
                 id: editingNode?.id || crypto.randomUUID(),
-                type: "loop",
-                config: {
-                  targetNodeId: selectedNodeId,
-                },
+                type: NodeType.LOOP,
+                title: "Loop Step",
+                config,
+                status: NodeStatus.PENDING,
+                timestamp: new Date().toISOString(),
+                retry_count: 0,
               });
             }}
           >

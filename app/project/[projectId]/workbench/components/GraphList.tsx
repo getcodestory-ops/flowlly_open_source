@@ -254,7 +254,7 @@ export const GraphList: React.FC<GraphListProps> = ({
           <CalendarView graphs={graphs} onSelectGraph={onSelectGraph} />
         </TabsContent>
       </Tabs>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      {/* <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent
           className="max-w-2xl"
           aria-describedby="dialog-description"
@@ -286,7 +286,7 @@ export const GraphList: React.FC<GraphListProps> = ({
             />
           )}
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 };

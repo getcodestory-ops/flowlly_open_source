@@ -1,4 +1,4 @@
-import { WorkflowNode } from "../../types";
+import { WorkflowNode, NodeType } from "../../types";
 import {
   Select,
   SelectContent,
@@ -21,7 +21,7 @@ interface NodeTypeSelectorProps {
   onSave: (node: WorkflowNode) => void;
   onCancel: () => void;
   editingNode?: WorkflowNode;
-  existingNodes?: WorkflowNode[];
+  existingNodes: WorkflowNode[];
 }
 
 export function NodeTypeSelector({

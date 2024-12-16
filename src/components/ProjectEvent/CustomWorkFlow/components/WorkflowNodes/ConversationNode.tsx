@@ -2,8 +2,15 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { WorkflowNode } from "../../types";
+import {
+  WorkflowNode,
+  NodeStatus,
+  NodeType,
+  ConversationNodeConfig,
+} from "../../types";
 import { NodeTypeSelector } from "./NodeTypeSelector";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ConversationNodeProps {
   onSave: (node: WorkflowNode) => void;
@@ -18,65 +25,52 @@ export function ConversationNode({
   editingNode,
   existingNodes,
 }: ConversationNodeProps) {
-  const [config, setConfig] = useState<{ steps: WorkflowNode[] }>({
-    steps: [],
+  const [config, setConfig] = useState<ConversationNodeConfig>({
+    message_template: "",
+    format_as_table: false,
+    notification_channels: ["twilio"],
+    next_steps: [],
+    retry_count: 0,
+    max_retries: 3,
   });
-  const [currentNodeType, setCurrentNodeType] = useState("");
 
   useEffect(() => {
-    if (editingNode) {
-      setConfig(editingNode.config as { steps: WorkflowNode[] });
+    if (editingNode && editingNode.type === NodeType.CONVERSATION) {
+      setConfig(editingNode.config as ConversationNodeConfig);
     }
   }, [editingNode]);
-
-  const handleSubNodeSave = (node: WorkflowNode) => {
-    setConfig((prev) => ({
-      ...prev,
-      steps: [...prev.steps, node],
-    }));
-    setCurrentNodeType("");
-  };
-
-  const handleDeleteStep = (index: number) => {
-    setConfig((prev) => ({
-      ...prev,
-      steps: prev.steps.filter((_, i) => i !== index),
-    }));
-  };
 
   return (
     <Card>
       <CardContent className="space-y-4 pt-6">
-        <div className="space-y-2">
-          <Label>Configure Conversation Steps</Label>
-
-          <NodeTypeSelector
-            currentNodeType={currentNodeType}
-            setCurrentNodeType={setCurrentNodeType}
-            onSave={handleSubNodeSave}
-            onCancel={() => setCurrentNodeType("")}
-            existingNodes={existingNodes}
-          />
-
+        <div className="space-y-4">
           <div className="space-y-2">
-            {config.steps.map((step, index) => (
-              <div
-                key={step.id}
-                className="p-2 border rounded flex justify-between items-center"
-              >
-                <span>
-                  {index + 1}. {step.type}
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDeleteStep(index)}
-                >
-                  Delete
-                </Button>
-              </div>
-            ))}
+            <Label htmlFor="message_template">Message Template</Label>
+            <Input
+              id="message_template"
+              value={config.message_template}
+              onChange={(e) =>
+                setConfig((prev) => ({
+                  ...prev,
+                  message_template: e.target.value,
+                }))
+              }
+              placeholder="Enter message template..."
+            />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="format_as_table"
+              checked={config.format_as_table}
+              onCheckedChange={(checked) =>
+                setConfig((prev) => ({
+                  ...prev,
+                  format_as_table: checked as boolean,
+                }))
+              }
+            />
+            <Label htmlFor="format_as_table">Format response as table</Label>
           </div>
         </div>
 
@@ -89,10 +83,15 @@ export function ConversationNode({
             onClick={() => {
               onSave({
                 id: editingNode?.id || crypto.randomUUID(),
-                type: "conversation",
+                type: NodeType.CONVERSATION,
+                title: "Conversation Step",
                 config,
-              });
+                status: NodeStatus.PENDING,
+                timestamp: new Date().toISOString(),
+                retry_count: 0,
+              } as WorkflowNode);
             }}
+            disabled={!config.message_template}
           >
             {editingNode ? "Update" : "Add"} Node
           </Button>
