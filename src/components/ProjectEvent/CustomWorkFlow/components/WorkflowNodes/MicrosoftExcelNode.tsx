@@ -49,7 +49,7 @@ export function MicrosoftExcelNode({
     (editingNode?.config as any)?.columns || []
   );
   const [newColumn, setNewColumn] = useState("");
-  const [isCreatingSheet, setIsCreatingSheet] = useState(false);
+
   const [tableId, setTableId] = useState<string>(
     (editingNode?.config as any)?.tableId || ""
   );
@@ -64,7 +64,7 @@ export function MicrosoftExcelNode({
     setIsIntegrated(!!integration);
   }, [integration]);
 
-  const createSheetMutation = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: ({
       sheetName,
       columns,
@@ -148,7 +148,7 @@ export function MicrosoftExcelNode({
       ? sheetName
       : `${sheetName}.xlsx`;
 
-    createSheetMutation.mutate({
+    mutate({
       sheetName: formattedSheetName,
       columns,
     });
@@ -222,11 +222,11 @@ export function MicrosoftExcelNode({
             <Button
               type="button"
               variant="secondary"
-              disabled={isCreatingSheet || !sheetName || columns.length === 0}
+              disabled={isPending || !sheetName || columns.length === 0}
               onClick={createNewExcelSheet}
               className="mt-2"
             >
-              {isCreatingSheet ? (
+              {isPending ? (
                 <>
                   <span className="loading loading-spinner"></span>
                   Creating Sheet...
