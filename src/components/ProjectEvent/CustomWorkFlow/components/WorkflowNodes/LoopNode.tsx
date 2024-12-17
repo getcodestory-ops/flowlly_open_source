@@ -14,6 +14,7 @@ import {
   LoopNodeConfig,
   NodeType,
   NodeStatus,
+  FlowCondition,
 } from "../../types";
 
 interface LoopNodeProps {
@@ -99,11 +100,22 @@ export function LoopNode({
             type="button"
             disabled={!config.target_node_id}
             onClick={() => {
+              const updatedConfig = {
+                ...config,
+                next_steps: [
+                  {
+                    target_node_id: config.target_node_id,
+                    condition: FlowCondition.SUCCESS,
+                    metadata: {},
+                  },
+                ],
+              };
+
               onSave({
                 id: editingNode?.id || crypto.randomUUID(),
                 type: NodeType.LOOP,
                 title: "Loop Step",
-                config,
+                config: updatedConfig,
                 status: NodeStatus.PENDING,
                 timestamp: new Date().toISOString(),
                 retry_count: 0,
