@@ -229,19 +229,7 @@ const SetUseStoreData = () => {
     if (isSuccess && activities && activities.length > 0) {
       setUserActivities(activities);
     } else if (isSuccess && activities && activities.length === 0) {
-      setUserActivities([
-        {
-          id: "SCHEDULE",
-          project_id: "parent",
-          name: "No active task",
-          start: "01/02/23",
-          end: "01/02/23",
-          progress: 0,
-          activity_critical: {
-            critical_path: false,
-          },
-        },
-      ]);
+      setUserActivities([]);
     }
   }, [activities, isSuccess, setUserActivities]);
 

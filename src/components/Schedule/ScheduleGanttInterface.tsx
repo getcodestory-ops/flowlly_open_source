@@ -105,6 +105,7 @@ const ScheduleGanttInterface = () => {
   // }, [activities, userActivities]);
 
   useEffect(() => {
+    console.log("activities", activities);
     if (activities) {
       if (activities.length > 0) {
         // console.log("activities", activities);

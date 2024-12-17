@@ -28,7 +28,7 @@ export function MicrosoftExcelNode({
   const [config, setConfig] = useState<MicrosoftExcelNodeConfig>({
     sheet_name: "",
     columns: [],
-    operation: "update",
+    operation: "append",
     table_id: "",
     next_steps: [],
     retry_count: 0,
