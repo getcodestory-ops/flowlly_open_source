@@ -60,3 +60,35 @@ export const createExcelSheet = async (
 
   return response.data;
 };
+
+export const registerOutlookCalendarWebhook = async (
+  session: Session,
+  project_access_id: string
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/microsoft/calendar/webhook/${project_access_id}`;
+  const response = await axios.post(
+    url,
+    {}, // empty body since the endpoint doesn't require additional data
+    {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+export const getMicrosoftWebhook = async (
+  session: Session,
+  project_access_id: string
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/integration/microsoft/webhook/${project_access_id}`;
+  const response = await axios.get(url, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  return response.data;
+};

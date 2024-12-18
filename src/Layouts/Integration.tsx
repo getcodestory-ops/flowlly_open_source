@@ -1,10 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  getApiIntegration,
+  registerOutlookCalendarWebhook,
+  getMicrosoftWebhook,
+} from "@/api/integration_routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useMutation } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -13,10 +20,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { useStore } from "@/utils/store";
+import { useToast } from "@/components/ui/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function Integration() {
+  const { toast } = useToast();
   const session = useStore((state) => state.session);
   const activeProject = useStore((state) => state.activeProject);
   const [procoreConnected, setProcoreConnected] = useState(false);
@@ -24,6 +34,44 @@ export default function Integration() {
   const [syncProjects, setSyncProjects] = useState(false);
   const [syncInterval, setSyncInterval] = useState("60");
   const [googleConnected, setGoogleConnected] = useState(false);
+  const [microsoftWebhook, setMicrosoftWebhook] = useState(null);
+
+  const { data: integration } = useQuery({
+    queryKey: ["integration", activeProject?.project_id],
+    queryFn: () => getApiIntegration(session!, activeProject?.project_id!),
+    enabled: !!session && !!activeProject?.project_id,
+  });
+  useEffect(() => {
+    setMicrosoftConnected(!!integration);
+  }, [integration]);
+
+  const { data: microsoftWebhookState } = useQuery({
+    queryKey: ["microsoftWebhook", activeProject?.project_id],
+    queryFn: () => getMicrosoftWebhook(session!, activeProject?.project_id!),
+    enabled: !!session && !!activeProject?.project_id,
+  });
+
+  useEffect(() => {
+    setMicrosoftWebhook(microsoftWebhookState);
+  }, [microsoftWebhookState]);
+
+  const { mutate: registerOutlookCalendarWebhookMutation, isPending } =
+    useMutation({
+      mutationFn: () =>
+        registerOutlookCalendarWebhook(session!, activeProject?.project_id!),
+      onSuccess: () => {
+        toast({
+          title: "Webhook registered successfully",
+          description: "Your Outlook calendar is now connected to Flowlly",
+        });
+      },
+      onError: () => {
+        toast({
+          title: "Failed to register webhook",
+          description: "Please try again",
+        });
+      },
+    });
 
   const handleProcoreConnect = () => {
     setProcoreConnected(!procoreConnected);
@@ -68,33 +116,33 @@ export default function Integration() {
   };
 
   // Enhanced Microsoft connection status check
-  useEffect(() => {
-    const checkMicrosoftConnection = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/microsoft/status`,
-          {
-            credentials: "include",
-          }
-        );
-        const data = await response.json();
-        setMicrosoftConnected(data.connected);
+  // useEffect(() => {
+  //   const checkMicrosoftConnection = async () => {
+  //     try {
+  //       const response = await fetch(
+  //         `${process.env.NEXT_PUBLIC_API_URL}/auth/microsoft/status`,
+  //         {
+  //           credentials: "include",
+  //         }
+  //       );
+  //       const data = await response.json();
+  //       setMicrosoftConnected(data.connected);
 
-        // If we have a success or error message in the URL (after redirect)
-        const urlParams = new URLSearchParams(window.location.search);
-        const status = urlParams.get("auth_status");
-        if (status === "success") {
-          // You might want to show a success toast/message here
-          // Remove the query params
-          window.history.replaceState({}, "", window.location.pathname);
-        }
-      } catch (error) {
-        console.error("Failed to check Microsoft connection:", error);
-      }
-    };
+  //       // If we have a success or error message in the URL (after redirect)
+  //       const urlParams = new URLSearchParams(window.location.search);
+  //       const status = urlParams.get("auth_status");
+  //       if (status === "success") {
+  //         // You might want to show a success toast/message here
+  //         // Remove the query params
+  //         window.history.replaceState({}, "", window.location.pathname);
+  //       }
+  //     } catch (error) {
+  //       console.error("Failed to check Microsoft connection:", error);
+  //     }
+  //   };
 
-    checkMicrosoftConnection();
-  }, []);
+  //   checkMicrosoftConnection();
+  // }, []);
 
   const handleGoogleConnect = () => {
     setGoogleConnected(!googleConnected);
@@ -107,6 +155,7 @@ export default function Integration() {
 
   return (
     <div className="p-4 space-y-4">
+      <Toaster />
       {/* Procore Integration Card */}
       <Card className="w-full max-w-3xl">
         <CardHeader>
@@ -170,7 +219,7 @@ export default function Integration() {
             Connect and manage your Microsoft account integration
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6  ">
           <div className="flex items-center space-x-2">
             {microsoftConnected ? (
               <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -183,6 +232,31 @@ export default function Integration() {
                 : "Not connected to Microsoft"}
             </span>
           </div>
+          {microsoftConnected && !microsoftWebhook && (
+            <Button
+              className="mr-4"
+              onClick={() => registerOutlookCalendarWebhookMutation()}
+              disabled={isPending}
+            >
+              {isPending ? (
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Connecting...</span>
+                </div>
+              ) : (
+                "Connect your outlook calendar"
+              )}
+            </Button>
+          )}
+          {microsoftWebhook && (
+            <Button
+              className="mr-4"
+              variant={microsoftConnected ? "destructive" : "default"}
+            >
+              Disconnect Calendar
+            </Button>
+          )}
+
           <Button
             onClick={handleMicrosoftConnect}
             variant={microsoftConnected ? "destructive" : "default"}

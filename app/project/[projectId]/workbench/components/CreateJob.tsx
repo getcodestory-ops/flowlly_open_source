@@ -7,13 +7,15 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import ProjectEventCreationForm from "@/components/ProjectEvent/ProjectEventCreationForm";
 import DocumentWriterForm from "@/components/ProjectEvent/DocumentWriterForm";
 import DailyJournalForm from "@/components/ProjectEvent/DailyJournalForm";
 import CustomWorkflowForm from "@/components/ProjectEvent/CustomWorkFlow/CustomWorkflowForm";
+import { useRouter } from "next/navigation";
 
 function CreateJob() {
+  const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDocumentWriterDialogOpen, setIsDocumentWriterDialogOpen] =
     useState(false);
@@ -49,6 +51,17 @@ function CreateJob() {
             }}
           >
             Create New Meeting
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => {
+              router.push(
+                `/project/${
+                  window.location.pathname.split("/")[2]
+                }/integrations`
+              );
+            }}
+          >
+            Connect to Calendar
           </DropdownMenuItem>
           {/* <DropdownMenuItem>Update Schedule</DropdownMenuItem> */}
           {/* <DropdownMenuItem
