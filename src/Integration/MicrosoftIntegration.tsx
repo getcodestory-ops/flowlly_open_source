@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-
+import { useQuery } from "@tanstack/react-query";
+import { getApiIntegration } from "@/api/integration_routes";
+import { useStore } from "@/utils/store";
 interface Email {
   id: string;
   subject: string;
@@ -12,6 +14,20 @@ export function MicrosoftIntegration() {
   const [emails, setEmails] = useState<Email[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { session, activeProject } = useStore((state) => ({
+    session: state.session,
+    activeProject: state.activeProject,
+  }));
+  const [microsoftConnected, setMicrosoftConnected] = useState(false);
+  const { data: integration } = useQuery({
+    queryKey: ["integration", activeProject?.project_id],
+    queryFn: () => getApiIntegration(session!, activeProject?.project_id!),
+    enabled: !!session && !!activeProject?.project_id,
+  });
+
+  useEffect(() => {
+    setMicrosoftConnected(!!integration);
+  }, [integration]);
 
   useEffect(() => {
     const fetchEmails = async () => {

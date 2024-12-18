@@ -39,6 +39,7 @@ const CustomToolbar = (toolbar: any) => {
         </Button>
       </div>
       <div className="text-sm font-medium">{toolbar.label}</div>
+
       <div className="space-x-2">
         {["month", "week", "day", "agenda"].map((viewOption) => (
           <Button
