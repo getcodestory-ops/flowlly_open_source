@@ -55,23 +55,26 @@ export default function Integration() {
     setMicrosoftWebhook(microsoftWebhookState);
   }, [microsoftWebhookState]);
 
-  const { mutate: registerOutlookCalendarWebhookMutation, isPending } =
-    useMutation({
-      mutationFn: () =>
-        registerOutlookCalendarWebhook(session!, activeProject?.project_id!),
-      onSuccess: () => {
-        toast({
-          title: "Webhook registered successfully",
-          description: "Your Outlook calendar is now connected to Flowlly",
-        });
-      },
-      onError: () => {
-        toast({
-          title: "Failed to register webhook",
-          description: "Please try again",
-        });
-      },
-    });
+  const {
+    mutate: registerOutlookCalendarWebhookMutation,
+    isPending,
+    isSuccess,
+  } = useMutation({
+    mutationFn: () =>
+      registerOutlookCalendarWebhook(session!, activeProject?.project_id!),
+    onSuccess: () => {
+      toast({
+        title: "Webhook registered successfully",
+        description: "Your Outlook calendar is now connected to Flowlly",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Failed to register webhook",
+        description: "Please try again",
+      });
+    },
+  });
 
   const handleProcoreConnect = () => {
     setProcoreConnected(!procoreConnected);
@@ -248,7 +251,7 @@ export default function Integration() {
               )}
             </Button>
           )}
-          {microsoftWebhook && (
+          {(microsoftWebhook || isSuccess) && (
             <Button
               className="mr-4"
               variant={microsoftConnected ? "destructive" : "default"}
