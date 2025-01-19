@@ -22,17 +22,20 @@ import {
 } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
 import type { EventResult, EventSchedule, ScheduleTableRow } from "./types";
-import { getEventResult } from "@/api/taskQueue";
+import { getEventResult, getEventTrigger } from "@/api/taskQueue";
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
+import { NodeStatus } from "@/components/ProjectEvent/CustomWorkFlow/types";
 interface EventScheduleListProps {
   graphs: EventSchedule[];
   onSelectGraph: (event: EventResult) => void;
+  eventId: string;
 }
 
 export const EventScheduleList: React.FC<EventScheduleListProps> = ({
   graphs,
   onSelectGraph,
+  eventId,
 }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -40,15 +43,58 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
   const activeProject = useStore((state) => state.activeProject);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
+  const { data: eventTrigger } = useQuery({
+    queryKey: ["eventTrigger", selectedEventId],
+    queryFn: async () => {
+      if (!session || !activeProject || !eventId)
+        return Promise.reject(
+          "Either session, active project, or selected event ID is missing"
+        );
+      return getEventTrigger({
+        session,
+        projectId: activeProject?.project_id || "",
+        eventId: eventId,
+        triggerType: "ui",
+      });
+    },
+    enabled: !!session && !!activeProject && !!eventId,
+  });
+
   const tableData: ScheduleTableRow[] = useMemo(
     () =>
       graphs.map((eventSchedule) => ({
         id: eventSchedule.id,
         schedule: eventSchedule.schedule,
-        subRows: eventSchedule.event_result.map((eventResult) => ({
-          id: eventResult.id,
-          result: eventResult,
-        })),
+        subRows: [
+          ...(eventTrigger?.trigger_by === "ui"
+            ? [
+                {
+                  id: "eventTrigger",
+                  result: {
+                    id: "newevent",
+                    description: "Trigger Event from UI",
+                    name: "Start the worker",
+                    run_time: new Date().toISOString(),
+                    status: NodeStatus.PENDING,
+                    timestamp: new Date().toISOString(),
+                    nodes: [
+                      {
+                        id: crypto.randomUUID(),
+                        title: "Run the worker",
+                        output: "Waiting for the worker to start",
+                        description: "Waiting for the worker to start",
+                        status: NodeStatus.COMPLETED,
+                      },
+                    ],
+                  },
+                },
+              ]
+            : []),
+          ...eventSchedule.event_result.map((eventResult) => ({
+            id: eventResult.id,
+            result: eventResult,
+          })),
+        ],
       })),
     [graphs]
   );
@@ -157,6 +203,11 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
             if (row.original.subRows) {
               row.toggleExpanded();
             } else if (row.original.result) {
+              if (row.original.id === "eventTrigger") {
+                onSelectGraph(row.original.result);
+                return;
+              }
+
               const eventResult = graphs
                 .flatMap((schedule) => schedule.event_result)
                 .find((er) => er.id === row.original.result?.id);

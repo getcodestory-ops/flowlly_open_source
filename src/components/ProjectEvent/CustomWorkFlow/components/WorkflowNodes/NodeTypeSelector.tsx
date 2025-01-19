@@ -15,6 +15,11 @@ import { MicrosoftExcelNode } from "./MicrosoftExcelNode";
 import { DataCollectionNode } from "./DataCollectionNode";
 import { nodeTypes } from "./nodeUtils";
 import { ReportNode } from "./ReportNode";
+import { DocumentExtractionNode } from "./DocumentExtractionNode";
+import { DocumentSelectionNode } from "./DocumentSelectionNode";
+import { UpdateOrCreateResourceNode } from "./UpdateOrCreateResourceNode";
+import { ChatNode } from "./ChatNode";
+import RunningLogNode from "./RunningLogNode";
 interface NodeTypeSelectorProps {
   currentNodeType: string;
   setCurrentNodeType: (type: string) => void;
@@ -96,6 +101,46 @@ export function NodeTypeSelector({
       case "reportGeneration":
         return (
           <ReportNode
+            onSave={onSave}
+            editingNode={editingNode}
+            onCancel={onCancel}
+          />
+        );
+      case "documentExtraction":
+        return (
+          <DocumentExtractionNode
+            onSave={onSave}
+            editingNode={editingNode}
+            onCancel={onCancel}
+          />
+        );
+      case "documentSelection":
+        return (
+          <DocumentSelectionNode
+            onSave={onSave}
+            editingNode={editingNode}
+            onCancel={onCancel}
+          />
+        );
+      case "updateResource":
+        return (
+          <UpdateOrCreateResourceNode
+            onSave={onSave}
+            editingNode={editingNode}
+            onCancel={onCancel}
+          />
+        );
+      case "chat":
+        return (
+          <ChatNode
+            onSave={onSave}
+            editingNode={editingNode}
+            onCancel={onCancel}
+          />
+        );
+      case "runningLog":
+        return (
+          <RunningLogNode
             onSave={onSave}
             editingNode={editingNode}
             onCancel={onCancel}

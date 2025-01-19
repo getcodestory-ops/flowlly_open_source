@@ -21,7 +21,14 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, ArrowDown, Trash2, Edit } from "lucide-react";
+import {
+  PlusCircle,
+  ArrowDown,
+  Trash2,
+  Edit,
+  Folder,
+  File,
+} from "lucide-react";
 import { NodeTypeSelector } from "./NodeTypeSelector";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -313,6 +320,50 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
                 ))}
               </div>
             )}
+            {node.status !== NodeStatus.PENDING && (
+              <div className="text-xs text-gray-500">
+                Status: {node.status}
+                {node.error && <p className="text-red-500">{node.error}</p>}
+              </div>
+            )}
+          </div>
+        );
+
+      case NodeType.DOCUMENT_EXTRACTION:
+        return (
+          <div className="space-y-2">
+            <p className="text-sm text-gray-600">{node.title}</p>
+            <div className="text-xs text-gray-500">
+              <p className="font-medium">Extraction Prompt:</p>
+              <p className="ml-2">
+                {node.config.extractionPrompt.slice(0, 100)}...
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {node.config.columns?.map((col: any, index: number) => (
+                <span
+                  key={index}
+                  className="px-2 py-1 bg-blue-100 rounded-md text-xs"
+                >
+                  {col.name}: {col.dataType}
+                </span>
+              ))}
+            </div>
+            <div className="text-xs text-gray-500">
+              <p className="font-medium">Source Documents:</p>
+              <div className="ml-2 space-y-1">
+                {node.config.selectedItems.map((item: any) => (
+                  <p key={item.id} className="flex items-center">
+                    {item.type === "folder" ? (
+                      <Folder className="h-3 w-3 mr-1 text-blue-500" />
+                    ) : (
+                      <File className="h-3 w-3 mr-1 text-green-500" />
+                    )}
+                    {item.name}
+                  </p>
+                ))}
+              </div>
+            </div>
             {node.status !== NodeStatus.PENDING && (
               <div className="text-xs text-gray-500">
                 Status: {node.status}

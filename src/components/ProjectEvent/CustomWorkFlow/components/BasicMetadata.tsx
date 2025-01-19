@@ -38,22 +38,6 @@ export function BasicMetadata({ formData, onChange }: BasicMetadataProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="recurrence">Repeat</Label>
-        <Select
-          name="recurrence"
-          value={formData.recurrence}
-          onValueChange={(value) => onChange({ recurrence: value })}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select repeat frequency" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="manual">Manual Trigger</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
         <Label htmlFor="startTime">Start Time</Label>
         <Input
           id="startTime"

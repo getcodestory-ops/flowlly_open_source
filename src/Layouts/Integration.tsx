@@ -5,7 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 import {
   getApiIntegration,
   registerOutlookCalendarWebhook,
+  registerOutlookMailWebhook,
   getMicrosoftWebhook,
+  getMicrosoftMailWebhook,
 } from "@/api/integration_routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +37,7 @@ export default function Integration() {
   const [syncInterval, setSyncInterval] = useState("60");
   const [googleConnected, setGoogleConnected] = useState(false);
   const [microsoftWebhook, setMicrosoftWebhook] = useState(null);
+  const [microsoftMailWebhook, setMicrosoftMailWebhook] = useState(null);
 
   const { data: integration } = useQuery({
     queryKey: ["integration", activeProject?.project_id],
@@ -47,13 +50,26 @@ export default function Integration() {
 
   const { data: microsoftWebhookState } = useQuery({
     queryKey: ["microsoftWebhook", activeProject?.project_id],
-    queryFn: () => getMicrosoftWebhook(session!, activeProject?.project_id!),
+    queryFn: () =>
+      getMicrosoftWebhook(session!, activeProject?.project_id!, "events"),
+    enabled: !!session && !!activeProject?.project_id,
+  });
+
+  const { data: microsoftMailWebhookState } = useQuery({
+    queryKey: ["microsoftMailWebhook", activeProject?.project_id],
+    queryFn: () =>
+      getMicrosoftWebhook(session!, activeProject?.project_id!, "messages"),
     enabled: !!session && !!activeProject?.project_id,
   });
 
   useEffect(() => {
     setMicrosoftWebhook(microsoftWebhookState);
   }, [microsoftWebhookState]);
+
+  useEffect(() => {
+    setMicrosoftMailWebhook(microsoftMailWebhookState);
+    console.log("microsoftMailWebhookState", microsoftMailWebhookState);
+  }, [microsoftMailWebhookState]);
 
   const {
     mutate: registerOutlookCalendarWebhookMutation,
@@ -66,6 +82,27 @@ export default function Integration() {
       toast({
         title: "Webhook registered successfully",
         description: "Your Outlook calendar is now connected to Flowlly",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Failed to register webhook",
+        description: "Please try again",
+      });
+    },
+  });
+
+  const {
+    mutate: registerOutlookMailWebhookMutation,
+    isPending: isPendingMail,
+    isSuccess: isSuccessMail,
+  } = useMutation({
+    mutationFn: () =>
+      registerOutlookMailWebhook(session!, activeProject?.project_id!),
+    onSuccess: () => {
+      toast({
+        title: "Webhook registered successfully",
+        description: "Your Outlook mail is now connected to Flowlly",
       });
     },
     onError: () => {
@@ -251,6 +288,16 @@ export default function Integration() {
               )}
             </Button>
           )}
+          {microsoftConnected && !microsoftMailWebhook && (
+            <Button
+              className="mr-4"
+              onClick={() => registerOutlookMailWebhookMutation()}
+              disabled={isPendingMail}
+            >
+              {isPendingMail ? "Connecting..." : "Connect your outlook mail"}
+            </Button>
+          )}
+
           {(microsoftWebhook || isSuccess) && (
             <Button
               className="mr-4"
@@ -259,15 +306,14 @@ export default function Integration() {
               Disconnect Calendar
             </Button>
           )}
-
-          <Button
-            onClick={handleMicrosoftConnect}
-            variant={microsoftConnected ? "destructive" : "default"}
-          >
-            {microsoftConnected
-              ? "Disconnect from Microsoft"
-              : "Connect to Microsoft"}
-          </Button>
+          {(microsoftMailWebhook || isSuccessMail) && (
+            <Button
+              className="mr-4"
+              variant={microsoftConnected ? "destructive" : "default"}
+            >
+              Disconnect Mail
+            </Button>
+          )}
           {microsoftConnected && (
             <div className="space-y-4">
               {/* Add Microsoft-specific settings here */}
