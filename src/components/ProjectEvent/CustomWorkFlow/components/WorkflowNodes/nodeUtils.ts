@@ -1,4 +1,5 @@
 import { WorkflowNode } from "@/types/projectEvents";
+import RunningLogNode from "./RunningLogNode";
 
 interface NodeConfig {
   value: string;
@@ -65,8 +66,50 @@ export const nodeConfigs: Record<string, NodeConfig> = {
         (node.config as any).folderPath || "default folder"
       }/${(node.config as any).fileName || "report"}`,
   },
-};
+  documentExtraction: {
+    value: "documentExtraction",
+    label: "Document Extraction",
+    icon: "📄",
+    getDescription: (node) =>
+      `Extract ${(node.config as any).columns?.length || 0} fields from ${
+        (node.config as any).selectedItems?.length || 0
+      } source${(node.config as any).selectedItems?.length === 1 ? "" : "s"}`,
+  },
+  documentSelection: {
+    value: "documentSelection",
+    label: "Document Selection",
+    icon: "📄",
+    getDescription: (node) =>
+      `Select ${(node.config as any).selectedItems?.length || 0} documents`,
+  },
+  updateResource: {
+    value: "updateResource",
+    label: "Update Resource",
+    icon: "📄",
+    getDescription: (node) =>
+      `Update ${(node.config as any).resourceName || "resource"} with prompt: ${
+        (node.config as any).prompt?.slice(0, 50) || "..."
+      }`,
+  },
+  chat: {
+    value: "chat",
+    label: "Chat",
+    icon: "💭",
+    getDescription: (node) =>
+      `${(node.config as any).config.message?.slice(0, 50) || ""}...`,
+  },
+  runningLog: {
+    value: "runningLog",
+    label: "Running Log",
+    icon: "📝",
+    getDescription: (node) =>
+      `Log ${(node.config as any).logName || "log"} with prompt: ${
+        (node.config as any).systemPrompt?.slice(0, 50) || "..."
+      }`,
+  },
+} as const;
 
+// Helper functions that use the combined config
 // Helper functions that use the combined config
 export const nodeTypes = Object.values(nodeConfigs).map(({ value, label }) => ({
   value,

@@ -162,6 +162,7 @@ export default function AssignmentHome() {
           <EventScheduleList
             graphs={eventSchedule || []}
             onSelectGraph={setCurrentResult}
+            eventId={currentGraphId || ""}
           />
         </Card>
       )}

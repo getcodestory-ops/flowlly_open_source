@@ -79,16 +79,41 @@ export const registerOutlookCalendarWebhook = async (
   return response.data;
 };
 
-export const getMicrosoftWebhook = async (
+export const registerOutlookMailWebhook = async (
   session: Session,
   project_access_id: string
 ) => {
-  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/integration/microsoft/webhook/${project_access_id}`;
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/microsoft/mail/webhook/${project_access_id}`;
+  const response = await axios.post(
+    url,
+    {},
+    { headers: { Authorization: `Bearer ${session.access_token}` } }
+  );
+  return response.data;
+};
+
+export const getMicrosoftWebhook = async (
+  session: Session,
+  project_access_id: string,
+  subscription_type: "events" | "messages"
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/integration/microsoft/webhook/${subscription_type}/${project_access_id}`;
   const response = await axios.get(url, {
     headers: {
       Authorization: `Bearer ${session.access_token}`,
     },
   });
 
+  return response.data;
+};
+
+export const getMicrosoftMailWebhook = async (
+  session: Session,
+  project_access_id: string
+) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/integration/microsoft/mail/webhook/${project_access_id}`;
+  const response = await axios.get(url, {
+    headers: { Authorization: `Bearer ${session.access_token}` },
+  });
   return response.data;
 };

@@ -75,7 +75,7 @@ export function useWorkflowForm({
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["workflows"] });
+      queryClient.invalidateQueries({ queryKey: ["projectEvents"] });
       toast({
         title: "Workflow created successfully",
         description: "You can now start the workflow",

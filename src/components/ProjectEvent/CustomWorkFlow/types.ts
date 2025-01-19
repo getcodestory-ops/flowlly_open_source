@@ -91,6 +91,48 @@ export interface ReportNodeConfig extends BaseNodeConfig {
   generated_reports: any[];
 }
 
+export interface DocumentExtractionNodeConfig extends BaseNodeConfig {
+  extractionPrompt: string;
+  columns: {
+    name: string;
+    description: string;
+    dataType: "string" | "number" | "date" | "boolean";
+    optional: boolean;
+  }[];
+  selectedItems: Array<{
+    id: string;
+    name: string;
+    type: "folder" | "file";
+  }>;
+}
+
+export interface DocumentSelectionNodeConfig extends BaseNodeConfig {
+  selectedItems: Array<{
+    id: string;
+    name: string;
+    type: "folder" | "file";
+  }>;
+}
+
+export interface UpdateOrCreateResourceNodeConfig extends BaseNodeConfig {
+  resourceName: string;
+  resourceType: "text" | "table";
+  prompt: string;
+}
+
+export interface ChatNodeConfig extends BaseNodeConfig {
+  type: "chat";
+  config: {
+    systemPrompt?: string;
+  };
+}
+
+export interface RunningLogNodeConfig extends BaseNodeConfig {
+  logName: string;
+  systemPrompt: string;
+  description?: string;
+}
+
 interface BranchNodes {
   nodes: WorkflowNode[];
 }
@@ -107,6 +149,11 @@ export enum NodeType {
   EXCEL = "excel",
   REPORT_GENERATION = "report_generation",
   TRIGGER = "trigger",
+  DOCUMENT_EXTRACTION = "document_extraction",
+  DOCUMENT_SELECTION = "document_selection",
+  UPDATE_RESOURCE = "update_resource",
+  CHAT = "chat",
+  RUNNING_LOG = "running_log",
 }
 
 export enum NodeStatus {
@@ -169,6 +216,31 @@ export type WorkflowNode = {
   | {
       type: NodeType.REPORT_GENERATION;
       config: ReportNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.DOCUMENT_EXTRACTION;
+      config: DocumentExtractionNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.DOCUMENT_SELECTION;
+      config: DocumentSelectionNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.UPDATE_RESOURCE;
+      config: UpdateOrCreateResourceNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.CHAT;
+      config: ChatNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.RUNNING_LOG;
+      config: RunningLogNodeConfig;
       title: string;
     }
 );

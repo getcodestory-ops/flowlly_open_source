@@ -176,3 +176,48 @@ export const getEventResult = async ({
   });
   return response.data;
 };
+
+export const getEventTrigger = async ({
+  session,
+  projectId,
+  eventId,
+  triggerType = "ui",
+}: {
+  session: Session;
+  projectId: string;
+  eventId: string;
+  triggerType: string;
+}) => {
+  const response = await axios.get(
+    `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/trigger/${projectId}/${triggerType}/${eventId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+export const executeEventTrigger = async ({
+  session,
+  projectId,
+  eventId,
+  triggerType = "ui",
+}: {
+  session: Session;
+  projectId: string;
+  eventId: string;
+  triggerType: string;
+}) => {
+  const response = await axios.post(
+    `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/task_schedule/project_event/trigger/${projectId}/${triggerType}/${eventId}/execute`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    }
+  );
+  return response.data;
+};

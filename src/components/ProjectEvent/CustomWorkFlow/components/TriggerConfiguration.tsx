@@ -34,36 +34,13 @@ export function TriggerConfiguration({
 }: TriggerConfigurationProps) {
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="triggerType">
-          How do you want to initiate this workflow?
-        </Label>
-        <Select
-          name="triggerBy"
-          value={formData.triggerBy}
-          onValueChange={(value: "email_subject" | "phone" | "time" | "ui") =>
-            onChange({ triggerBy: value })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select trigger type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ui">Via UI</SelectItem>
-            <SelectItem value="email_subject">Via Email</SelectItem>
-            <SelectItem value="phone">Via Phone</SelectItem>
-            <SelectItem value="time">At a specific time</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
       {(formData.triggerBy === "ui" ||
         formData.triggerBy === "email_subject") && (
         <div className="space-y-2">
           <Label htmlFor="triggerKeyword">
             {formData.triggerBy === "email_subject"
               ? "Email Subject"
-              : "Starting Prompt"}
+              : "Optional: Starting Prompt"}
           </Label>
           <Textarea
             id="startingPrompt"

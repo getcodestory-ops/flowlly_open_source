@@ -152,7 +152,7 @@ const ResultBox: React.FC<ResultBoxProps> = ({ node }) => {
 
 const getNodeColumnSpan = (node: NodeData): string => {
   const nodeId = node.id.toLowerCase();
-  const nodeTitle = node.title.toLowerCase();
+  const nodeTitle = node.title?.toLowerCase() ?? "";
 
   // First check specific node IDs
   switch (nodeId) {

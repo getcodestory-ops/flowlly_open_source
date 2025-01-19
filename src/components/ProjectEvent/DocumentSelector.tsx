@@ -16,7 +16,7 @@ import {
   GetFolderFileProp,
   GetFolderSubFolderProp,
 } from "@/api/folderRoutes";
-import { Folder, File, X, ArrowLeft } from "lucide-react";
+import { Folder, File, X, ArrowLeft, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import clsx from "clsx";
@@ -28,17 +28,30 @@ interface DocumentSelectorProps {
       Array<{ id: string; name: string; type: "folder" | "file" }>
     >
   >;
+  folderSelectOnly?: boolean;
 }
 
 export default function DocumentSelector({
   selectedItems,
   setSelectedItems,
+  folderSelectOnly = false,
 }: DocumentSelectorProps) {
   const session = useStore((state) => state.session);
   const activeProject = useStore((state) => state.activeProject);
 
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [isProjectWide, setIsProjectWide] = useState(true);
+  const [folderHistory, setFolderHistory] = useState<string[]>([]);
+  const [folderDataCache, setFolderDataCache] = useState<{
+    [key: string]: {
+      folders: GetFolderSubFolderProp[];
+      files: GetFolderFileProp[];
+    };
+  }>({});
+  const [folderNames, setFolderNames] = useState<{ [key: string]: string }>({});
+
+  const getCacheKey = (folderId: string | null, isProjectWide: boolean) =>
+    `${folderId}-${isProjectWide ? "project" : "personal"}`;
 
   const { data: foldersData, isLoading: isFoldersLoading } = useQuery({
     queryKey: [
@@ -48,15 +61,31 @@ export default function DocumentSelector({
       currentFolderId,
       isProjectWide,
     ],
-    queryFn: () => {
+    queryFn: async () => {
       if (!session || !activeProject?.project_id)
         return Promise.reject("Session or active project not available");
-      return fetchFolders(
+
+      const cacheKey = getCacheKey(currentFolderId, isProjectWide);
+      if (folderDataCache[cacheKey]) {
+        return folderDataCache[cacheKey].folders;
+      }
+
+      const folders = await fetchFolders(
         session,
         activeProject?.project_id,
         currentFolderId,
         isProjectWide
       );
+
+      setFolderDataCache((prev) => ({
+        ...prev,
+        [cacheKey]: {
+          folders,
+          files: prev[cacheKey]?.files || [],
+        },
+      }));
+
+      return folders;
     },
     enabled: !!session && !!activeProject,
   });
@@ -69,15 +98,31 @@ export default function DocumentSelector({
       currentFolderId,
       isProjectWide,
     ],
-    queryFn: () => {
+    queryFn: async () => {
       if (!session || !activeProject?.project_id)
         return Promise.reject("Session or active project not available");
-      return fetchFiles(
+
+      const cacheKey = getCacheKey(currentFolderId, isProjectWide);
+      if (folderDataCache[cacheKey]) {
+        return folderDataCache[cacheKey].files;
+      }
+
+      const files = await fetchFiles(
         session,
         activeProject?.project_id,
         currentFolderId,
         isProjectWide
       );
+
+      setFolderDataCache((prev) => ({
+        ...prev,
+        [cacheKey]: {
+          folders: prev[cacheKey]?.folders || [],
+          files: files || [],
+        },
+      }));
+
+      return files;
     },
     enabled: !!session && !!activeProject,
   });
@@ -87,6 +132,7 @@ export default function DocumentSelector({
     name: string;
     type: "folder" | "file";
   }) => {
+    if (folderSelectOnly && item.type !== "folder") return;
     setSelectedItems((prev) =>
       prev.some((i) => i.id === item.id)
         ? prev.filter((i) => i.id !== item.id)
@@ -98,6 +144,53 @@ export default function DocumentSelector({
     setSelectedItems((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const navigateToFolder = (folderId: string | null, folderName?: string) => {
+    if (folderId === null) {
+      setFolderHistory([]);
+      setFolderNames({});
+    } else {
+      setFolderHistory((prev) => [...prev, folderId]);
+      if (folderName) {
+        setFolderNames((prev) => ({ ...prev, [folderId]: folderName }));
+      }
+    }
+    setCurrentFolderId(folderId);
+  };
+
+  const handleBack = () => {
+    const newHistory = [...folderHistory];
+    newHistory.pop();
+    const previousFolderId = newHistory[newHistory.length - 1] || null;
+    setFolderHistory(newHistory);
+    setCurrentFolderId(previousFolderId);
+  };
+
+  const handleFolderClick = (folder: GetFolderSubFolderProp) => {
+    navigateToFolder(folder.id, folder.name);
+  };
+
+  const [projectFolderHistory, setProjectFolderHistory] = useState<string[]>(
+    []
+  );
+  const [personalFolderHistory, setPersonalFolderHistory] = useState<string[]>(
+    []
+  );
+
+  const handleScopeChange = (value: string) => {
+    const newIsProjectWide = value === "project";
+    if (isProjectWide) {
+      setProjectFolderHistory(folderHistory);
+    } else {
+      setPersonalFolderHistory(folderHistory);
+    }
+
+    setFolderHistory(
+      newIsProjectWide ? projectFolderHistory : personalFolderHistory
+    );
+    setCurrentFolderId(null);
+    setIsProjectWide(newIsProjectWide);
+  };
+
   return (
     <>
       <div className="space-y-4">
@@ -105,21 +198,31 @@ export default function DocumentSelector({
           Select Files and Folders
         </Label>
         <Card className="border">
-          <CardHeader className="flex justify-between items-center  ">
+          <CardHeader className="flex justify-between items-center">
             <div className="flex items-center gap-2 w-full">
               <Button
                 variant="ghost"
-                onClick={() => setCurrentFolderId(null)}
+                onClick={handleBack}
                 disabled={!currentFolderId}
                 className="flex items-center gap-2"
               >
                 <ArrowLeft size={16} />
               </Button>
+              <div className="text-sm text-gray-500 flex-1 min-w-0">
+                <div className="truncate">
+                  {folderHistory.length > 0
+                    ? `/${folderHistory
+                        .map((id) => folderNames[id])
+                        .filter(Boolean)
+                        .join("/")}`
+                    : "/"}
+                </div>
+              </div>
               <Select
                 value={isProjectWide ? "project" : "personal"}
-                onValueChange={(value) => setIsProjectWide(value === "project")}
+                onValueChange={handleScopeChange}
               >
-                <SelectTrigger className="tex-sm">
+                <SelectTrigger className="w-[100px]">
                   <SelectValue placeholder="Select Scope" />
                 </SelectTrigger>
                 <SelectContent>
@@ -140,29 +243,29 @@ export default function DocumentSelector({
                     <div
                       key={folder.id}
                       className={clsx(
-                        "flex items-center p-3 hover:bg-gray-50 cursor-pointer",
+                        "flex items-center gap-2 p-3 hover:bg-gray-50 cursor-pointer",
                         {
                           "bg-gray-100": selectedItems.some(
                             (item) => item.id === folder.id
                           ),
                         }
                       )}
-                      onClick={() => {
-                        toggleItemSelection({
-                          id: folder.id,
-                          name: folder.name,
-                          type: "folder",
-                        });
-                        setCurrentFolderId(folder.id);
-                      }}
+                      onClick={() => handleFolderClick(folder)}
                     >
-                      <input
-                        type="checkbox"
-                        className="mr-3"
-                        checked={selectedItems.some(
-                          (item) => item.id === folder.id
-                        )}
-                        onChange={(e) => {
+                      <div className="flex items-center min-w-0 flex-1">
+                        <Folder
+                          className="mr-2 text-blue-500 flex-shrink-0"
+                          size={16}
+                        />
+                        <span className="text-sm truncate" title={folder.name}>
+                          {folder.name}
+                        </span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex-shrink-0 ml-2"
+                        onClick={(e) => {
                           e.stopPropagation();
                           toggleItemSelection({
                             id: folder.id,
@@ -170,14 +273,9 @@ export default function DocumentSelector({
                             type: "folder",
                           });
                         }}
-                      />
-                      <Folder className="mr-2 text-blue-500" size={12} />
-                      <span
-                        className="flex-1 text-sm truncate"
-                        title={folder.name}
                       >
-                        {folder.name}
-                      </span>
+                        <Plus size={16} />
+                      </Button>
                     </div>
                   ))}
                   {filesData?.map((folder: GetFolderFileProp) => (
@@ -186,9 +284,8 @@ export default function DocumentSelector({
                         <div key={file.storage_resources?.id}>
                           {file.storage_resources && (
                             <div
-                              key={file.storage_resources.id}
                               className={clsx(
-                                "flex items-center p-3 hover:bg-gray-50 cursor-pointer",
+                                "flex items-center gap-2 p-3 hover:bg-gray-50 cursor-pointer",
                                 {
                                   "bg-gray-100": selectedItems.some(
                                     (item) =>
@@ -196,22 +293,24 @@ export default function DocumentSelector({
                                   ),
                                 }
                               )}
-                              onClick={() =>
-                                toggleItemSelection({
-                                  id: file.storage_resources?.id || "",
-                                  name: file.storage_resources?.file_name || "",
-                                  type: "file",
-                                })
-                              }
                             >
-                              <input
-                                type="checkbox"
-                                className="mr-3"
-                                checked={selectedItems.some(
-                                  (item) =>
-                                    item.id === file.storage_resources?.id
-                                )}
-                                onChange={(e) => {
+                              <div className="flex items-center min-w-0 flex-1">
+                                <File
+                                  className="mr-2 text-green-500 flex-shrink-0"
+                                  size={16}
+                                />
+                                <span
+                                  className="text-sm truncate"
+                                  title={file.storage_resources?.file_name}
+                                >
+                                  {file.storage_resources?.file_name}
+                                </span>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="flex-shrink-0 ml-2"
+                                onClick={(e) => {
                                   e.stopPropagation();
                                   toggleItemSelection({
                                     id: file.storage_resources?.id || "",
@@ -220,14 +319,9 @@ export default function DocumentSelector({
                                     type: "file",
                                   });
                                 }}
-                              />
-                              <File className="mr-2 text-green-500" size={12} />
-                              <span
-                                className="flex-1 text-sm truncate"
-                                title={file.storage_resources?.file_name}
                               >
-                                {file.storage_resources?.file_name}
-                              </span>
+                                <Plus size={16} />
+                              </Button>
                             </div>
                           )}
                         </div>
