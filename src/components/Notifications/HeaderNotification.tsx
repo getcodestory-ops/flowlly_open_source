@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getNotifications } from "@/api/notification";
 import { useStore } from "@/utils/store";
 import { formatDistanceToNow, parseISO } from "date-fns";
@@ -21,6 +21,9 @@ interface Notification {
   message: string;
   timestamp: string;
   read: "read" | "unread";
+  invalidateQueries?: {
+    queryKey: string[]; // Array to match React Query's queryKey format
+  }[];
 }
 
 function convertIsoToTimeAgo(dateString?: string) {
@@ -38,6 +41,8 @@ export default function HeaderNotification() {
   const activeProject = useStore((state) => state.activeProject);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const queryClient = useQueryClient();
+  const [notifiedEventIds, setNotifiedEventIds] = useState<string[]>([]);
 
   const { data } = useQuery({
     queryKey: ["notifications"],
@@ -57,6 +62,21 @@ export default function HeaderNotification() {
       );
     }
   }, [data]);
+
+  useEffect(() => {
+    const handleNotifications = () => {
+      // Process all notifications that have invalidation instructions
+      notifications.forEach((notification) => {
+        if (notification.invalidateQueries) {
+          notification.invalidateQueries.forEach((query) => {
+            queryClient.invalidateQueries({ queryKey: query.queryKey });
+          });
+        }
+      });
+    };
+
+    handleNotifications();
+  }, [notifications]);
 
   return (
     <DropdownMenu>

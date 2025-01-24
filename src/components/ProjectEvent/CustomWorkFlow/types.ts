@@ -133,6 +133,36 @@ export interface RunningLogNodeConfig extends BaseNodeConfig {
   description?: string;
 }
 
+export interface OutlookAttachmentsNodeConfig extends BaseNodeConfig {
+  type: "outlook_attachments";
+  project_access_id?: string;
+  message_id?: string;
+}
+
+export interface OutlookReplyNodeConfig extends BaseNodeConfig {
+  type: "outlook_reply";
+  include_original_message: boolean;
+  signature: string;
+}
+
+export interface RecipeConfig {
+  id: string;
+  name: string;
+  description: string;
+  inputFields: {
+    name: string;
+    type: "text" | "number" | "boolean";
+    required: boolean;
+    label: string;
+  }[];
+}
+
+export interface RecipeNodeConfig extends BaseNodeConfig {
+  type: "recipe";
+  selectedRecipeId?: string;
+  inputValues: Record<string, any>;
+}
+
 interface BranchNodes {
   nodes: WorkflowNode[];
 }
@@ -154,6 +184,9 @@ export enum NodeType {
   UPDATE_RESOURCE = "update_resource",
   CHAT = "chat",
   RUNNING_LOG = "running_log",
+  OUTLOOK_ATTACHMENTS = "outlook_attachments",
+  OUTLOOK_REPLY = "outlook_reply",
+  RECIPE = "recipe",
 }
 
 export enum NodeStatus {
@@ -241,6 +274,21 @@ export type WorkflowNode = {
   | {
       type: NodeType.RUNNING_LOG;
       config: RunningLogNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.OUTLOOK_ATTACHMENTS;
+      config: OutlookAttachmentsNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.OUTLOOK_REPLY;
+      config: OutlookReplyNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.RECIPE;
+      config: RecipeNodeConfig;
       title: string;
     }
 );
