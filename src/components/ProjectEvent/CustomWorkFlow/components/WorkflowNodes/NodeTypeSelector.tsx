@@ -20,6 +20,10 @@ import { DocumentSelectionNode } from "./DocumentSelectionNode";
 import { UpdateOrCreateResourceNode } from "./UpdateOrCreateResourceNode";
 import { ChatNode } from "./ChatNode";
 import RunningLogNode from "./RunningLogNode";
+import { OutlookAttachmentsNode } from "./OutlookAttachmentsNode";
+import { OutlookReplyNode } from "./OutlookReplyNode";
+import { RecipeNode } from "./RecipeNode";
+
 interface NodeTypeSelectorProps {
   currentNodeType: string;
   setCurrentNodeType: (type: string) => void;
@@ -28,6 +32,25 @@ interface NodeTypeSelectorProps {
   editingNode?: WorkflowNode;
   existingNodes: WorkflowNode[];
 }
+
+const nodeComponents: Record<string, React.FC<any>> = {
+  validate: ValidateNode,
+  extract: ExtractNode,
+  condition: ConditionNode,
+  conversation: ConversationNode,
+  loop: LoopNode,
+  microsoftExcel: MicrosoftExcelNode,
+  dataCollection: DataCollectionNode,
+  reportGeneration: ReportNode,
+  documentExtraction: DocumentExtractionNode,
+  documentSelection: DocumentSelectionNode,
+  updateResource: UpdateOrCreateResourceNode,
+  chat: ChatNode,
+  runningLog: RunningLogNode,
+  outlook_attachments: OutlookAttachmentsNode,
+  outlook_reply: OutlookReplyNode,
+  recipe: RecipeNode,
+};
 
 export function NodeTypeSelector({
   currentNodeType,
@@ -38,117 +61,18 @@ export function NodeTypeSelector({
   existingNodes,
 }: NodeTypeSelectorProps) {
   const renderNodeEditor = () => {
-    switch (currentNodeType) {
-      case "validate":
-        return (
-          <ValidateNode
-            onSave={onSave}
-            editingNode={editingNode}
-            existingNodes={existingNodes || []}
-            onCancel={onCancel}
-          />
-        );
-      case "extract":
-        return (
-          <ExtractNode
-            onSave={onSave}
-            editingNode={editingNode}
-            onCancel={onCancel}
-          />
-        );
-      case "condition":
-        return (
-          <ConditionNode
-            onSave={onSave}
-            editingNode={editingNode}
-            onCancel={onCancel}
-          />
-        );
-      case "conversation":
-        return (
-          <ConversationNode
-            onSave={onSave}
-            editingNode={editingNode}
-            onCancel={onCancel}
-            existingNodes={existingNodes || []}
-          />
-        );
-      case "loop":
-        return (
-          <LoopNode
-            onSave={onSave}
-            editingNode={editingNode}
-            onCancel={onCancel}
-            existingNodes={existingNodes || []}
-          />
-        );
-      case "microsoftExcel":
-        return (
-          <MicrosoftExcelNode
-            onSave={onSave}
-            editingNode={editingNode}
-            onCancel={onCancel}
-          />
-        );
-      case "dataCollection":
-        return (
-          <DataCollectionNode
-            onSave={onSave}
-            editingNode={editingNode}
-            onCancel={onCancel}
-          />
-        );
-      case "reportGeneration":
-        return (
-          <ReportNode
-            onSave={onSave}
-            editingNode={editingNode}
-            onCancel={onCancel}
-          />
-        );
-      case "documentExtraction":
-        return (
-          <DocumentExtractionNode
-            onSave={onSave}
-            editingNode={editingNode}
-            onCancel={onCancel}
-          />
-        );
-      case "documentSelection":
-        return (
-          <DocumentSelectionNode
-            onSave={onSave}
-            editingNode={editingNode}
-            onCancel={onCancel}
-          />
-        );
-      case "updateResource":
-        return (
-          <UpdateOrCreateResourceNode
-            onSave={onSave}
-            editingNode={editingNode}
-            onCancel={onCancel}
-          />
-        );
-      case "chat":
-        return (
-          <ChatNode
-            onSave={onSave}
-            editingNode={editingNode}
-            onCancel={onCancel}
-          />
-        );
-      case "runningLog":
-        return (
-          <RunningLogNode
-            onSave={onSave}
-            editingNode={editingNode}
-            onCancel={onCancel}
-          />
-        );
-      default:
-        return null;
+    const NodeEditor = nodeComponents[currentNodeType];
+    if (NodeEditor) {
+      return (
+        <NodeEditor
+          onSave={onSave}
+          editingNode={editingNode}
+          existingNodes={existingNodes || []}
+          onCancel={onCancel}
+        />
+      );
     }
+    return null;
   };
 
   return (
@@ -167,6 +91,7 @@ export function NodeTypeSelector({
       </Select>
 
       {currentNodeType && renderNodeEditor()}
+      {/* {currentNodeType && renderNodeComponent()} */}
     </div>
   );
 }

@@ -23,9 +23,10 @@ import {
 import { cn } from "@/lib/utils";
 import type { EventResult, EventSchedule, ScheduleTableRow } from "./types";
 import { getEventResult, getEventTrigger } from "@/api/taskQueue";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { NodeStatus } from "@/components/ProjectEvent/CustomWorkFlow/types";
+
 interface EventScheduleListProps {
   graphs: EventSchedule[];
   onSelectGraph: (event: EventResult) => void;
@@ -42,6 +43,8 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
   const session = useStore((state) => state.session);
   const activeProject = useStore((state) => state.activeProject);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+
+  const queryClient = useQueryClient();
 
   const { data: eventTrigger } = useQuery({
     queryKey: ["eventTrigger", selectedEventId],
@@ -175,25 +178,16 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
         });
       },
       enabled: !!session && !!activeProject && !!selectedEventId,
+      staleTime: 0,
+      refetchOnWindowFocus: true,
     });
 
   useEffect(() => {
-    if (isFetchingEventResult) {
-      onSelectGraph({
-        id: "",
-        name: "",
-        status: "",
-        run_time: "",
-        nodes: [{ id: "", title: "loading...", output: "loading..." }],
-        timestamp: "",
-        description: "",
-      } as EventResult);
-    }
     if (fetchedEventResult) {
       onSelectGraph(fetchedEventResult?.result);
       setSelectedEventId(null);
     }
-  }, [fetchedEventResult, isFetchingEventResult]);
+  }, [fetchedEventResult]);
 
   const renderRow = (row: Row<ScheduleTableRow>) => {
     return (

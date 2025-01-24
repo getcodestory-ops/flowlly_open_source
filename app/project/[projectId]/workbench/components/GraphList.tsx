@@ -89,7 +89,7 @@ export const GraphList: React.FC<GraphListProps> = ({
       },
       {
         accessorKey: "metadata.recurrence_day",
-        header: "Meeting Day",
+        header: "Day",
         cell: (info) => {
           const metadata = info.row.original.metadata;
           if (!metadata) return "N/A";
@@ -102,7 +102,7 @@ export const GraphList: React.FC<GraphListProps> = ({
       },
       {
         accessorKey: "time",
-        header: "Meeting Time",
+        header: "Time",
         cell: (info) => info.getValue(),
       },
       {

@@ -1,5 +1,7 @@
 import { WorkflowNode } from "@/types/projectEvents";
 import RunningLogNode from "./RunningLogNode";
+import { OutlookAttachmentsNode } from "./OutlookAttachmentsNode";
+import { NodeType } from "../../types";
 
 interface NodeConfig {
   value: string;
@@ -107,9 +109,31 @@ export const nodeConfigs: Record<string, NodeConfig> = {
         (node.config as any).systemPrompt?.slice(0, 50) || "..."
       }`,
   },
+  outlook_attachments: {
+    value: "outlook_attachments",
+    label: "Outlook Attachments",
+    icon: "📄",
+    getDescription: (node) => `Get attachments from Outlook email`,
+  },
+  outlook_reply: {
+    value: "outlook_reply",
+    label: "Outlook Reply",
+    icon: "✉️",
+    getDescription: (node) =>
+      `Reply to Outlook email${
+        node.config.include_original_message
+          ? " (including original message)"
+          : ""
+      }`,
+  },
+  recipe: {
+    value: "recipe",
+    label: "Recipe",
+    icon: "🧪",
+    getDescription: (node) => `Execute recipe: ${node.config.recipe_name}`,
+  },
 } as const;
 
-// Helper functions that use the combined config
 // Helper functions that use the combined config
 export const nodeTypes = Object.values(nodeConfigs).map(({ value, label }) => ({
   value,

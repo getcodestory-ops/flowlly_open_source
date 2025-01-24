@@ -272,6 +272,14 @@ export default function Integration() {
                 : "Not connected to Microsoft"}
             </span>
           </div>
+          {!microsoftConnected && (
+            <Button
+              onClick={handleMicrosoftConnect}
+              variant={microsoftConnected ? "destructive" : "default"}
+            >
+              Connect to Microsoft
+            </Button>
+          )}
           {microsoftConnected && !microsoftWebhook && (
             <Button
               className="mr-4"
