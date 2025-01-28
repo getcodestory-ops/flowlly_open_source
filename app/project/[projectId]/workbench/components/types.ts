@@ -1,5 +1,6 @@
+import { EventTrigger } from "@/types/projectEvents";
 import { Row } from "@tanstack/react-table";
-
+import { WorkflowNode } from "@/components/ProjectEvent/CustomWorkFlow/types";
 // Action-related types
 export type ActionData = Array<{
   activity_addition: Array<{
@@ -36,6 +37,7 @@ export type NodeStatus =
 
 export type NodeData = {
   id: string;
+  type?: string;
   title: string;
   description: string;
   status: NodeStatus;
@@ -58,6 +60,7 @@ export type GraphMetadata = {
   time_zone: string;
   online_link: string;
   recurrence_day?: string;
+  nodes?: WorkflowNode[];
 };
 
 export type GraphData = {
@@ -70,6 +73,7 @@ export type GraphData = {
   run_time: string;
   event_type: string;
   event_schedule?: EventSchedule[];
+  event_trigger?: EventTrigger[];
 };
 
 // Event-related types
@@ -81,6 +85,9 @@ export type EventResult = {
   run_time: string;
   timestamp: string;
   description: string;
+  listen?: boolean;
+  workflow_id?: string;
+  event_id?: string;
 };
 
 export type EventSchedule = {

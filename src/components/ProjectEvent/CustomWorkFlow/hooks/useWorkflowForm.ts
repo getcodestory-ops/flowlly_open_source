@@ -9,12 +9,14 @@ interface UseWorkflowFormProps {
   session: any;
   activeProject: any;
   members: any[];
+  editData: any;
 }
 
 export function useWorkflowForm({
   session,
   activeProject,
   members,
+  editData,
 }: UseWorkflowFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -32,6 +34,9 @@ export function useWorkflowForm({
     triggerByKey: "",
     authorizedUsers: [],
     nodes: [],
+    startDate: format(new Date(), "yyyy-MM-dd"),
+    endDate: format(new Date(), "yyyy-MM-dd"),
+    recurrenceDay: format(new Date(), "EEEE"),
   });
 
   const [isFormValid, setIsFormValid] = useState(false);
@@ -108,13 +113,14 @@ export function useWorkflowForm({
     if (!session || !activeProject) return;
 
     const createEvent: CreateEvent = {
+      id: formData.id,
       project_event: {
         name: formData.name,
         event_type: "custom",
         metadata: {
           nodes: formData.nodes,
           frequency: formData.recurrence,
-          recurrence_day: formData.recurrence,
+          recurrence_day: formData.recurrenceDay,
           time: format(new Date(formData.startTime), "HH:mm"),
           triggerType: "ui",
         },
@@ -135,14 +141,19 @@ export function useWorkflowForm({
         trigger_by_key: formData.triggerByKey,
       },
       start_time: format(new Date(formData.startTime), "HH:mm"),
-      start_date: format(new Date(formData.startTime), "yyyy-MM-dd"),
+      start_date: formData.startDate
+        ? format(new Date(formData.startDate), "yyyy-MM-dd")
+        : undefined,
       recurrence: formData.recurrence,
       time_zone: formData.timeZone,
       join_now: true,
+      end_date: formData.endDate
+        ? format(new Date(formData.endDate), "yyyy-MM-dd")
+        : undefined,
     };
 
     try {
-      console.log("createEvent", JSON.stringify(createEvent, null, 2));
+      console.log("createEvent", createEvent);
       mutate(createEvent);
     } catch (error) {
       console.error("Error creating workflow:", error);

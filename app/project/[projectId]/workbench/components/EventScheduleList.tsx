@@ -22,8 +22,12 @@ import {
 } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
 import type { EventResult, EventSchedule, ScheduleTableRow } from "./types";
-import { getEventResult, getEventTrigger } from "@/api/taskQueue";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  getEventResult,
+  getEventTrigger,
+  clearWorkflowProcess,
+} from "@/api/taskQueue";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { NodeStatus } from "@/components/ProjectEvent/CustomWorkFlow/types";
 
@@ -69,37 +73,13 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
         id: eventSchedule.id,
         schedule: eventSchedule.schedule,
         subRows: [
-          ...(eventTrigger?.trigger_by === "ui"
-            ? [
-                {
-                  id: "eventTrigger",
-                  result: {
-                    id: "newevent",
-                    description: "Trigger Event from UI",
-                    name: "Start the worker",
-                    run_time: new Date().toISOString(),
-                    status: NodeStatus.PENDING,
-                    timestamp: new Date().toISOString(),
-                    nodes: [
-                      {
-                        id: crypto.randomUUID(),
-                        title: "Run the worker",
-                        output: "Waiting for the worker to start",
-                        description: "Waiting for the worker to start",
-                        status: NodeStatus.COMPLETED,
-                      },
-                    ],
-                  },
-                },
-              ]
-            : []),
           ...eventSchedule.event_result.map((eventResult) => ({
             id: eventResult.id,
             result: eventResult,
           })),
         ],
       })),
-    [graphs]
+    [graphs, eventTrigger]
   );
 
   const columns = useMemo<ColumnDef<ScheduleTableRow>[]>(
@@ -131,12 +111,47 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
             return "Upcoming";
           } else if (row.original.result) {
             const result = row.original.result;
+            const activelyListening = result?.listen;
+            const currentlyRunning = result?.workflow_id;
 
             return (
-              <div className="pl-8">
+              <div className="pl-8 flex items-center gap-2">
                 {new Date(result.timestamp).toDateString() +
                   " - " +
                   result.name}
+                {activelyListening && (
+                  <div className="flex items-center">
+                    <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                    <span className="ml-1 text-sm text-green-600">
+                      Waiting for input
+                    </span>
+                  </div>
+                )}
+                {currentlyRunning && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center">
+                      <div className="h-2 w-2 rounded-full bg-purple-500 animate-pulse" />
+                      <span className="ml-1 text-sm text-purple-600">
+                        Currently running
+                      </span>
+                    </div>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={(e) => {
+                        console.log("Clearing process");
+
+                        e.stopPropagation();
+                        if (row.original.result?.event_id) {
+                          clearProcess(row.original.result?.event_id);
+                        }
+                      }}
+                      className="h-6 px-2 text-xs"
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                )}
               </div>
             );
           } else {
@@ -181,6 +196,23 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
       staleTime: 0,
       refetchOnWindowFocus: true,
     });
+
+  const { mutate: clearProcess } = useMutation({
+    mutationFn: async (eventId: string) => {
+      if (!session || !activeProject) throw new Error("No session or project");
+      return clearWorkflowProcess({
+        session,
+        projectId: activeProject.project_id,
+        eventId,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projectEvents"] });
+      queryClient.invalidateQueries({
+        queryKey: ["eventResult", selectedEventId],
+      });
+    },
+  });
 
   useEffect(() => {
     if (fetchedEventResult) {

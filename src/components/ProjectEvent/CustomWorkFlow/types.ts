@@ -162,6 +162,41 @@ export interface RecipeNodeConfig extends BaseNodeConfig {
   selectedRecipeId?: string;
   inputValues: Record<string, any>;
 }
+export interface UserInputNodeConfig extends BaseNodeConfig {
+  type: "user_input";
+  instructions: string;
+  required: boolean;
+}
+export interface ProcoreProject {
+  id: string;
+  name: string;
+  address: {
+    street: string;
+    city: string;
+    state_code: string | null;
+    zip: string;
+    country_code: string | null;
+  };
+  stage_name: string | null;
+  status_name: string;
+  type_name: string | null;
+  open_items: any[];
+  created_by: {
+    id: number;
+    email: string;
+  };
+}
+export interface ProcoreNodeConfig extends BaseNodeConfig {
+  type: "procore";
+  project?: ProcoreProject;
+  category?:
+    | "project_management"
+    | "construction_financials"
+    | "quality_safety"
+    | "utilities";
+  endpoint?: "daily_reports" | "change_orders";
+  action?: "create" | "get";
+}
 
 interface BranchNodes {
   nodes: WorkflowNode[];
@@ -187,6 +222,8 @@ export enum NodeType {
   OUTLOOK_ATTACHMENTS = "outlook_attachments",
   OUTLOOK_REPLY = "outlook_reply",
   RECIPE = "recipe",
+  PROCORE = "procore",
+  USER_INPUT = "user_input",
 }
 
 export enum NodeStatus {
@@ -291,9 +328,20 @@ export type WorkflowNode = {
       config: RecipeNodeConfig;
       title: string;
     }
+  | {
+      type: NodeType.PROCORE;
+      config: ProcoreNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.USER_INPUT;
+      config: UserInputNodeConfig;
+      title: string;
+    }
 );
 
 export interface WorkflowFormData {
+  id?: string;
   name: string;
   workflowFor: string;
   recurrence: string;
@@ -306,4 +354,7 @@ export interface WorkflowFormData {
   triggerByKey: string;
   authorizedUsers: string[];
   nodes: WorkflowNode[];
+  recurrenceDay?: string;
+  endDate?: string;
+  startDate?: string;
 }

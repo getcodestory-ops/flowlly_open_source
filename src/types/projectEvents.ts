@@ -39,7 +39,7 @@ export interface ProjectEventMetadata {
   location?: string;
   frequency?: string;
   duration?: number;
-  recurrence_day: string;
+  recurrence_day?: string;
   time: string;
   search_query?: string;
   write_prompt?: string;
@@ -116,6 +116,7 @@ export interface EventSchedule {
 }
 
 export interface CreateEvent {
+  id?: string;
   project_event: ProjectEvent;
   event_participants: EventParticipantMetadata[];
   event_trigger?: EventTrigger;

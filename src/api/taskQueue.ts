@@ -221,3 +221,76 @@ export const executeEventTrigger = async ({
   );
   return response.data;
 };
+
+export const triggerEvent = async ({
+  session,
+  projectId,
+  eventId,
+  formData,
+}: {
+  session: Session;
+  projectId: string;
+  eventId: string;
+  formData: FormData;
+}) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/trigger/${projectId}/ui/${eventId}/execute`;
+  const response = await axios.post(url, formData, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+  return response.data;
+};
+
+export const clearWorkflowProcess = async ({
+  session,
+  projectId,
+  eventId,
+}: {
+  session: Session;
+  projectId: string;
+  eventId: string;
+}) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/trigger/${projectId}/ui/${eventId}/clear`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  if (!response.ok) throw new Error("Failed to clear workflow");
+  return response.json();
+};
+
+export const triggerWorkflowNode = async ({
+  session,
+  projectId,
+  eventId,
+  nodeId,
+  triggerType = "ui",
+}: {
+  session: Session;
+  projectId: string;
+  eventId: string;
+  nodeId: string;
+  triggerType?: string;
+}) => {
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/trigger/${projectId}/execute_node`;
+  const response = await axios.post(
+    url,
+    {
+      event_id: eventId,
+      trigger_type: triggerType,
+      node_id: nodeId,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    }
+  );
+  return response.data;
+};

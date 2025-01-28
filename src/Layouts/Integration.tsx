@@ -39,14 +39,27 @@ export default function Integration() {
   const [microsoftWebhook, setMicrosoftWebhook] = useState(null);
   const [microsoftMailWebhook, setMicrosoftMailWebhook] = useState(null);
 
-  const { data: integration } = useQuery({
-    queryKey: ["integration", activeProject?.project_id],
-    queryFn: () => getApiIntegration(session!, activeProject?.project_id!),
+  const { data: microsoftIntegration } = useQuery({
+    queryKey: ["integration", activeProject?.project_id, "microsoft"],
+    queryFn: () =>
+      getApiIntegration(session!, activeProject?.project_id!, "microsoft"),
     enabled: !!session && !!activeProject?.project_id,
   });
+
+  const { data: procoreIntegration } = useQuery({
+    queryKey: ["integration", activeProject?.project_id, "procore"],
+    queryFn: () =>
+      getApiIntegration(session!, activeProject?.project_id!, "procore"),
+    enabled: !!session && !!activeProject?.project_id,
+  });
+
   useEffect(() => {
-    setMicrosoftConnected(!!integration);
-  }, [integration]);
+    setMicrosoftConnected(!!microsoftIntegration);
+  }, [microsoftIntegration]);
+
+  useEffect(() => {
+    setProcoreConnected(!!procoreIntegration);
+  }, [procoreIntegration]);
 
   const { data: microsoftWebhookState } = useQuery({
     queryKey: ["microsoftWebhook", activeProject?.project_id],
@@ -114,7 +127,33 @@ export default function Integration() {
   });
 
   const handleProcoreConnect = () => {
-    setProcoreConnected(!procoreConnected);
+    console.log("procoreConnected", procoreConnected);
+    if (!procoreConnected) {
+      if (!session || !activeProject) {
+        toast({
+          title: "Error",
+          description: "Either session or project is not valid!",
+          duration: 4000,
+        });
+        return;
+      }
+
+      const clientId = process.env.NEXT_PUBLIC_PROCORE_CLIENT_ID;
+      const redirectUri = process.env.NEXT_PUBLIC_PROCORE_REDIRECT_URI;
+      const state = activeProject.project_id;
+      const baseUri = process.env.NEXT_PUBLIC_PROCORE_BASE_URI;
+
+      const authUrl = `${baseUri}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&state=${state}`;
+      window.location.href = authUrl;
+    } else {
+      // Handle disconnect logic here
+      setProcoreConnected(false);
+      toast({
+        title: "Disconnected",
+        description: "Successfully disconnected from Procore",
+        duration: 4000,
+      });
+    }
   };
 
   const handleMicrosoftConnect = async () => {

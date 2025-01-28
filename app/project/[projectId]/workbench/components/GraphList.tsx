@@ -30,7 +30,7 @@ import ProjectEventCreationForm from "@/components/ProjectEvent/ProjectEventCrea
 import DocumentWriterForm from "@/components/ProjectEvent/DocumentWriterForm";
 import DailyJournalForm from "@/components/ProjectEvent/DailyJournalForm";
 import CustomWorkflowForm from "@/components/ProjectEvent/CustomWorkFlow/CustomWorkflowForm";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useViewStore } from "@/utils/store";
 
 interface GraphListProps {
@@ -126,7 +126,7 @@ export const GraphList: React.FC<GraphListProps> = ({
           return (
             <PencilIcon
               size={16}
-              className="cursor-pointer"
+              className="cursor-pointer  hover:text-purple-500 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 if (
@@ -254,39 +254,35 @@ export const GraphList: React.FC<GraphListProps> = ({
           <CalendarView graphs={graphs} onSelectGraph={onSelectGraph} />
         </TabsContent>
       </Tabs>
-      {/* <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent
-          className="max-w-2xl"
-          aria-describedby="dialog-description"
-        >
-          <DialogTitle>
-            {selectedEventType === "meeting" && "Edit Meeting"}
-            {selectedEventType === "document_writing" && "Edit Document"}
-            {selectedEventType === "custom" && "Edit Custom Workflow"}
-          </DialogTitle>
-          <div id="dialog-description" className="sr-only">
-            Edit form for {selectedEventType} event
+      <Sheet open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <SheetContent side="right" className="w-[90vw]">
+          <div className="flex flex-col gap-4">
+            <h2 className="text-lg font-semibold">
+              {selectedEventType === "meeting" && "Edit Meeting"}
+              {selectedEventType === "document_writing" && "Edit Document"}
+              {selectedEventType === "custom" && "Edit Custom Workflow"}
+            </h2>
+            {selectedEventType === "meeting" && (
+              <ProjectEventCreationForm
+                onClose={() => setIsDialogOpen(false)}
+                editData={selectedEventData!}
+              />
+            )}
+            {selectedEventType === "document_writing" && (
+              <DocumentWriterForm
+                onClose={() => setIsDialogOpen(false)}
+                editData={selectedEventData!}
+              />
+            )}
+            {selectedEventType === "custom" && (
+              <CustomWorkflowForm
+                onClose={() => setIsDialogOpen(false)}
+                editData={selectedEventData!}
+              />
+            )}
           </div>
-          {selectedEventType === "meeting" && (
-            <ProjectEventCreationForm
-              onClose={() => setIsDialogOpen(false)}
-              editData={selectedEventData!}
-            />
-          )}
-          {selectedEventType === "document_writing" && (
-            <DocumentWriterForm
-              onClose={() => setIsDialogOpen(false)}
-              editData={selectedEventData!}
-            />
-          )}
-          {selectedEventType === "custom" && (
-            <CustomWorkflowForm
-              onClose={() => setIsDialogOpen(false)}
-              editData={selectedEventData!}
-            />
-          )}
-        </DialogContent>
-      </Dialog> */}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
