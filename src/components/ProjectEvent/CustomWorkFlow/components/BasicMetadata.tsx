@@ -37,7 +37,7 @@ export function BasicMetadata({ formData, onChange }: BasicMetadataProps) {
         />
       </div>
 
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <Label htmlFor="startTime">Start Time</Label>
         <Input
           id="startTime"
@@ -46,7 +46,7 @@ export function BasicMetadata({ formData, onChange }: BasicMetadataProps) {
           onChange={(e) => onChange({ startTime: e.target.value })}
           required
         />
-      </div>
+      </div> */}
     </div>
   );
 }

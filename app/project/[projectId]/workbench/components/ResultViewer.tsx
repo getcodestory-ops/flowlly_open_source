@@ -2,13 +2,19 @@ import React, { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { ChevronDown, ChevronUp, Maximize2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Maximize2, Loader2 } from "lucide-react";
 import ContentEditor from "@/components/DocumentEditor/ContentEditor";
 import ActionItemViewer from "@/components/AiActions/ActionItemViewer";
 import { ResourceTextViewer } from "@/components/DocumentEditor/ResourceTextViewer";
 import { renderJsonValue, truncateObject } from "./utils";
 import { Button } from "@/components/ui/button";
 import type { NodeData, ActionData, EventResult } from "./types";
+import { useStore } from "@/utils/store";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { triggerEvent, triggerWorkflowNode } from "@/api/taskQueue";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface ResultViewerProps {
   currentResult: EventResult;
@@ -21,37 +27,34 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
   selectedNode,
   onSelectNode,
 }) => {
-  console.log("currentResult", currentResult);
+  const projectId = useStore((state) => state.activeProject?.project_id);
+  const isWorkflowRunning = !!currentResult?.workflow_id;
+
   return (
     <ScrollArea className=" ">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 p-2">
-        {currentResult?.nodes
-          ?.filter(
-            (node) =>
-              ![
-                "write_meeting_minutes",
-                "write_meeting_outline",
-                "assign_action_items",
-                "join_online_meeting",
-                "download_save_meeting_recording",
-                "distribute_meeting_minutes",
-              ].includes(node.id.toLowerCase())
-          )
-          .sort((a, b) => {
-            const order = [
-              "save_minutes_in_project_documents",
-              "transcribe_meeting",
-              "record_meeting",
-              "determine_action_items",
-            ];
-            return (
-              order.indexOf(a.id.toLowerCase()) -
-              order.indexOf(b.id.toLowerCase())
-            );
-          })
-          .map((node) => (
-            <ResultBox key={node.id} node={node} />
-          ))}
+      <div className="flex flex-col gap-4 p-2">
+        {currentResult?.listen && (
+          <Card className="p-4 mb-4 border-2 border-green-500">
+            {currentResult.workflow_id && projectId && (
+              <UserInputForm
+                eventId={currentResult.event_id}
+                projectId={projectId}
+              />
+            )}
+          </Card>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          {currentResult?.nodes &&
+            currentResult?.nodes?.map((node) => (
+              <ResultBox
+                key={node.id}
+                node={node}
+                eventId={currentResult.event_id || ""}
+                isWorkflowRunning={isWorkflowRunning}
+              />
+            ))}
+        </div>
       </div>
     </ScrollArea>
   );
@@ -59,11 +62,39 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 
 interface ResultBoxProps {
   node: NodeData;
+  eventId: string;
+  isWorkflowRunning: boolean;
 }
 
-const ResultBox: React.FC<ResultBoxProps> = ({ node }) => {
+const ResultBox: React.FC<ResultBoxProps> = ({
+  node,
+  eventId,
+  isWorkflowRunning,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const session = useStore((state) => state.session);
+  const activeProject = useStore((state) => state.activeProject);
+  const queryClient = useQueryClient();
+
+  const { mutate: rerunNode, isPending: isRerunning } = useMutation({
+    mutationFn: async () => {
+      if (!session || !activeProject) throw new Error("No session or project");
+      return triggerWorkflowNode({
+        session,
+        projectId: activeProject.project_id,
+        eventId,
+        nodeId: node.id,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["eventResult"] });
+    },
+  });
+
+  const canRerun =
+    isWorkflowRunning &&
+    (node.status === "failed" || (node.status === "completed" && eventId));
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
@@ -86,14 +117,31 @@ const ResultBox: React.FC<ResultBoxProps> = ({ node }) => {
 
   return (
     <Card
-      className={`border-2 border-black ${baseClassName} ${fullScreenClass} ${
-        isFullScreen ? "p-8" : "p-4"
-      } ${!isFullScreen ? getNodeColumnSpan(node) : ""}`}
+      className={`border-2 ${
+        node.status === "failed" ? "border-red-500" : "border-black"
+      } ${baseClassName} ${fullScreenClass} ${isFullScreen ? "p-8" : "p-4"} ${
+        !isFullScreen ? getNodeColumnSpan(node) : ""
+      }`}
     >
       <div className={`${isFullScreen ? "max-w-6xl mx-auto" : ""} h-full`}>
         <div className="flex justify-between items-center mb-4">
-          <div>
+          <div className="flex items-center gap-2">
             <h3 className="text-lg font-semibold">{node.title}</h3>
+            {canRerun && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => rerunNode()}
+                disabled={isRerunning}
+                className="h-7 px-2"
+              >
+                {isRerunning ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  "Rerun"
+                )}
+              </Button>
+            )}
           </div>
           <Button
             variant="ghost"
@@ -150,9 +198,100 @@ const ResultBox: React.FC<ResultBoxProps> = ({ node }) => {
   );
 };
 
+const UserInputForm = ({
+  eventId,
+  projectId,
+}: {
+  eventId?: string;
+  projectId: string;
+}) => {
+  const [inputText, setInputText] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const session = useStore((state) => state.session);
+
+  const handleSubmit = async () => {
+    if (!session || !projectId || !eventId) return;
+
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("body", inputText);
+      files.forEach((file) => formData.append("files", file));
+
+      await triggerEvent({
+        session,
+        projectId,
+        eventId: eventId,
+        formData,
+      });
+
+      setInputText("");
+      setFiles([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2 p-2 bg-muted/30 rounded-lg">
+        {files.map((file, index) => (
+          <div
+            key={index}
+            className="flex items-center gap-2 bg-muted px-3 py-1 rounded-full text-sm"
+          >
+            <span className="truncate max-w-[200px]">{file.name}</span>
+            <button
+              onClick={() => setFiles(files.filter((_, i) => i !== index))}
+              className="hover:text-destructive"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <Textarea
+        value={inputText}
+        onChange={(e) => setInputText(e.target.value)}
+        placeholder="Type your response here..."
+        className="min-h-[100px]"
+      />
+
+      <div className="flex gap-2 items-center">
+        <Input
+          type="file"
+          multiple
+          onChange={(e) =>
+            e.target.files &&
+            setFiles([...files, ...Array.from(e.target.files)])
+          }
+          className="hidden"
+          id={`file-upload-${eventId}`}
+        />
+        <Label
+          htmlFor={`file-upload-${eventId}`}
+          className="cursor-pointer hover:bg-muted px-3 py-2 rounded-md text-sm"
+        >
+          📎 Attach Files
+        </Label>
+
+        <Button onClick={handleSubmit} disabled={isLoading} className="ml-auto">
+          {isLoading ? "Submitting..." : "Submit Response"}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const getNodeColumnSpan = (node: NodeData): string => {
   const nodeId = node.id.toLowerCase();
   const nodeTitle = node.title?.toLowerCase() ?? "";
+
+  if (nodeId === "user_input") {
+    return "col-span-1 md:col-span-2 xl:col-span-3";
+  }
 
   // First check specific node IDs
   switch (nodeId) {

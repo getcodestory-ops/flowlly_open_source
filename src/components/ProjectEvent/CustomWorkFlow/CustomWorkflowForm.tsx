@@ -34,9 +34,27 @@ import { TriggerConfiguration } from "./components/TriggerConfiguration";
 import { WorkflowNodes } from "./components/WorkflowNodes/WorkFlowNodes";
 import { useWorkflowForm } from "./hooks/useWorkflowForm";
 import { WorkflowFormData } from "./types";
-import { GraphData } from "../../../../app/project/[projectId]/workbench/components/types";
+
 import { Loader2 } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { GraphData } from "../../../../app/project/[projectId]/workbench/components/types";
+
+const convertGraphToWorkflow = (graphData: GraphData): WorkflowFormData => ({
+  id: graphData.id,
+  name: graphData.name,
+  workflowFor: graphData.description,
+  recurrence: graphData.metadata.frequency,
+  startTime: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
+  timeZone: graphData.metadata.time_zone,
+  accessBy: "project_access",
+  accessByKey: "",
+  triggerBy:
+    (graphData.event_trigger?.[0]
+      ?.trigger_by as WorkflowFormData["triggerBy"]) ?? "time",
+  triggerKeyword: graphData.event_trigger?.[0]?.trigger_keyword ?? "",
+  triggerByKey: graphData.event_trigger?.[0]?.trigger_by_key ?? "",
+  authorizedUsers: [],
+  nodes: graphData.metadata?.nodes ?? [],
+});
 
 export default function CustomWorkflowForm({
   onClose,
@@ -45,8 +63,8 @@ export default function CustomWorkflowForm({
   onClose: () => void;
   editData?: GraphData;
 }) {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
+  // const queryClient = useQueryClient();
+  // const { toast } = useToast();
   const session = useStore((state) => state.session);
   const activeProject = useStore((state) => state.activeProject);
   const members = useStore((state) => state.members);
@@ -61,7 +79,7 @@ export default function CustomWorkflowForm({
     updateFormData,
     isPending,
     isSuccess,
-  } = useWorkflowForm({ session, activeProject, members });
+  } = useWorkflowForm({ session, activeProject, members, editData });
 
   const handleFormUpdate = (updates: Partial<WorkflowFormData>) => {
     updateFormData(updates);
@@ -85,19 +103,22 @@ export default function CustomWorkflowForm({
     }
   }, [formData.triggerBy, activeProject, session]);
 
+  useEffect(() => {
+    if (editData) {
+      console.log("editData", editData);
+      handleFormUpdate(convertGraphToWorkflow(editData));
+    }
+  }, [editData]);
+
+  useEffect(() => {
+    if (formData.recurrence === "weekdays") {
+      const currentDay = format(new Date(), "EEEE");
+      handleFormUpdate({ recurrenceDay: currentDay });
+    }
+  }, [formData.recurrence]);
+
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>();
-  const [startTime, setStartTime] = useState(
-    format(roundToNearestMinutes(new Date(), { nearestTo: 30 }), "HH:mm")
-  );
-  const [duration, setDuration] = useState("60");
-  const [recurrence, setRecurrence] = useState<string>("once");
-  const [weeklyRecurrenceDay, setWeeklyRecurrenceDay] = useState(
-    format(new Date(), "EEEE")
-  );
-  const [triggerType, setTriggerType] = useState<"manual" | "scheduled">(
-    "manual"
-  );
 
   return (
     <ScrollArea className="w-full h-full">
@@ -130,7 +151,16 @@ export default function CustomWorkflowForm({
                     value={formData.triggerBy}
                     onValueChange={(
                       value: "email_subject" | "phone" | "time" | "ui"
-                    ) => handleFormUpdate({ triggerBy: value })}
+                    ) => {
+                      handleFormUpdate({ triggerBy: value });
+                      if (value === "time") {
+                        handleFormUpdate({
+                          startDate: format(new Date(), "yyyy-MM-dd"),
+                          endDate: format(new Date(), "yyyy-MM-dd"),
+                          recurrence: "once",
+                        });
+                      }
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select trigger type" />
@@ -151,9 +181,14 @@ export default function CustomWorkflowForm({
                         <Label htmlFor="recurrence">Repeat</Label>
                         <Select
                           name="recurrence"
-                          value={recurrence}
-                          defaultValue="once"
-                          onValueChange={setRecurrence}
+                          value={
+                            formData.recurrence !== "manual"
+                              ? formData.recurrence
+                              : "once"
+                          }
+                          onValueChange={(value) =>
+                            handleFormUpdate({ recurrence: value })
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select repeat frequency" />
@@ -171,25 +206,27 @@ export default function CustomWorkflowForm({
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
-                        {recurrence === "weekly" && (
+                        {formData.recurrence === "weekly" && (
                           <div className="space-y-2 col-span-2">
                             <Label htmlFor="weeklyRecurrenceDay">On</Label>
                             <Select
-                              value={weeklyRecurrenceDay}
-                              onValueChange={setWeeklyRecurrenceDay}
+                              value={formData.recurrenceDay}
+                              onValueChange={(value) =>
+                                handleFormUpdate({ recurrenceDay: value })
+                              }
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder="Select day" />
                               </SelectTrigger>
                               <SelectContent>
                                 {[
-                                  "Sunday",
                                   "Monday",
                                   "Tuesday",
                                   "Wednesday",
                                   "Thursday",
                                   "Friday",
                                   "Saturday",
+                                  "Sunday",
                                 ].map((day) => (
                                   <SelectItem key={day} value={day}>
                                     {day}
@@ -199,9 +236,30 @@ export default function CustomWorkflowForm({
                             </Select>
                           </div>
                         )}
+                        {formData.recurrence === "weekdays" && (
+                          <div className="space-y-2 col-span-2">
+                            <Label htmlFor="weeklyRecurrenceDay">
+                              Every Weekday
+                            </Label>
+                            <Select value={formData.recurrenceDay} disabled>
+                              <SelectTrigger>
+                                <SelectValue
+                                  placeholder={format(new Date(), "EEEE")}
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value={format(new Date(), "EEEE")}>
+                                  {format(new Date(), "EEEE")} (Today)
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
                         <div className="space-y-2">
                           <Label>
-                            {recurrence === "once" ? "Date" : "Start Date"}
+                            {formData.recurrence === "once"
+                              ? "Date"
+                              : "Start Date"}
                           </Label>
                           <Popover>
                             <PopoverTrigger asChild>
@@ -211,8 +269,8 @@ export default function CustomWorkflowForm({
                                   !startDate ? "text-muted-foreground" : ""
                                 }
                               >
-                                {startDate
-                                  ? format(startDate, "PPP")
+                                {formData.startDate
+                                  ? format(new Date(formData.startDate), "PPP")
                                   : "Pick a date"}
                                 <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
                               </Button>
@@ -223,14 +281,33 @@ export default function CustomWorkflowForm({
                             >
                               <Calendar
                                 mode="single"
-                                selected={startDate}
-                                onSelect={(date) => setStartDate(date as Date)}
+                                selected={
+                                  formData.startDate
+                                    ? new Date(formData.startDate)
+                                    : new Date()
+                                }
+                                onSelect={(date) => {
+                                  if (date) {
+                                    const currentDate = formData.startDate
+                                      ? new Date(formData.startDate)
+                                      : new Date();
+                                    const newDate = new Date(date);
+                                    newDate.setHours(currentDate.getHours());
+                                    newDate.setMinutes(
+                                      currentDate.getMinutes()
+                                    );
+                                    handleFormUpdate({
+                                      startDate: newDate.toISOString(),
+                                      startTime: newDate.toISOString(),
+                                    });
+                                  }
+                                }}
                                 initialFocus
                               />
                             </PopoverContent>
                           </Popover>
                         </div>
-                        {recurrence !== "once" && (
+                        {formData.recurrence !== "once" && (
                           <div className="space-y-2">
                             <Label>End Date</Label>
                             <Popover>
@@ -238,11 +315,13 @@ export default function CustomWorkflowForm({
                                 <Button
                                   variant="outline"
                                   className={
-                                    !endDate ? "text-muted-foreground" : ""
+                                    !formData.endDate
+                                      ? "text-muted-foreground"
+                                      : ""
                                   }
                                 >
-                                  {endDate
-                                    ? format(endDate, "PPP")
+                                  {formData.endDate
+                                    ? format(new Date(formData.endDate), "PPP")
                                     : "Pick a date"}
                                   <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
                                 </Button>
@@ -253,8 +332,31 @@ export default function CustomWorkflowForm({
                               >
                                 <Calendar
                                   mode="single"
-                                  selected={endDate}
-                                  onSelect={(date) => setEndDate(date as Date)}
+                                  selected={
+                                    formData.endDate
+                                      ? new Date(formData.endDate)
+                                      : undefined
+                                  }
+                                  onSelect={(date) => {
+                                    if (date) {
+                                      const currentEndDate = formData.endDate
+                                        ? new Date(formData.endDate)
+                                        : new Date();
+                                      const newEndDate = new Date(date);
+                                      newEndDate.setHours(
+                                        currentEndDate.getHours()
+                                      );
+                                      newEndDate.setMinutes(
+                                        currentEndDate.getMinutes()
+                                      );
+                                      handleFormUpdate({
+                                        endDate: newEndDate.toISOString(),
+                                      });
+                                    } else {
+                                      handleFormUpdate({ endDate: undefined });
+                                    }
+                                  }}
+                                  fromDate={new Date(formData.startDate ?? "")}
                                   initialFocus
                                 />
                               </PopoverContent>
@@ -267,8 +369,21 @@ export default function CustomWorkflowForm({
                         <div className="space-y-2">
                           <Label htmlFor="startTime">Start Time</Label>
                           <Select
-                            value={startTime}
-                            onValueChange={setStartTime}
+                            value={format(
+                              new Date(formData.startTime),
+                              "HH:mm"
+                            )}
+                            onValueChange={(time) => {
+                              const [hours, minutes] = time
+                                .split(":")
+                                .map(Number);
+                              const newDate = new Date(formData.startTime);
+                              newDate.setHours(hours);
+                              newDate.setMinutes(minutes);
+                              handleFormUpdate({
+                                startTime: newDate.toISOString(),
+                              });
+                            }}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select start time" />
@@ -332,6 +447,8 @@ export default function CustomWorkflowForm({
               >
                 {isPending ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : editData ? (
+                  "Update Workflow"
                 ) : (
                   "Save Workflow"
                 )}

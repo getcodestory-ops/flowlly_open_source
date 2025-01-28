@@ -16,6 +16,8 @@ import type {
   EventSchedule,
   ProjectEvents,
 } from "./types";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { TriggerUI } from "./TriggerUI";
 
 const Breadcrumbs: React.FC<{
   currentGraph: GraphData | null;
@@ -159,11 +161,35 @@ export default function AssignmentHome() {
 
       {eventSchedule && (
         <Card className="p-6">
-          <EventScheduleList
-            graphs={eventSchedule || []}
-            onSelectGraph={setCurrentResult}
-            eventId={currentGraphId || ""}
-          />
+          <Tabs defaultValue="schedules">
+            <TabsList className="mb-4">
+              <TabsTrigger value="schedules">Runs</TabsTrigger>
+              {currentGraph?.event_trigger &&
+                currentGraph?.event_trigger.length > 0 &&
+                currentGraph?.event_trigger[0].trigger_by === "ui" && (
+                  <TabsTrigger value="trigger">Start Workflow</TabsTrigger>
+                )}
+            </TabsList>
+
+            <TabsContent value="schedules">
+              <EventScheduleList
+                graphs={eventSchedule || []}
+                onSelectGraph={setCurrentResult}
+                eventId={currentGraphId || ""}
+              />
+            </TabsContent>
+
+            {currentGraph?.event_trigger &&
+              currentGraph?.event_trigger.length > 0 &&
+              currentGraph?.event_trigger[0].trigger_by === "ui" && (
+                <TabsContent value="trigger">
+                  <TriggerUI
+                    eventId={currentGraphId || ""}
+                    onTrigger={setCurrentResult}
+                  />
+                </TabsContent>
+              )}
+          </Tabs>
         </Card>
       )}
     </div>

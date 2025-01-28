@@ -23,6 +23,8 @@ import RunningLogNode from "./RunningLogNode";
 import { OutlookAttachmentsNode } from "./OutlookAttachmentsNode";
 import { OutlookReplyNode } from "./OutlookReplyNode";
 import { RecipeNode } from "./RecipeNode";
+import { ProcoreNode } from "./ProcoreNode";
+import { UserInputNode } from "./UserInputNode";
 
 interface NodeTypeSelectorProps {
   currentNodeType: string;
@@ -50,6 +52,8 @@ const nodeComponents: Record<string, React.FC<any>> = {
   outlook_attachments: OutlookAttachmentsNode,
   outlook_reply: OutlookReplyNode,
   recipe: RecipeNode,
+  procore: ProcoreNode,
+  user_input: UserInputNode,
 };
 
 export function NodeTypeSelector({

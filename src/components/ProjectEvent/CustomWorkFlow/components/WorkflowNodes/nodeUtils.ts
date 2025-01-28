@@ -2,6 +2,7 @@ import { WorkflowNode } from "@/types/projectEvents";
 import RunningLogNode from "./RunningLogNode";
 import { OutlookAttachmentsNode } from "./OutlookAttachmentsNode";
 import { NodeType } from "../../types";
+import { ProcoreNodeConfig } from "../../types";
 
 interface NodeConfig {
   value: string;
@@ -131,6 +132,24 @@ export const nodeConfigs: Record<string, NodeConfig> = {
     label: "Recipe",
     icon: "🧪",
     getDescription: (node) => `Execute recipe: ${node.config.recipe_name}`,
+  },
+  procore: {
+    value: NodeType.PROCORE,
+    label: "Procore Integration",
+    icon: "🏗️",
+    getDescription: (node: WorkflowNode) => {
+      const config = node.config as ProcoreNodeConfig;
+      return `Procore ${config.action} action on ${config.endpoint}`;
+    },
+  },
+  user_input: {
+    value: "user_input",
+    label: "User Input",
+    icon: "💬",
+    getDescription: (node) =>
+      `Collect user input with prompt: ${
+        (node.config as any).instructions?.slice(0, 50) || "..."
+      }`,
   },
 } as const;
 
