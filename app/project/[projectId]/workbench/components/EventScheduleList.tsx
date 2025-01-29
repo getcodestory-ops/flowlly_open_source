@@ -30,6 +30,17 @@ import {
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { NodeStatus } from "@/components/ProjectEvent/CustomWorkFlow/types";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface EventScheduleListProps {
   graphs: EventSchedule[];
@@ -130,26 +141,49 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
                 {currentlyRunning && (
                   <div className="flex items-center gap-2">
                     <div className="flex items-center">
-                      <div className="h-2 w-2 rounded-full bg-purple-500 animate-pulse" />
+                      <div className="h-2 w-2 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
                       <span className="ml-1 text-sm text-purple-600">
                         Currently running
                       </span>
                     </div>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={(e) => {
-                        console.log("Clearing process");
-
-                        e.stopPropagation();
-                        if (row.original.result?.event_id) {
-                          clearProcess(row.original.result?.event_id);
-                        }
-                      }}
-                      className="h-6 px-2 text-xs"
-                    >
-                      Clear
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={(e) => e.stopPropagation()}
+                          className="h-6 px-2 text-xs"
+                        >
+                          Clear
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Clearing process will clean the progress so far.
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (row.original.result?.event_id) {
+                                clearProcess(row.original.result.event_id);
+                              }
+                            }}
+                          >
+                            Continue
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 )}
               </div>

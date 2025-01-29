@@ -198,6 +198,12 @@ export interface ProcoreNodeConfig extends BaseNodeConfig {
   action?: "create" | "get";
 }
 
+export interface DocumentComparisonNodeConfig extends BaseNodeConfig {
+  type: "document_comparison";
+  instruction?: string;
+  analyze_implications: boolean;
+}
+
 interface BranchNodes {
   nodes: WorkflowNode[];
 }
@@ -224,6 +230,7 @@ export enum NodeType {
   RECIPE = "recipe",
   PROCORE = "procore",
   USER_INPUT = "user_input",
+  DOCUMENT_COMPARISON = "document_comparison",
 }
 
 export enum NodeStatus {
@@ -336,6 +343,11 @@ export type WorkflowNode = {
   | {
       type: NodeType.USER_INPUT;
       config: UserInputNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.DOCUMENT_COMPARISON;
+      config: DocumentComparisonNodeConfig;
       title: string;
     }
 );
