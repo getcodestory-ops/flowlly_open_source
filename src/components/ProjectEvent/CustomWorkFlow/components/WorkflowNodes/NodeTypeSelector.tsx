@@ -25,7 +25,7 @@ import { OutlookReplyNode } from "./OutlookReplyNode";
 import { RecipeNode } from "./RecipeNode";
 import { ProcoreNode } from "./ProcoreNode";
 import { UserInputNode } from "./UserInputNode";
-
+import { DocumentComparisonNode } from "./DocumentComparisonNode";
 interface NodeTypeSelectorProps {
   currentNodeType: string;
   setCurrentNodeType: (type: string) => void;
@@ -54,6 +54,7 @@ const nodeComponents: Record<string, React.FC<any>> = {
   recipe: RecipeNode,
   procore: ProcoreNode,
   user_input: UserInputNode,
+  document_comparison: DocumentComparisonNode,
 };
 
 export function NodeTypeSelector({

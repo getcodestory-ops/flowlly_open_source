@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { triggerEvent, triggerWorkflowNode } from "@/api/taskQueue";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
+import MarkDownDisplay from "@/components/Markdown/MarkDownDisplay";
 interface ResultViewerProps {
   currentResult: EventResult;
   selectedNode: NodeData | null;
@@ -29,6 +29,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 }) => {
   const projectId = useStore((state) => state.activeProject?.project_id);
   const isWorkflowRunning = !!currentResult?.workflow_id;
+  const [pendingEvent, setPendingEvent] = useState(true);
 
   return (
     <ScrollArea className=" ">
@@ -36,10 +37,17 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
         {currentResult?.listen && (
           <Card className="p-4 mb-4 border-2 border-green-500">
             {currentResult.workflow_id && projectId && (
-              <UserInputForm
-                eventId={currentResult.event_id}
-                projectId={projectId}
-              />
+              <>
+                {pendingEvent ? (
+                  <UserInputForm
+                    eventId={currentResult.event_id}
+                    projectId={projectId}
+                    setPendingEvent={setPendingEvent}
+                  />
+                ) : (
+                  <div className="text-gray-500">User Input processing...</div>
+                )}
+              </>
             )}
           </Card>
         )}
@@ -201,9 +209,11 @@ const ResultBox: React.FC<ResultBoxProps> = ({
 const UserInputForm = ({
   eventId,
   projectId,
+  setPendingEvent,
 }: {
   eventId?: string;
   projectId: string;
+  setPendingEvent: (pending: boolean) => void;
 }) => {
   const [inputText, setInputText] = useState("");
   const [files, setFiles] = useState<File[]>([]);
@@ -230,6 +240,7 @@ const UserInputForm = ({
       setFiles([]);
     } finally {
       setIsLoading(false);
+      setPendingEvent(false);
     }
   };
 
@@ -359,7 +370,7 @@ const renderNodeContent = (node: NodeData, isFullScreen: boolean) => {
     default:
       return typeof node.output === "string" ? (
         <p className="text-sm text-gray-700 whitespace-pre-line">
-          {node.output}
+          <MarkDownDisplay content={node.output} />
         </p>
       ) : (
         <div className="h-full">

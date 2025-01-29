@@ -151,6 +151,15 @@ export const nodeConfigs: Record<string, NodeConfig> = {
         (node.config as any).instructions?.slice(0, 50) || "..."
       }`,
   },
+  document_comparison: {
+    value: "document_comparison",
+    label: "Document Comparison",
+    icon: "📄",
+    getDescription: (node) =>
+      `Compare documents${
+        node.config.analyze_implications ? " with implications analysis" : ""
+      }`,
+  },
 } as const;
 
 // Helper functions that use the combined config
