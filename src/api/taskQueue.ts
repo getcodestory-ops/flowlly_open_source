@@ -245,14 +245,14 @@ export const triggerEvent = async ({
 export const clearWorkflowProcess = async ({
   session,
   projectId,
-  eventId,
+  workflowId,
 }: {
   session: Session;
   projectId: string;
-  eventId: string;
+  workflowId: string;
 }) => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/trigger/${projectId}/ui/${eventId}/clear`,
+    `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/trigger/${projectId}/ui/${workflowId}/clear`,
     {
       method: "POST",
       headers: {
