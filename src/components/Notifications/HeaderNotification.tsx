@@ -43,9 +43,11 @@ export default function HeaderNotification() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const queryClient = useQueryClient();
-  const [notifiedEventIds, setNotifiedEventIds] = useState<string[]>([]);
   const refreshInterval = useStore((state) => state.refreshInterval);
   const setRefreshInterval = useStore((state) => state.setRefreshInterval);
+
+  // Add default interval constant
+  const DEFAULT_REFRESH_INTERVAL = 15000; // or whatever default you prefer
 
   const { data } = useQuery({
     queryKey: ["notifications"],
@@ -58,31 +60,40 @@ export default function HeaderNotification() {
   });
 
   useEffect(() => {
-    if (data) {
-      setNotifications(data);
-      setUnreadCount(
-        data.filter((n: Notification) => n.read !== "read").length
-      );
-    }
-  }, [data]);
+    if (!data) return;
 
-  useEffect(() => {
-    const handleNotifications = () => {
-      // Process all notifications that have invalidation instructions
-      notifications.forEach((notification) => {
-        if (notification.invalidateQueries) {
-          notification.invalidateQueries.forEach((query) => {
-            queryClient.invalidateQueries({ queryKey: query.queryKey });
-          });
-        }
-        if (notification.refreshInterval) {
-          setRefreshInterval(notification.refreshInterval);
-        }
-      });
+    // Find new notifications by comparing with current notifications state
+    const newNotifications = data.filter(
+      (newNotification: Notification) =>
+        !notifications.some(
+          (existing: Notification) => existing.id === newNotification.id
+        )
+    );
+
+    // Update notifications state and unread count
+    setNotifications(data);
+    setUnreadCount(data.filter((n: Notification) => n.read !== "read").length);
+
+    if (newNotifications.length === 0) return;
+
+    newNotifications.forEach((notification: Notification) => {
+      if (notification.invalidateQueries) {
+        notification.invalidateQueries.forEach((query: any) => {
+          queryClient.invalidateQueries({ queryKey: query.queryKey });
+        });
+      }
+    });
+    const smallestInterval = Math.min(
+      ...newNotifications.map(
+        (n: Notification) => n.refreshInterval || DEFAULT_REFRESH_INTERVAL
+      )
+    );
+    setRefreshInterval(smallestInterval);
+
+    return () => {
+      setRefreshInterval(smallestInterval);
     };
-
-    handleNotifications();
-  }, [notifications]);
+  }, [data, notifications, queryClient, setRefreshInterval]);
 
   return (
     <DropdownMenu>
