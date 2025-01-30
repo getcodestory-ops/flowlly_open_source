@@ -268,22 +268,19 @@ export const clearWorkflowProcess = async ({
 export const triggerWorkflowNode = async ({
   session,
   projectId,
-  eventId,
+  workflowId,
   nodeId,
-  triggerType = "ui",
 }: {
   session: Session;
   projectId: string;
-  eventId: string;
+  workflowId: string;
   nodeId: string;
-  triggerType?: string;
 }) => {
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/trigger/${projectId}/execute_node`;
   const response = await axios.post(
     url,
     {
-      event_id: eventId,
-      trigger_type: triggerType,
+      workflow_id: workflowId,
       node_id: nodeId,
     },
     {

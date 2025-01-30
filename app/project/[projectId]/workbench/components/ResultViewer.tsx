@@ -58,7 +58,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
               <ResultBox
                 key={node.id}
                 node={node}
-                eventId={currentResult.event_id || ""}
+                workflowId={currentResult.workflow_id || ""}
                 isWorkflowRunning={isWorkflowRunning}
               />
             ))}
@@ -70,13 +70,13 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 
 interface ResultBoxProps {
   node: NodeData;
-  eventId: string;
+  workflowId: string;
   isWorkflowRunning: boolean;
 }
 
 const ResultBox: React.FC<ResultBoxProps> = ({
   node,
-  eventId,
+  workflowId,
   isWorkflowRunning,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -91,7 +91,7 @@ const ResultBox: React.FC<ResultBoxProps> = ({
       return triggerWorkflowNode({
         session,
         projectId: activeProject.project_id,
-        eventId,
+        workflowId,
         nodeId: node.id,
       });
     },
@@ -102,7 +102,7 @@ const ResultBox: React.FC<ResultBoxProps> = ({
 
   const canRerun =
     isWorkflowRunning &&
-    (node.status === "failed" || (node.status === "completed" && eventId));
+    (node.status === "failed" || (node.status === "completed" && workflowId));
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
