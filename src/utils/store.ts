@@ -60,6 +60,7 @@ export const useStore = create<State>()((set, get) => ({
   appView: "dashboard",
   hasHydrated: false,
   userProjects: [],
+  refreshInterval: 10000,
   userActivities: [],
   activeProject: null,
   userUpdatesCollection: {},
@@ -103,6 +104,8 @@ export const useStore = create<State>()((set, get) => ({
     set({ hasHydrated: state });
   },
   setAppView: (appView: AppView) => set(() => ({ appView })),
+  setRefreshInterval: (interval: number) =>
+    set(() => ({ refreshInterval: interval })),
   setUserProjects: (userProjects: ProjectEntity[]) =>
     set(() => ({ userProjects })),
   setUserActivities: (userActivities: ActivityEntity[]) =>

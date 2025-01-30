@@ -18,6 +18,7 @@ export const TriggerUI = ({ eventId, onTrigger }: TriggerUIProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const session = useStore((state) => state.session);
   const activeProject = useStore((state) => state.activeProject);
+  const setRefreshInterval = useStore((state) => state.setRefreshInterval);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -48,6 +49,7 @@ export const TriggerUI = ({ eventId, onTrigger }: TriggerUIProps) => {
       onTrigger(result);
     } finally {
       setIsLoading(false);
+      setRefreshInterval(5000);
     }
   };
 

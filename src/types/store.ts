@@ -70,7 +70,7 @@ export type State = {
   userProjects: ProjectEntity[];
   activeProject: ProjectEntity | null;
   userUpdatesCollection: UserUpdateCollectionType;
-
+  refreshInterval: number;
   userActivities: ActivityEntity[];
   activeChatEntity: AgentChatEntity | null;
   chatEntities: AgentChatEntity[];
@@ -103,6 +103,7 @@ export type State = {
   setHasHydrated: (state: boolean) => void;
   setAppView: (appView: AppView) => void;
   setUserProjects: (userProjects: ProjectEntity[]) => void;
+  setRefreshInterval: (interval: number) => void;
   setUserActivities: (userActivities: ActivityEntity[]) => void;
   setActiveProject: (activeProject: ProjectEntity | null) => void;
   setActiveChatEntity: (activeChatEntity: AgentChatEntity | null) => void;

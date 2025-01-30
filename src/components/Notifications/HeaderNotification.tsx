@@ -21,6 +21,7 @@ interface Notification {
   message: string;
   timestamp: string;
   read: "read" | "unread";
+  refreshInterval?: number;
   invalidateQueries?: {
     queryKey: string[]; // Array to match React Query's queryKey format
   }[];
@@ -43,6 +44,8 @@ export default function HeaderNotification() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const queryClient = useQueryClient();
   const [notifiedEventIds, setNotifiedEventIds] = useState<string[]>([]);
+  const refreshInterval = useStore((state) => state.refreshInterval);
+  const setRefreshInterval = useStore((state) => state.setRefreshInterval);
 
   const { data } = useQuery({
     queryKey: ["notifications"],
@@ -50,7 +53,7 @@ export default function HeaderNotification() {
       if (!session || !activeProject) return [];
       return getNotifications(session, activeProject.project_id);
     },
-    refetchInterval: 20000,
+    refetchInterval: refreshInterval,
     enabled: !!session && !!activeProject,
   });
 
@@ -71,6 +74,9 @@ export default function HeaderNotification() {
           notification.invalidateQueries.forEach((query) => {
             queryClient.invalidateQueries({ queryKey: query.queryKey });
           });
+        }
+        if (notification.refreshInterval) {
+          setRefreshInterval(notification.refreshInterval);
         }
       });
     };
