@@ -174,8 +174,8 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
                           <AlertDialogAction
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (row.original.result?.event_id) {
-                                clearProcess(row.original.result.event_id);
+                              if (row.original.result?.workflow_id) {
+                                clearProcess(row.original.result.workflow_id);
                               }
                             }}
                           >
@@ -232,12 +232,12 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
     });
 
   const { mutate: clearProcess } = useMutation({
-    mutationFn: async (eventId: string) => {
+    mutationFn: async (workflowId: string) => {
       if (!session || !activeProject) throw new Error("No session or project");
       return clearWorkflowProcess({
         session,
         projectId: activeProject.project_id,
-        eventId,
+        workflowId,
       });
     },
     onSuccess: () => {
