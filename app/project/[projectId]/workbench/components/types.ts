@@ -88,6 +88,7 @@ export type EventResult = {
   listen?: boolean;
   workflow_id?: string;
   event_id?: string;
+  streaming?: boolean;
 };
 
 export type EventSchedule = {

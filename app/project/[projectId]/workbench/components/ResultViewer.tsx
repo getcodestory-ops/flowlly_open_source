@@ -13,6 +13,7 @@ import { useStore } from "@/utils/store";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 import { triggerEvent, triggerWorkflowNode } from "@/api/taskQueue";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import MarkDownDisplay from "@/components/Markdown/MarkDownDisplay";
@@ -28,6 +29,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
   onSelectNode,
 }) => {
   const projectId = useStore((state) => state.activeProject?.project_id);
+  const session = useStore((state) => state.session);
   const isWorkflowRunning = !!currentResult?.workflow_id;
   const [pendingEvent, setPendingEvent] = useState(true);
 
@@ -51,6 +53,17 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
             )}
           </Card>
         )}
+
+        {currentResult.workflow_id &&
+          session?.access_token &&
+          currentResult.streaming && (
+            <>
+              <StreamComponent
+                streamingKey={currentResult.workflow_id}
+                authToken={session.access_token}
+              />
+            </>
+          )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {currentResult?.nodes &&
