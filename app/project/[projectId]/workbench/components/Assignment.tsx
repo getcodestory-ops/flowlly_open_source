@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { ChevronRight, X } from "lucide-react";
+import { ChevronRight, X, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
@@ -18,6 +18,12 @@ import type {
 } from "./types";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { TriggerUI } from "./TriggerUI";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const Breadcrumbs: React.FC<{
   currentGraph: GraphData | null;
@@ -110,35 +116,41 @@ export default function AssignmentHome() {
   }
 
   return (
-    <div className="container mx-auto p-4   ">
+    <div className="container mx-auto p-4  ">
       <Breadcrumbs
         currentGraph={currentGraph}
         onBackToList={() => setCurrentGraphId(null)}
       />
 
       <div
-        className={`fixed flex  z-10 right-1 lg:w-full  h-full top-0   transform transition-transform duration-300 ease-in-out border rounded-lg justify-center items-center ${
+        className={`absolute flex  z-10 right-0  lg:w-full  h-full top-0 transform transition-transform duration-300 ease-in-out rounded-lg justify-center items-center ${
           sheetOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div
           onClick={() => setSheetOpen(false)}
-          className="w-full h-full bg-black opacity-70 absolute top-0 left-0  "
+          className="w-full h-full bg-gradient-to-b from-white to-gray-200 opacity-70 absolute top-0 left-0  "
         ></div>
-        <div className="container z-10 bg-white rounded-lg lg:h-[90%] m-10 h-min py-4 overflow-y-auto ">
-          {/* <div className="container z-10 bg-gradient-to-b from-purple-400 to-blue-600 rounded-lg lg:h-[90%] m-10 h-min overflow-y-auto "> */}
-          {/* <div className="fixed  translate-y-8  ">
-            <Button
-              onClick={() => setSheetOpen(false)}
-              className="text-gray-500 m-4"
-            >
-              <X size={24} />
-            </Button>
-          </div> */}
+        <div className="container z-10 bg-white rounded-lg lg:h-[100%] m-10 h-min py-4 overflow-y-auto ">
           {currentGraph && currentResult && (
             <div className="h-full">
+              <TooltipProvider>
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger
+                    onClick={() => setSheetOpen(false)}
+                    className="cursor-pointer"
+                  >
+                    <ChevronRight className="w-8 h-8 text-purple-500" />
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>Close</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
               {!currentResult.nodes ? (
                 <div className="flex items-center justify-center h-full">
+                  Fetching results...
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
                 </div>
               ) : (
