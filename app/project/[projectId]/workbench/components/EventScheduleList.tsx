@@ -19,6 +19,7 @@ import {
   flexRender,
   getExpandedRowModel,
   Row,
+  getPaginationRowModel,
 } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
 import type { EventResult, EventSchedule, ScheduleTableRow } from "./types";
@@ -41,6 +42,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface EventScheduleListProps {
   graphs: EventSchedule[];
@@ -58,6 +66,15 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
   const session = useStore((state) => state.session);
   const activeProject = useStore((state) => state.activeProject);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+
+  // Added pagination state
+  const [pagination, setPagination] = useState<{
+    pageIndex: number;
+    pageSize: number;
+  }>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
   const queryClient = useQueryClient();
 
@@ -78,19 +95,40 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
     enabled: !!session && !!activeProject && !!eventId,
   });
 
+  const sortedGraphs = useMemo(() => {
+    return graphs.slice().sort((a, b) => {
+      const runTimeA = a.schedule?.time?.[0]?.run_time;
+      const runTimeB = b.schedule?.time?.[0]?.run_time;
+
+      // If one of them does not have a run_time, consider it upcoming and place it at the top
+      if (!runTimeA && runTimeB) return -1; // a is upcoming, so a comes first
+      if (runTimeA && !runTimeB) return 1; // b is upcoming, so b comes first
+      if (!runTimeA && !runTimeB) return 0; // both are upcoming, preserve order
+
+      // If both events have a run_time, sort descending (latest on top)
+      const dateA = new Date(`2000-01-01T${runTimeA}Z`);
+      const dateB = new Date(`2000-01-01T${runTimeB}Z`);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }, [graphs]);
+
   const tableData: ScheduleTableRow[] = useMemo(
     () =>
-      graphs.map((eventSchedule) => ({
+      sortedGraphs.map((eventSchedule) => ({
         id: eventSchedule.id,
         schedule: eventSchedule.schedule,
-        subRows: [
-          ...eventSchedule.event_result.map((eventResult) => ({
+        subRows: eventSchedule.event_result
+          .slice() // create copy to avoid mutating original data
+          .sort(
+            (a, b) =>
+              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          )
+          .map((eventResult) => ({
             id: eventResult.id,
             result: eventResult,
           })),
-        ],
       })),
-    [graphs, eventTrigger]
+    [sortedGraphs, eventTrigger]
   );
 
   const columns = useMemo<ColumnDef<ScheduleTableRow>[]>(
@@ -205,13 +243,16 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
       sorting,
       globalFilter,
       expanded: true,
+      pagination,
     },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     getSubRows: (row) => row.subRows,
   });
 
@@ -343,6 +384,78 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
           )}
         </TableBody>
       </Table>
+      {/* Pagination Controls - Styled uniformly to match DataTablePagination */}
+      <div className="flex items-center justify-between px-2 mt-4">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
+        </div>
+        <div className="flex items-center space-x-6 lg:space-x-8">
+          <div className="flex items-center space-x-2">
+            <p className="text-sm font-medium">Rows per page</p>
+            <Select
+              value={`${pagination.pageSize}`}
+              onValueChange={(value) => {
+                const newSize = Number(value);
+                setPagination((prev) => ({
+                  ...prev,
+                  pageSize: newSize,
+                  pageIndex: 0,
+                }));
+              }}
+            >
+              <SelectTrigger className="h-8 w-[70px]">
+                <SelectValue placeholder={pagination.pageSize.toString()} />
+              </SelectTrigger>
+              <SelectContent side="top">
+                {[10, 20, 30, 40, 50].map((pageSize) => (
+                  <SelectItem key={pageSize} value={`${pageSize}`}>
+                    {pageSize}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+            Page {table.getState().pagination.pageIndex + 1} of{" "}
+            {table.getPageCount()}
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              className="hidden h-8 w-8 p-0 lg:flex"
+              onClick={() => table.setPageIndex(0)}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <span className="sr-only">Go to first page</span>«
+            </Button>
+            <Button
+              variant="outline"
+              className="h-8 w-8 p-0"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <span className="sr-only">Go to previous page</span>‹
+            </Button>
+            <Button
+              variant="outline"
+              className="h-8 w-8 p-0"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              <span className="sr-only">Go to next page</span>›
+            </Button>
+            <Button
+              variant="outline"
+              className="hidden h-8 w-8 p-0 lg:flex"
+              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+              disabled={!table.getCanNextPage()}
+            >
+              <span className="sr-only">Go to last page</span>»
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
