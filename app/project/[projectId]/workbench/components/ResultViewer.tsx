@@ -221,16 +221,16 @@ const ResultBox: React.FC<ResultBoxProps> = ({
 
       <div
         className={`overflow-hidden transition-all duration-300 ${
-          isExpanded ? "max-h-[600px]" : "max-h-0"
+          isExpanded ? "max-h-screen" : "max-h-0"
         }`}
       >
         <div className="px-4 pb-4 pt-2 border-t">
           {node.status !== "completed" ? (
             <p className="text-gray-500">Processing...</p>
           ) : (
-            <ScrollArea className="h-[500px] pr-4">
+            <div className=" overflow-y-auto p-4 max-h-screen">
               {renderNodeContent(node, false)}
-            </ScrollArea>
+            </div>
           )}
         </div>
       </div>
@@ -414,6 +414,7 @@ const renderNodeContent = (node: NodeData, isFullScreen: boolean) => {
           </AspectRatio>
         )
       );
+
     case "write_meeting_minutes":
       return <ContentEditor content={node.output} />;
     case "determine_action_items":
