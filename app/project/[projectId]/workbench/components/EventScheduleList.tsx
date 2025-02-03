@@ -54,12 +54,14 @@ interface EventScheduleListProps {
   graphs: EventSchedule[];
   onSelectGraph: (event: EventResult) => void;
   eventId: string;
+  setIsLoadingResult: (isLoading: boolean) => void;
 }
 
 export const EventScheduleList: React.FC<EventScheduleListProps> = ({
   graphs,
   onSelectGraph,
   eventId,
+  setIsLoadingResult,
 }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -165,9 +167,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 
             return (
               <div className="pl-8 flex items-center gap-2">
-                {new Date(result.timestamp).toDateString() +
-                  " - " +
-                  result.name}
+                {new Date(result.timestamp).toDateString()}
                 {activelyListening && (
                   <div className="flex items-center">
                     <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
@@ -256,21 +256,33 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
     getSubRows: (row) => row.subRows,
   });
 
-  const { data: fetchedEventResult, isLoading: isFetchingEventResult } =
-    useQuery({
-      queryKey: ["eventResult", selectedEventId],
-      queryFn: async () => {
-        if (!session || !activeProject || !selectedEventId) return null;
-        return getEventResult({
-          session,
-          projectId: activeProject.project_id,
-          eventId: selectedEventId,
-        });
-      },
-      enabled: !!session && !!activeProject && !!selectedEventId,
-      staleTime: 0,
-      refetchOnWindowFocus: true,
-    });
+  const {
+    data: fetchedEventResult,
+    isLoading: isFetchingEventResult,
+    isFetched,
+  } = useQuery({
+    queryKey: ["eventResult", selectedEventId],
+    queryFn: async () => {
+      if (!session || !activeProject || !selectedEventId) return null;
+      return getEventResult({
+        session,
+        projectId: activeProject.project_id,
+        eventId: selectedEventId,
+      });
+    },
+    enabled: !!session && !!activeProject && !!selectedEventId,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+  });
+
+  useEffect(() => {
+    if (isFetchingEventResult) {
+      setIsLoadingResult(isFetchingEventResult);
+    }
+    if (isFetched) {
+      setIsLoadingResult(false);
+    }
+  }, [isFetchingEventResult, isFetched]);
 
   const { mutate: clearProcess } = useMutation({
     mutationFn: async (workflowId: string) => {
@@ -386,10 +398,10 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
       </Table>
       {/* Pagination Controls - Styled uniformly to match DataTablePagination */}
       <div className="flex items-center justify-between px-2 mt-4">
-        <div className="flex-1 text-sm text-muted-foreground">
+        {/* <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
+        </div> */}
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Rows per page</p>

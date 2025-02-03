@@ -1,8 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { ChevronDown, ChevronUp, Maximize2, Loader2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Maximize2,
+  Loader2,
+  Video,
+  Mic,
+  Edit3,
+  List,
+  FileText,
+  MessageSquare,
+} from "lucide-react";
 import ContentEditor from "@/components/DocumentEditor/ContentEditor";
 import ActionItemViewer from "@/components/AiActions/ActionItemViewer";
 import { ResourceTextViewer } from "@/components/DocumentEditor/ResourceTextViewer";
@@ -17,6 +28,7 @@ import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 import { triggerEvent, triggerWorkflowNode } from "@/api/taskQueue";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import MarkDownDisplay from "@/components/Markdown/MarkDownDisplay";
+
 interface ResultViewerProps {
   currentResult: EventResult;
   selectedNode: NodeData | null;
@@ -32,52 +44,60 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
   const session = useStore((state) => state.session);
   const isWorkflowRunning = !!currentResult?.workflow_id;
   const [pendingEvent, setPendingEvent] = useState(true);
+  const [expandedNodeId, setExpandedNodeId] = useState<string | null>(null);
+
+  // Set the first node as expanded initially
+  useEffect(() => {
+    if (currentResult?.nodes && currentResult.nodes.length > 0) {
+      setExpandedNodeId(currentResult.nodes[0].id);
+    }
+  }, [currentResult?.nodes]);
 
   return (
-    <ScrollArea className=" ">
-      <div className="flex flex-col gap-4 p-2">
-        {currentResult?.listen && (
-          <Card className="p-4 mb-4 border-2 border-green-500">
-            {currentResult.workflow_id && projectId && (
-              <>
-                {pendingEvent ? (
-                  <UserInputForm
-                    eventId={currentResult.event_id}
-                    projectId={projectId}
-                    setPendingEvent={setPendingEvent}
-                  />
-                ) : (
-                  <div className="text-gray-500">User Input processing...</div>
-                )}
-              </>
-            )}
-          </Card>
-        )}
-
-        {currentResult.workflow_id &&
-          session?.access_token &&
-          currentResult.streaming && (
+    <div className="p-6  min-h-screen">
+      {currentResult?.listen && (
+        <Card className="p-4 mb-4 border-2 border-green-500 shadow-md rounded-lg">
+          {currentResult.workflow_id && projectId && (
             <>
-              <StreamComponent
-                streamingKey={currentResult.workflow_id}
-                authToken={session.access_token}
-              />
+              {pendingEvent ? (
+                <UserInputForm
+                  eventId={currentResult.event_id}
+                  projectId={projectId}
+                  setPendingEvent={setPendingEvent}
+                />
+              ) : (
+                <div className="text-gray-500">User Input processing...</div>
+              )}
             </>
           )}
+        </Card>
+      )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          {currentResult?.nodes &&
-            currentResult?.nodes?.map((node) => (
-              <ResultBox
-                key={node.id}
-                node={node}
-                workflowId={currentResult.workflow_id || ""}
-                isWorkflowRunning={isWorkflowRunning}
-              />
-            ))}
-        </div>
+      {currentResult.workflow_id &&
+        session?.access_token &&
+        currentResult.streaming && (
+          <StreamComponent
+            streamingKey={currentResult.workflow_id}
+            authToken={session.access_token}
+          />
+        )}
+
+      <div className="flex flex-col gap-6">
+        {currentResult?.nodes &&
+          currentResult?.nodes?.map((node) => (
+            <ResultBox
+              key={node.id}
+              node={node}
+              workflowId={currentResult.workflow_id || ""}
+              isWorkflowRunning={isWorkflowRunning}
+              isExpanded={expandedNodeId === node.id}
+              onToggleExpand={() => {
+                setExpandedNodeId(expandedNodeId === node.id ? null : node.id);
+              }}
+            />
+          ))}
       </div>
-    </ScrollArea>
+    </div>
   );
 };
 
@@ -85,15 +105,17 @@ interface ResultBoxProps {
   node: NodeData;
   workflowId: string;
   isWorkflowRunning: boolean;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
 }
 
 const ResultBox: React.FC<ResultBoxProps> = ({
   node,
   workflowId,
   isWorkflowRunning,
+  isExpanded,
+  onToggleExpand,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isFullScreen, setIsFullScreen] = useState(false);
   const session = useStore((state) => state.session);
   const activeProject = useStore((state) => state.activeProject);
   const queryClient = useQueryClient();
@@ -117,106 +139,125 @@ const ResultBox: React.FC<ResultBoxProps> = ({
     isWorkflowRunning &&
     (node.status === "failed" || (node.status === "completed" && workflowId));
 
-  const toggleExpand = () => {
-    setIsExpanded(!isExpanded);
-    if (!isFullScreen && !isExpanded) {
-      setIsFullScreen(true);
+  const getBorderColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "border-l-green-500";
+      case "failed":
+        return "border-l-red-500";
+      case "processing":
+      case "pending":
+        return "border-l-yellow-500";
+      default:
+        return "border-l-gray-500";
     }
   };
 
-  const toggleFullScreen = () => {
-    setIsFullScreen(!isFullScreen);
-    if (isFullScreen) {
-      setIsExpanded(false);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "text-green-600";
+      case "failed":
+        return "text-red-600";
+      case "processing":
+      case "pending":
+        return "text-yellow-600";
+      default:
+        return "text-gray-600";
     }
   };
-
-  const baseClassName = "transition-all duration-300 relative";
-  const fullScreenClass = isFullScreen
-    ? "fixed top-0 left-0 w-full h-full z-50 m-0 bg-background"
-    : "";
 
   return (
-    <Card
-      className={`border-2 ${
-        node.status === "failed" ? "border-red-500" : "border-black"
-      } ${baseClassName} ${fullScreenClass} ${isFullScreen ? "p-8" : "p-4"} ${
-        !isFullScreen ? getNodeColumnSpan(node) : ""
-      }`}
+    <div
+      className={`border-l-4 ${getBorderColor(
+        node.status
+      )} transition-all duration-300 shadow-md rounded-lg overflow-hidden`}
     >
-      <div className={`${isFullScreen ? "max-w-6xl mx-auto" : ""} h-full`}>
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold">{node.title}</h3>
-            {canRerun && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => rerunNode()}
-                disabled={isRerunning}
-                className="h-7 px-2"
-              >
-                {isRerunning ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  "Rerun"
-                )}
-              </Button>
+      <div
+        className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+        onClick={onToggleExpand}
+      >
+        <div className="flex items-center gap-3 p-2">
+          {getNodeIcon(node)}
+          <ChevronDown
+            className={`h-5 w-5 transition-transform ${
+              isExpanded ? "rotate-180" : ""
+            }`}
+          />
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <h3 className="font-medium">{node.title}</h3>
+              <span className={`text-sm ${getStatusColor(node.status)}`}>
+                • {node.status}
+              </span>
+            </div>
+            {!isExpanded && node.output && typeof node.output === "string" && (
+              <p className="text-sm text-gray-500 line-clamp-1 truncate">
+                {node.output}
+              </p>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleFullScreen}
-            className="p-1"
-          >
-            <Maximize2 className="h-4 w-4" />
-          </Button>
         </div>
 
-        <div
-          className={`${
-            isExpanded || isFullScreen ? "h-[calc(100%-4rem)]" : "h-[400px]"
-          } overflow-hidden transition-all duration-300 relative`}
-        >
-          <ScrollArea className="h-full pr-4">
-            {renderNodeContent(node, isFullScreen)}
-          </ScrollArea>
+        {canRerun && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              rerunNode();
+            }}
+            disabled={isRerunning}
+            className="h-7 px-2"
+          >
+            {isRerunning ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              "Rerun"
+            )}
+          </Button>
+        )}
+      </div>
 
-          {hasExpandableContent(node) && !isExpanded && !isFullScreen && (
-            <div className="absolute bottom-0 left-0 right-0">
-              <div className="h-20 bg-gradient-to-t from-background to-transparent" />
-              <div className="flex justify-center">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={toggleExpand}
-                  className="mb-2 hover:bg-transparent"
-                >
-                  <ChevronDown className="h-4 w-4 mr-2" />
-                  Show More
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {hasExpandableContent(node) && isExpanded && !isFullScreen && (
-            <div className="absolute bottom-0 left-0 right-0 flex justify-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleExpand}
-                className="mb-2 hover:bg-transparent"
-              >
-                <ChevronUp className="h-4 w-4 mr-2" />
-                Show Less
-              </Button>
-            </div>
+      <div
+        className={`overflow-hidden transition-all duration-300 ${
+          isExpanded ? "max-h-[600px]" : "max-h-0"
+        }`}
+      >
+        <div className="px-4 pb-4 pt-2 border-t">
+          {node.status !== "completed" ? (
+            <p className="text-gray-500">Processing...</p>
+          ) : (
+            <ScrollArea className="h-[500px] pr-4">
+              {renderNodeContent(node, false)}
+            </ScrollArea>
           )}
         </div>
       </div>
-    </Card>
+    </div>
   );
+};
+
+// Returns an appropriate icon for the node based on its ID.
+const getNodeIcon = (node: NodeData) => {
+  const nodeId = node.id.toLowerCase();
+  switch (nodeId) {
+    case "record_meeting":
+      return <Video className="h-5 w-5 text-gray-600" />;
+    case "transcribe_meeting":
+      return <Mic className="h-5 w-5 text-gray-600" />;
+    case "write_meeting_minutes":
+      return <Edit3 className="h-5 w-5 text-gray-600" />;
+    case "determine_action_items":
+      return <List className="h-5 w-5 text-gray-600" />;
+    case "save_document":
+    case "save_minutes_in_project_documents":
+      return <FileText className="h-5 w-5 text-gray-600" />;
+    case "user_input":
+      return <MessageSquare className="h-5 w-5 text-gray-600" />;
+    default:
+      return <FileText className="h-5 w-5 text-gray-600" />;
+  }
 };
 
 const UserInputForm = ({
@@ -309,50 +350,50 @@ const UserInputForm = ({
   );
 };
 
-const getNodeColumnSpan = (node: NodeData): string => {
-  const nodeId = node.id.toLowerCase();
-  const nodeTitle = node.title?.toLowerCase() ?? "";
+// const getNodeColumnSpan = (node: NodeData): string => {
+//   const nodeId = node.id.toLowerCase();
+//   const nodeTitle = node.title?.toLowerCase() ?? "";
 
-  if (nodeId === "user_input") {
-    return "col-span-1 md:col-span-2 xl:col-span-3";
-  }
+//   if (nodeId === "user_input") {
+//     return "col-span-1 md:col-span-2 xl:col-span-3";
+//   }
 
-  // First check specific node IDs
-  switch (nodeId) {
-    case "determine_action_items":
-      return "col-span-1 xl:col-span-2";
-    case "transcribe_meeting":
-      return "col-span-1 md:col-span-1";
-    case "record_meeting":
-      return "col-span-1 xl:col-span-2";
-    case "write_meeting_minutes":
-    case "save_document":
-    case "save_minutes_in_project_documents":
-      return "col-span-1 md:col-span-2 xl:col-span-3";
-  }
+//   // First check specific node IDs
+//   switch (nodeId) {
+//     case "determine_action_items":
+//       return "col-span-1 xl:col-span-2";
+//     case "transcribe_meeting":
+//       return "col-span-1 md:col-span-1";
+//     case "record_meeting":
+//       return "col-span-1 xl:col-span-2";
+//     case "write_meeting_minutes":
+//     case "save_document":
+//     case "save_minutes_in_project_documents":
+//       return "col-span-1 md:col-span-2 xl:col-span-3";
+//   }
 
-  // Then check titles
-  if (nodeTitle === "reportgeneration" || nodeTitle === "microsoftword") {
-    return "col-span-3";
-  }
-  console.log("nodeTitle", nodeTitle);
+//   // Then check titles
+//   if (nodeTitle === "reportgeneration" || nodeTitle === "microsoftword") {
+//     return "col-span-3";
+//   }
+//   console.log("nodeTitle", nodeTitle);
 
-  return "col-span-1";
-};
+//   return "col-span-1";
+// };
 
-const hasExpandableContent = (node: NodeData): boolean => {
-  const nodeId = node.id.toLowerCase();
-  return (
-    [
-      "write_meeting_minutes",
-      "determine_action_items",
-      "save_document",
-      "save_minutes_in_project_documents",
-    ].includes(nodeId) ||
-    (typeof node.output === "object" &&
-      Object.keys(node.output || {}).length > 5)
-  );
-};
+// const hasExpandableContent = (node: NodeData): boolean => {
+//   const nodeId = node.id.toLowerCase();
+//   return (
+//     [
+//       "write_meeting_minutes",
+//       "determine_action_items",
+//       "save_document",
+//       "save_minutes_in_project_documents",
+//     ].includes(nodeId) ||
+//     (typeof node.output === "object" &&
+//       Object.keys(node.output || {}).length > 5)
+//   );
+// };
 
 const renderNodeContent = (node: NodeData, isFullScreen: boolean) => {
   if (node.status !== "completed") {
@@ -386,11 +427,7 @@ const renderNodeContent = (node: NodeData, isFullScreen: boolean) => {
           <MarkDownDisplay content={node.output} />
         </p>
       ) : (
-        <div className="h-full">
-          {renderJsonValue(
-            isFullScreen ? node.output : truncateObject(node.output, 1)
-          )}
-        </div>
+        <div className="h-full">{renderJsonValue(node.output)}</div>
       );
   }
 };
