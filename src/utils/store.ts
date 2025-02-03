@@ -57,7 +57,7 @@ export const useViewStore = create<ViewState>()(
 
 export const useStore = create<State>()((set, get) => ({
   session: null,
-  appView: "dashboard",
+  appView: "workbench",
   hasHydrated: false,
   userProjects: [],
   refreshInterval: 10000,
