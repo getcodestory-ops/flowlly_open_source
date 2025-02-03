@@ -76,13 +76,20 @@ export default function HeaderNotification() {
 
     if (newNotifications.length === 0) return;
 
-    newNotifications.forEach((notification: Notification) => {
-      if (notification.invalidateQueries) {
-        notification.invalidateQueries.forEach((query: any) => {
-          queryClient.invalidateQueries({ queryKey: query.queryKey });
-        });
-      }
-    });
+    [...newNotifications]
+      .sort((a, b) => {
+        return (
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+      })
+      .slice(0, 5)
+      .forEach((notification: Notification) => {
+        if (notification.invalidateQueries) {
+          notification.invalidateQueries.forEach((query: any) => {
+            queryClient.invalidateQueries({ queryKey: query.queryKey });
+          });
+        }
+      });
     const smallestInterval = Math.min(
       ...newNotifications.map(
         (n: Notification) => n.refreshInterval || DEFAULT_REFRESH_INTERVAL
