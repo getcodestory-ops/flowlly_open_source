@@ -10,9 +10,10 @@ import type { EventResult } from "./types";
 interface TriggerUIProps {
   eventId: string;
   onTrigger: (result: EventResult) => void;
+  setTab: (tab: string) => void;
 }
 
-export const TriggerUI = ({ eventId, onTrigger }: TriggerUIProps) => {
+export const TriggerUI = ({ eventId, onTrigger, setTab }: TriggerUIProps) => {
   const [inputText, setInputText] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,6 +51,7 @@ export const TriggerUI = ({ eventId, onTrigger }: TriggerUIProps) => {
     } finally {
       setIsLoading(false);
       setRefreshInterval(5000);
+      setTab("schedules");
     }
   };
 
