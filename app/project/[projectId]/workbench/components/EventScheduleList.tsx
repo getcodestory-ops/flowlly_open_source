@@ -166,7 +166,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
             const currentlyRunning = result?.workflow_id;
 
             return (
-              <div className="pl-8 flex items-center gap-2">
+              <div className="pl-8 flex flex-col  items-start gap-2">
                 {new Date(result.timestamp).toDateString()}
                 {activelyListening && (
                   <div className="flex items-center">
