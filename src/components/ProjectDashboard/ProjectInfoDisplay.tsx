@@ -4,7 +4,7 @@ import { Archivo_Black } from "next/font/google";
 import { ProjectSwitcher } from "@/components/ProjectDashboard/components/ProjectSwitcher";
 import { UserNav } from "@/components/ProjectDashboard/components/UserNav";
 import HeaderNotification from "../Notifications/HeaderNotification";
-import MediaRecorderButton from "../ChatInput/MediaRecorderButton";
+// import MediaRecorderButton from "../ChatInput/MediaRecorderButton";
 
 const archivoBlack = Archivo_Black({
   weight: "400",
@@ -20,9 +20,9 @@ function ProjectInfoDisplay() {
             <div className={`${archivoBlack.className} text-2xl`}>FLOWLLY</div>
             <ProjectSwitcher />
             <HeaderNotification />
-            <MediaRecorderButton />
+            {/* <MediaRecorderButton /> */}
             <div className="ml-auto flex items-center space-x-4">
-              <UserNav email={"user.email" ?? ""} />
+              <UserNav email="user.email" />
             </div>
           </div>
         </div>
