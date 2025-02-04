@@ -181,7 +181,7 @@ const ResultBox: React.FC<ResultBoxProps> = ({
           {getNodeIcon(node)}
           <ChevronDown
             className={`h-5 w-5 transition-transform ${
-              isExpanded ? "rotate-180" : ""
+              isExpanded ? "rotate-90" : ""
             }`}
           />
           <div className="flex flex-col">

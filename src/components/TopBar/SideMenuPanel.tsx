@@ -102,12 +102,12 @@ const menuItems: {
     icon: <Workflow className="h-5 w-5" />,
     link: "integrations",
   },
-  {
-    label: "Config",
-    fnKey: "configuration",
-    icon: <FileClock className="h-5 w-5" />,
-    link: "configuration",
-  },
+  // {
+  //   label: "Config",
+  //   fnKey: "configuration",
+  //   icon: <FileClock className="h-5 w-5" />,
+  //   link: "configuration",
+  // },
 ];
 
 const AllMenuButtons = () => {

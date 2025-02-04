@@ -52,12 +52,12 @@ export function MainNav({
       >
         Integration
       </Link>
-      <Link
+      {/* <Link
         href="/examples/dashboard"
         className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
       >
         Configuration
-      </Link>
+      </Link> */}
     </nav>
   );
 }
