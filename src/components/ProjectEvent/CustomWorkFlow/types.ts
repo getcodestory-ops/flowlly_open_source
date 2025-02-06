@@ -89,6 +89,7 @@ export interface ReportNodeConfig extends BaseNodeConfig {
   file_name: string;
   report_prompt: string;
   generated_reports: any[];
+  folder_id: string;
 }
 
 export interface DocumentExtractionNodeConfig extends BaseNodeConfig {

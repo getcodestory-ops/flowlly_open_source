@@ -225,13 +225,9 @@ const ResultBox: React.FC<ResultBoxProps> = ({
         }`}
       >
         <div className="px-4 pb-4 pt-2 border-t">
-          {node.status !== "completed" ? (
-            <p className="text-gray-500">Processing...</p>
-          ) : (
-            <div className=" overflow-y-auto p-4 max-h-screen">
-              {renderNodeContent(node, false)}
-            </div>
-          )}
+          <div className=" overflow-y-auto p-4 max-h-screen">
+            {renderNodeContent(node, false)}
+          </div>
         </div>
       </div>
     </div>
@@ -396,10 +392,6 @@ const UserInputForm = ({
 // };
 
 const renderNodeContent = (node: NodeData, isFullScreen: boolean) => {
-  if (node.status !== "completed") {
-    return <p className="text-gray-500">Processing...</p>;
-  }
-
   const nodeId = node.id.toLowerCase();
   switch (nodeId) {
     case "record_meeting":

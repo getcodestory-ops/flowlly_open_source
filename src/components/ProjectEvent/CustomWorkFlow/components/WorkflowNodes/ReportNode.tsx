@@ -39,12 +39,14 @@ export function ReportNode({ onSave, onCancel, editingNode }: ReportNodeProps) {
     next_steps: [],
     retry_count: 0,
     max_retries: 0,
+    folder_id: "",
   });
 
   const [isDocumentSelectorOpen, setIsDocumentSelectorOpen] = useState(false);
   const [fileName, setFileName] = useState(
     (editingNode?.config as ReportNodeConfig)?.file_name || ""
   );
+
   const [reportPrompt, setReportPrompt] = useState(
     (editingNode?.config as ReportNodeConfig)?.report_prompt || ""
   );
@@ -70,11 +72,14 @@ export function ReportNode({ onSave, onCancel, editingNode }: ReportNodeProps) {
     // Update config when selected folder changes
     const folderPath =
       selectedItems.find((item) => item.type === "folder")?.name || "";
+    const folderId =
+      selectedItems.find((item) => item.type === "folder")?.id || "";
     setConfig((prev) => ({
       ...prev,
       folder_path: folderPath,
       file_name: fileName,
       report_prompt: reportPrompt,
+      folder_id: folderId,
     }));
   }, [selectedItems, fileName, reportPrompt]);
 
