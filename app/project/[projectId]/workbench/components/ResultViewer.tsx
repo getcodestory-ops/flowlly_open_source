@@ -251,6 +251,8 @@ const getNodeIcon = (node: NodeData) => {
       return <FileText className="h-5 w-5 text-gray-600" />;
     case "user_input":
       return <MessageSquare className="h-5 w-5 text-gray-600" />;
+    case "report_generation":
+      return <FileText className="h-5 w-5 text-gray-600" />;
     default:
       return <FileText className="h-5 w-5 text-gray-600" />;
   }
@@ -419,6 +421,10 @@ const renderNodeContent = (node: NodeData, isFullScreen: boolean) => {
         <p className="text-sm text-gray-700 whitespace-pre-line">
           <MarkDownDisplay content={node.output} />
         </p>
+      ) : node.output?.report_path || node.output?.resource_id ? (
+        <ResourceTextViewer
+          resource_id={node.output?.report_path || node.output?.resource_id}
+        />
       ) : (
         <div className="h-full">{renderJsonValue(node.output)}</div>
       );

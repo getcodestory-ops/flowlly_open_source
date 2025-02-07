@@ -56,9 +56,9 @@ export const TriggerUI = ({ eventId, onTrigger, setTab }: TriggerUIProps) => {
   };
 
   return (
-    <div className="border rounded-lg p-4 bg-background">
+    <div className=" rounded-lg p-4 bg-background">
       <div className="space-y-4">
-        {files.length > 0 && (
+        {/* {files.length > 0 && (
           <div className="flex flex-wrap gap-2 p-2 bg-muted/30 rounded-lg">
             {files.map((file, index) => (
               <div
@@ -75,19 +75,19 @@ export const TriggerUI = ({ eventId, onTrigger, setTab }: TriggerUIProps) => {
               </div>
             ))}
           </div>
-        )}
+        )} */}
 
-        <div className="flex gap-2">
+        {/* <div className="flex gap-2">
           <Textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Type your message here..."
             className="min-h-[80px] resize-none"
           />
-        </div>
+        </div> */}
 
-        <div className="flex gap-2 items-center">
-          <Input
+        {/* <div className="flex gap-2 items-center"> */}
+        {/* <Input
             type="file"
             multiple
             onChange={handleFileUpload}
@@ -99,16 +99,12 @@ export const TriggerUI = ({ eventId, onTrigger, setTab }: TriggerUIProps) => {
             className="cursor-pointer hover:bg-muted px-3 py-2 rounded-md text-sm"
           >
             <span className="flex items-center gap-2">📎 Attach</span>
-          </Label>
+          </Label> */}
 
-          <Button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className="ml-auto"
-          >
-            {isLoading ? "Starting..." : "Start Workflow"}
-          </Button>
-        </div>
+        <Button onClick={handleSubmit} disabled={isLoading} className="ml-auto">
+          {isLoading ? "Starting..." : "Start Workflow"}
+        </Button>
+        {/* </div> */}
       </div>
     </div>
   );
