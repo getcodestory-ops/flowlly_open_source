@@ -45,6 +45,7 @@ export default function HeaderNotification() {
   const queryClient = useQueryClient();
   const refreshInterval = useStore((state) => state.refreshInterval);
   const setRefreshInterval = useStore((state) => state.setRefreshInterval);
+  const [lastNotificationId, setLastNotificationId] = useState("0");
 
   // Add default interval constant
   const DEFAULT_REFRESH_INTERVAL = 15000; // or whatever default you prefer
@@ -53,14 +54,18 @@ export default function HeaderNotification() {
     queryKey: ["notifications"],
     queryFn: () => {
       if (!session || !activeProject) return [];
-      return getNotifications(session, activeProject.project_id);
+      return getNotifications(
+        session,
+        activeProject.project_id,
+        lastNotificationId
+      );
     },
     refetchInterval: refreshInterval,
     enabled: !!session && !!activeProject,
   });
 
   useEffect(() => {
-    if (!data) return;
+    if (!data || !data.length) return;
 
     // Find new notifications by comparing with current notifications state
     const newNotifications = data.filter(
@@ -69,9 +74,10 @@ export default function HeaderNotification() {
           (existing: Notification) => existing.id === newNotification.id
         )
     );
+    setNotifications((state) => [...state, ...newNotifications]);
 
     // Update notifications state and unread count
-    setNotifications(data);
+
     setUnreadCount(data.filter((n: Notification) => n.read !== "read").length);
 
     if (newNotifications.length === 0) return;
@@ -95,6 +101,8 @@ export default function HeaderNotification() {
         (n: Notification) => n.refreshInterval || DEFAULT_REFRESH_INTERVAL
       )
     );
+    setLastNotificationId(newNotifications[newNotifications.length - 1].id);
+
     setRefreshInterval(smallestInterval);
 
     return () => {
