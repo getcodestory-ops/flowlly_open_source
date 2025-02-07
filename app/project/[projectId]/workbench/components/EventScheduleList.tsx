@@ -167,7 +167,10 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 
             return (
               <div className="pl-8 flex flex-col  items-start gap-2">
-                {new Date(result.timestamp).toDateString()}
+                {new Date(result.timestamp).toLocaleString([], {
+                  dateStyle: "long",
+                  timeStyle: "medium",
+                })}
                 {activelyListening && (
                   <div className="flex items-center">
                     <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
