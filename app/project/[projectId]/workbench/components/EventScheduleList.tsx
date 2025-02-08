@@ -137,27 +137,14 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
     () => [
       {
         accessorKey: "main",
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="p-0"
-          >
-            Recurrences
-          </Button>
-        ),
+        header: () => null,
         cell: ({ row }) => {
           if (row.original.schedule) {
             const schedule = row.original.schedule;
             const run_time = schedule.time?.[0]?.run_time;
             if (run_time) {
-              // Create date object using local timezone
-              const localDate = new Date(`2000-01-01T${run_time}Z`);
-
-              return localDate.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
+              // Remove the Workflows text
+              return null;
             }
             return "Upcoming";
           } else if (row.original.result) {
@@ -337,7 +324,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
           }}
           className={cn(
             "cursor-pointer hover:bg-gradient-to-r hover:from-indigo-100 hover:to-purple-500 rounded-lg",
-            row.depth > 0 && "bg-gray-50"
+            row.depth > 0 && ""
           )}
         >
           {row.getVisibleCells().map((cell) => (
@@ -353,40 +340,6 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
   return (
     <div className="w-full">
       <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id} className="whitespace-nowrap">
-                  {header.isPlaceholder ? null : (
-                    <div
-                      className={
-                        header.column.getCanSort()
-                          ? "cursor-pointer select-none flex items-center"
-                          : ""
-                      }
-                      onClick={
-                        header.column.getCanSort()
-                          ? header.column.getToggleSortingHandler()
-                          : undefined
-                      }
-                    >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                      {header.column.getIsSorted() === "asc" ? (
-                        <ArrowUp className="ml-2 h-4 w-4" />
-                      ) : header.column.getIsSorted() === "desc" ? (
-                        <ArrowDown className="ml-2 h-4 w-4" />
-                      ) : null}
-                    </div>
-                  )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
         <TableBody>
           {table.getRowModel().rows.length > 0 ? (
             table.getRowModel().rows.map(renderRow)
@@ -406,7 +359,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div> */}
         <div className="flex items-center space-x-6 lg:space-x-8">
-          <div className="flex items-center space-x-2">
+          {/* <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Rows per page</p>
             <Select
               value={`${pagination.pageSize}`}
@@ -430,7 +383,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
           <div className="flex w-[100px] items-center justify-center text-sm font-medium">
             Page {table.getState().pagination.pageIndex + 1} of{" "}
             {table.getPageCount()}

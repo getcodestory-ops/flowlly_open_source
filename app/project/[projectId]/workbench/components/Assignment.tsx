@@ -103,15 +103,7 @@ export default function AssignmentHome() {
   }
 
   return (
-    <div className=" mx-auto p-4 h-[calc(100vh-150px)]">
-      <Breadcrumbs
-        currentGraph={currentGraph}
-        onBackToList={() => {
-          setCurrentGraphId(null);
-          setCurrentResult(null);
-        }}
-      />
-
+    <div className=" mx-auto p-4 h-[calc(100vh-150px)] ">
       {!currentGraph && (
         <Card className="p-6">
           <GraphList graphs={graphs} onSelectGraph={setCurrentGraphId} />
@@ -119,14 +111,21 @@ export default function AssignmentHome() {
       )}
 
       {eventSchedule && (
-        <div className={`${currentResult ? "grid grid-cols-12  h-full" : ""}`}>
+        <div className={`${currentResult ? "grid grid-cols-12  h-full " : ""}`}>
           <div
-            className={`p-6 ${
+            className={`p-6  ${
               currentResult
-                ? "col-span-3 h-full overflow-y-auto border-r-2 border-gray-200"
+                ? "col-span-3  overflow-y-auto border-r border-gray-200 "
                 : ""
             }`}
           >
+            <Breadcrumbs
+              currentGraph={currentGraph}
+              onBackToList={() => {
+                setCurrentGraphId(null);
+                setCurrentResult(null);
+              }}
+            />
             <Tabs
               defaultValue="schedules"
               value={activeTab}

@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   Maximize2,
   Loader2,
@@ -171,31 +172,37 @@ const ResultBox: React.FC<ResultBoxProps> = ({
     <div
       className={`border-l-4 ${getBorderColor(
         node.status
-      )} transition-all duration-300 shadow-md rounded-lg overflow-hidden`}
+      )} transition-all duration-300 border rounded-lg overflow-hidden`}
     >
       <div
         className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50"
         onClick={onToggleExpand}
       >
-        <div className="flex items-center gap-3 p-2">
-          {getNodeIcon(node)}
-          <ChevronDown
+        <div className="flex items-center gap-4 p-2 h-6">
+          <ChevronRight
             className={`h-5 w-5 transition-transform ${
               isExpanded ? "rotate-90" : ""
             }`}
           />
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <h3 className="font-medium">{node.title}</h3>
-              <span className={`text-sm ${getStatusColor(node.status)}`}>
-                • {node.status}
-              </span>
+          <div className="flex items-center gap-2">
+            {getNodeIcon(node)}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium">{node.title}</h3>
+                <span className={`text-sm ${getStatusColor(node.status)}`}>
+                  • {node.status}
+                </span>
+              </div>
             </div>
-            {!isExpanded && node.output && typeof node.output === "string" && (
-              <p className="text-sm text-gray-500 line-clamp-1 truncate">
-                {node.output}
-              </p>
-            )}
+            {/* <div className="h-4">
+              {!isExpanded &&
+                node.output &&
+                typeof node.output === "string" && (
+                  <p className="text-sm text-gray-500 line-clamp-1 truncate">
+                    {node.output}
+                  </p>
+                )}
+            </div> */}
           </div>
         </div>
 
