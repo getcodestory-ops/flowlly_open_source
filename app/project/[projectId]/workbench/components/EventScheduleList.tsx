@@ -80,6 +80,9 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 
   const queryClient = useQueryClient();
 
+  // Add new state to track the selected result
+  const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
+
   const { data: eventTrigger } = useQuery({
     queryKey: ["eventTrigger", selectedEventId],
     queryFn: async () => {
@@ -299,6 +302,9 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
   }, [fetchedEventResult]);
 
   const renderRow = (row: Row<ScheduleTableRow>) => {
+    // Check if this row is selected
+    const isSelected = row.original.result?.id === selectedResultId;
+
     return (
       <React.Fragment key={row.id}>
         <TableRow
@@ -308,6 +314,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
             } else if (row.original.result) {
               if (row.original.id === "eventTrigger") {
                 onSelectGraph(row.original.result);
+                setSelectedResultId(row.original.result.id);
                 return;
               }
 
@@ -317,14 +324,17 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 
               if (eventResult?.nodes) {
                 onSelectGraph(eventResult);
+                setSelectedResultId(row.original.result.id);
               } else {
                 setSelectedEventId(row.original.result?.id);
+                setSelectedResultId(row.original.result.id);
               }
             }
           }}
           className={cn(
             "cursor-pointer hover:bg-gradient-to-r hover:from-indigo-100 hover:to-purple-500 rounded-lg",
-            row.depth > 0 && ""
+            row.depth > 0 && "",
+            isSelected && "bg-gradient-to-r from-indigo-100 to-purple-500" // Add highlight for selected row
           )}
         >
           {row.getVisibleCells().map((cell) => (
