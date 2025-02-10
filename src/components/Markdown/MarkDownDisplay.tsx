@@ -13,125 +13,22 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
   collapse = false,
 }) => {
   return (
-    <div
-      style={{
-        padding: "8px",
-        borderRadius: "8px",
-        overflow: "hidden", // Ensures content doesn't overflow the container
-      }}
-    >
+    <div>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        components={{
-          h1: ({ node, ...props }) => (
-            <h1
-              style={{
-                fontSize: "2.25rem",
-                fontWeight: "bold",
-                margin: "1rem 0",
-              }}
-              {...props}
-            />
-          ),
-          h2: ({ node, ...props }) => (
-            <h2 style={{ fontSize: "1.875rem", margin: "1rem 0" }} {...props} />
-          ),
-          h3: ({ node, ...props }) => (
-            <h3
-              style={{
-                fontSize: "1.5rem",
-                marginTop: "2rem",
-                marginBottom: "1rem",
-              }}
-              {...props}
-            />
-          ),
-          h4: ({ node, ...props }) => (
-            <h4 style={{ fontSize: "1.25rem", margin: "1rem 0" }} {...props} />
-          ),
-          h5: ({ node, ...props }) => (
-            <h5 style={{ fontSize: "1.125rem", margin: "1rem 0" }} {...props} />
-          ),
-          h6: ({ node, ...props }) => (
-            <h6 style={{ fontSize: "1rem", margin: "1rem 0" }} {...props} />
-          ),
-          p: ({ node, ...props }) => (
-            <p
-              style={{
-                fontSize: "0.875rem",
-                fontWeight: "normal",
-                margin: "0.5rem 0",
-                overflowWrap: "break-word", // Allows long words to break
-                wordWrap: "break-word", // Legacy support for older browsers
-                hyphens: "auto", // Adds hyphens where appropriate
-              }}
-              {...props}
-            />
-          ),
-          li: ({ node, ...props }) => (
-            <li
-              style={{
-                fontSize: "0.875rem",
-                fontWeight: "normal",
-                margin: "0.75rem 1.5rem",
-                overflowWrap: "break-word",
-                wordWrap: "break-word",
-                hyphens: "auto",
-              }}
-              {...props}
-            />
-          ),
-
-          table: ({ node, ...props }) => (
-            <table
-              style={{
-                borderCollapse: "collapse",
-                width: "100%",
-                margin: "1rem 0",
-              }}
-              {...props}
-            />
-          ),
-          th: ({ node, ...props }) => (
-            <th
-              style={{
-                border: "1px solid #ddd",
-                padding: "8px",
-                backgroundColor: "#f2f2f2",
-                fontWeight: "bold",
-                textAlign: "left",
-              }}
-              {...props}
-            />
-          ),
-
-          td: ({ node, ...props }) => (
-            <td
-              style={{
-                border: "1px solid #ddd",
-                padding: "8px",
-              }}
-              {...props}
-            />
-          ),
-          code: ({ node, className, ...props }) => (
-            <code
-              style={{
-                padding: "1em",
-                backgroundColor: "#f6f8fa",
-                borderRadius: "3px",
-                fontSize: "85%",
-                overflowX: "auto",
-                display: "block",
-                whiteSpace: "pre-wrap",
-                wordWrap: "break-word",
-              }}
-              {...props}
-            />
-          ),
-        }}
+        className=" m-2 w-full prose prose-sm max-w-none 
+                prose-headings:mb-2 prose-headings:mt-1.5 
+                prose-p:my-0.5 prose-p:leading-relaxed
+                prose-li:my-0 
+                prose-ol:pl-5
+                prose-ol:list-decimal
+                prose-headings:text-gray-800
+                prose-p:text-gray-700
+                prose-strong:text-gray-800
+                prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg
+                [&>*]:max-w-4xl [&>*]:mx-auto px-2"
       >
-        {content}
+        {content.replace(/\n{2,}/g, "\n")}
       </ReactMarkdown>
     </div>
   );

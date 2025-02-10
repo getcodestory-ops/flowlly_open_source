@@ -74,14 +74,13 @@ export default function HeaderNotification() {
           (existing: Notification) => existing.id === newNotification.id
         )
     );
-    setNotifications((state) => [...state, ...newNotifications]);
-
-    // Update notifications state and unread count
-
-    setUnreadCount(data.filter((n: Notification) => n.read !== "read").length);
 
     if (newNotifications.length === 0) return;
 
+    setNotifications((state) => [...state, ...newNotifications]);
+    setUnreadCount(data.filter((n: Notification) => n.read !== "read").length);
+
+    // Process invalidateQueries
     [...newNotifications]
       .sort((a, b) => {
         return (
@@ -96,19 +95,16 @@ export default function HeaderNotification() {
           });
         }
       });
+
+    // Update lastNotificationId and refreshInterval
     const smallestInterval = Math.min(
       ...newNotifications.map(
         (n: Notification) => n.refreshInterval || DEFAULT_REFRESH_INTERVAL
       )
     );
     setLastNotificationId(newNotifications[newNotifications.length - 1].id);
-
     setRefreshInterval(smallestInterval);
-
-    return () => {
-      setRefreshInterval(smallestInterval);
-    };
-  }, [data, notifications, queryClient, setRefreshInterval]);
+  }, [data, queryClient, setRefreshInterval]);
 
   return (
     <DropdownMenu>
