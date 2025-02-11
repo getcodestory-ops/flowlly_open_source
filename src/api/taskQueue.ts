@@ -162,13 +162,13 @@ export const getProjectEvents = async ({
 export const getEventResult = async ({
   session,
   projectId,
-  eventId,
+  resultId,
 }: {
   session: Session;
   projectId: string;
-  eventId: string;
+  resultId: string;
 }) => {
-  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/result/${projectId}/${eventId}`;
+  const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/result/${projectId}/${resultId}`;
   const response = await axios.get(url, {
     headers: {
       Authorization: `Bearer ${session.access_token}`,

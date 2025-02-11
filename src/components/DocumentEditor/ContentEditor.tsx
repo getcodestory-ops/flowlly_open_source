@@ -12,11 +12,14 @@ import { Button } from "../ui/button";
 import Toolbar from "./ToolBar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { HoverExtension } from "./extensions/HoverExtension";
+import { diffChars } from "diff";
+
 interface EditorBlockProps {
   content: string | any;
   setContent?: (content: string) => void;
   saveFunction?: (contentData: string) => void;
   documentType?: string;
+  documentId?: string;
 }
 
 const ContentEditor = ({
@@ -24,6 +27,7 @@ const ContentEditor = ({
   setContent,
   saveFunction,
   documentType = "Minutes of the meeting",
+  documentId,
 }: EditorBlockProps) => {
   const editor = useEditor({
     extensions: [
@@ -53,6 +57,30 @@ const ContentEditor = ({
     },
   });
 
+  function computeDiff(oldText: string, newText: string): string {
+    const diff = diffChars(oldText, newText);
+    return diff
+      .map((part) => {
+        if (part.added) {
+          return `<span style="background-color: #d4faca">${part.value}</span>`;
+        } else if (part.removed) {
+          return `<span style="text-decoration: line-through; color: red">${part.value}</span>`;
+        } else {
+          return part.value;
+        }
+      })
+      .join("");
+  }
+
+  const handleAIEditedContent = (newAIContent: string) => {
+    if (editor) {
+      const oldContent = editor.getHTML();
+      const diffContent = computeDiff(oldContent, newAIContent);
+      editor.commands.setContent(diffContent);
+      if (setContent) setContent(diffContent);
+    }
+  };
+
   return (
     <div className="max-h-[90vh] flex flex-col ">
       {editor && (
@@ -61,6 +89,8 @@ const ContentEditor = ({
             editor={editor}
             saveFunction={saveFunction}
             documentType={documentType}
+            onAIEditedContent={handleAIEditedContent}
+            documentId={documentId}
           />
           <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
             <div className="flex gap-2 p-1 bg-background border rounded-md shadow-sm">
@@ -80,7 +110,7 @@ const ContentEditor = ({
               </Button>
             </div>
           </BubbleMenu>
-          <ScrollArea className="h-[75vh]">
+          <ScrollArea className="h-[75vh] ">
             <EditorContent
               editor={editor}
               className="m-2 w-full prose prose-sm max-w-none 
@@ -91,7 +121,8 @@ const ContentEditor = ({
                 prose-p:text-gray-700
                 prose-strong:text-gray-800
                 prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg
-                [&>*]:max-w-4xl [&>*]:mx-auto px-2"
+                prose-code:text-gray-900 prose-code:bg-gray-100
+                [&>*]:max-w-4xl [&>*]:mx-auto p-4"
             />
           </ScrollArea>
         </>

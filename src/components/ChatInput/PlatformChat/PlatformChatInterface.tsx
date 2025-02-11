@@ -12,9 +12,11 @@ import { usePlatformChat } from "./usePlatformChat";
 export default function PlatformChatInterface({
   folderId,
   chatTarget,
+  onContentUpdate,
 }: {
   folderId: string;
   chatTarget: string;
+  onContentUpdate?: (newContent: string) => void;
 }) {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -27,6 +29,9 @@ export default function PlatformChatInterface({
     currentTaskId,
     session,
   } = usePlatformChat(folderId, chatTarget);
+
+  // Ref to store the index of the last message we processed
+  const lastChatIndexRef = useRef<number>(-1);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -43,6 +48,28 @@ export default function PlatformChatInterface({
     const timer = setTimeout(scrollToBottom, 100);
     return () => clearTimeout(timer);
   }, [chats]);
+
+  useEffect(() => {
+    // Only for document editing chat
+    if (
+      onContentUpdate &&
+      chats &&
+      chats.length > 0 &&
+      chatTarget === "document-edit"
+    ) {
+      const lastIndex = chats.length - 1;
+      // Only call once per new message
+      if (lastIndex !== lastChatIndexRef.current) {
+        const lastChat = chats[lastIndex];
+        // Assuming that user messages come from "User"
+        if (lastChat.sender !== "User" && lastChat.message.content) {
+          if (typeof lastChat.message.content === "string")
+            onContentUpdate(lastChat.message.content);
+          lastChatIndexRef.current = lastIndex;
+        }
+      }
+    }
+  }, [chats, onContentUpdate, chatTarget]);
 
   return (
     <div>

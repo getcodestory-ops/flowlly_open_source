@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
@@ -14,6 +13,7 @@ import {
   List,
   FileText,
   MessageSquare,
+  X,
 } from "lucide-react";
 import ContentEditor from "@/components/DocumentEditor/ContentEditor";
 import ActionItemViewer from "@/components/AiActions/ActionItemViewer";
@@ -29,7 +29,6 @@ import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 import { triggerEvent, triggerWorkflowNode } from "@/api/taskQueue";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import MarkDownDisplay from "@/components/Markdown/MarkDownDisplay";
-
 interface ResultViewerProps {
   currentResult: EventResult;
   selectedNode: NodeData | null;
@@ -46,6 +45,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
   const isWorkflowRunning = !!currentResult?.workflow_id;
   const [pendingEvent, setPendingEvent] = useState(true);
   const [expandedNodeId, setExpandedNodeId] = useState<string | null>(null);
+  const [showLogs, setShowLogs] = useState(false);
 
   // Set the first node as expanded initially
   useEffect(() => {
@@ -57,7 +57,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
   return (
     <div className="p-6  min-h-screen">
       {currentResult?.listen && (
-        <Card className="p-4 mb-4 border-2 border-green-500 shadow-md rounded-lg">
+        <Card className="p-4 mb-4 border-2 border-yellow-500 shadow-md rounded-lg">
           {currentResult.workflow_id && projectId && (
             <>
               {pendingEvent ? (
@@ -67,7 +67,10 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
                   setPendingEvent={setPendingEvent}
                 />
               ) : (
-                <div className="text-gray-500">User Input processing...</div>
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Loader2 className="h-4 w-4 animate-[heartbeat_1.5s_ease-in-out_infinite]" />
+                  <span>User Input processing...</span>
+                </div>
               )}
             </>
           )}
@@ -77,10 +80,46 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
       {currentResult.workflow_id &&
         session?.access_token &&
         currentResult.streaming && (
-          <StreamComponent
-            streamingKey={currentResult.workflow_id}
-            authToken={session.access_token}
-          />
+          <div className="mb-4">
+            <div className="border rounded-lg overflow-hidden relative border-l-green-500 border-l-4">
+              <div className="relative">
+                <div className="h-1 w-full bg-gray-100 overflow-hidden">
+                  <div
+                    className="h-1 w-full bg-gradient-to-r from-blue-500 to-purple-500 absolute"
+                    style={{
+                      animation: "progressLine 10s ease-in-out infinite",
+                    }}
+                  />
+                </div>
+
+                <div className="p-4 flex items-center justify-between bg-white">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-gray-600" />
+                    <h3 className="font-medium">Workflow Logs</h3>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowLogs(!showLogs)}
+                    className="h-7 px-2"
+                  >
+                    {showLogs ? "Hide Logs" : "Show Logs"}
+                  </Button>
+                </div>
+              </div>
+
+              {showLogs && (
+                <div className="border-t">
+                  <div className="max-h-[400px] overflow-y-auto p-4">
+                    <StreamComponent
+                      streamingKey={currentResult.workflow_id}
+                      authToken={session.access_token}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         )}
 
       <div className="flex flex-col gap-6">
@@ -172,7 +211,7 @@ const ResultBox: React.FC<ResultBoxProps> = ({
     <div
       className={`border-l-4 ${getBorderColor(
         node.status
-      )} transition-all duration-300 border rounded-lg overflow-hidden`}
+      )} transition-all duration-300 border rounded-lg overflow-hidden animate-[fadeInDown_0.5s_ease-in-out]`}
     >
       <div
         className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50"
@@ -305,51 +344,83 @@ const UserInputForm = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2 p-2 bg-muted/30 rounded-lg">
-        {files.map((file, index) => (
-          <div
-            key={index}
-            className="flex items-center gap-2 bg-muted px-3 py-1 rounded-full text-sm"
-          >
-            <span className="truncate max-w-[200px]">{file.name}</span>
-            <button
-              onClick={() => setFiles(files.filter((_, i) => i !== index))}
-              className="hover:text-destructive"
-            >
-              ×
-            </button>
-          </div>
-        ))}
+      <div className="flex items-center gap-2 mb-4">
+        <MessageSquare className="h-5 w-5 text-gray-600" />
+        <h3 className="font-medium">User Input Required</h3>
       </div>
 
-      <Textarea
-        value={inputText}
-        onChange={(e) => setInputText(e.target.value)}
-        placeholder="Type your response here..."
-        className="min-h-[100px]"
-      />
+      <div className="space-y-4">
+        {files.length > 0 && (
+          <div className="border rounded-lg overflow-hidden">
+            <div className="p-4 bg-muted/30">
+              <div className="flex flex-wrap gap-2">
+                {files.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-md text-sm border"
+                  >
+                    <FileText className="h-4 w-4 text-gray-500" />
+                    <span className="truncate max-w-[200px]">{file.name}</span>
+                    <button
+                      onClick={() =>
+                        setFiles(files.filter((_, i) => i !== index))
+                      }
+                      className="hover:text-destructive"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
-      <div className="flex gap-2 items-center">
-        <Input
-          type="file"
-          multiple
-          onChange={(e) =>
-            e.target.files &&
-            setFiles([...files, ...Array.from(e.target.files)])
-          }
-          className="hidden"
-          id={`file-upload-${eventId}`}
+        <Textarea
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          placeholder="Type your response here..."
+          className="min-h-[100px] resize-none"
         />
-        <Label
-          htmlFor={`file-upload-${eventId}`}
-          className="cursor-pointer hover:bg-muted px-3 py-2 rounded-md text-sm"
-        >
-          📎 Attach Files
-        </Label>
 
-        <Button onClick={handleSubmit} disabled={isLoading} className="ml-auto">
-          {isLoading ? "Submitting..." : "Submit Response"}
-        </Button>
+        <div className="flex gap-2 items-center">
+          <Input
+            type="file"
+            multiple
+            onChange={(e) =>
+              e.target.files &&
+              setFiles([...files, ...Array.from(e.target.files)])
+            }
+            className="hidden"
+            id={`file-upload-${eventId}`}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9"
+            onClick={() =>
+              document.getElementById(`file-upload-${eventId}`)?.click()
+            }
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Attach Files
+          </Button>
+
+          <Button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="ml-auto"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "Submit Response"
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );

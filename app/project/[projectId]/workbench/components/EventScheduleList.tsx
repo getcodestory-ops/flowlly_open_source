@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import { ArrowDown, ArrowUp, MessageSquare, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -30,7 +30,6 @@ import {
 } from "@/api/taskQueue";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
-import { NodeStatus } from "@/components/ProjectEvent/CustomWorkFlow/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,13 +41,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import PlatformChatComponent from "@/components/ChatInput/PlatformChat/PlatformChatComponent";
 
 interface EventScheduleListProps {
   graphs: EventSchedule[];
@@ -68,6 +61,10 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
   const session = useStore((state) => state.session);
   const activeProject = useStore((state) => state.activeProject);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const chatRef = useRef<HTMLDivElement>(null);
 
   // Added pagination state
   const [pagination, setPagination] = useState<{
@@ -81,7 +78,6 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
   const queryClient = useQueryClient();
 
   // Add new state to track the selected result
-  const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
 
   const { data: eventTrigger } = useQuery({
     queryKey: ["eventTrigger", selectedEventId],
@@ -260,7 +256,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
       return getEventResult({
         session,
         projectId: activeProject.project_id,
-        eventId: selectedEventId,
+        resultId: selectedEventId,
       });
     },
     enabled: !!session && !!activeProject && !!selectedEventId,
@@ -434,6 +430,55 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
           </div>
         </div>
       </div>
+
+      {isFetchingEventResult && (
+        <div className="flex items-center justify-center h-full mt-2">
+          <div className="w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-[progressLine_10s_linear_infinite]"></div>
+        </div>
+      )}
+      {selectedResultId && (
+        <div className="z-100">
+          <Button
+            className=" fixed bottom-4 right-4 rounded-full w-auto h-auto p-2 flex items-center gap-2"
+            onClick={() => setIsChatOpen((prev) => !prev)}
+          >
+            <div className="bg-white text-primary-foreground rounded-full p-2">
+              <MessageSquare size={24} />
+            </div>
+            <span className="pr-2">Questions about workflow</span>
+          </Button>
+
+          {(isChatOpen || isClosing) && (
+            <div
+              ref={chatRef}
+              className={`fixed bottom-20 right-4 w-[calc(100vw-200px)] z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden transition-opacity duration-300 ${
+                isClosing ? "opacity-0" : "opacity-100"
+              }`}
+            >
+              <div className="absolute top-2 left-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    setIsClosing(true);
+                    setTimeout(() => {
+                      setIsChatOpen(false);
+                      setIsClosing(false);
+                    }, 300);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <PlatformChatComponent
+                folderId={selectedResultId}
+                folderName={fetchedEventResult?.result.name ?? "workflow"}
+                chatTarget="workflow"
+              />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -21,6 +21,7 @@ import {
   FaTable,
   FaSpinner,
   FaImage,
+  FaMagic,
 } from "react-icons/fa";
 
 import pdfMake from "pdfmake/build/pdfmake";
@@ -42,6 +43,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { uploadImageForEditor } from "@/api/folderRoutes";
 import { useToast } from "@/components/ui/use-toast";
+import PlatformChatComponent from "@/components/ChatInput/PlatformChat/PlatformChatComponent";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 (pdfMake as any).vfs = pdfFonts.vfs;
 
@@ -49,19 +59,23 @@ interface ToolbarProps {
   editor: any;
   documentType: string;
   saveFunction?: (contentData: string) => void;
+  onAIEditedContent?: (content: string) => void;
+  documentId?: string;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
   editor,
   saveFunction,
   documentType,
+  onAIEditedContent,
+  documentId,
 }) => {
   const [saveStatus, setSaveStatus] = useState("Saved");
   const sessionToken = useStore((state) => state.session);
   const activeProject = useStore((state) => state.activeProject);
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
-
+  const [isAIPopoverOpen, setIsAIPopoverOpen] = useState(false);
   const deBounceSave = useDebounce(() => {
     setSaveStatus("Saving");
 
@@ -285,6 +299,27 @@ const Toolbar: React.FC<ToolbarProps> = ({
         <Button variant={"ghost"} onClick={exportPdf}>
           <FaFileDownload />
         </Button>
+        {documentId && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="ghost">
+                <FaMagic className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[90vw] sm:h-[100vh] flex flex-col">
+              <div className="flex-1 ">
+                <PlatformChatComponent
+                  folderId={documentId}
+                  folderName={"Document Editor"}
+                  chatTarget="editor"
+                  onContentUpdate={(newContent: string) => {
+                    if (onAIEditedContent) onAIEditedContent(newContent);
+                  }}
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
 
         <Popover>
           <PopoverTrigger asChild>

@@ -4,14 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PlatformChatSelector from "./PlatformChatSelector";
 import PlatformChatInterface from "./PlatformChatInterface";
 
+const titleMap: Record<string, string> = {
+  document: "Source for answers",
+  schedule: "Interact with ",
+  "document-edit": "Document Editor",
+  workflow: "Workflow Editor",
+};
+
 export default function PlatformChatComponent({
   folderId,
   folderName,
   chatTarget,
+  onContentUpdate,
 }: {
   folderId: string;
   folderName: string;
   chatTarget: string;
+  onContentUpdate?: (newContent: string) => void;
 }) {
   return (
     <div className="p-2">
@@ -19,15 +28,17 @@ export default function PlatformChatComponent({
         <CardHeader className="p-4 h-[50px]">
           <div className="flex items-center justify-between">
             <CardTitle className="text-md font-medium px-8">
-              {chatTarget === "schedule"
-                ? "Interact with Schedule"
-                : `Source for answers: ${folderName}`}
+              {titleMap[chatTarget]}
             </CardTitle>
             <PlatformChatSelector folderId={folderId} chatTarget={chatTarget} />
           </div>
         </CardHeader>
         <CardContent className="p-2 ">
-          <PlatformChatInterface folderId={folderId} chatTarget={chatTarget} />
+          <PlatformChatInterface
+            folderId={folderId}
+            chatTarget={chatTarget}
+            onContentUpdate={onContentUpdate}
+          />
         </CardContent>
       </Card>
     </div>

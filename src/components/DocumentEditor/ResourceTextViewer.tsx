@@ -24,6 +24,7 @@ export function ResourceTextViewer({ resource_id }: { resource_id: string }) {
           <ContentEditor
             content={data.metadata?.content}
             saveFunction={onSubmit}
+            documentId={resource_id}
           />
         </div>
       )}
