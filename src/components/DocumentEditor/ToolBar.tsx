@@ -22,6 +22,8 @@ import {
   FaSpinner,
   FaImage,
   FaMagic,
+  FaSearchPlus,
+  FaSearchMinus,
 } from "react-icons/fa";
 
 import pdfMake from "pdfmake/build/pdfmake";
@@ -112,6 +114,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   const [tableCols, setTableCols] = useState(3);
 
   const [imageUrl, setImageUrl] = useState("");
+  const [zoomLevel, setZoomLevel] = useState(100);
 
   const handleImageUpload = async (file: File) => {
     if (!sessionToken) {
@@ -152,6 +155,24 @@ const Toolbar: React.FC<ToolbarProps> = ({
       });
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleZoomIn = () => {
+    const newZoom = Math.min(zoomLevel + 10, 200);
+    setZoomLevel(newZoom);
+    if (editor) {
+      editor.commands.setTextSelection(editor.state.selection);
+      editor.view.dom.style.fontSize = `${newZoom}%`;
+    }
+  };
+
+  const handleZoomOut = () => {
+    const newZoom = Math.max(zoomLevel - 10, 50);
+    setZoomLevel(newZoom);
+    if (editor) {
+      editor.commands.setTextSelection(editor.state.selection);
+      editor.view.dom.style.fontSize = `${newZoom}%`;
     }
   };
 
@@ -295,6 +316,14 @@ const Toolbar: React.FC<ToolbarProps> = ({
         >
           <FaRedo />
         </Button>
+        {/* <Separator orientation="vertical" />
+        <Button variant="ghost" onClick={handleZoomOut}>
+          <FaSearchMinus />
+        </Button>
+        <span className="mx-2">{zoomLevel}%</span>
+        <Button variant="ghost" onClick={handleZoomIn}>
+          <FaSearchPlus />
+        </Button> */}
         <Separator orientation="vertical" />
         <Button variant={"ghost"} onClick={exportPdf}>
           <FaFileDownload />

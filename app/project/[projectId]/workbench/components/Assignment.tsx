@@ -195,45 +195,9 @@ export default function AssignmentHome() {
               >
                 {!currentResult.nodes || isLoadingResult ? (
                   <div className="flex items-center justify-center h-full">
-                    <div className="relative w-32 h-32">
-                      {/* DNA Helix effect */}
-                      {[...Array(8)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="absolute w-full h-1 left-0"
-                          style={{
-                            top: `${i * 4}px`,
-                            transform: `rotate(${i * 45}deg)`,
-                            animation: `wave 2s ease-in-out ${
-                              i * 0.1
-                            }s infinite`,
-                            background: `linear-gradient(90deg, 
-                                 transparent 0%, 
-                                 rgba(59, 130, 246, 0.8) 20%, 
-                                 rgba(147, 51, 234, 0.8) 50%, 
-                                 rgba(236, 72, 153, 0.8) 80%, 
-                                 transparent 100%)`,
-                          }}
-                        ></div>
-                      ))}
-
-                      {/* Circular Energy field */}
-                      <div className="absolute -mt-16 inset-0 rounded-full bg-gradient-to-tr from-transparent via-purple-500/20 to-transparent animate-pulse"></div>
-                      <div className="absolute -mt-16 inset-0 rounded-full border-2 border-purple-500/20 animate-[ping_3s_ease-in-out_infinite]"></div>
-
-                      {/* Data streams */}
-                      {[...Array(4)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="absolute h-full w-[1px] bg-gradient-to-b from-transparent via-cyan-400 to-transparent"
-                          style={{
-                            left: `${25 + i * 16}%`,
-                            animation: `dataStream 1.5s linear ${
-                              i * 0.2
-                            }s infinite`,
-                          }}
-                        ></div>
-                      ))}
+                    <div className="relative w-48 h-48">
+                      <div className="absolute  inset-0 rounded-full bg-gradient-to-tr from-transparent via-purple-500/20 to-transparent animate-pulse"></div>
+                      <div className="absolute  inset-0 rounded-full border-2 border-purple-500/20 animate-[ping_3s_ease-in-out_infinite]"></div>
                     </div>
                   </div>
                 ) : (
