@@ -159,7 +159,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
               // Remove the Workflows text
               return "Completed";
             }
-            return "Upcoming";
+            return "Running";
           } else if (row.original.result) {
             const result = row.original.result;
             const activelyListening = result?.listen;

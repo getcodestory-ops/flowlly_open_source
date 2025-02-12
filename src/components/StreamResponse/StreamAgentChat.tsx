@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
+import { Loader2 } from "lucide-react";
 
 interface StreamComponentProps {
   streamingKey: string;
@@ -41,7 +42,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
             return prev + newData + "\n\n";
           }
           // Add single newline for regular content
-          return prev + newData + "\n";
+          return prev + newData;
         });
       }
     };
@@ -73,7 +74,11 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 
   return (
     <div className="whitespace-pre-wrap">
-      {isPending && <MarkDownDisplay content={displayValue} />}
+      {isPending && (
+        <div className="">
+          <MarkDownDisplay content={displayValue} />
+        </div>
+      )}
     </div>
   );
 };

@@ -2,10 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
-  ChevronDown,
   ChevronRight,
-  ChevronUp,
-  Maximize2,
   Loader2,
   Video,
   Mic,
@@ -13,6 +10,7 @@ import {
   List,
   FileText,
   MessageSquare,
+  LogsIcon,
   X,
 } from "lucide-react";
 import ContentEditor from "@/components/DocumentEditor/ContentEditor";
@@ -66,6 +64,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
                   eventId={currentResult.event_id}
                   projectId={projectId}
                   setPendingEvent={setPendingEvent}
+                  resultId={currentResult.id}
                 />
               ) : (
                 <div className="flex items-center gap-2 text-gray-500">
@@ -97,7 +96,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 
                 <div className="p-4 flex items-center justify-between bg-white">
                   <div className="flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5 text-gray-600" />
+                    <LogsIcon className="h-5 w-5 text-gray-600" />
                     <h3 className="font-medium">Workflow Logs</h3>
                   </div>
                   <Button
@@ -311,10 +310,12 @@ const UserInputForm = ({
   eventId,
   projectId,
   setPendingEvent,
+  resultId,
 }: {
   eventId?: string;
   projectId: string;
   setPendingEvent: (pending: boolean) => void;
+  resultId: string;
 }) => {
   const [inputText, setInputText] = useState("");
   const [files, setFiles] = useState<File[]>([]);
@@ -329,6 +330,7 @@ const UserInputForm = ({
       const formData = new FormData();
       formData.append("body", inputText);
       files.forEach((file) => formData.append("files", file));
+      formData.append("streaming_key", resultId);
 
       await triggerEvent({
         session,
@@ -349,7 +351,9 @@ const UserInputForm = ({
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
         <MessageSquare className="h-5 w-5 text-gray-600" />
-        <h3 className="font-medium">User Input Required</h3>
+        <h3 className="font-medium">
+          What do you want to do ? Attach files if needed.
+        </h3>
       </div>
 
       <div className="space-y-4">
@@ -382,7 +386,7 @@ const UserInputForm = ({
         <Textarea
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder="Type your response here..."
+          placeholder="Type your instructions here..."
           className="min-h-[100px] resize-none"
         />
 

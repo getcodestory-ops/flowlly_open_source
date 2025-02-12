@@ -55,7 +55,7 @@ export default function PlatformChatInterface({
       onContentUpdate &&
       chats &&
       chats.length > 0 &&
-      chatTarget === "document-edit"
+      chatTarget === "editor"
     ) {
       const lastIndex = chats.length - 1;
       // Only call once per new message

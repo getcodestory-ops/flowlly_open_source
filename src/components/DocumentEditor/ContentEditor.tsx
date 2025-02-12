@@ -12,7 +12,7 @@ import { Button } from "../ui/button";
 import Toolbar from "./ToolBar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { HoverExtension } from "./extensions/HoverExtension";
-import { diffChars } from "diff";
+import { DiffStyleExtension } from "./extensions/DiffStyleExtension";
 
 interface EditorBlockProps {
   content: string | any;
@@ -32,7 +32,9 @@ const ContentEditor = ({
   const editor = useEditor({
     extensions: [
       StarterKit as any,
-      Markdown,
+      Markdown.configure({
+        html: true,
+      }),
       UnderLine,
       ImageResize,
       TextAlign,
@@ -43,11 +45,12 @@ const ContentEditor = ({
       TableHeader,
       TableCell,
       HoverExtension,
+      DiffStyleExtension,
     ],
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm max-w-none focus:outline-none prose-headings:font-semibold prose-p:leading-relaxed",
+          "prose prose-sm max-w-none focus:outline-none prose-headings:font-semibold prose-p:leading-relaxed  diff-container ",
       },
     },
     content: content,
@@ -57,27 +60,11 @@ const ContentEditor = ({
     },
   });
 
-  function computeDiff(oldText: string, newText: string): string {
-    const diff = diffChars(oldText, newText);
-    return diff
-      .map((part) => {
-        if (part.added) {
-          return `<span style="background-color: #d4faca">${part.value}</span>`;
-        } else if (part.removed) {
-          return `<span style="text-decoration: line-through; color: red">${part.value}</span>`;
-        } else {
-          return part.value;
-        }
-      })
-      .join("");
-  }
-
   const handleAIEditedContent = (newAIContent: string) => {
     if (editor) {
-      const oldContent = editor.getHTML();
-      const diffContent = computeDiff(oldContent, newAIContent);
-      editor.commands.setContent(diffContent);
-      if (setContent) setContent(diffContent);
+      editor.commands.setContent(newAIContent);
+      if (setContent) setContent(newAIContent);
+      console.log(newAIContent);
     }
   };
 
@@ -122,7 +109,7 @@ const ContentEditor = ({
                 prose-strong:text-gray-800
                 prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg
                 prose-code:text-gray-900 prose-code:bg-gray-100
-                [&>*]:max-w-4xl [&>*]:mx-auto p-4"
+                [&>*]:max-w-4xl [&>*]:mx-auto p-4 "
             />
           </ScrollArea>
         </>
