@@ -70,7 +70,9 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
               ) : (
                 <div className="flex items-center gap-2 text-gray-500">
                   <Loader2 className="h-4 w-4 animate-[heartbeat_1.5s_ease-in-out_infinite]" />
-                  <span>User Input processing...</span>
+                  <span>
+                    Reading through attached files and your instructions
+                  </span>
                 </div>
               )}
             </>
