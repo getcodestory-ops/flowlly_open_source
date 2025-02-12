@@ -4,7 +4,7 @@ import { Flex, Text, Spinner, HStack } from "@chakra-ui/react";
 import { useContentSave } from "./useContentSave";
 
 import ContentEditor from "./ContentEditor";
-
+import LoaderAnimation from "@/components/Animations/LoaderAnimation";
 interface EditorBlockProps {
   previewCardContent?: any;
   id?: string | string[];
@@ -44,7 +44,7 @@ const EditorBlock = ({ id }: EditorBlockProps) => {
       )}
       {isLoading && (
         <HStack gap="4">
-          <Spinner size="sm" /> <Text>Loading...</Text>
+          <LoaderAnimation />
         </HStack>
       )}
     </Flex>

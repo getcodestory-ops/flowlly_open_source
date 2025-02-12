@@ -8,7 +8,7 @@ const titleMap: Record<string, string> = {
   document: "Source for answers",
   schedule: "Interact with ",
   "document-edit": "Document Editor",
-  workflow: "Workflow Editor",
+  workflow: " ",
 };
 
 export default function PlatformChatComponent({
@@ -28,7 +28,7 @@ export default function PlatformChatComponent({
         <CardHeader className="p-4 h-[50px]">
           <div className="flex items-center justify-between">
             <CardTitle className="text-md font-medium px-8">
-              {titleMap[chatTarget]}
+              {titleMap[chatTarget]} {folderName}
             </CardTitle>
             <PlatformChatSelector folderId={folderId} chatTarget={chatTarget} />
           </div>

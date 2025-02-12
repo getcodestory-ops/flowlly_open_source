@@ -29,6 +29,7 @@ import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 import { triggerEvent, triggerWorkflowNode } from "@/api/taskQueue";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import MarkDownDisplay from "@/components/Markdown/MarkDownDisplay";
+import LoaderAnimation from "@/components/Animations/LoaderAnimation";
 interface ResultViewerProps {
   currentResult: EventResult;
   selectedNode: NodeData | null;
@@ -112,7 +113,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
                 <div className="border-t">
                   <div className="max-h-[400px] overflow-y-auto p-4">
                     <StreamComponent
-                      streamingKey={currentResult.workflow_id}
+                      streamingKey={currentResult.id}
                       authToken={session.access_token}
                     />
                   </div>
@@ -413,8 +414,7 @@ const UserInputForm = ({
           >
             {isLoading ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Submitting...
+                <LoaderAnimation />
               </>
             ) : (
               "Submit Response"

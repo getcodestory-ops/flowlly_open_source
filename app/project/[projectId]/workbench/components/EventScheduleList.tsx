@@ -77,6 +77,20 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 
   const queryClient = useQueryClient();
 
+  useEffect(() => {
+    if (graphs && !selectedEventId && selectedResultId) {
+      const freshGraph = graphs.find((g) => g.id === selectedResultId);
+      if (freshGraph && freshGraph.event_result) {
+        if (freshGraph.event_result[0].nodes) {
+          onSelectGraph(freshGraph.event_result[0]);
+          setSelectedEventId(freshGraph.event_result[0].id);
+        } else {
+          setSelectedEventId(freshGraph.event_result[0].id);
+        }
+      }
+    }
+  }, [graphs]);
+
   // Add new state to track the selected result
 
   const { data: eventTrigger } = useQuery({
@@ -143,7 +157,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
             const run_time = schedule.time?.[0]?.run_time;
             if (run_time) {
               // Remove the Workflows text
-              return null;
+              return "Completed";
             }
             return "Upcoming";
           } else if (row.original.result) {
@@ -216,7 +230,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
               </div>
             );
           } else {
-            return null;
+            return "null";
           }
         },
       },
@@ -328,9 +342,9 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
             }
           }}
           className={cn(
-            "cursor-pointer hover:bg-gradient-to-r hover:from-indigo-100 hover:to-purple-500 rounded-lg",
+            "cursor-pointer  hover:bg-gradient-to-r hover:from-indigo-100 hover:to-purple-500 rounded-lg",
             row.depth > 0 && "",
-            isSelected && "bg-gradient-to-r from-indigo-100 to-purple-500" // Add highlight for selected row
+            isSelected && "bg-gradient-to-r from-indigo-100 to-purple-500 " // Add highlight for selected row
           )}
         >
           {row.getVisibleCells().map((cell) => (
