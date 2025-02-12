@@ -38,17 +38,25 @@ export const DiffStyleExtension = Extension.create({
     
             .ProseMirror .original {
               background-color: rgba(255, 0, 0, 0.5);
+              border-radius: 5px;
+              color: rgba(46, 3, 3, 0.8);
             }
             .ProseMirror .updated {
               background-color: rgba(0, 255, 0, 0.5);
+              border-radius: 5px;
+              color: rgba(3, 46, 3, 0.8);
             }
             .ProseMirror .delete {
               background-color: rgba(255, 0, 0, 0.5);
               position: relative;
               padding-left: 30px;  /* Add padding to make room for the button */
+              border-radius: 5px;
+              color: rgba(46, 3, 3, 0.8);
             }
             .ProseMirror .insert {
               background-color: rgba(0, 0, 255, 0.5);
+              border-radius: 5px;
+              color: rgba(3, 3, 46, 0.8);
             }
             
             .ProseMirror .delete::before {

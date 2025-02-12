@@ -1,9 +1,14 @@
-import React, { useRef, useEffect, useLayoutEffect } from "react";
+import React, { useRef, useEffect, useLayoutEffect, useState } from "react";
 import AgentMessageInteractiveView from "@/components/AiActions/AgentMessageInteractiveView";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { CornerDownLeft, MessageCircleMore } from "lucide-react";
+import {
+  CornerDownLeft,
+  MessageCircleMore,
+  Check,
+  Loader2,
+} from "lucide-react";
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,6 +38,10 @@ export default function PlatformChatInterface({
   // Ref to store the index of the last message we processed
   const lastChatIndexRef = useRef<number>(-1);
 
+  const [applyingChanges, setApplyingChanges] = useState<{
+    [key: number]: boolean;
+  }>({});
+
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop =
@@ -49,27 +58,24 @@ export default function PlatformChatInterface({
     return () => clearTimeout(timer);
   }, [chats]);
 
-  useEffect(() => {
-    // Only for document editing chat
-    if (
-      onContentUpdate &&
-      chats &&
-      chats.length > 0 &&
-      chatTarget === "editor"
-    ) {
-      const lastIndex = chats.length - 1;
-      // Only call once per new message
-      if (lastIndex !== lastChatIndexRef.current) {
-        const lastChat = chats[lastIndex];
-        // Assuming that user messages come from "User"
-        if (lastChat.sender !== "User" && lastChat.message.content) {
-          if (typeof lastChat.message.content === "string")
-            onContentUpdate(lastChat.message.content);
-          lastChatIndexRef.current = lastIndex;
+  // Remove the automatic content update useEffect and add a function to handle applying changes
+  const handleApplyChanges = (index: number) => {
+    if (chats && chats.length > 0) {
+      setApplyingChanges((prev) => ({ ...prev, [index]: true }));
+
+      const lastChat = chats[chats.length - 1];
+      if (lastChat.sender !== "User" && lastChat.message.content) {
+        if (typeof lastChat.message.content === "string" && onContentUpdate) {
+          onContentUpdate(lastChat.message.content);
+
+          // Reset the state after a brief delay to show success
+          setTimeout(() => {
+            setApplyingChanges((prev) => ({ ...prev, [index]: false }));
+          }, 1000);
         }
       }
     }
-  }, [chats, onContentUpdate, chatTarget]);
+  };
 
   return (
     <div>
@@ -93,6 +99,29 @@ export default function PlatformChatInterface({
                     {history.message.content && (
                       <AgentMessageInteractiveView message={history.message} />
                     )}
+                    {chatTarget === "editor" &&
+                      history.sender.toLowerCase() !== "user" && (
+                        <div className="mt-2">
+                          <Button
+                            onClick={() => handleApplyChanges(index)}
+                            variant="secondary"
+                            size="sm"
+                            disabled={applyingChanges[index]}
+                          >
+                            {applyingChanges[index] ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Applying...
+                              </>
+                            ) : (
+                              <>
+                                <Check className="mr-2 h-4 w-4" />
+                                Apply Changes
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      )}
                   </CardContent>
                 </Card>
               </div>
