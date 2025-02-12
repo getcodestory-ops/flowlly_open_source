@@ -14,24 +14,12 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
   taskId,
 }) => {
   const [displayValue, setDisplayValue] = useState<string>("");
-  const [rawString, setRawString] = useState<string>("");
-  const [isPending, setIsPending] = useState(true);
   const queryClient = useQueryClient();
-
-  const processChunk = useCallback(() => {
-    const regex = new RegExp("<response>(.*?)</response>|<response>(.*)", "s");
-    const match = rawString.match(regex);
-    if (match) {
-      setDisplayValue((prev) => prev + (match[1] || match[2] || ""));
-    }
-  }, []);
+  const [isPending, setIsPending] = useState(true);
 
   useEffect(() => {
     const eventSource = new EventSource(
       `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/stream/${streamingKey}`
-      // {
-      //   withCredentials: true, // Include credentials if needed
-      // }
     );
 
     eventSource.onopen = () => {
@@ -40,8 +28,22 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
     };
 
     eventSource.onmessage = (event) => {
-      setDisplayValue((prev) => prev + event.data);
-      // processChunk();
+      // Handle different types of messages and maintain formatting
+      if (event.data.trim()) {
+        // Only process non-empty data
+        setDisplayValue((prev) => {
+          const newData = event.data;
+          // Add double newline for section completions and headers
+          if (
+            newData.includes("Section Completed") ||
+            newData.startsWith("##")
+          ) {
+            return prev + newData + "\n\n";
+          }
+          // Add single newline for regular content
+          return prev + newData + "\n";
+        });
+      }
     };
 
     eventSource.onerror = (error) => {
@@ -67,10 +69,10 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
       console.log("Closing connection");
       eventSource.close();
     };
-  }, [streamingKey, authToken, queryClient, processChunk]);
+  }, [streamingKey, authToken]);
 
   return (
-    <div className="">
+    <div className="whitespace-pre-wrap">
       {isPending && <MarkDownDisplay content={displayValue} />}
     </div>
   );
