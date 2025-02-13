@@ -72,7 +72,7 @@ export function UserInputNode({
               onSave({
                 id: editingNode?.id || crypto.randomUUID(),
                 type: NodeType.USER_INPUT,
-                title: "User Input Step",
+                title: "Your instructions",
                 config,
                 status: NodeStatus.PENDING,
                 timestamp: new Date().toISOString(),

@@ -28,6 +28,8 @@ import { triggerEvent, triggerWorkflowNode } from "@/api/taskQueue";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import MarkDownDisplay from "@/components/Markdown/MarkDownDisplay";
 import LoaderAnimation from "@/components/Animations/LoaderAnimation";
+import PdfLoader from "./PdfLoader";
+
 interface ResultViewerProps {
   currentResult: EventResult;
   selectedNode: NodeData | null;
@@ -546,6 +548,25 @@ const renderNodeContent = (node: NodeData, isFullScreen: boolean) => {
     case "save_minutes_in_project_documents":
       return <ResourceTextViewer resource_id={node.output?.resource_id} />;
     default:
+      if (
+        node.output &&
+        typeof node.output === "object" &&
+        "drawings" in node.output
+      ) {
+        const drawings = node.output.drawings;
+        const body = node.output.body || "";
+        return Array.isArray(drawings) ? (
+          <>
+            <p className="text-sm text-gray-700 whitespace-pre-line my-2">
+              {body}
+            </p>
+            <PdfLoader drawings={drawings} />
+          </>
+        ) : (
+          <div className="text-sm text-gray-700">Invalid drawings format</div>
+        );
+      }
+
       return typeof node.output === "string" ? (
         <p className="text-sm text-gray-700 whitespace-pre-line">
           <MarkDownDisplay content={node.output} />
