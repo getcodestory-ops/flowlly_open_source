@@ -50,7 +50,7 @@ const ContentEditor = ({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm max-w-none focus:outline-none prose-headings:font-semibold prose-p:leading-relaxed  diff-container ",
+          " prose prose-sm max-w-none focus:outline-none prose-headings:font-semibold prose-p:leading-relaxed  diff-container ",
       },
     },
     content: content,
@@ -100,7 +100,7 @@ const ContentEditor = ({
           <ScrollArea className="h-[75vh] ">
             <EditorContent
               editor={editor}
-              className="m-2 w-full prose prose-sm max-w-none 
+              className=" m-2 w-full prose prose-sm max-w-none 
                 prose-headings:mb-3 prose-headings:mt-2 
                 prose-p:my-2 prose-p:leading-relaxed
                 prose-li:my-0.5 

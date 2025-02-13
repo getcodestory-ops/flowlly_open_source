@@ -319,6 +319,7 @@ const UserInputForm = ({
 }) => {
   const [inputText, setInputText] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [drawings, setDrawings] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const session = useStore((state) => state.session);
 
@@ -330,6 +331,7 @@ const UserInputForm = ({
       const formData = new FormData();
       formData.append("body", inputText);
       files.forEach((file) => formData.append("files", file));
+      drawings.forEach((file) => formData.append("drawings", file));
       formData.append("streaming_key", resultId);
 
       await triggerEvent({
@@ -341,6 +343,7 @@ const UserInputForm = ({
 
       setInputText("");
       setFiles([]);
+      setDrawings([]);
     } finally {
       setIsLoading(false);
       setPendingEvent(false);
@@ -352,81 +355,123 @@ const UserInputForm = ({
       <div className="flex items-center gap-2 mb-4">
         <MessageSquare className="h-5 w-5 text-gray-600" />
         <h3 className="font-medium">
-          What do you want to do ? Attach files if needed.
+          What do you want to do? Attach files if needed.
         </h3>
       </div>
 
-      <div className="space-y-4">
-        {files.length > 0 && (
-          <div className="border rounded-lg overflow-hidden">
-            <div className="p-4 bg-muted/30">
-              <div className="flex flex-wrap gap-2">
-                {files.map((file, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-md text-sm border"
+      {files.length > 0 && (
+        <div className="border rounded-lg overflow-hidden">
+          <div className="p-4 bg-muted/30">
+            <div className="flex flex-wrap gap-2">
+              {files.map((file, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-md text-sm border"
+                >
+                  <FileText className="h-4 w-4 text-gray-500" />
+                  <span className="truncate max-w-[200px]">{file.name}</span>
+                  <button
+                    onClick={() =>
+                      setFiles(files.filter((_, i) => i !== index))
+                    }
+                    className="hover:text-destructive"
                   >
-                    <FileText className="h-4 w-4 text-gray-500" />
-                    <span className="truncate max-w-[200px]">{file.name}</span>
-                    <button
-                      onClick={() =>
-                        setFiles(files.filter((_, i) => i !== index))
-                      }
-                      className="hover:text-destructive"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
-        )}
-
-        <Textarea
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder="Type your instructions here..."
-          className="min-h-[100px] resize-none"
-        />
-
-        <div className="flex gap-2 items-center">
-          <Input
-            type="file"
-            multiple
-            onChange={(e) =>
-              e.target.files &&
-              setFiles([...files, ...Array.from(e.target.files)])
-            }
-            className="hidden"
-            id={`file-upload-${eventId}`}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9"
-            onClick={() =>
-              document.getElementById(`file-upload-${eventId}`)?.click()
-            }
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Attach Files
-          </Button>
-
-          <Button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className="ml-auto"
-          >
-            {isLoading ? (
-              <>
-                <LoaderAnimation />
-              </>
-            ) : (
-              "Submit Response"
-            )}
-          </Button>
         </div>
+      )}
+
+      {drawings.length > 0 && (
+        <div className="border rounded-lg overflow-hidden">
+          <div className="p-4 bg-muted/30">
+            <div className="flex flex-wrap gap-2">
+              {drawings.map((file, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-md text-sm border"
+                >
+                  <Edit3 className="h-4 w-4 text-gray-500" />
+                  <span className="truncate max-w-[200px]">{file.name}</span>
+                  <button
+                    onClick={() =>
+                      setDrawings(drawings.filter((_, i) => i !== index))
+                    }
+                    className="hover:text-destructive"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Textarea
+        value={inputText}
+        onChange={(e) => setInputText(e.target.value)}
+        placeholder="Type your instructions here..."
+        className="min-h-[100px] resize-none"
+      />
+
+      <div className="flex gap-2 items-center">
+        <Input
+          type="file"
+          multiple
+          onChange={(e) =>
+            e.target.files &&
+            setFiles([...files, ...Array.from(e.target.files)])
+          }
+          className="hidden"
+          id={`file-upload-${eventId}`}
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-9"
+          onClick={() =>
+            document.getElementById(`file-upload-${eventId}`)?.click()
+          }
+        >
+          <FileText className="h-4 w-4 mr-2" />
+          Attach Files
+        </Button>
+
+        <Input
+          type="file"
+          multiple
+          onChange={(e) =>
+            e.target.files &&
+            setDrawings([...drawings, ...Array.from(e.target.files)])
+          }
+          className="hidden"
+          id={`drawing-upload-${eventId}`}
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-9"
+          onClick={() =>
+            document.getElementById(`drawing-upload-${eventId}`)?.click()
+          }
+        >
+          <Edit3 className="h-4 w-4 mr-2" />
+          Attach Drawings
+        </Button>
+
+        <Button onClick={handleSubmit} disabled={isLoading} className="ml-auto">
+          {isLoading ? (
+            <>
+              <LoaderAnimation />
+            </>
+          ) : (
+            "Submit Response"
+          )}
+        </Button>
       </div>
     </div>
   );
