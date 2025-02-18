@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
-import { Loader2 } from "lucide-react";
+import { CircleIcon } from "lucide-react";
 
 interface StreamComponentProps {
   streamingKey: string;
@@ -72,8 +72,25 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
   return (
     <div className="whitespace-pre-wrap">
       {isPending && (
-        <div className="">
-          <MarkDownDisplay content={displayValue} />
+        <div className="pb-96">
+          {displayValue ? (
+            <MarkDownDisplay content={displayValue} />
+          ) : (
+            <div className="flex gap-1 items-center justify-center">
+              <CircleIcon
+                className="w-3 h-3 text-gray-400 animate-pulse delay-0 "
+                fill="currentColor"
+              />
+              <CircleIcon
+                className="w-3 h-3 text-gray-400 animate-pulse delay-150"
+                fill="currentColor"
+              />
+              <CircleIcon
+                className="w-3 h-3 text-gray-400 animate-pulse delay-300"
+                fill="currentColor"
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

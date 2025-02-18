@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+import { Copy } from "lucide-react";
 export default function AssistantChatInterface() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -42,23 +42,27 @@ export default function AssistantChatInterface() {
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
+      const scrollContainer = chatContainerRef.current.querySelector(
+        "[data-radix-scroll-area-viewport]"
+      );
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
     }
   };
 
   useLayoutEffect(() => {
     scrollToBottom();
-  }, [chats]);
-
-  useEffect(() => {
-    const timer = setTimeout(scrollToBottom, 100);
+    const timer = setTimeout(scrollToBottom, 500);
     return () => clearTimeout(timer);
   }, [chats]);
 
   return (
     <div>
-      <ScrollArea className="px-4 h-[calc(100vh-270px)]" ref={chatContainerRef}>
+      <ScrollArea
+        className="px-4  h-[calc(100vh-270px)]"
+        ref={chatContainerRef}
+      >
         {chats &&
           chats.length > 0 &&
           chats.map((history, index) => (
@@ -76,7 +80,28 @@ export default function AssistantChatInterface() {
                       </span>
                     </div>
                     {history.message.content && (
-                      <AgentMessageInteractiveView message={history.message} />
+                      <div className="flex flex-col">
+                        <AgentMessageInteractiveView
+                          message={history.message}
+                        />
+                        {history.sender.toLowerCase() === "flowlly" &&
+                          typeof history.message.content === "string" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="mt-2 text-xs self-start"
+                              onClick={() =>
+                                navigator.clipboard.writeText(
+                                  typeof history.message.content === "string"
+                                    ? history.message.content
+                                    : ""
+                                )
+                              }
+                            >
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          )}
+                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -90,6 +115,7 @@ export default function AssistantChatInterface() {
             authToken={session.access_token}
           />
         )}
+        {<div className="h-[50px]"></div>}
       </ScrollArea>
       <div className="px-4 py-2 flex flex-col justify-end">
         {activeProject && (
