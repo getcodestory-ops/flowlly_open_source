@@ -8,7 +8,7 @@ export const HoverExtension = Extension.create({
   addGlobalAttributes() {
     return [
       {
-        types: ["paragraph", "heading"],
+        types: ["paragraph", "heading", "span"],
         attributes: {
           "data-tooltip": {
             default: null,
@@ -19,6 +19,8 @@ export const HoverExtension = Extension.create({
               }
               return {
                 "data-tooltip": attributes["data-tooltip"],
+                style:
+                  "color: gray; text-decoration: underline; font-size: 0.8em; cursor: context-menu;",
               };
             },
           },

@@ -97,7 +97,7 @@ const ContentEditor = ({
               </Button>
             </div>
           </BubbleMenu>
-          <ScrollArea className="h-[75vh] ">
+          <ScrollArea className="h-[100vh] ">
             <EditorContent
               editor={editor}
               className=" m-2 w-full prose prose-sm max-w-none 

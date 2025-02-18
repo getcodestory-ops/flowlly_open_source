@@ -16,7 +16,7 @@ import type {
   EventSchedule,
   ProjectEvents,
 } from "./types";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
 import { TriggerUI } from "./TriggerUI";
 import LoaderAnimation from "@/components/Animations/LoaderAnimation";
 
@@ -61,7 +61,6 @@ export default function AssignmentHome() {
   const [graphs, setGraphs] = useState<GraphData[] | null>(null);
   const [currentGraph, setCurrentGraph] = useState<GraphData | null>(null);
   const [isLoadingResult, setIsLoadingResult] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>("schedules");
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
 
   const session = useStore((state) => state.session);
@@ -145,41 +144,24 @@ export default function AssignmentHome() {
                   setCurrentResult(null);
                 }}
               />
-              <Tabs
-                defaultValue="schedules"
-                value={activeTab}
-                onValueChange={setActiveTab}
-              >
-                <TabsList className="mb-4">
-                  <TabsTrigger value="schedules">Runs</TabsTrigger>
-                  {currentGraph?.event_trigger &&
-                    currentGraph?.event_trigger.length > 0 &&
-                    currentGraph?.event_trigger[0].trigger_by === "ui" && (
-                      <TabsTrigger value="trigger">Start Workflow</TabsTrigger>
-                    )}
-                </TabsList>
-
-                <TabsContent value="schedules" className="h-full">
-                  <EventScheduleList
-                    graphs={eventSchedule || []}
-                    onSelectGraph={setCurrentResult}
-                    eventId={currentGraphId || ""}
-                    setIsLoadingResult={setIsLoadingResult}
-                  />
-                </TabsContent>
-
-                {currentGraph?.event_trigger &&
-                  currentGraph?.event_trigger.length > 0 &&
-                  currentGraph?.event_trigger[0].trigger_by === "ui" && (
-                    <TabsContent value="trigger">
-                      <TriggerUI
-                        eventId={currentGraphId || ""}
-                        onTrigger={setCurrentResult}
-                        setTab={setActiveTab}
-                      />
-                    </TabsContent>
-                  )}
-              </Tabs>
+              {currentGraph?.event_trigger &&
+                currentGraph?.event_trigger.length > 0 &&
+                currentGraph?.event_trigger[0].trigger_by === "ui" && (
+                  <div className="mb-4">
+                    <TriggerUI
+                      eventId={currentGraphId || ""}
+                      onTrigger={setCurrentResult}
+                    />
+                  </div>
+                )}
+              <div className="h-full">
+                <EventScheduleList
+                  graphs={eventSchedule || []}
+                  onSelectGraph={setCurrentResult}
+                  eventId={currentGraphId || ""}
+                  setIsLoadingResult={setIsLoadingResult}
+                />
+              </div>
             </div>
           </div>
 
