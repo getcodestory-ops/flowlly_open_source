@@ -453,7 +453,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
       {selectedResultId && (
         <div className="z-100">
           <Button
-            className=" fixed bottom-4 right-4 rounded-full w-auto h-auto p-2 flex items-center gap-2"
+            className="z-[100] fixed bottom-4 right-4 rounded-full w-auto h-auto p-2 flex items-center gap-2"
             onClick={() => setIsChatOpen((prev) => !prev)}
           >
             <div className="bg-white text-primary-foreground rounded-full p-2">
