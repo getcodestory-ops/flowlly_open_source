@@ -29,23 +29,20 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
     };
 
     eventSource.onmessage = (event) => {
-      // Handle different types of messages and maintain formatting
-      if (event.data.trim()) {
-        // Only process non-empty data
+      // Only process message events (heartbeats come through 'heartbeat' event type)
+      if (event.data) {
         setDisplayValue((prev) => {
-          const newData = event.data;
-          // Add double newline for section completions and headers
-          if (
-            newData.includes("Section Completed") ||
-            newData.startsWith("##")
-          ) {
-            return prev + newData + "\n\n";
-          }
-          // Add single newline for regular content
+          const newData = event.data.replace(/\\n/g, "\n"); // Convert escaped newlines to actual newlines
           return prev + newData;
         });
       }
     };
+
+    // Handle heartbeat events separately
+    eventSource.addEventListener("heartbeat", (event) => {
+      // Heartbeat received, can be used for connection monitoring if needed
+      // console.log("Heartbeat received");
+    });
 
     eventSource.onerror = (error) => {
       console.error("EventSource failed:", error);

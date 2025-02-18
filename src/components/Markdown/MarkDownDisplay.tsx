@@ -30,7 +30,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
                 prose-pre:bg-gray-100 prose-pre:text-gray-900
                 [&>*]:max-w-4xl [&>*]:mx-auto px-2"
       >
-        {content.replace(/\n{2,}/g, "\n")}
+        {content}
       </ReactMarkdown>
     </div>
   );
