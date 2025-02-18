@@ -61,12 +61,12 @@ export function usePlatformChat(folderId: string, chatTarget: string) {
       }
       return createPlatformChatEntity(session, {
         project_id: activeProject.project_id,
-        chat_name:
-          chatTarget === "schedule" ? "Schedule Chat" : "New Document Chat",
+        chat_name: "Flowlly Automated",
         chat_details:
-          chatTarget === "schedule"
+          chatInput ||
+          (chatTarget === "schedule"
             ? "Automated chat for schedule interaction"
-            : "Automated chat for document interaction",
+            : "Automated chat for document interaction"),
         relation_id: folderId,
         relation_type: chatTarget,
       });

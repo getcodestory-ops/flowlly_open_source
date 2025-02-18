@@ -69,7 +69,10 @@ const PlatformChatSelector = ({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          <AddNewPlatformChatEntity folderId={folderId} />
+          <AddNewPlatformChatEntity
+            folderId={folderId}
+            relationType={chatTarget}
+          />
 
           <DropdownMenuSeparator />
           <ScrollArea className="h-[60vh]">

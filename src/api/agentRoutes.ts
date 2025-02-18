@@ -19,6 +19,7 @@ export const talkToAgent = async ({
   chatId,
   projectId,
   responseType = "general",
+  model = "gpt-4",
 }: {
   session: Session;
   agentTask: string;
@@ -26,6 +27,7 @@ export const talkToAgent = async ({
   chatId: string;
   projectId: string;
   responseType?: string;
+  model?: string;
 }) => {
   const scheduleProps = {
     task: agentTask,
@@ -33,6 +35,7 @@ export const talkToAgent = async ({
     chat_entity_id: chatId,
     project_id: projectId,
     response_type: responseType,
+    model: model,
   };
 
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat`;

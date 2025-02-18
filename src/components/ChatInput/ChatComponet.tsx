@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AssistantChatInterface from "../Schedule/AssistantChatInterface";
 import AssistantChatSelector from "../Schedule/AssistantChatSelector";
-
+// import PlatformChatComponent from "../ChatInput/PlatformChat/PlatformChatComponent";
 export default function ChatComponent() {
   return (
     <div className="p-2">

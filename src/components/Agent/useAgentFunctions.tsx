@@ -18,6 +18,7 @@ export function useScheduleUpdate() {
   const selectedContext = useStore((state) => state.selectedContext);
   const activeProject = useStore((state) => state.activeProject);
   const activeChatEntity = useStore((state) => state.activeChatEntity);
+  const [selectedModel, setSelectedModel] = useState<string>("gpt-4o");
 
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
@@ -161,6 +162,7 @@ export function useScheduleUpdate() {
       brainId: selectedContext?.id ?? null,
       chatId: currentActiveChatEntity.id,
       projectId: activeProject?.project_id,
+      model: selectedModel,
     });
   };
 
@@ -176,5 +178,7 @@ export function useScheduleUpdate() {
     onOpen,
     currentTaskId,
     session,
+    selectedModel,
+    setSelectedModel,
   };
 }

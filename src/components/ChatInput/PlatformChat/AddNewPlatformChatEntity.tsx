@@ -12,7 +12,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { createPlatformChatEntity } from "@/api/agentRoutes";
 
-function AddNewPlatformChatEntity({ folderId }: { folderId: string }) {
+function AddNewPlatformChatEntity({
+  folderId,
+  relationType,
+}: {
+  folderId: string;
+  relationType?: string;
+}) {
   const { session, activeProject } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
@@ -38,7 +44,7 @@ function AddNewPlatformChatEntity({ folderId }: { folderId: string }) {
         chat_name: chatName,
         chat_details: chatDescription,
         relation_id: folderId,
-        relation_type: "folder",
+        relation_type: relationType || "folder",
       });
     },
     onError: (error) => {
