@@ -19,6 +19,7 @@ export function useScheduleUpdate() {
   const activeProject = useStore((state) => state.activeProject);
   const activeChatEntity = useStore((state) => state.activeChatEntity);
   const [selectedModel, setSelectedModel] = useState<string>("gpt-4o");
+  const [includeContext, setIncludeContext] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
@@ -163,6 +164,7 @@ export function useScheduleUpdate() {
       chatId: currentActiveChatEntity.id,
       projectId: activeProject?.project_id,
       model: selectedModel,
+      includeContext: includeContext,
     });
   };
 
@@ -180,5 +182,7 @@ export function useScheduleUpdate() {
     session,
     selectedModel,
     setSelectedModel,
+    includeContext,
+    setIncludeContext,
   };
 }

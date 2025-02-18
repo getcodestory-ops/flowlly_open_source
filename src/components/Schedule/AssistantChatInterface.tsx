@@ -29,6 +29,8 @@ export default function AssistantChatInterface() {
     session,
     selectedModel,
     setSelectedModel,
+    includeContext,
+    setIncludeContext,
   } = useScheduleUpdate();
 
   const models = [
@@ -97,21 +99,35 @@ export default function AssistantChatInterface() {
                 Message
               </Label>
               <div className="absolute bottom-0 left-2 z-10 ">
-                <Select
-                  value={selectedModel}
-                  onValueChange={(value) => setSelectedModel(value)}
-                >
-                  <SelectTrigger className="w-36 h-2 text-xs">
-                    <SelectValue placeholder="Select a model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {models.map((model) => (
-                      <SelectItem key={model.id} value={model.id}>
-                        {model.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={selectedModel}
+                    onValueChange={(value) => setSelectedModel(value)}
+                  >
+                    <SelectTrigger className="w-36 h-2 text-xs">
+                      <SelectValue placeholder="Select a model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {models.map((model) => (
+                        <SelectItem key={model.id} value={model.id}>
+                          {model.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="checkbox"
+                      id="includeContext"
+                      checked={includeContext}
+                      onChange={(e) => setIncludeContext(e.target.checked)}
+                      className="h-3 w-3"
+                    />
+                    <label htmlFor="includeContext" className="text-xs">
+                      Include project context
+                    </label>
+                  </div>
+                </div>
               </div>
               <Textarea
                 id="message"
