@@ -32,7 +32,9 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
       ) : (
         <>
           {typeof message.content === "string" && (
-            <MarkDownDisplay content={message.content} />
+            <div className="whitespace-pre-wrap">
+              <MarkDownDisplay content={message.content} />
+            </div>
           )}
         </>
       )}
