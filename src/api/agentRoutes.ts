@@ -19,7 +19,7 @@ export const talkToAgent = async ({
   chatId,
   projectId,
   responseType = "general",
-  model = "gpt-4",
+  model = "gemini-2.0-flash",
   includeContext = false,
 }: {
   session: Session;
