@@ -59,9 +59,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     setActiveProject,
     setUserProjects,
     setMembers,
-    activeChatEntity,
     setActiveChatEntity,
-    chatEntities,
     setChatEntities,
   } = useStore((state) => ({
     session: state.session,
@@ -70,9 +68,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
     setActiveProject: state.setActiveProject,
     setUserProjects: state.setUserProjects,
     setMembers: state.setMembers,
-    activeChatEntity: state.activeChatEntity,
     setActiveChatEntity: state.setActiveChatEntity,
-    chatEntities: state.chatEntities,
     setChatEntities: state.setChatEntities,
   }));
 
@@ -142,7 +138,6 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
   });
 
   useEffect(() => {
-    console.log("changing active chat entity");
     if (chatEntitities && chatEntitities.length > 0) {
       setChatEntities(chatEntitities);
       setActiveChatEntity(chatEntitities[chatEntitities.length - 1]);

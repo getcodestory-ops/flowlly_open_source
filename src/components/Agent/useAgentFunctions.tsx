@@ -18,6 +18,7 @@ export function useScheduleUpdate() {
   const selectedContext = useStore((state) => state.selectedContext);
   const activeProject = useStore((state) => state.activeProject);
   const activeChatEntity = useStore((state) => state.activeChatEntity);
+  const setActiveChatEntity = useStore((state) => state.setActiveChatEntity);
   const [selectedModel, setSelectedModel] = useState<string>("gpt-4o");
   const [includeContext, setIncludeContext] = useState(false);
 
@@ -47,8 +48,8 @@ export function useScheduleUpdate() {
       }
       return createChatEntity(session, {
         project_id: activeProject.project_id,
-        chat_name: "New Chat",
-        chat_details: "Automated chat",
+        chat_name: "Flowlly Automated",
+        chat_details: chatInput,
       });
     },
     onError: (error) => {
@@ -60,7 +61,7 @@ export function useScheduleUpdate() {
       });
       return Promise.reject("Failed to create chat entity");
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Success",
         description: "Chat entity created",
@@ -140,13 +141,15 @@ export function useScheduleUpdate() {
       return;
     }
 
+    console.log("activeChatEntity", activeChatEntity);
+
     if (!activeChatEntity?.id) {
       // Create a new chat entity before submitting the chat
       await createChatEntityMutation.mutateAsync();
     }
 
-    // Ensure we have an active chat entity after potential creation
     const currentActiveChatEntity = useStore.getState().activeChatEntity;
+    console.log("currentActiveChatEntity", currentActiveChatEntity);
 
     if (!currentActiveChatEntity?.id) {
       toast({

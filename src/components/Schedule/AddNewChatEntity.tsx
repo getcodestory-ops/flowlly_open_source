@@ -12,10 +12,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { createChatEntity } from "@/api/agentRoutes";
 
-function AddNewChatEntity() {
-  const { session, activeProject } = useStore((state) => ({
+function AddNewChatEntity({ onComplete }: { onComplete?: () => void }) {
+  const { session, activeProject, setActiveChatEntity } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
+    setActiveChatEntity: state.setActiveChatEntity,
   }));
   const { toast } = useToast();
 
@@ -55,38 +56,48 @@ function AddNewChatEntity() {
   });
 
   return (
-    <Popover>
-      <PopoverTrigger>
-        <Button>Add New Chat Entity</Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-96">
-        <div className="p-4">
-          <h2 className="text-lg font-medium">Create New Chat Entity</h2>
-          <div className="space-y-4 mt-4">
-            <Input
-              placeholder="Chat Name"
-              value={chatName}
-              onChange={(e) => setChatName(e.target.value)}
-            />
-            <Textarea
-              placeholder="Chat Description"
-              value={chatDescription}
-              onChange={(e) => setChatDescription(e.target.value)}
-            />
-          </div>
-          <div className="flex justify-end space-x-2 mt-4">
-            <Button
-              onClick={() => {
-                mutation.mutate();
-              }}
-            >
-              Save
-            </Button>
-            <Button variant="ghost">Cancel</Button>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+    <Button
+      onClick={() => {
+        setActiveChatEntity(null);
+        if (onComplete) {
+          onComplete();
+        }
+      }}
+    >
+      Add New Chat Entity
+    </Button>
+    // <Popover>
+    //   <PopoverTrigger>
+    //     <Button>Add New Chat Entity</Button>
+    //   </PopoverTrigger>
+    //   <PopoverContent className="w-96">
+    //     <div className="p-4">
+    //       <h2 className="text-lg font-medium">Create New Chat Entity</h2>
+    //       <div className="space-y-4 mt-4">
+    //         <Input
+    //           placeholder="Chat Name"
+    //           value={chatName}
+    //           onChange={(e) => setChatName(e.target.value)}
+    //         />
+    //         <Textarea
+    //           placeholder="Chat Description"
+    //           value={chatDescription}
+    //           onChange={(e) => setChatDescription(e.target.value)}
+    //         />
+    //       </div>
+    //       <div className="flex justify-end space-x-2 mt-4">
+    //         <Button
+    //           onClick={() => {
+    //             mutation.mutate();
+    //           }}
+    //         >
+    //           Save
+    //         </Button>
+    //         <Button variant="ghost">Cancel</Button>
+    //       </div>
+    //     </div>
+    //   </PopoverContent>
+    // </Popover>
   );
 }
 

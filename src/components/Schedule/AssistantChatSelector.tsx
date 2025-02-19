@@ -13,10 +13,6 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const AssistantChatSelector = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const onClose = () => setIsOpen(false);
-  const onOpen = () => setIsOpen(true);
-
   const { activeChatEntity, setActiveChatEntity, chatEntities } = useStore(
     (state) => ({
       activeChatEntity: state.activeChatEntity,
@@ -25,16 +21,11 @@ const AssistantChatSelector = () => {
     })
   );
 
-  //if activeChatEntity not among chatEntities, set it to the first chatEntity
-  useEffect(() => {
-    if (activeChatEntity && !chatEntities.includes(activeChatEntity)) {
-      setActiveChatEntity(chatEntities[0]);
-    }
-  }, [chatEntities, activeChatEntity, setActiveChatEntity]);
+  const [open, setOpen] = useState(false);
 
   return (
     <div className="flex flex-col text-xs">
-      <DropdownMenu>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
@@ -46,7 +37,7 @@ const AssistantChatSelector = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          <AddNewChatEntity />
+          <AddNewChatEntity onComplete={() => setOpen(false)} />
           {/* <div className="flex items-center justify-center gap-2 p-2 w-full hover:text-gray-900 cursor-pointer rounded-md">
               <Plus className="h-4 w-4" />
               <span className="truncate">New Chat</span>

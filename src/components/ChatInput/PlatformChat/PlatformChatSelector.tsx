@@ -49,7 +49,7 @@ const PlatformChatSelector = ({
 
   useEffect(() => {
     if (chatEntities && chatEntities.length > 0) {
-      setActiveChatEntity(chatEntities[0]);
+      setActiveChatEntity(chatEntities[chatEntities.length - 1]);
     } else {
       setActiveChatEntity(null);
     }
