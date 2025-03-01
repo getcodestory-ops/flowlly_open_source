@@ -23,7 +23,7 @@ const PlatformChatSelector = ({
   chatTarget?: string;
 }) => {
   const queryClient = useQueryClient();
-
+  const [isOpen, setIsOpen] = useState(false);
   const { activeChatEntity, setActiveChatEntity, activeProject, session } =
     useStore((state) => ({
       activeChatEntity: state.activeChatEntity,
@@ -56,23 +56,31 @@ const PlatformChatSelector = ({
   }, [chatEntities, setActiveChatEntity]);
 
   return (
-    <div className="flex flex-col text-xs">
-      <DropdownMenu>
+    <div className="flex flex-row text-xs gap-2">
+      <AddNewPlatformChatEntity
+        folderId={folderId}
+        relationType={chatTarget}
+        onComplete={() => setIsOpen(false)}
+      />
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
             size="sm"
             className="bg-white hover:bg-gray-100"
           >
-            Saved Chats
+            Chat History
             <ChevronDown className="ml-2 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56">
-          <AddNewPlatformChatEntity
-            folderId={folderId}
-            relationType={chatTarget}
-          />
+        <DropdownMenuContent className="w-56 ">
+          <div className="flex flex-col gap-2 p-4">
+            <AddNewPlatformChatEntity
+              folderId={folderId}
+              relationType={chatTarget}
+              onComplete={() => setIsOpen(false)}
+            />
+          </div>
 
           <DropdownMenuSeparator />
           <ScrollArea className="h-[60vh]">

@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStore } from "@/utils/store";
 import { getTaskStatus } from "@/api/schedule_routes";
-import { talkToAgent } from "@/api/agentRoutes";
+import { talkToAgent, ProcessedFile } from "@/api/agentRoutes";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAgentChats } from "@/api/agentRoutes";
 import { Session } from "@supabase/supabase-js";
 import { isTokenExpired } from "@/utils/isTokenExpired";
 import { useToast } from "@/components/ui/use-toast";
 import { createPlatformChatEntity } from "@/api/agentRoutes";
+import { AgentChat, AgentChatEntity } from "@/types/agentChats";
 
 export function usePlatformChat(folderId: string, chatTarget: string) {
   const { toast } = useToast();
@@ -15,23 +16,21 @@ export function usePlatformChat(folderId: string, chatTarget: string) {
   const [chatInput, setChatInput] = useState<string>("");
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
   const session = useStore((state) => state.session);
-  const selectedContext = useStore((state) => state.selectedContext);
+
   const activeProject = useStore((state) => state.activeProject);
   const activeChatEntity = useStore((state) => state.activeChatEntity);
+  const appendChatEntity = useStore((state) => state.appendChatEntity);
+
+  // Use localChats from the store instead of local state
+  const localChats = useStore((state) => state.localChats);
+  const setLocalChats = useStore((state) => state.setLocalChats);
+
+  // Track if we're waiting for an AI response
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
   const onOpen = () => setIsOpen(true);
-
-  const getStatusAndUpdateChats = async (
-    session: Session | null,
-    currentTaskId: string | null
-  ) => {
-    if (!session || !currentTaskId) return Promise.reject("no session or task");
-    queryClient.invalidateQueries({ queryKey: ["agentChats"] });
-    const response = await getTaskStatus(session, currentTaskId);
-    return response;
-  };
 
   const { mutate, isPending, data } = useMutation({
     mutationFn: talkToAgent,
@@ -41,92 +40,181 @@ export function usePlatformChat(folderId: string, chatTarget: string) {
         description: error.message,
         variant: "destructive",
       });
+      setIsWaitingForResponse(false);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["agentChats"] });
+      // Add the user message to local chats
+      const userMessage: AgentChat = {
+        id: Date.now().toString(), // Use a temporary ID
+        sender: "User",
+        receiver: "Flowlly",
+        project_id: activeProject?.project_id || "",
+        message: {
+          content: chatInput,
+          role: "user",
+        },
+        created_at: new Date().toISOString(),
+      };
+
+      // Set waiting state to true when we're expecting a response
+      setIsWaitingForResponse(true);
+
+      // Update local chats with the user message
+      setLocalChats([...localChats, userMessage]);
       setChatInput("");
       setCurrentTaskId(data.agent_response);
     },
   });
 
-  const createChatEntityMutation = useMutation({
-    mutationFn: () => {
-      if (!session || !activeProject) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "No session or active project",
-        });
-        return Promise.reject("No session or active project");
+  const { data: serverChats, isSuccess: isServerChatsSuccess } = useQuery({
+    queryKey: ["agentChats", activeChatEntity?.id],
+    queryFn: async () => {
+      if (!session || !activeChatEntity?.id) return [];
+      if (isTokenExpired(session)) return [];
+      const response = await getAgentChats(session, activeChatEntity.id);
+      return response;
+    },
+    enabled: !!session && !!activeChatEntity?.id,
+  });
+
+  // Initialize local chats from server data only on initial load or chat entity change
+  useEffect(() => {
+    if (serverChats && isServerChatsSuccess && !isWaitingForResponse) {
+      // If we're not waiting for a response, it's safe to update from server
+      setLocalChats(serverChats);
+    }
+  }, [serverChats, isServerChatsSuccess, isWaitingForResponse, setLocalChats]);
+
+  // Check task status periodically to know when to update
+  useEffect(() => {
+    if (!currentTaskId || !session) return;
+
+    let isUnmounted = false;
+
+    const checkTaskStatus = async () => {
+      try {
+        const response = await getTaskStatus(session, currentTaskId);
+
+        if (isUnmounted) return;
+
+        if (response.status === "completed" && response.result) {
+          // Add the agent response to local chats
+          const agentMessage: AgentChat = {
+            id: Date.now().toString(),
+            sender: "Flowlly",
+            receiver: "User",
+            project_id: activeProject?.project_id || "",
+            message: {
+              content: response.result,
+              role: "assistant",
+            },
+            created_at: new Date().toISOString(),
+          };
+
+          // We need a slight delay before updating the state to ensure a smooth transition
+          // from the streaming component to the final message
+          setTimeout(() => {
+            // Get the latest state from the store
+            const currentLocalChats = useStore.getState().localChats;
+            const updatedChats = [...currentLocalChats, agentMessage];
+
+            // Update the store with the new chats
+            setLocalChats(updatedChats);
+
+            // Quietly sync with server in the background
+            queryClient.setQueryData(
+              ["agentChats", activeChatEntity?.id],
+              () => updatedChats
+            );
+
+            setCurrentTaskId(null);
+            // Reset waiting state after response is received
+            setIsWaitingForResponse(false);
+          }, 300); // Small delay to ensure smooth transition
+        } else if (
+          response.status === "pending" ||
+          response.status === "processing"
+        ) {
+          // Continue polling if still in progress
+          setTimeout(checkTaskStatus, 2000);
+        } else if (response.status === "failed") {
+          // Handle failure
+          toast({
+            title: "Error",
+            description: "Failed to process your request",
+            variant: "destructive",
+          });
+          setCurrentTaskId(null);
+          setIsWaitingForResponse(false);
+        }
+      } catch (error) {
+        console.error("Error checking task status:", error);
+        if (!isUnmounted) {
+          setCurrentTaskId(null);
+          setIsWaitingForResponse(false);
+        }
       }
-      return createPlatformChatEntity(session, {
+    };
+
+    checkTaskStatus();
+
+    return () => {
+      isUnmounted = true;
+    };
+  }, [
+    currentTaskId,
+    session,
+    activeChatEntity?.id,
+    queryClient,
+    activeProject?.project_id,
+    setLocalChats,
+  ]);
+
+  const createChatEntityMutation = useMutation({
+    mutationFn: async () => {
+      if (!session || !activeProject) {
+        throw new Error("No session or active project");
+      }
+
+      const response = await createPlatformChatEntity(session, {
         project_id: activeProject.project_id,
         chat_name: "Flowlly Automated",
-        chat_details:
-          chatInput ||
-          (chatTarget === "schedule"
-            ? "Automated chat for schedule interaction"
-            : "Automated chat for document interaction"),
+        chat_details: chatInput,
         relation_id: folderId,
         relation_type: chatTarget,
       });
+
+      // Instead of invalidating the query, directly update the store
+      appendChatEntity(response);
+
+      // Also update the query cache directly
+      const queryKey = ["documentChatEntityList", session, activeProject];
+      const currentEntities =
+        queryClient.getQueryData<AgentChatEntity[]>(queryKey) || [];
+      queryClient.setQueryData(queryKey, [...currentEntities, response]);
+
+      // Set this as the active chat entity
+      useStore.setState({ activeChatEntity: response });
+
+      return response;
     },
     onError: (error) => {
       console.error(error);
       toast({
         title: "Error",
-        description: "Failed to create chat entity",
+        description: "Failed to create chat entity " + error.message,
         variant: "destructive",
       });
     },
-    onSuccess: (data) => {
-      toast({
-        title: "Success",
-        description: "New chat entity created",
-      });
-      queryClient.invalidateQueries({ queryKey: ["documentChatEntityList"] });
-      // Set the newly created chat entity as active
-      useStore.setState({ activeChatEntity: data });
-    },
   });
 
-  const { data: chats, isLoading } = useQuery({
-    queryKey: ["agentChats", session, activeChatEntity?.id],
-    queryFn: () => {
-      if (!session) {
-        toast({
-          title: "Error",
-          description: "Please refresh the page and try again!",
-          variant: "destructive",
-        });
-        return Promise.reject("refresh session");
-      } else {
-        if (isTokenExpired(session)) {
-          toast({
-            title: "Warning",
-            description:
-              "Your session has expired. Please refresh the page and try again!",
-            variant: "destructive",
-          });
-          return Promise.reject("refresh session");
-        }
-      }
-
-      if (!activeChatEntity) {
-        toast({
-          title: "Warning",
-          description: "Select a chat to start!",
-          variant: "destructive",
-        });
-        return Promise.reject("select a chat");
-      }
-
-      return getAgentChats(session, activeChatEntity.id);
-    },
-    enabled: !!session && !!activeChatEntity?.id,
-  });
-
-  const handleChatSubmit = async () => {
+  const handleChatSubmit = async ({
+    message,
+    files,
+  }: {
+    message: string;
+    files: ProcessedFile[];
+  }) => {
     if (!session || !activeProject) {
       toast({
         title: "Error",
@@ -155,16 +243,17 @@ export function usePlatformChat(folderId: string, chatTarget: string) {
 
     mutate({
       session,
-      agentTask: chatInput,
+      agentTask: message,
       brainId: folderId ?? null,
       chatId: currentActiveChatEntity.id,
       projectId: activeProject?.project_id,
       responseType: chatTarget ?? "folder",
+      files: files,
     });
   };
 
   return {
-    chats,
+    chats: localChats, // Return localChats from the store
     isPending,
     activeProject,
     isOpen,
@@ -173,8 +262,8 @@ export function usePlatformChat(folderId: string, chatTarget: string) {
     setChatInput,
     chatInput,
     onOpen,
-    currentTaskId,
     session,
-    createChatEntityMutation,
+    currentTaskId,
+    isWaitingForResponse,
   };
 }

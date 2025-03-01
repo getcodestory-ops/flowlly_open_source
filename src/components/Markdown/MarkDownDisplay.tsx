@@ -28,7 +28,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
                 prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg
                 prose-code:bg-gray-100 prose-code:text-gray-900
                 prose-pre:bg-gray-100 prose-pre:text-gray-900
-                [&>*]:max-w-4xl [&>*]:mx-auto px-2"
+                [&>*]:max-w-4xl [&>*]:mx-auto px-2 "
       >
         {content}
       </ReactMarkdown>

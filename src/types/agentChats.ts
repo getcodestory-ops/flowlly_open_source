@@ -5,7 +5,13 @@ interface UpdateScheduleContent {
   impact_on_end_date?: number;
   revision_id?: string;
 }
-
+export type ProcessedFile = {
+  type: string;
+  resource_id: string;
+  resource_url: string;
+  resource_name: string;
+  extension: string;
+};
 export interface Antartifact {
   content?: string;
   result?: string;
@@ -40,6 +46,7 @@ export interface AgentMessage {
     name?: string;
     arguments?: string;
   };
+  files?: ProcessedFile[];
   response?: string;
   antartifact?: Antartifact;
   antithinking?: string;

@@ -9,7 +9,7 @@ import { Session } from "@supabase/supabase-js";
 import { isTokenExpired } from "@/utils/isTokenExpired";
 import { createChatEntity } from "@/api/agentRoutes";
 
-export function useScheduleUpdate() {
+export function useAgentFunctions() {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [chatInput, setChatInput] = useState<string>("");
@@ -141,15 +141,12 @@ export function useScheduleUpdate() {
       return;
     }
 
-    console.log("activeChatEntity", activeChatEntity);
-
     if (!activeChatEntity?.id) {
       // Create a new chat entity before submitting the chat
       await createChatEntityMutation.mutateAsync();
     }
 
     const currentActiveChatEntity = useStore.getState().activeChatEntity;
-    console.log("currentActiveChatEntity", currentActiveChatEntity);
 
     if (!currentActiveChatEntity?.id) {
       toast({

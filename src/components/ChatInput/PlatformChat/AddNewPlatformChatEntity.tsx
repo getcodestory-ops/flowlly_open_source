@@ -1,27 +1,35 @@
 import React, { useState } from "react";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+
 import { useToast } from "@/components/ui/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { createPlatformChatEntity } from "@/api/agentRoutes";
+import { PenBoxIcon } from "lucide-react";
+import { AgentChatEntity } from "@/types/agentChats";
 
 function AddNewPlatformChatEntity({
   folderId,
   relationType,
+  onComplete,
 }: {
   folderId: string;
   relationType?: string;
+  onComplete?: () => void;
 }) {
-  const { session, activeProject } = useStore((state) => ({
+  const {
+    session,
+    activeProject,
+    setActiveChatEntity,
+    setLocalChats,
+    appendChatEntity,
+  } = useStore((state) => ({
     session: state.session,
     activeProject: state.activeProject,
+    setActiveChatEntity: state.setActiveChatEntity,
+    setLocalChats: state.setLocalChats,
+    appendChatEntity: state.appendChatEntity,
   }));
   const { toast } = useToast();
 
@@ -50,12 +58,21 @@ function AddNewPlatformChatEntity({
     onError: (error) => {
       console.error(error);
     },
-    onSuccess: () => {
+    onSuccess: (newChatEntity) => {
       toast({
         title: "Success",
         description: "Chat entity created",
       });
-      queryClient.invalidateQueries({ queryKey: ["documentChatEntityList"] });
+
+      // Instead of invalidating the query, directly update the store and query cache
+      appendChatEntity(newChatEntity);
+
+      // Also update the query cache directly
+      const queryKey = ["documentChatEntityList", session, activeProject];
+      const currentEntities =
+        queryClient.getQueryData<AgentChatEntity[]>(queryKey) || [];
+      queryClient.setQueryData(queryKey, [...currentEntities, newChatEntity]);
+
       // Clear input fields after success
       setChatName("");
       setChatDescription("");
@@ -63,38 +80,23 @@ function AddNewPlatformChatEntity({
   });
 
   return (
-    <Popover>
-      <PopoverTrigger>
-        <Button>Add New Chat Entity</Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-96">
-        <div className="p-4">
-          <h2 className="text-lg font-medium">Create New Chat Entity</h2>
-          <div className="space-y-4 mt-4">
-            <Input
-              placeholder="Chat Name"
-              value={chatName}
-              onChange={(e) => setChatName(e.target.value)}
-            />
-            <Textarea
-              placeholder="Chat Description"
-              value={chatDescription}
-              onChange={(e) => setChatDescription(e.target.value)}
-            />
-          </div>
-          <div className="flex justify-end space-x-2 mt-4">
-            <Button
-              onClick={() => {
-                mutation.mutate();
-              }}
-            >
-              Save
-            </Button>
-            <Button variant="ghost">Cancel</Button>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+    // <Popover>
+    //   <PopoverTrigger>
+    <Button
+      size="sm"
+      className="justify-center gap-2"
+      onClick={() => {
+        setActiveChatEntity(null);
+        // Clear local chats when starting a new chat
+        setLocalChats([]);
+        if (onComplete) {
+          onComplete();
+        }
+      }}
+    >
+      <PenBoxIcon className="w-4 h-4 " />
+      New Chat
+    </Button>
   );
 }
 
