@@ -20,7 +20,7 @@ export const getProjects = async (
         Authorization: `Bearer ${session.access_token}`,
       },
     });
-    console.log("response", response?.data);
+
     if (response.data?.projects) {
       return response.data?.projects;
     } else {

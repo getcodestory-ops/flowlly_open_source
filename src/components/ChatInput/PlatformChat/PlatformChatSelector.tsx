@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useStore } from "@/utils/store";
-import { Plus, ChevronDown, MessageSquare } from "lucide-react";
+import { Plus, ChevronDown, MessageSquare, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -56,57 +56,64 @@ const PlatformChatSelector = ({
   }, [chatEntities, setActiveChatEntity]);
 
   return (
-    <div className="flex flex-row text-xs gap-2">
+    <div className="flex items-center gap-3">
       <AddNewPlatformChatEntity
         folderId={folderId}
         relationType={chatTarget}
         onComplete={() => setIsOpen(false)}
       />
+
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
             size="sm"
-            className="bg-white hover:bg-gray-100"
+            className="bg-white hover:bg-slate-100 border-slate-200 text-slate-700 flex items-center gap-1 transition-colors"
           >
-            Chat History
-            <ChevronDown className="ml-2 h-4 w-4" />
+            <History className="h-4 w-4" />
+            <span>History</span>
+            <ChevronDown className="h-3.5 w-3.5 opacity-70 ml-1" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56 ">
-          <div className="flex flex-col gap-2 p-4">
-            <AddNewPlatformChatEntity
-              folderId={folderId}
-              relationType={chatTarget}
-              onComplete={() => setIsOpen(false)}
-            />
+        <DropdownMenuContent className="w-64 p-0 border border-slate-200 shadow-lg rounded-lg">
+          <div className="p-3 bg-slate-50 border-b border-slate-200">
+            <h3 className="font-medium text-sm text-slate-800">Chat History</h3>
           </div>
 
-          <DropdownMenuSeparator />
-          <ScrollArea className="h-[60vh]">
-            {chatEntities &&
+          <ScrollArea className="h-[60vh] py-2">
+            {chatEntities && chatEntities.length > 0 ? (
               chatEntities.map((chatEntity, index) => (
                 <DropdownMenuItem
                   key={`chat-${chatEntity.id}-index-${index}`}
-                  onSelect={() => setActiveChatEntity(chatEntity)}
-                  className="focus:bg-gray-100"
+                  onSelect={() => {
+                    setActiveChatEntity(chatEntity);
+                    setIsOpen(false);
+                  }}
+                  className={`px-3 py-2 cursor-pointer transition-colors ${
+                    chatEntity.id === activeChatEntity?.id
+                      ? "bg-slate-100"
+                      : "hover:bg-slate-50"
+                  }`}
                 >
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center">
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      <span
-                        className={
-                          chatEntity.id === activeChatEntity?.id
-                            ? "font-bold"
-                            : ""
-                        }
-                      >
-                        {chatEntity.chat_name}
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-2 w-full">
+                    <MessageSquare className="h-4 w-4 text-slate-500" />
+                    <span
+                      className={`text-sm ${
+                        chatEntity.id === activeChatEntity?.id
+                          ? "font-medium text-slate-800"
+                          : "text-slate-700"
+                      }`}
+                    >
+                      {chatEntity.chat_name}
+                    </span>
                   </div>
                 </DropdownMenuItem>
-              ))}
+              ))
+            ) : (
+              <div className="px-3 py-2 text-sm text-slate-500 text-center">
+                {chatsLoading ? "Loading chats..." : "No chat history found"}
+              </div>
+            )}
           </ScrollArea>
         </DropdownMenuContent>
       </DropdownMenu>

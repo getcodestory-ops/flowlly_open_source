@@ -16,6 +16,7 @@ import { useViewStore } from "@/utils/store";
 import PlatformChatComponent from "../ChatInput/PlatformChat/PlatformChatComponent";
 import { MessageCircle } from "lucide-react";
 import Draggable from "react-draggable";
+import ChatButton from "../ChatButton";
 
 function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   const { scheduleView, setScheduleView } = useViewStore();
@@ -136,15 +137,17 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
         bounds="parent"
       >
         <div ref={nodeRef} className="fixed bottom-4 right-4">
-          <Button
-            className="rounded-full w-auto h-auto p-2 flex items-center gap-2"
+          <ChatButton
+            isOpen={isChatOpen}
             onClick={() => setIsChatOpen(!isChatOpen)}
-          >
-            <div className="bg-white text-primary-foreground rounded-full p-2">
-              <MessageCircle size={24} />
-            </div>
-            <span className="pr-2">update schedule</span>
-          </Button>
+            title={
+              isChatOpen
+                ? "Close chat assistant"
+                : "Chat with Flowlly AI about schedule"
+            }
+            openText="Update schedule"
+            fixed={false}
+          />
         </div>
       </Draggable>
 

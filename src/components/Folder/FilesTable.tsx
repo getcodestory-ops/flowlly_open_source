@@ -53,6 +53,7 @@ import { FileMediaIcon } from "./FileMediaIcon";
 import { deleteFile } from "@/api/folderRoutes";
 import { formatDate } from "@/utils/calculations";
 import PlatformChatComponent from "../ChatInput/PlatformChat/PlatformChatComponent";
+import ChatButton from "../ChatButton";
 
 import {
   Popover,
@@ -342,15 +343,16 @@ export const FilesContent = ({
       {/* <FilePreviewCard resource={currentFile} /> */}
 
       {/* Floating chat button */}
-      <Button
-        className="fixed bottom-4 right-4 rounded-full w-auto h-auto p-2 flex items-center gap-2"
+      <ChatButton
+        isOpen={isChatOpen}
         onClick={() => setIsChatOpen(!isChatOpen)}
-      >
-        <div className="bg-white text-primary-foreground rounded-full p-2">
-          <MessageCircle size={24} />
-        </div>
-        <span className="pr-2">Look for answers in {folderName}</span>
-      </Button>
+        title={
+          isChatOpen
+            ? "Close chat assistant"
+            : `Chat with Flowlly AI about ${folderName}`
+        }
+        openText={`Chat about ${folderName}`}
+      />
 
       {/* Chat component*/}
       {(isChatOpen || isClosing) && (

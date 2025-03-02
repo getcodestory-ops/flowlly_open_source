@@ -108,7 +108,11 @@ export default function PlatformChatInterface({
 
   useEffect(() => {
     const timer = setTimeout(scrollToBottom, 100);
-    return () => clearTimeout(timer);
+    const timer2 = setTimeout(scrollToBottom, 300);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(timer2);
+    };
   }, [chats]);
 
   // Function to poll for task status
@@ -531,13 +535,15 @@ export default function PlatformChatInterface({
         type="button"
         size="sm"
         variant="ghost"
+        className="text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2"
         onClick={() => fileInputRef.current?.click()}
         disabled={isPending || isWaitingForResponse}
+        title="Upload files"
       >
         {isPending || isWaitingForResponse ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-5 w-5 animate-spin" />
         ) : (
-          <Paperclip className="h-4 w-4" />
+          <Paperclip className="h-5 w-5" />
         )}
       </Button>
     </>
@@ -552,16 +558,20 @@ export default function PlatformChatInterface({
     if (successfulFiles.length === 0) return null;
 
     return (
-      <div className="px-4 pb-2">
+      <div className="px-4 pb-3">
         <div className="flex flex-wrap gap-2 mt-2">
           {successfulFiles.map((file, index) => (
-            <Badge key={index} variant="secondary" className="py-1 px-2">
-              <File className="h-3 w-3 mr-1" />
-              {file.file.name}
+            <Badge
+              key={index}
+              variant="secondary"
+              className="py-1.5 px-3 bg-indigo-50/70 text-indigo-600 hover:bg-indigo-50 border border-indigo-100/50 rounded-lg"
+            >
+              <File className="h-3.5 w-3.5 mr-1.5 text-indigo-400" />
+              <span className="truncate max-w-[150px]">{file.file.name}</span>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-4 w-4 p-0 ml-1"
+                className="h-5 w-5 p-0 ml-1.5 rounded-full hover:bg-indigo-100 hover:text-indigo-700"
                 onClick={() => handleRemoveFile(index)}
               >
                 <X className="h-3 w-3" />
@@ -575,64 +585,93 @@ export default function PlatformChatInterface({
 
   // Update the empty state textarea section
   const renderEmptyStateInput = () => (
-    <div className="relative overflow-hidden rounded-lg border border-black bg-background focus-within:ring-1 focus-within:ring-ring mb-6">
-      <Label htmlFor="empty-message" className="sr-only">
-        Message
-      </Label>
-      <Textarea
-        id="empty-message"
-        placeholder="Type your message here..."
-        className="min-h-24 resize-none border-0 p-4 shadow-none focus-visible:ring-0"
-        onChange={(e) => setChatInput(e.target.value)}
-        value={chatInput}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            handleSubmit();
-          }
-        }}
-        disabled={isPending || isWaitingForResponse}
-      />
-      {renderFileDisplay()}
-      <div className="flex items-center p-3 pt-0">
-        {renderFileInput()}
-        <Button
-          type="submit"
-          size="sm"
-          className="ml-auto gap-1.5"
-          onClick={handleSubmit}
-          disabled={
-            isPending ||
-            isWaitingForResponse ||
-            (!chatInput.trim() && uploadingFiles.length === 0)
-          }
-        >
-          {isPending || isWaitingForResponse ? (
-            <>
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              {isWaitingForResponse ? "Processing..." : "Sending..."}
-            </>
-          ) : (
-            <>
-              Send Message
-              <CornerDownLeft className="h-3.5 w-3.5" />
-            </>
-          )}
-        </Button>
+    <div className="flex flex-col items-center px-4 py-6">
+      <div className="max-w-md w-full bg-white rounded-xl p-6 mb-6 shadow-sm">
+        <div className="text-center mb-6">
+          <MessageCircleMore className="h-12 w-12 text-indigo-500 mx-auto mb-3" />
+          <h3 className="text-lg font-medium text-indigo-900 mb-2">
+            Chat with Flowlly AI
+          </h3>
+          <p className="text-slate-500 text-sm mb-4">
+            Start a conversation to get assistance with your project tasks,
+            documents, and workflows.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
+          {examplePrompts.map((prompt, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              size="sm"
+              className="justify-start text-left bg-white border-slate-100 hover:bg-indigo-50 hover:border-indigo-100 transition-colors text-sm"
+              onClick={() => setExamplePrompt(prompt)}
+            >
+              <span className="truncate">{prompt}</span>
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <div className="w-full relative overflow-hidden rounded-xl bg-white border border-slate-100 shadow-sm focus-within:ring-1 focus-within:ring-indigo-300 transition-shadow">
+        <Label htmlFor="empty-message" className="sr-only">
+          Message
+        </Label>
+        <Textarea
+          id="empty-message"
+          placeholder="Type your message here..."
+          className="min-h-20 resize-none border-0 p-4 shadow-none focus-visible:ring-0 text-slate-800"
+          onChange={(e) => setChatInput(e.target.value)}
+          value={chatInput}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit();
+            }
+          }}
+          disabled={isPending || isWaitingForResponse}
+        />
+        {renderFileDisplay()}
+        <div className="flex items-center p-3 pt-0">
+          {renderFileInput()}
+          <Button
+            type="submit"
+            size="sm"
+            className="ml-auto gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
+            onClick={handleSubmit}
+            disabled={
+              isPending ||
+              isWaitingForResponse ||
+              (!chatInput.trim() && uploadingFiles.length === 0)
+            }
+          >
+            {isPending || isWaitingForResponse ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                {isWaitingForResponse ? "Processing..." : "Sending..."}
+              </>
+            ) : (
+              <>
+                Send
+                <CornerDownLeft className="h-3.5 w-3.5" />
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );
 
   // Update the regular chat input section
   const renderChatInput = () => (
-    <div className="relative overflow-hidden rounded-lg border border-black bg-background focus-within:ring-1 focus-within:ring-ring">
+    <div className="relative overflow-hidden rounded-xl bg-white border border-slate-100 shadow-sm focus-within:ring-1 focus-within:ring-indigo-300 transition-shadow">
       <Label htmlFor="message" className="sr-only">
         Message
       </Label>
       <Textarea
         id="message"
         placeholder="Type your message here..."
-        className="min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0"
+        className="min-h-12 resize-none border-0 p-4 shadow-none focus-visible:ring-0 text-slate-800"
         onChange={(e) => setChatInput(e.target.value)}
         value={chatInput}
         onKeyDown={(e) => {
@@ -649,7 +688,7 @@ export default function PlatformChatInterface({
         <Button
           type="submit"
           size="sm"
-          className="ml-auto gap-1.5"
+          className="ml-auto gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
           onClick={handleSubmit}
           disabled={
             isPending ||
@@ -664,7 +703,7 @@ export default function PlatformChatInterface({
             </>
           ) : (
             <>
-              Send Message
+              Send
               <CornerDownLeft className="h-3.5 w-3.5" />
             </>
           )}
@@ -674,71 +713,83 @@ export default function PlatformChatInterface({
   );
 
   return (
-    <div>
+    <div className="flex flex-col h-full">
       {chats && chats.length > 0 ? (
         // Regular chat view when there are messages
         <ScrollArea
-          className="px-4 h-[calc(100vh-320px)]"
+          className="flex-grow px-1 sm:px-3 pb-4"
           ref={chatContainerRef}
         >
-          {chats.map((history, index) => (
-            <div key={index} className="w-full">
-              <div className="max-w-full px-8 py-2 text-white">
-                <Card className="mt-4 bg-background text-foreground">
-                  <CardContent className="p-4">
-                    <div className="flex items-center mb-1">
-                      <MessageCircleMore className="mr-2 h-6 w-6 text-indigo-500" />
-                      <span className="font-bold">{history.sender}</span>
-                      <span className="text-xs ml-2">
-                        {history.created_at
-                          ? new Date(history.created_at).toLocaleString()
-                          : ""}
-                      </span>
+          <div className="pt-2">
+            {chats.map((history, index) => (
+              <div
+                key={index}
+                className={`${
+                  history.sender.toLowerCase() === "user"
+                    ? "flex justify-end mb-4"
+                    : "block w-full"
+                }`}
+              >
+                <div
+                  className={`${
+                    history.sender.toLowerCase() === "user"
+                      ? "max-w-3xl bg-indigo-50 border border-indigo-100 rounded-xl p-4 shadow-sm mx-2"
+                      : "w-full bg-white py-3 px-2 border-b border-slate-100 last:border-b-0 min-h-[40px] transition-all duration-200"
+                  }`}
+                >
+                  {history.sender.toLowerCase() !== "user" && (
+                    <div className="text-xs text-slate-400 mb-1 pl-1">
+                      Flowlly AI
                     </div>
+                  )}
+                  <div
+                    className={`${
+                      history.sender.toLowerCase() === "user"
+                        ? "text-slate-800 prose prose-slate max-w-none"
+                        : "text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-pre:my-2 prose-headings:text-indigo-900 prose-li:my-1"
+                    }`}
+                  >
                     {history.message.content && (
                       <AgentMessageInteractiveView message={history.message} />
                     )}
-                    {chatTarget === "editor" &&
-                      history.sender.toLowerCase() !== "user" && (
-                        <div className="mt-2">
-                          <Button
-                            onClick={() => handleApplyChanges(index)}
-                            variant="secondary"
-                            size="sm"
-                            disabled={applyingChanges[index]}
-                          >
-                            {applyingChanges[index] ? (
-                              <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Applying...
-                              </>
-                            ) : (
-                              <>
-                                <Check className="mr-2 h-4 w-4" />
-                                Apply Changes
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      )}
-                  </CardContent>
-                </Card>
+                  </div>
+
+                  {chatTarget === "editor" &&
+                    history.sender.toLowerCase() !== "user" && (
+                      <div className="mt-3 flex justify-end">
+                        <Button
+                          onClick={() => handleApplyChanges(index)}
+                          variant="secondary"
+                          size="sm"
+                          className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700"
+                          disabled={applyingChanges[index]}
+                        >
+                          {applyingChanges[index] ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Applying...
+                            </>
+                          ) : (
+                            <>
+                              <Check className="mr-2 h-4 w-4" />
+                              Apply Changes
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                </div>
               </div>
-            </div>
-          ))}
-          {/* Show streaming response in a separate card */}
-          {currentTaskId && session && (
-            <div className="w-full">
-              <div className="max-w-full px-8 py-2 text-white">
-                <Card className="mt-4 bg-background text-foreground">
-                  <CardContent className="p-4">
-                    <div className="flex items-center mb-1">
-                      <MessageCircleMore className="mr-2 h-6 w-6 text-indigo-500" />
-                      <span className="font-bold">Flowlly</span>
-                      <span className="text-xs ml-2">
-                        {new Date().toLocaleString()}
-                      </span>
-                    </div>
+            ))}
+
+            {/* Show streaming response in a separate message */}
+            {currentTaskId && session && (
+              <div className="block w-full mb-4">
+                <div className="w-full bg-white py-3 px-2 border-b border-slate-100 min-h-[40px] transition-all duration-200">
+                  <div className="text-xs text-slate-400 mb-1 pl-1">
+                    Flowlly AI
+                  </div>
+                  <div className="text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
                     <StreamComponent
                       key={currentTaskId}
                       streamingKey={currentTaskId}
@@ -749,51 +800,22 @@ export default function PlatformChatInterface({
                         // Any manipulation here could cause race conditions
                       }}
                     />
-                    {chatTarget === "editor" && (
-                      <div className="mt-2">
-                        <Button variant="secondary" size="sm" disabled={true}>
-                          <Check className="mr-2 h-4 w-4" />
-                          Apply Changes
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </ScrollArea>
       ) : (
-        // Empty state with centered content
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-300px)] px-4">
-          <h2 className="text-2xl font-bold mb-8 text-center">
-            What do you want to do?
-          </h2>
-          <div className="w-full max-w-2xl">
-            {renderEmptyStateInput()}
-            {/* Example prompts */}
-            <div className="mt-6">
-              <p className="text-sm text-muted-foreground mb-3">Try asking:</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {examplePrompts.map((prompt, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    className="justify-start text-left h-auto py-3"
-                    onClick={() => setExamplePrompt(prompt)}
-                  >
-                    {prompt}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
+        // Empty state
+        <div className="flex flex-col items-center justify-center h-full">
+          {renderEmptyStateInput()}
         </div>
       )}
 
       {/* Only show this input area when there are chats */}
       {chats && chats.length > 0 && (
-        <div className="px-4 py-2 flex flex-col justify-end">
+        <div className="sticky bottom-0 px-4 py-3 bg-white border-t border-slate-100 backdrop-blur-sm">
           {activeProject && renderChatInput()}
         </div>
       )}

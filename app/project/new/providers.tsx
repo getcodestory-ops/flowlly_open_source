@@ -3,12 +3,13 @@
 import React, { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import ProjectInfoDisplay from "@/components/ProjectDashboard/ProjectInfoDisplay";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useStore } from "@/utils/store";
 import { useRouter } from "next/navigation";
 import supabase from "@/utils/supabaseClient";
 import { Toaster } from "@/components/ui/toaster";
+import { EnhancedSidePanel } from "@/components/TopBar/EnhancedSidePanel";
+
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -37,15 +38,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <Toaster />
       <TooltipProvider>
-        <div className="flex flex-col w-[100vw] h-[100vh]">
-          <div className="h-[65px] w-[100vw] overlow-hidden">
-            <ProjectInfoDisplay />
-          </div>
-          <div className="flex w-[100vw] h-[calc(100vh-65px)] overlow-hidden">
-            <ScrollArea className="w-[calc(100vw-50px)] h-[calc(100vh-65px)] overflow-hidden">
-              {children}
-            </ScrollArea>
-          </div>
+        <div className="flex w-[100vw] h-[100vh]">
+          <EnhancedSidePanel />
+          <ScrollArea className="flex-1 h-full overflow-hidden">
+            {children}
+          </ScrollArea>
         </div>
       </TooltipProvider>
     </QueryClientProvider>
