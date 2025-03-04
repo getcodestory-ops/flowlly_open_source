@@ -129,7 +129,7 @@ export default function AssignmentHome() {
         // A workflow is considered completed if:
         // 1. It explicitly has status === "completed" OR
         // 2. It has status === null/undefined and no running indicators
-        const isExplicitlyCompleted = result.status === "completed";
+        const isExplicitlyCompleted = !!result;
         const isImplicitlyCompleted =
           (result.status === null || result.status === undefined) &&
           !result.listen &&
@@ -181,7 +181,7 @@ export default function AssignmentHome() {
       // Check for any results that should be considered "completed"
       const hasCompletedResult = schedule.event_result.some((result) => {
         // Explicitly completed
-        const isExplicitlyCompleted = result.status === "completed";
+        const isExplicitlyCompleted = !!result;
 
         // Implicitly completed: has null status and no running indicators
         const isImplicitlyCompleted =

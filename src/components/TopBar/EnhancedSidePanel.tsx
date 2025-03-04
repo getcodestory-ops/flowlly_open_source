@@ -242,10 +242,7 @@ export function EnhancedSidePanel() {
 
       {/* Project Switcher Popover */}
       {showProjectSwitcher && (
-        <div
-          ref={projectSwitcherRef}
-          className="absolute top-[135px] left-[89px] z-10"
-        >
+        <div ref={projectSwitcherRef} className="absolute left-16 top-8 z-20">
           <div className="bg-white rounded-md shadow-lg p-2 border border-gray-200 w-[300px]">
             <div className="font-medium px-2 py-1 text-sm border-b border-gray-100 mb-1">
               Project Selection

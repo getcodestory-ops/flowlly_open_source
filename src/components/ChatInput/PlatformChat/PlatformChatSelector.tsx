@@ -47,13 +47,13 @@ const PlatformChatSelector = ({
     },
   });
 
-  useEffect(() => {
-    if (chatEntities && chatEntities.length > 0) {
-      setActiveChatEntity(chatEntities[chatEntities.length - 1]);
-    } else {
-      setActiveChatEntity(null);
-    }
-  }, [chatEntities, setActiveChatEntity]);
+  // useEffect(() => {
+  //   if (chatEntities && chatEntities.length > 0) {
+  //     setActiveChatEntity(chatEntities[chatEntities.length - 1]);
+  //   } else {
+  //     setActiveChatEntity(null);
+  //   }
+  // }, [chatEntities, setActiveChatEntity]);
 
   return (
     <div className="flex items-center gap-3">
@@ -82,7 +82,7 @@ const PlatformChatSelector = ({
 
           <ScrollArea className="h-[60vh] py-2">
             {chatEntities && chatEntities.length > 0 ? (
-              chatEntities.map((chatEntity, index) => (
+              chatEntities.reverse().map((chatEntity, index) => (
                 <DropdownMenuItem
                   key={`chat-${chatEntity.id}-index-${index}`}
                   onSelect={() => {
@@ -97,6 +97,7 @@ const PlatformChatSelector = ({
                 >
                   <div className="flex items-center gap-2 w-full">
                     <MessageSquare className="h-4 w-4 text-slate-500" />
+
                     <span
                       className={`text-sm ${
                         chatEntity.id === activeChatEntity?.id

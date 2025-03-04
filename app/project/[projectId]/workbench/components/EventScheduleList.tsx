@@ -75,7 +75,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
     pageSize: number;
   }>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 100,
   });
 
   const queryClient = useQueryClient();

@@ -57,7 +57,7 @@ const HistoryItem = ({
     }`}
     onClick={onClick}
   >
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 ">
       <MessageSquare className="h-4 w-4 text-slate-500" />
       <h4 className={`text-sm ${isActive ? "font-medium" : ""} truncate`}>
         {title}
@@ -185,11 +185,10 @@ export default function PlatformChatComponent({
   });
 
   // Set first chat entity as active on initial load
-  // useEffect(() => {
-  //   if (chatEntities && chatEntities.length > 0 && !activeChatEntity) {
-  //     setActiveChatEntity(chatEntities[chatEntities.length - 1]);
-  //   }
-  // }, [chatEntities, activeChatEntity, setActiveChatEntity]);
+  useEffect(() => {
+    setLocalChats([]);
+    setActiveChatEntity(null);
+  }, []);
 
   const handleCreateNewChat = () => {
     setActiveChatEntity(null);
@@ -216,16 +215,18 @@ export default function PlatformChatComponent({
                 <Plus size={14} className="mr-1" /> New Chat
               </Button>
             </div>
-            <ScrollArea className="flex-grow">
+            <ScrollArea className="flex-grow m-2 ">
               {chatEntities && chatEntities.length > 0 ? (
-                chatEntities.map((chatEntity) => (
-                  <HistoryItem
-                    key={chatEntity.id}
-                    title={chatEntity.chat_name}
-                    isActive={chatEntity.id === activeChatEntity?.id}
-                    onClick={() => handleSelectChatEntity(chatEntity)}
-                  />
-                ))
+                chatEntities
+                  .toReversed()
+                  .map((chatEntity) => (
+                    <HistoryItem
+                      key={chatEntity.id}
+                      title={chatEntity.chat_name}
+                      isActive={chatEntity.id === activeChatEntity?.id}
+                      onClick={() => handleSelectChatEntity(chatEntity)}
+                    />
+                  ))
               ) : (
                 <div className="p-4 text-center text-sm text-gray-500">
                   {chatsLoading ? "Loading chats..." : "No chat history found"}
@@ -281,7 +282,7 @@ export default function PlatformChatComponent({
           {/* New Chat button at the top of sidebar */}
           <Button
             onClick={handleCreateNewChat}
-            className={`p-2 rounded-lg mb-6 text-white bg-indigo-600 hover:bg-indigo-700 flex items-center  ${
+            className={`p-2 mx-1 rounded-lg mb-4 text-white bg-indigo-600 hover:bg-indigo-700 flex items-center  ${
               sidebarOpen ? "justify-start pl-4" : "justify-center"
             }`}
           >
@@ -290,7 +291,7 @@ export default function PlatformChatComponent({
           </Button>
 
           {/* Sidebar tabs */}
-          <div className="flex flex-col items-center py-2 space-y-6">
+          <div className="flex flex-col items-center py-2 space-y-6 mx-1">
             <Button
               variant="ghost"
               onClick={() => setActiveTab("chat")}

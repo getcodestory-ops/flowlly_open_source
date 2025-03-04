@@ -47,7 +47,6 @@ import {
 } from "@/api/folderRoutes";
 import { getTaskStatus } from "@/api/schedule_routes";
 import { useToast } from "@/components/ui/use-toast";
-
 import { MediaViewer } from "../Folder/MediaViewer";
 import { FileMediaIcon } from "./FileMediaIcon";
 import { deleteFile } from "@/api/folderRoutes";
@@ -358,7 +357,7 @@ export const FilesContent = ({
       {(isChatOpen || isClosing) && (
         <div
           ref={chatRef}
-          className={`fixed bottom-20 right-4 w-[calc(100vw-200px)] z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden transition-opacity duration-300 ${
+          className={`fixed bottom-2 right-4 w-[calc(100vw-200px)] z-30 bg-white border border-gray-200 rounded-lg  overflow-hidden transition-opacity duration-300 ${
             isClosing ? "opacity-0" : "opacity-100"
           }`}
         >
@@ -367,6 +366,21 @@ export const FilesContent = ({
             folderName={folderName}
             chatTarget="folder"
           />
+          <div className="fixed p-2 z-50 top-3 ">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => {
+                setIsClosing(true);
+                setTimeout(() => {
+                  setIsChatOpen(false);
+                  setIsClosing(false);
+                }, 300);
+              }}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       )}
     </div>
