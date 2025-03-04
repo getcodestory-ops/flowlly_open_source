@@ -1,6 +1,15 @@
 import React, { useCallback, useEffect, useState } from "react";
 
 import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarShortcut,
+  MenubarTrigger,
+} from "@/components/ui/menubar"
+
+import {
   Select,
   SelectContent,
   SelectGroup,
@@ -22,9 +31,9 @@ import {
   FaSpinner,
   FaImage,
   FaMagic,
-  FaSearchPlus,
-  FaSearchMinus,
+  FaFileCsv,
 } from "react-icons/fa";
+import { RxTriangleDown } from "react-icons/rx";
 
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
@@ -54,6 +63,7 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { handleExportTables } from "./utils";
 
 (pdfMake as any).vfs = pdfFonts.vfs;
 
@@ -325,9 +335,24 @@ const Toolbar: React.FC<ToolbarProps> = ({
           <FaSearchPlus />
         </Button> */}
         <Separator orientation="vertical" />
-        <Button variant={"ghost"} onClick={exportPdf}>
-          <FaFileDownload />
-        </Button>
+        <Menubar className="bg-transparent border-none p-0 m-0">
+          <MenubarMenu>
+            <MenubarTrigger className="bg-transparent border-none p-0 m-0">
+            <Button variant={"ghost"}  className="flex items-center gap-0 px-2">
+              <FaFileDownload /> <RxTriangleDown className="h-4 w-4"/>
+            </Button>
+            </MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem className="cursor-pointer" onClick={exportPdf}>
+                Export PDF
+                <MenubarShortcut><FaFileDownload className="h-4 w-4"/></MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem className="cursor-pointer" onClick={() => handleExportTables(editor)}>
+                Export Tables <MenubarShortcut><FaFileCsv className="h-4 w-4"/></MenubarShortcut>
+              </MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+        </Menubar>
         {documentId && (
           <Dialog>
             <DialogTrigger asChild>

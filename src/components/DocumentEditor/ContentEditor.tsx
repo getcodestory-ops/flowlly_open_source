@@ -1,4 +1,4 @@
-import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
+import { useEditor, EditorContent, BubbleMenu, Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import UnderLine from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
@@ -15,6 +15,7 @@ import { HoverExtension } from "./extensions/HoverExtension";
 import { DiffStyleExtension } from "./extensions/DiffStyleExtension";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { handleExportTables } from "./utils";
 
 interface EditorBlockProps {
   content: string | any;
@@ -59,7 +60,7 @@ const ContentEditor = ({
     },
     content: content,
     immediatelyRender: false,
-    onUpdate: ({ editor }) => {
+    onUpdate: ({ editor } : {editor: Editor}) => {
       if (setContent) setContent(editor.getHTML());
     },
   });
