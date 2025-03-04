@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { AgentMessage } from "@/types/agentChats";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
-import ArtifactViewer from "./ArtifactViewer";
-import { useStore } from "@/utils/store";
+// import ArtifactViewer from "./ArtifactViewer";
+// import { useStore } from "@/utils/store";
 import {
   File,
   FileImage,
@@ -13,8 +13,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
-  const sessionToken = useStore((state) => state.session);
-  const activeProject = useStore((state) => state.activeProject);
+  // const sessionToken = useStore((state) => state.session);
+  // const activeProject = useStore((state) => state.activeProject);
   const [expandedContexts, setExpandedContexts] = useState<string[]>([]);
 
   const toggleContext = (contextId: string) => {
@@ -84,7 +84,7 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
         </div>
       )}
 
-      {message.child_task_id && sessionToken && activeProject?.project_id && (
+      {/* {message.child_task_id && sessionToken && activeProject?.project_id && (
         <div>
           <ArtifactViewer
             childTaskId={message.child_task_id}
@@ -92,7 +92,7 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
             sessionToken={sessionToken}
           />
         </div>
-      )}
+      )} */}
       {groupedContexts.length > 0 && (
         <div className="mt-4 text-sm">
           {groupedContexts.map((group, groupIndex) => (

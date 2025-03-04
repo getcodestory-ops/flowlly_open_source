@@ -17,6 +17,22 @@ import { useQuery } from "@tanstack/react-query";
 import { getPlatformChatEntities } from "@/api/agentRoutes";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+const models = [
+  { id: "gemini-2.0-flash", name: "Gemini Flash" },
+  { id: "gemini-2.0-pro-exp-02-05", name: "Gemini Pro" },
+  { id: "claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
+  { id: "gpt-4o", name: "GPT-4.0" },
+];
 
 const titleMap: Record<string, string> = {
   document: "Source for answers",
@@ -50,37 +66,62 @@ const HistoryItem = ({
   </div>
 );
 
-// Simple settings component
-const ChatSettings = () => (
+// Updated ChatSettings component to use state
+const ChatSettings = ({
+  selectedModel,
+  setSelectedModel,
+  includeContext,
+  setIncludeContext,
+}: {
+  selectedModel: string;
+  setSelectedModel: (model: string) => void;
+  includeContext: boolean;
+  setIncludeContext: (include: boolean) => void;
+}) => (
   <div className="p-4">
     <h3 className="text-md font-medium mb-4">Chat Settings</h3>
 
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Model</label>
-        <select className="w-full p-2 border rounded-md text-sm">
-          <option>GPT-4</option>
-          <option>GPT-3.5 Turbo</option>
-        </select>
+        <Label className="block text-sm font-medium mb-1">Model</Label>
+        <Select
+          value={selectedModel}
+          onValueChange={(value) => setSelectedModel(value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select a model" />
+          </SelectTrigger>
+          <SelectContent>
+            {models.map((model) => (
+              <SelectItem key={model.id} value={model.id}>
+                {model.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Temperature</label>
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.1"
-          defaultValue="0.7"
+        <Label className="block text-sm font-medium mb-1">Temperature</Label>
+        <Slider
+          min={0}
+          max={1}
+          step={0.1}
+          defaultValue={[0.7]}
           className="w-full"
         />
       </div>
 
       <div className="flex items-center">
-        <input type="checkbox" id="memory" className="mr-2" />
-        <label htmlFor="memory" className="text-sm">
-          Enable context memory
-        </label>
+        <Checkbox
+          id="memory"
+          className="mr-2"
+          checked={includeContext}
+          onCheckedChange={(checked) => setIncludeContext(checked as boolean)}
+        />
+        <Label htmlFor="memory" className="text-sm">
+          Include project context
+        </Label>
       </div>
     </div>
   </div>
@@ -107,6 +148,10 @@ export default function PlatformChatComponent({
   const [activeTab, setActiveTab] = useState<"chat" | "history" | "settings">(
     "chat"
   );
+  // Add state for model and includeContext
+  const [selectedModel, setSelectedModel] =
+    useState<string>("gemini-2.0-flash");
+  const [includeContext, setIncludeContext] = useState<boolean>(false);
 
   // Get store data for chat entities
   const {
@@ -140,16 +185,15 @@ export default function PlatformChatComponent({
   });
 
   // Set first chat entity as active on initial load
-  useEffect(() => {
-    if (chatEntities && chatEntities.length > 0 && !activeChatEntity) {
-      setActiveChatEntity(chatEntities[chatEntities.length - 1]);
-    }
-  }, [chatEntities, activeChatEntity, setActiveChatEntity]);
+  // useEffect(() => {
+  //   if (chatEntities && chatEntities.length > 0 && !activeChatEntity) {
+  //     setActiveChatEntity(chatEntities[chatEntities.length - 1]);
+  //   }
+  // }, [chatEntities, activeChatEntity, setActiveChatEntity]);
 
   const handleCreateNewChat = () => {
     setActiveChatEntity(null);
     setLocalChats([]);
-    setActiveTab("chat");
   };
 
   const handleSelectChatEntity = (chatEntity: any) => {
@@ -164,12 +208,13 @@ export default function PlatformChatComponent({
           <div className="h-full flex flex-col">
             <div className="p-3 flex justify-between items-center border-b">
               <h3 className="font-medium">Chat History</h3>
-              <button
-                className="text-xs text-blue-500 flex items-center"
+              <Button
+                variant="outline"
+                className="text-xs  flex items-center"
                 onClick={handleCreateNewChat}
               >
                 <Plus size={14} className="mr-1" /> New Chat
-              </button>
+              </Button>
             </div>
             <ScrollArea className="flex-grow">
               {chatEntities && chatEntities.length > 0 ? (
@@ -190,7 +235,14 @@ export default function PlatformChatComponent({
           </div>
         );
       case "settings":
-        return <ChatSettings />;
+        return (
+          <ChatSettings
+            selectedModel={selectedModel}
+            setSelectedModel={setSelectedModel}
+            includeContext={includeContext}
+            setIncludeContext={setIncludeContext}
+          />
+        );
       case "chat":
       default:
         return (
@@ -198,6 +250,8 @@ export default function PlatformChatComponent({
             folderId={folderId}
             chatTarget={chatTarget}
             onContentUpdate={onContentUpdate}
+            selectedModel={selectedModel}
+            includeContext={includeContext}
           />
         );
     }
@@ -215,7 +269,7 @@ export default function PlatformChatComponent({
           {/* Sidebar toggle button */}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-3 hover:bg-gray-100 text-gray-600 self-end"
+            className="p-3 hover:bg-gray-100 text-gray-600 self-end rounded-lg mb-6"
           >
             {sidebarOpen ? (
               <ChevronLeft size={16} />
@@ -225,19 +279,20 @@ export default function PlatformChatComponent({
           </button>
 
           {/* New Chat button at the top of sidebar */}
-          <button
+          <Button
             onClick={handleCreateNewChat}
-            className={`p-2 rounded-lg mb-6 text-white bg-indigo-600 hover:bg-indigo-700 flex items-center mx-2 ${
+            className={`p-2 rounded-lg mb-6 text-white bg-indigo-600 hover:bg-indigo-700 flex items-center  ${
               sidebarOpen ? "justify-start pl-4" : "justify-center"
             }`}
           >
-            <Plus size={20} />
+            <PenBox size={16} />
             {sidebarOpen && <span className="ml-2">New Chat</span>}
-          </button>
+          </Button>
 
           {/* Sidebar tabs */}
           <div className="flex flex-col items-center py-2 space-y-6">
-            <button
+            <Button
+              variant="ghost"
               onClick={() => setActiveTab("chat")}
               className={`p-2 rounded-lg ${
                 activeTab === "chat"
@@ -249,8 +304,9 @@ export default function PlatformChatComponent({
             >
               <MessageSquare size={20} />
               {sidebarOpen && <span className="ml-2">Chat</span>}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               onClick={() => setActiveTab("history")}
               className={`p-2 rounded-lg ${
                 activeTab === "history"
@@ -262,8 +318,9 @@ export default function PlatformChatComponent({
             >
               <History size={20} />
               {sidebarOpen && <span className="ml-2">History</span>}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               onClick={() => setActiveTab("settings")}
               className={`p-2 rounded-lg ${
                 activeTab === "settings"
@@ -275,7 +332,7 @@ export default function PlatformChatComponent({
             >
               <Settings size={20} />
               {sidebarOpen && <span className="ml-2">Settings</span>}
-            </button>
+            </Button>
           </div>
 
           {/* Chat selector when sidebar is open */}
@@ -284,16 +341,6 @@ export default function PlatformChatComponent({
               <h3 className="text-sm font-medium text-gray-700 mb-2">
                 {titleMap[chatTarget]} {folderName}
               </h3>
-              <div className="flex items-center gap-3">
-                <Button
-                  size="sm"
-                  className="justify-center gap-2"
-                  onClick={handleCreateNewChat}
-                >
-                  <PenBox className="w-4 h-4" />
-                  New Chat
-                </Button>
-              </div>
             </div>
           )}
         </div>
@@ -301,30 +348,6 @@ export default function PlatformChatComponent({
         {/* Main chat area */}
         <div className="flex-grow overflow-hidden flex flex-col">
           {/* Only show compact top bar when sidebar is collapsed */}
-          {!sidebarOpen && activeTab === "chat" && (
-            <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100">
-              <h3 className="text-sm font-medium text-gray-700 truncate max-w-[200px]">
-                {titleMap[chatTarget]} {folderName}
-              </h3>
-              <div className="flex items-center gap-3">
-                <Button
-                  size="sm"
-                  className="justify-center gap-2"
-                  onClick={handleCreateNewChat}
-                >
-                  <PenBox className="w-4 h-4" />
-                  New Chat
-                </Button>
-                <button
-                  onClick={() => setActiveTab("history")}
-                  className="flex items-center gap-1 text-sm px-2 py-1 rounded bg-gray-100 hover:bg-gray-200"
-                >
-                  <History className="h-4 w-4" />
-                  History
-                </button>
-              </div>
-            </div>
-          )}
 
           {/* Dynamic content based on active tab */}
           <div className="flex-grow overflow-hidden">{renderMainContent()}</div>

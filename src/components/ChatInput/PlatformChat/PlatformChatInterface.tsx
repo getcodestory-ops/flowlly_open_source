@@ -1,4 +1,10 @@
-import React, { useRef, useEffect, useLayoutEffect, useState } from "react";
+import React, {
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  createRef,
+} from "react";
 import AgentMessageInteractiveView from "@/components/AiActions/AgentMessageInteractiveView";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +17,7 @@ import {
   Paperclip,
   X,
   File,
+  Copy,
 } from "lucide-react";
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -22,6 +29,15 @@ import { uploadFileInFolder } from "@/api/folderRoutes";
 import { getTaskStatus } from "@/api/schedule_routes";
 import { ProcessedFile } from "@/api/agentRoutes";
 import { AgentChat } from "@/types/agentChats";
+
+// Define models for the UI
+const models = [
+  { id: "gemini-2.0-flash", name: "Gemini Flash" },
+  { id: "gemini-2.0-pro-exp-02-05", name: "Gemini Pro" },
+  { id: "claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
+  { id: "gpt-4o", name: "GPT-4.0" },
+];
+
 // Types for file upload handling
 type FileUploadResponse = {
   task_id?: string;
@@ -43,10 +59,14 @@ export default function PlatformChatInterface({
   folderId,
   chatTarget,
   onContentUpdate,
+  selectedModel,
+  includeContext,
 }: {
   folderId: string;
   chatTarget: string;
   onContentUpdate?: (newContent: string) => void;
+  selectedModel: string;
+  includeContext: boolean;
 }) {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,15 +74,18 @@ export default function PlatformChatInterface({
 
   const {
     chats,
+    isPending,
     activeProject,
+    isOpen,
+    onClose,
     handleChatSubmit,
     setChatInput,
     chatInput,
-    currentTaskId,
+    onOpen,
     session,
-    isPending,
+    currentTaskId,
     isWaitingForResponse,
-  } = usePlatformChat(folderId, chatTarget);
+  } = usePlatformChat(folderId, chatTarget, selectedModel, includeContext);
 
   // State for file upload handling
   const [uploadingFiles, setUploadingFiles] = useState<FileUploadStatus[]>([]);
@@ -662,52 +685,173 @@ export default function PlatformChatInterface({
     </div>
   );
 
+  // Create a map of refs for message content elements
+  const messageRefs = useRef<{
+    [key: string]: React.RefObject<HTMLDivElement>;
+  }>({});
+
+  // Ensure refs are created for each message
+  useEffect(() => {
+    if (chats && chats.length > 0) {
+      chats.forEach((chat, index) => {
+        if (!messageRefs.current[index]) {
+          messageRefs.current[index] = createRef<HTMLDivElement>();
+        }
+      });
+    }
+  }, [chats]);
+
+  // Create a more reliable function to extract text content
+  const getTextFromHtml = (html: string): string => {
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+    return tempDiv.textContent || tempDiv.innerText || "";
+  };
+
+  // Function to copy formatted content
+  const copyFormattedContent = (index: number) => {
+    const messageRef = messageRefs.current[index];
+
+    if (messageRef && messageRef.current) {
+      // Get the HTML content from the rendered message
+      const htmlContent = messageRef.current.innerHTML;
+
+      // Create a new clipboard item with both plain text and HTML formats
+      const plainText = getTextFromHtml(htmlContent);
+
+      // Use the newer Clipboard API if available
+      if (navigator.clipboard && "write" in navigator.clipboard) {
+        try {
+          // @ts-ignore - ClipboardItem might not be recognized by TypeScript
+          const clipboardItem = new ClipboardItem({
+            "text/plain": new Blob([plainText], { type: "text/plain" }),
+            "text/html": new Blob([htmlContent], { type: "text/html" }),
+          });
+
+          // @ts-ignore - Clipboard write method might not be recognized by TypeScript
+          navigator.clipboard
+            .write([clipboardItem])
+            .then(() => {
+              toast({
+                title: "Copied to clipboard!",
+                duration: 2000,
+              });
+            })
+            .catch((err) => {
+              console.error("Failed to copy: ", err);
+              // Fallback to plain text
+              // @ts-ignore - Clipboard writeText might not be recognized by TypeScript
+              navigator.clipboard.writeText(plainText);
+              toast({
+                title: "Plain text copied to clipboard",
+                description: "HTML formatting not supported in your browser",
+                duration: 2000,
+              });
+            });
+        } catch (err) {
+          // If ClipboardItem is not supported, fallback to plain text
+          // @ts-ignore - Clipboard writeText might not be recognized by TypeScript
+          navigator.clipboard.writeText(plainText);
+          toast({
+            title: "Copied to clipboard",
+            description: "HTML formatting not supported in your browser",
+            duration: 2000,
+          });
+        }
+      } else {
+        // Fallback for browsers that don't support the newer API
+        // @ts-ignore - Clipboard writeText might not be recognized by TypeScript
+        navigator.clipboard.writeText(plainText);
+        toast({
+          title: "Copied to clipboard",
+          description: "HTML formatting not supported in your browser",
+          duration: 2000,
+        });
+      }
+    } else {
+      // If ref doesn't exist, fall back to original behavior
+      if (chats[index].message.content) {
+        const contentStr =
+          typeof chats[index].message.content === "string"
+            ? chats[index].message.content
+            : JSON.stringify(chats[index].message.content);
+
+        navigator.clipboard.writeText(contentStr);
+        toast({
+          title: "Copied to clipboard",
+          duration: 2000,
+        });
+      }
+    }
+  };
+
   // Update the regular chat input section
   const renderChatInput = () => (
-    <div className="relative overflow-hidden rounded-xl bg-white border border-slate-100 shadow-sm focus-within:ring-1 focus-within:ring-indigo-300 transition-shadow">
-      <Label htmlFor="message" className="sr-only">
-        Message
-      </Label>
-      <Textarea
-        id="message"
-        placeholder="Type your message here..."
-        className="min-h-12 resize-none border-0 p-4 shadow-none focus-visible:ring-0 text-slate-800"
-        onChange={(e) => setChatInput(e.target.value)}
-        value={chatInput}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            handleSubmit();
-          }
-        }}
-        disabled={isPending || isWaitingForResponse}
-      />
-      {renderFileDisplay()}
-      <div className="flex items-center p-3 pt-0">
-        {renderFileInput()}
-        <Button
-          type="submit"
-          size="sm"
-          className="ml-auto gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
-          onClick={handleSubmit}
-          disabled={
-            isPending ||
-            isWaitingForResponse ||
-            (!chatInput.trim() && uploadingFiles.length === 0)
-          }
-        >
-          {isPending || isWaitingForResponse ? (
-            <>
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              {isWaitingForResponse ? "Processing..." : "Sending..."}
-            </>
-          ) : (
-            <>
-              Send
-              <CornerDownLeft className="h-3.5 w-3.5" />
-            </>
-          )}
-        </Button>
+    <div className="px-4 py-2 flex flex-col justify-end">
+      <div className="relative overflow-hidden rounded-lg border border-black bg-background focus-within:ring-1 focus-within:ring-ring">
+        <Label htmlFor="message" className="sr-only">
+          Message
+        </Label>
+
+        {/* Display selected model and context settings */}
+        <div className="absolute bottom-0 left-2 z-10">
+          <div className="flex items-center gap-2 py-1">
+            <span className="text-xs text-muted-foreground">
+              Model:{" "}
+              {models.find(
+                (m: { id: string; name: string }) => m.id === selectedModel
+              )?.name || selectedModel}
+            </span>
+            {includeContext && (
+              <span className="text-xs text-muted-foreground">
+                Using context from project files
+              </span>
+            )}
+          </div>
+        </div>
+
+        <Textarea
+          id="message"
+          placeholder="Type your message here..."
+          className="min-h-12 resize-none border-0 p-3 pb-8 shadow-none focus-visible:ring-0"
+          onChange={(e) => setChatInput(e.target.value)}
+          value={chatInput}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              if (chatInput.trim()) {
+                handleSubmit();
+              }
+            }
+          }}
+        />
+        {renderFileDisplay()}
+        <div className="flex items-center p-3 pt-0">
+          {renderFileInput()}
+          <Button
+            type="submit"
+            size="sm"
+            className="ml-auto gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
+            onClick={handleSubmit}
+            disabled={
+              isPending ||
+              isWaitingForResponse ||
+              (!chatInput.trim() && uploadingFiles.length === 0)
+            }
+          >
+            {isPending || isWaitingForResponse ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                {isWaitingForResponse ? "Processing..." : "Sending..."}
+              </>
+            ) : (
+              <>
+                Send
+                <CornerDownLeft className="h-3.5 w-3.5" />
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -733,7 +877,7 @@ export default function PlatformChatInterface({
                 <div
                   className={`${
                     history.sender.toLowerCase() === "user"
-                      ? "max-w-3xl bg-indigo-50 border border-indigo-100 rounded-xl p-4 shadow-sm mx-2"
+                      ? "max-w-3xl bg-gray-50 border border-gray-100 rounded-xl p-2 shadow-sm mx-2"
                       : "w-full bg-white py-3 px-2 border-b border-slate-100 last:border-b-0 min-h-[40px] transition-all duration-200"
                   }`}
                 >
@@ -748,15 +892,27 @@ export default function PlatformChatInterface({
                         ? "text-slate-800 prose prose-slate max-w-none"
                         : "text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-pre:my-2 prose-headings:text-indigo-900 prose-li:my-1"
                     }`}
+                    ref={messageRefs.current[index] || null}
                   >
                     {history.message.content && (
                       <AgentMessageInteractiveView message={history.message} />
                     )}
                   </div>
 
-                  {chatTarget === "editor" &&
-                    history.sender.toLowerCase() !== "user" && (
-                      <div className="mt-3 flex justify-end">
+                  {/* Improve the copy button UI and add proper spacing */}
+                  {history.sender.toLowerCase() !== "user" && (
+                    <div className="mt-1 flex justify-between items-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-slate-400 hover:text-indigo-600 flex items-center gap-1 p-1 h-auto rounded-md opacity-60 hover:opacity-100 transition-opacity"
+                        onClick={() => copyFormattedContent(index)}
+                      >
+                        <Copy className="w-3 h-3" />
+                        <span>Copy</span>
+                      </Button>
+
+                      {chatTarget === "editor" && (
                         <Button
                           onClick={() => handleApplyChanges(index)}
                           variant="secondary"
@@ -776,8 +932,9 @@ export default function PlatformChatInterface({
                             </>
                           )}
                         </Button>
-                      </div>
-                    )}
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

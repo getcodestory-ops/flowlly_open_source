@@ -232,10 +232,9 @@ export const GraphList: React.FC<GraphListProps> = ({
               </Card>
             ))
           ) : (
-            <div className="col-span-full text-center p-8">
-              <p className="text-muted-foreground">
-                No workflows found matching &quot;{globalFilter}&quot;
-              </p>
+            <div className="col-span-full text-center p-8 flex flex-col items-center justify-center gap-4">
+              <p className="text-muted-foreground">No workflows found</p>
+              <CreateJob />
             </div>
           )}
         </div>

@@ -95,7 +95,7 @@ function AddNewPlatformChatEntity({
       }}
     >
       <PenBoxIcon className="w-4 h-4 " />
-      New Chat
+      New Chats
     </Button>
   );
 }

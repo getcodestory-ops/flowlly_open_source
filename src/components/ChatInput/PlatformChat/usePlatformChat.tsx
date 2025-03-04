@@ -10,7 +10,12 @@ import { useToast } from "@/components/ui/use-toast";
 import { createPlatformChatEntity } from "@/api/agentRoutes";
 import { AgentChat, AgentChatEntity } from "@/types/agentChats";
 
-export function usePlatformChat(folderId: string, chatTarget: string) {
+export function usePlatformChat(
+  folderId: string,
+  chatTarget: string,
+  selectedModel: string = "gemini-2.0-flash",
+  includeContext: boolean = false
+) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [chatInput, setChatInput] = useState<string>("");
@@ -249,6 +254,8 @@ export function usePlatformChat(folderId: string, chatTarget: string) {
       projectId: activeProject?.project_id,
       responseType: chatTarget ?? "folder",
       files: files,
+      model: selectedModel,
+      includeContext: includeContext,
     });
   };
 
@@ -265,5 +272,7 @@ export function usePlatformChat(folderId: string, chatTarget: string) {
     session,
     currentTaskId,
     isWaitingForResponse,
+    selectedModel,
+    includeContext,
   };
 }

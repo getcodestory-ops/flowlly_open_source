@@ -172,11 +172,13 @@ export function EnhancedSidePanel() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-b from-indigo-500 to-purple-500 w-[90px] border-r-2 relative">
+    <div className="flex flex-col h-full bg-white w-[55px] border-r border-gray-200 relative">
       {/* Logo and Project trigger at the top */}
-      <div className="flex flex-col items-center py-4 border-b border-white/20">
+      <div className="flex flex-col items-center py-4 border-b border-gray-200">
         <Link href="/project" className="hover:opacity-80 transition-opacity">
-          <div className={`${archivoBlack.className} text-2xl text-white mb-2`}>
+          <div
+            className={`${archivoBlack.className} text-2xl text-gray-800 mb-2`}
+          >
             F
           </div>
         </Link>
@@ -186,15 +188,15 @@ export function EnhancedSidePanel() {
             <button
               ref={projectButtonRef}
               onClick={() => setShowProjectSwitcher(!showProjectSwitcher)}
-              className={`w-[75px] flex flex-col items-center justify-center gap-1 py-2 rounded-lg transition-all
+              className={`w-[55px] flex flex-col items-center justify-center gap-1 py-2 rounded-lg transition-all
                 ${
                   showProjectSwitcher
-                    ? "bg-white text-indigo-600 border-2 border-white shadow-lg"
-                    : "bg-white/10 hover:bg-white/20 text-white border border-white/20"
+                    ? "bg-gray-100 text-gray-800 border border-gray-200 shadow-sm"
+                    : "bg-white hover:bg-gray-50 text-gray-600 border border-gray-200"
                 }`}
             >
               <div className="relative">
-                <Avatar className="h-10 w-10 mb-1 ring-2 ring-offset-1 ring-offset-indigo-500 ring-white/30">
+                <Avatar className="h-6 w-6 mb-1 ring-2 ring-offset-1 ring-offset-indigo-500 ring-white/30">
                   <AvatarImage
                     src={`https://avatar.vercel.sh/${
                       activeProject?.name || "project"
@@ -215,7 +217,7 @@ export function EnhancedSidePanel() {
                     : activeProject.name
                   : "Project"}
               </div>
-              <div className="flex items-center text-[8px] font-semibold bg-white/10 px-2 py-0.5 rounded-full">
+              <div className="flex items-center text-[8px] font-semibold bg-gray-50 px-2 py-0.5 rounded-full">
                 <svg
                   width="10"
                   height="10"
@@ -264,7 +266,7 @@ export function EnhancedSidePanel() {
       </div>
 
       {/* User controls at bottom */}
-      <div className="flex flex-col items-center gap-2 py-4 border-t border-white/20">
+      <div className="flex flex-col items-center gap-2 py-4 border-t border-gray-200">
         <HeaderNotification />
         <UserNav email="" />
       </div>
@@ -366,8 +368,10 @@ const MenuButton = ({
     <Tooltip>
       <TooltipTrigger asChild>
         <div
-          className={`flex flex-col text-center justify-center items-center my-1 w-full text-white ${
-            isSelected ? "bg-black" : "hover:bg-white hover:text-black"
+          className={`flex flex-col text-center justify-center items-center my-1 w-full ${
+            isSelected
+              ? "text-indigo-600 bg-gray-50"
+              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
           }`}
         >
           <Link
