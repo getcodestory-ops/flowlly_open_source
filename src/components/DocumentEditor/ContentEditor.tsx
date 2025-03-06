@@ -74,7 +74,7 @@ const ContentEditor = ({
   };
 
   return (
-    <Card className="shadow-md border rounded-lg overflow-hidden h-[90vh] flex flex-col">
+    <Card className="shadow-md border rounded-lg overflow-hidden h-[87vh] flex flex-col">
       {editor && (
         <>
           <Toolbar

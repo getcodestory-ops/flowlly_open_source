@@ -43,7 +43,7 @@ import { TDocumentDefinitions } from "pdfmake/interfaces";
 import useDebounce from "@/utils/useDebounce";
 import EmailModal from "../AiActions/EmailModal";
 import { useStore } from "@/utils/store";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonProps } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   Popover,
@@ -64,6 +64,13 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { handleExportTables } from "./utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils";
 
 (pdfMake as any).vfs = pdfFonts.vfs;
 
@@ -75,6 +82,14 @@ interface ToolbarProps {
   documentId?: string;
 }
 
+enum SaveStatus {
+  SAVED = "Saved",
+  SAVING = "Saving",
+  HIDDEN = "Hidden",
+  UNSAVED = "Unsaved",
+  ERROR = "Error",
+}
+
 const Toolbar: React.FC<ToolbarProps> = ({
   editor,
   saveFunction,
@@ -82,18 +97,22 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onAIEditedContent,
   documentId,
 }) => {
-  const [saveStatus, setSaveStatus] = useState("Saved");
+  const [saveStatus, setSaveStatus] = useState(SaveStatus.HIDDEN);
   const sessionToken = useStore((state) => state.session);
   const activeProject = useStore((state) => state.activeProject);
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
-  const [isAIPopoverOpen, setIsAIPopoverOpen] = useState(false);
   const deBounceSave = useDebounce(() => {
-    setSaveStatus("Saving");
+    setSaveStatus(SaveStatus.SAVING);
 
     if (saveFunction && editor) saveFunction(editor.getHTML());
 
-    setTimeout(() => setSaveStatus("Saved"), 1000); // Show "Saved" for 1 second
+    setTimeout(() => {
+      setSaveStatus(SaveStatus.SAVED);
+      setTimeout(() => {
+        setSaveStatus(SaveStatus.HIDDEN);
+      }, 7000);
+    }, 3000); // Show "Saved" for 1 second
   }, 10000);
 
   useEffect(() => {
@@ -190,8 +209,34 @@ const Toolbar: React.FC<ToolbarProps> = ({
     return null;
   }
   return (
-    <div className="flex items-center justify-between  bg-gray-900 text-white   rounded-lg top-0 sticky z-10 ">
-      <div className="flex items-center justify-between px-4 py-2 bg-gray-900 text-white  mx-auto rounded-lg">
+    <div className="flex top-0 sticky z-10 ">
+      <div className="flex px-4 py-2 rounded-lg justify-between w-full">
+        <div className="flex items-center gap-1">
+      <Menubar className="bg-transparent border-none p-0 m-0 shadow-none">
+          <MenubarMenu>
+            <MenubarTrigger className="bg-transparent border-none p-0 m-0 shadow-none">
+              <ToolTipedButton tooltip="Export" onClick={() => {}}>
+                <FaFileDownload /> <RxTriangleDown />
+              </ToolTipedButton>
+            </MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem className="cursor-pointer" onClick={exportPdf}>
+                Export PDF
+                <MenubarShortcut><FaFileDownload className="h-4 w-4"/></MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem className="cursor-pointer" onClick={() => handleExportTables(editor)}>
+                Export Tables <MenubarShortcut><FaFileCsv className="h-4 w-4"/></MenubarShortcut>
+              </MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+        </Menubar>
+        <Separator orientation="vertical" />
+        <ToolTipedButton tooltip="Undo" onClick={() => editor.chain().focus().undo().run()}>
+          <FaUndo />
+        </ToolTipedButton>
+        <ToolTipedButton tooltip="Redo" onClick={() => editor.chain().focus().redo().run()}>
+          <FaRedo />
+        </ToolTipedButton>
         <Select
           onValueChange={(value) => {
             if (value === "p") {
@@ -217,52 +262,36 @@ const Toolbar: React.FC<ToolbarProps> = ({
             </SelectGroup>
           </SelectContent>
         </Select>
-
-        <Button
-          onClick={() => editor.chain().focus().toggleMark("bold").run()}
-          variant={"ghost"}
-        >
+        <ToolTipedButton tooltip="Bold" onClick={() => editor.chain().focus().toggleMark("bold").run()}>
           <FaBold />
-        </Button>
-        <Button
-          variant={"ghost"}
-          onClick={() => editor.chain().focus().toggleMark("italic").run()}
-        >
+        </ToolTipedButton>
+        <ToolTipedButton tooltip="Italic" onClick={() => editor.chain().focus().toggleMark("italic").run()}>
           <FaItalic />
-        </Button>
-
-        <Button
-          variant={"ghost"}
-          onClick={() => editor.chain().focus().toggleMark("underline").run()}
-        >
+        </ToolTipedButton>
+        <ToolTipedButton tooltip="Underline" onClick={() => editor.chain().focus().toggleMark("underline").run()}>
           <FaUnderline />
-        </Button>
-
-        <Button
-          variant={"ghost"}
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-        >
+        </ToolTipedButton>
+        <ToolTipedButton tooltip="Bullet List" onClick={() => editor.chain().focus().toggleBulletList().run()}>
           <FaListUl />
-        </Button>
-
-        <Button
-          variant={"ghost"}
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        >
+        </ToolTipedButton>
+        <ToolTipedButton tooltip="Ordered List" onClick={() => editor.chain().focus().toggleOrderedList().run()}>
           <FaListOl />
-        </Button>
-        <Button
+        </ToolTipedButton>
+        {/* <Button
           variant={"ghost"}
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
         >
           <FaCode />
-        </Button>
-
+        </Button> */}
+        {/* <ToolTipedButton tooltip="Code Block" onClick={() => editor.chain().focus().toggleCodeBlock().run()}>
+          <FaCode />
+        </ToolTipedButton> */}
+        <Separator orientation="vertical" />
         <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost">
-              <FaTable className="h-4 w-4" />
-            </Button>
+          <PopoverTrigger>
+              <ToolTipedButton tooltip="Insert Table" onClick={() => {}}>
+                <FaTable />
+              </ToolTipedButton>
           </PopoverTrigger>
           <PopoverContent className="w-80">
             <div className="grid gap-4">
@@ -312,20 +341,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
             </div>
           </PopoverContent>
         </Popover>
-
-        <Separator orientation="vertical" />
-        <Button
-          variant={"ghost"}
-          onClick={() => editor.chain().focus().undo().run()}
-        >
-          <FaUndo />
-        </Button>
-        <Button
-          variant={"ghost"}
-          onClick={() => editor.chain().focus().redo().run()}
-        >
-          <FaRedo />
-        </Button>
+        
         {/* <Separator orientation="vertical" />
         <Button variant="ghost" onClick={handleZoomOut}>
           <FaSearchMinus />
@@ -334,31 +350,12 @@ const Toolbar: React.FC<ToolbarProps> = ({
         <Button variant="ghost" onClick={handleZoomIn}>
           <FaSearchPlus />
         </Button> */}
-        <Separator orientation="vertical" />
-        <Menubar className="bg-transparent border-none p-0 m-0">
-          <MenubarMenu>
-            <MenubarTrigger className="bg-transparent border-none p-0 m-0">
-            <Button variant={"ghost"}  className="flex items-center gap-0 px-2">
-              <FaFileDownload /> <RxTriangleDown className="h-4 w-4"/>
-            </Button>
-            </MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem className="cursor-pointer" onClick={exportPdf}>
-                Export PDF
-                <MenubarShortcut><FaFileDownload className="h-4 w-4"/></MenubarShortcut>
-              </MenubarItem>
-              <MenubarItem className="cursor-pointer" onClick={() => handleExportTables(editor)}>
-                Export Tables <MenubarShortcut><FaFileCsv className="h-4 w-4"/></MenubarShortcut>
-              </MenubarItem>
-            </MenubarContent>
-          </MenubarMenu>
-        </Menubar>
-        {documentId && (
+                {documentId && (
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="ghost">
-                <FaMagic className="h-4 w-4" />
-              </Button>
+              <ToolTipedButton tooltip="AI writer" onClick={() => {}}>
+                <FaMagic />
+              </ToolTipedButton>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[90vw] sm:h-[100vh] flex flex-col">
               <div className="flex-1 ">
@@ -376,14 +373,14 @@ const Toolbar: React.FC<ToolbarProps> = ({
         )}
 
         <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" disabled={isUploading}>
+          <PopoverTrigger>
+            <ToolTipedButton tooltip="Insert Image" disabled={isUploading}>
               {isUploading ? (
-                <FaSpinner className="h-4 w-4 animate-spin" />
-              ) : (
-                <FaImage className="h-4 w-4" />
-              )}
-            </Button>
+                  <FaSpinner className="animate-spin" />
+                ) : (
+                  <FaImage />
+                )}
+            </ToolTipedButton>
           </PopoverTrigger>
           <PopoverContent className="w-80">
             <div className="grid gap-4">
@@ -427,26 +424,54 @@ const Toolbar: React.FC<ToolbarProps> = ({
             </div>
           </PopoverContent>
         </Popover>
-
-        {sessionToken && (
-          <EmailModal
-            editor={editor}
-            sessionToken={sessionToken}
-            subject={documentType}
-          />
-        )}
-        <Separator orientation="vertical" />
-
-        <div className="font-sm text-white">
-          {saveStatus?.toLowerCase() === "saved" ? (
-            saveStatus
-          ) : (
-            <FaSpinner className="h-4 w-4 animate-spin" />
+      {/* <Separator orientation="vertical" /> */}
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="font-sm ">
+            {saveStatus === SaveStatus.SAVED && (
+              <span className="text-sm">Saved to Drive</span>
+            ) }
+            {saveStatus === SaveStatus.SAVING && (
+              <div className="flex items-center gap-2">
+                <FaSpinner className="h-4 w-4 animate-spin" /> 
+                <span className="text-sm">Saving...</span>
+              </div>
+            )}
+          </div>
+          {sessionToken && (
+            <EmailModal
+              editor={editor}
+              sessionToken={sessionToken}
+              subject={documentType}
+            />
           )}
         </div>
+
       </div>
     </div>
   );
 };
+
+type ToolTipedButtonProps = {
+  children: React.ReactNode;
+  tooltip: string;
+} & ButtonProps
+
+export const ToolTipedButton = ({children, tooltip, ...buttonProps}: ToolTipedButtonProps) => {
+  return (
+    <TooltipProvider>
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <Button {...buttonProps} className={cn("px-2", buttonProps.className)} variant={buttonProps.variant || "ghost"}>
+            {children}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          {tooltip}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+}
 
 export default Toolbar;
