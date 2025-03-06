@@ -23,7 +23,6 @@ import {
 } from "react-icons/pi";
 
 import { ActivityEntity } from "@/types/activities";
-import { useScheduleUpdate } from "@/components/Agent/useAgentFunctions";
 import AddNewActivityModal from "./AddNewActivityModal";
 import UpdateActivityModal from "./UpdateActivityModal";
 
@@ -47,7 +46,8 @@ const ScheduleGanttInterface = () => {
     setTaskToView: state.setTaskToView,
     userActivities: state.userActivities,
   }));
-  const { isOpen, onClose } = useScheduleUpdate();
+  const [isOpen, setIsOpen] = useState(false);
+  const onClose = () => setIsOpen(false);
 
   const [tasks, setTasks] = React.useState<Task[]>(initTasks());
   const [editOpen, setEditOpen] = useState<boolean>(false);

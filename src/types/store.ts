@@ -12,6 +12,7 @@ import {
 } from "@/types/updateCollection";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
+import { AgentChat } from "@/types/agentChats";
 
 export type SidePanelExtension =
   | "fileExplorer"
@@ -89,6 +90,7 @@ export type State = {
   chatMessages: ChatMessage[];
   selectedContext: Brain | null;
   pdfViewer: PdfViewer;
+  localChats: AgentChat[];
   rightPanelView: "gantt" | "task";
   taskToView: ActivityEntityWithMembers | ActivityEntity | null;
   taskDetailsView: "details" | "history" | "impact" | "gantt" | "edit";
@@ -108,6 +110,7 @@ export type State = {
   setActiveProject: (activeProject: ProjectEntity | null) => void;
   setActiveChatEntity: (activeChatEntity: AgentChatEntity | null) => void;
   setChatEntities: (chatEntities: AgentChatEntity[]) => void;
+  appendChatEntity: (chatEntity: AgentChatEntity) => void;
   setAdminRights: (hasAdminRights: boolean) => void;
   setSidePanelExtensionView: (
     sidePanelExtensionView: SidePanelExtension
@@ -141,4 +144,5 @@ export type State = {
   setDocumentId: (id: string) => void;
   setAiActionsView: (view: "open" | "close" | "expand" | any) => void;
   setProjectStatus: (status: string) => void;
+  setLocalChats: (localChats: AgentChat[]) => void;
 };

@@ -16,6 +16,7 @@ import { useViewStore } from "@/utils/store";
 import PlatformChatComponent from "../ChatInput/PlatformChat/PlatformChatComponent";
 import { MessageCircle } from "lucide-react";
 import Draggable from "react-draggable";
+import ChatButton from "../ChatButton";
 
 function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
   const { scheduleView, setScheduleView } = useViewStore();
@@ -81,30 +82,25 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
         value={scheduleView}
         onValueChange={handleTabChange}
         defaultValue={scheduleView}
-        className="flex flex-col h-full  p-2 w-full"
+        className="flex flex-col h-full  p-4 w-full"
       >
-        <TabsList className="grid grid-cols-2 w-48 ">
+        <TabsList className="grid grid-cols-2 w-48  ">
           <TabsTrigger value="list">List</TabsTrigger>
           <TabsTrigger value="gantt">Gantt</TabsTrigger>
         </TabsList>
         <TabsContent value="list" className="flex h-full gap-2  ">
-          <Card className=" flex-stretch w-full ">
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">
-                Project Activities
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className=" flex-stretch w-full p-4 ">
+            <div>
               <ScheduleInsights />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
         <TabsContent value="gantt" className=" w-[calc(100vw-70px)] ">
-          <Card>
-            <CardContent>
+          <div className="p-4">
+            <div>
               <ScheduleGanttInterface />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
 
@@ -135,23 +131,25 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
         onStop={handleDrag}
         bounds="parent"
       >
-        <div ref={nodeRef} className="fixed bottom-4 right-4">
-          <Button
-            className="rounded-full w-auto h-auto p-2 flex items-center gap-2"
+        <div ref={nodeRef} className="fixed bottom-4 right-4 z-50">
+          <ChatButton
+            isOpen={isChatOpen}
             onClick={() => setIsChatOpen(!isChatOpen)}
-          >
-            <div className="bg-white text-primary-foreground rounded-full p-2">
-              <MessageCircle size={24} />
-            </div>
-            <span className="pr-2">update schedule</span>
-          </Button>
+            title={
+              isChatOpen
+                ? "Close chat assistant"
+                : "Chat with Flowlly AI about schedule"
+            }
+            openText="Update schedule"
+            fixed={false}
+          />
         </div>
       </Draggable>
 
       {(isChatOpen || isClosing) && (
         <div
           ref={chatRef}
-          className={`fixed bottom-20 right-4 w-[calc(100vw-200px)] z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden transition-opacity duration-300 ${
+          className={`fixed bottom-2 right-4 w-[calc(100vw-200px)] z-40 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden transition-opacity duration-300 ${
             isClosing ? "opacity-0" : "opacity-100"
           }`}
         >
@@ -162,7 +160,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
               chatTarget="schedule"
             />
           )}
-          <div className="fixed p-2 z-50 top-0 ">
+          <div className="fixed p-2 z-50 top-3 ">
             <Button
               variant="outline"
               size="icon"

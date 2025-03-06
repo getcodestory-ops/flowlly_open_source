@@ -12,6 +12,10 @@ import {
   MessageSquare,
   LogsIcon,
   X,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  ArrowRight,
 } from "lucide-react";
 import ContentEditor from "@/components/DocumentEditor/ContentEditor";
 import ActionItemViewer from "@/components/AiActions/ActionItemViewer";
@@ -29,6 +33,15 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import MarkDownDisplay from "@/components/Markdown/MarkDownDisplay";
 import LoaderAnimation from "@/components/Animations/LoaderAnimation";
 import PdfLoader from "./PdfLoader";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ResultViewerProps {
   currentResult: EventResult;
@@ -43,10 +56,26 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 }) => {
   const projectId = useStore((state) => state.activeProject?.project_id);
   const session = useStore((state) => state.session);
-  const isWorkflowRunning = !!currentResult?.workflow_id;
+
+  // Update how we determine if a workflow is running
+  // A workflow is running if:
+  // 1. It has a workflow_id AND status is not "completed", OR
+  // 2. It has the listen flag set (waiting for input)
+  const isWorkflowRunning =
+    (!!currentResult?.workflow_id && currentResult.status !== "completed") ||
+    !!currentResult?.listen;
+
+  // For workflows with null/undefined status, we'll consider them completed
+  // if they don't have any running indicators
+  const isImplicitlyCompleted =
+    (currentResult.status === null || currentResult.status === undefined) &&
+    !currentResult?.workflow_id &&
+    !currentResult?.listen;
+
   const [pendingEvent, setPendingEvent] = useState(true);
   const [expandedNodeId, setExpandedNodeId] = useState<string | null>(null);
   const [showLogs, setShowLogs] = useState(false);
+  const [detailView, setDetailView] = useState<NodeData | null>(null);
 
   // Set the first node as expanded initially
   useEffect(() => {
@@ -55,10 +84,31 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
     }
   }, [currentResult?.nodes]);
 
+  // Calculate completion percentage for workflow
+  const calculateProgress = () => {
+    if (!currentResult?.nodes) return 0;
+
+    const totalNodes = currentResult.nodes.length;
+    if (totalNodes === 0) return 0;
+
+    const completedNodes = currentResult.nodes.filter(
+      (node) => node.status === "completed"
+    ).length;
+
+    return Math.round((completedNodes / totalNodes) * 100);
+  };
+
+  const progressPercentage = calculateProgress();
+  const hasFailedNodes = currentResult?.nodes?.some(
+    (node) => node.status === "failed"
+  );
+
   return (
-    <div className="p-6  min-h-screen">
+    <div className="p-6 min-h-screen">
+      {/* Workflow Status Summary */}
+
       {currentResult?.listen && (
-        <Card className="p-4 mb-4 border-2 border-yellow-500 shadow-md rounded-lg">
+        <Card className="p-4 mb-6 border-2 border-yellow-500 shadow-md rounded-lg">
           {currentResult.workflow_id && projectId && (
             <>
               {pendingEvent ? (
@@ -81,67 +131,361 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
         </Card>
       )}
 
-      {currentResult.workflow_id &&
-        session?.access_token &&
-        currentResult.streaming && (
-          <div className="mb-4">
-            <div className="border rounded-lg overflow-hidden relative border-l-green-500 border-l-4">
-              <div className="relative">
-                <div className="h-1 w-full bg-gray-100 overflow-hidden">
-                  <div
-                    className="h-1 w-full bg-gradient-to-r from-blue-500 to-purple-500 absolute"
-                    style={{
-                      animation: "progressLine 10s ease-in-out infinite",
-                    }}
-                  />
-                </div>
-
-                <div className="p-4 flex items-center justify-between bg-white">
-                  <div className="flex items-center gap-2">
-                    <LogsIcon className="h-5 w-5 text-gray-600" />
-                    <h3 className="font-medium">Workflow Logs</h3>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowLogs(!showLogs)}
-                    className="h-7 px-2"
-                  >
-                    {showLogs ? "Hide Logs" : "Show Logs"}
-                  </Button>
-                </div>
+      {session?.access_token && currentResult.streaming && (
+        <div className="mb-6">
+          <div className="border rounded-lg overflow-hidden relative border-l-green-500 border-l-4 shadow-sm">
+            <div className="relative">
+              <div className="h-1 w-full bg-gray-100 overflow-hidden">
+                <div
+                  className="h-1 w-full bg-gradient-to-r from-blue-500 to-purple-500 absolute"
+                  style={{
+                    animation: "progressLine 10s ease-in-out infinite",
+                  }}
+                />
               </div>
 
-              {showLogs && (
-                <div className="border-t">
-                  <div className="max-h-[400px] overflow-y-auto p-4">
-                    <StreamComponent
-                      streamingKey={currentResult.id}
-                      authToken={session.access_token}
-                    />
-                  </div>
+              <div className="p-4 flex items-center justify-between bg-white">
+                <div className="flex items-center gap-2">
+                  <LogsIcon className="h-5 w-5 text-gray-600" />
+                  <h3 className="font-medium">Workflow Logs</h3>
                 </div>
-              )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowLogs(!showLogs)}
+                  className="h-7 px-2"
+                >
+                  {showLogs ? "Hide Logs" : "Show Logs"}
+                </Button>
+              </div>
+            </div>
+
+            {showLogs && (
+              <div className="border-t">
+                <div className="max-h-[400px] overflow-y-auto p-4">
+                  <StreamComponent
+                    streamingKey={currentResult.id}
+                    authToken={session.access_token}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Workflow Timeline View */}
+      <div className="flex flex-col lg:flex-row gap-6 h-full">
+        {/* Workflow Steps Timeline */}
+
+        {/* Node Details */}
+        <div className="w-full lg:w-3/4 bg-white rounded-lg border shadow-sm p-4">
+          {detailView ? (
+            <div className="animate-fadeIn">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  {getNodeIcon(detailView)}
+                  <h3 className="font-medium text-lg">{detailView.title}</h3>
+                  <StatusBadge status={detailView.status} />
+                </div>
+                <NodeActions
+                  node={detailView}
+                  workflowId={currentResult.workflow_id || ""}
+                  isWorkflowRunning={isWorkflowRunning}
+                />
+              </div>
+              <ScrollArea className="border-t pt-4 h-[calc(100vh-100px)] ">
+                {renderNodeContent(detailView, false)}
+              </ScrollArea>
+            </div>
+          ) : (
+            <div className="h-full flex items-center justify-center text-gray-500 p-8">
+              <div className="text-center">
+                <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p>Select a step from the timeline to view details</p>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="w-full lg:w-1/4 bg-white rounded-lg border shadow-sm p-4">
+          <div className="mb-6 bg-white rounded-lg shadow-sm p-4 border">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="bg-purple-100 p-2 rounded-full">
+                  <FileText className="h-5 w-5 text-purple-800" />
+                </div>
+                <h2 className="text-xl font-semibold">
+                  {currentResult.name || "Workflow Result"}
+                </h2>
+              </div>
+              <div className="flex items-center gap-3">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "px-3 py-1 text-sm font-medium rounded-full",
+                    isWorkflowRunning
+                      ? "bg-purple-100 text-purple-800 border-purple-200"
+                      : "bg-green-100 text-green-800 border-green-200"
+                  )}
+                >
+                  {isWorkflowRunning ? (
+                    <span className="flex items-center gap-1.5">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-600"></span>
+                      </span>
+                      Running
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      Completed
+                    </span>
+                  )}
+                </Badge>
+                <div className="text-sm">
+                  {isWorkflowRunning ? (
+                    <span className="text-gray-600">
+                      {progressPercentage}% in progress
+                    </span>
+                  ) : (
+                    (currentResult.status === "completed" ||
+                      isImplicitlyCompleted) && (
+                      <span className="text-green-600 font-medium">
+                        100% complete
+                      </span>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mt-4">
+              <div
+                className={`h-full ${
+                  hasFailedNodes
+                    ? "bg-red-500"
+                    : isWorkflowRunning
+                    ? "bg-blue-500"
+                    : "bg-green-500"
+                }`}
+                style={{
+                  width: `${isWorkflowRunning ? progressPercentage : 100}%`,
+                  transition: "width 0.5s ease-in-out",
+                }}
+              />
             </div>
           </div>
-        )}
-
-      <div className="flex flex-col gap-6">
-        {currentResult?.nodes &&
-          currentResult?.nodes?.map((node) => (
-            <ResultBox
-              key={node.id}
-              node={node}
-              workflowId={currentResult.workflow_id || ""}
-              isWorkflowRunning={isWorkflowRunning}
-              isExpanded={expandedNodeId === node.id}
-              onToggleExpand={() => {
-                setExpandedNodeId(expandedNodeId === node.id ? null : node.id);
-              }}
-            />
-          ))}
+          <h3 className="text-lg font-medium mb-4 px-2">Workflow Timeline</h3>
+          <div className="relative">
+            {(() => {
+              const nodes = currentResult?.nodes || [];
+              return nodes.length > 0 ? (
+                nodes.map((node, index) => (
+                  <React.Fragment key={node.id}>
+                    <TimelineNode
+                      node={node}
+                      isFirst={index === 0}
+                      isLast={index === nodes.length - 1}
+                      isSelected={detailView?.id === node.id}
+                      onClick={() => setDetailView(node)}
+                      workflowId={currentResult.workflow_id || ""}
+                      isWorkflowRunning={isWorkflowRunning}
+                    />
+                  </React.Fragment>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No workflow steps available</p>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
       </div>
     </div>
+  );
+};
+
+interface TimelineNodeProps {
+  node: NodeData;
+  isFirst: boolean;
+  isLast: boolean;
+  isSelected: boolean;
+  onClick: () => void;
+  workflowId: string;
+  isWorkflowRunning: boolean;
+}
+
+const TimelineNode: React.FC<TimelineNodeProps> = ({
+  node,
+  isFirst,
+  isLast,
+  isSelected,
+  onClick,
+  workflowId,
+  isWorkflowRunning,
+}) => {
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <CheckCircle2 className="h-5 w-5 text-green-600" />;
+      case "failed":
+        return <AlertCircle className="h-5 w-5 text-red-600" />;
+      case "running":
+        return <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />;
+      case "pending":
+        return <Clock className="h-5 w-5 text-yellow-600" />;
+      default:
+        return <Clock className="h-5 w-5 text-gray-400" />;
+    }
+  };
+
+  return (
+    <div
+      className={cn(
+        "relative pl-10 pr-4 py-3 border-l-2 cursor-pointer",
+        isSelected
+          ? "bg-blue-50 border-blue-500"
+          : node.status === "completed"
+          ? "border-green-500"
+          : node.status === "failed"
+          ? "border-red-500"
+          : node.status === "running"
+          ? "border-blue-500"
+          : "border-gray-300",
+        !isLast && "pb-5",
+        "hover:bg-gray-50 transition-colors duration-200"
+      )}
+      onClick={onClick}
+    >
+      {/* Status Circle */}
+      <div
+        className={cn(
+          "absolute left-[-8px] w-4 h-4 rounded-full border-2",
+          node.status === "completed"
+            ? "bg-green-100 border-green-500"
+            : node.status === "failed"
+            ? "bg-red-100 border-red-500"
+            : node.status === "running"
+            ? "bg-blue-100 border-blue-500"
+            : "bg-gray-100 border-gray-300"
+        )}
+      />
+
+      {/* Content */}
+      <div className="flex justify-between items-center">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            {getStatusIcon(node.status)}
+            <span className="font-medium">{node.title}</span>
+          </div>
+          <span className="text-xs text-gray-500 mt-1">
+            {node.status.charAt(0).toUpperCase() + node.status.slice(1)}
+          </span>
+        </div>
+        <ArrowRight
+          className={cn("h-4 w-4 text-gray-400", isSelected && "text-blue-500")}
+        />
+      </div>
+
+      {/* Connecting line to next node */}
+      {!isLast && (
+        <div className="absolute left-[-6px] top-7 h-full border-l-2 border-dashed border-gray-300" />
+      )}
+    </div>
+  );
+};
+
+interface NodeActionsProps {
+  node: NodeData;
+  workflowId: string;
+  isWorkflowRunning: boolean;
+}
+
+const NodeActions: React.FC<NodeActionsProps> = ({
+  node,
+  workflowId,
+  isWorkflowRunning,
+}) => {
+  const session = useStore((state) => state.session);
+  const activeProject = useStore((state) => state.activeProject);
+  const queryClient = useQueryClient();
+
+  const { mutate: rerunNode, isPending: isRerunning } = useMutation({
+    mutationFn: async () => {
+      if (!session || !activeProject) throw new Error("No session or project");
+      return triggerWorkflowNode({
+        session,
+        projectId: activeProject.project_id,
+        workflowId,
+        nodeId: node.id,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["eventResult"] });
+    },
+  });
+
+  const canRerun =
+    isWorkflowRunning &&
+    (node.status === "failed" || (node.status === "completed" && workflowId));
+
+  if (!canRerun) return null;
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => rerunNode()}
+            disabled={isRerunning}
+            className="h-8 px-3"
+          >
+            {isRerunning ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+            ) : (
+              <span className="flex items-center gap-1.5">
+                <Loader2 className="h-3.5 w-3.5" />
+                Rerun Step
+              </span>
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Reprocess this step with the same inputs</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const getStatusColor = () => {
+    switch (status) {
+      case "completed":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "failed":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "running":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  return (
+    <Badge
+      variant="outline"
+      className={`px-2 py-0.5 text-xs rounded-full ${getStatusColor()}`}
+    >
+      {status}
+    </Badge>
   );
 };
 
@@ -189,7 +533,8 @@ const ResultBox: React.FC<ResultBoxProps> = ({
         return "border-l-green-500";
       case "failed":
         return "border-l-red-500";
-      case "processing":
+      case "running":
+        return "border-l-blue-500";
       case "pending":
         return "border-l-yellow-500";
       default:
@@ -203,7 +548,8 @@ const ResultBox: React.FC<ResultBoxProps> = ({
         return "text-green-600";
       case "failed":
         return "text-red-600";
-      case "processing":
+      case "running":
+        return "text-blue-600";
       case "pending":
         return "text-yellow-600";
       default:
@@ -215,7 +561,7 @@ const ResultBox: React.FC<ResultBoxProps> = ({
     <div
       className={`border-l-4 ${getBorderColor(
         node.status
-      )} transition-all duration-300 border rounded-lg overflow-hidden animate-[fadeInDown_0.5s_ease-in-out]`}
+      )} transition-all duration-300 border rounded-lg overflow-hidden animate-[fadeInDown_0.5s_ease-in-out] mb-3 shadow-sm`}
     >
       <div
         className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50"
@@ -237,15 +583,6 @@ const ResultBox: React.FC<ResultBoxProps> = ({
                 </span>
               </div>
             </div>
-            {/* <div className="h-4">
-              {!isExpanded &&
-                node.output &&
-                typeof node.output === "string" && (
-                  <p className="text-sm text-gray-500 line-clamp-1 truncate">
-                    {node.output}
-                  </p>
-                )}
-            </div> */}
           </div>
         </div>
 
@@ -275,7 +612,7 @@ const ResultBox: React.FC<ResultBoxProps> = ({
         }`}
       >
         <div className="px-4 pb-4 pt-2 border-t">
-          <div className=" overflow-y-auto p-4 max-h-screen">
+          <div className="overflow-y-auto p-4 max-h-screen">
             {renderNodeContent(node, false)}
           </div>
         </div>
@@ -478,51 +815,6 @@ const UserInputForm = ({
     </div>
   );
 };
-
-// const getNodeColumnSpan = (node: NodeData): string => {
-//   const nodeId = node.id.toLowerCase();
-//   const nodeTitle = node.title?.toLowerCase() ?? "";
-
-//   if (nodeId === "user_input") {
-//     return "col-span-1 md:col-span-2 xl:col-span-3";
-//   }
-
-//   // First check specific node IDs
-//   switch (nodeId) {
-//     case "determine_action_items":
-//       return "col-span-1 xl:col-span-2";
-//     case "transcribe_meeting":
-//       return "col-span-1 md:col-span-1";
-//     case "record_meeting":
-//       return "col-span-1 xl:col-span-2";
-//     case "write_meeting_minutes":
-//     case "save_document":
-//     case "save_minutes_in_project_documents":
-//       return "col-span-1 md:col-span-2 xl:col-span-3";
-//   }
-
-//   // Then check titles
-//   if (nodeTitle === "reportgeneration" || nodeTitle === "microsoftword") {
-//     return "col-span-3";
-//   }
-//   console.log("nodeTitle", nodeTitle);
-
-//   return "col-span-1";
-// };
-
-// const hasExpandableContent = (node: NodeData): boolean => {
-//   const nodeId = node.id.toLowerCase();
-//   return (
-//     [
-//       "write_meeting_minutes",
-//       "determine_action_items",
-//       "save_document",
-//       "save_minutes_in_project_documents",
-//     ].includes(nodeId) ||
-//     (typeof node.output === "object" &&
-//       Object.keys(node.output || {}).length > 5)
-//   );
-// };
 
 const renderNodeContent = (node: NodeData, isFullScreen: boolean) => {
   const nodeId = node.id.toLowerCase();

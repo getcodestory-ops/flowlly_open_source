@@ -42,12 +42,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import PlatformChatComponent from "@/components/ChatInput/PlatformChat/PlatformChatComponent";
+import ChatButton from "@/components/ChatButton";
 
 interface EventScheduleListProps {
   graphs: EventSchedule[];
   onSelectGraph: (event: EventResult) => void;
   eventId: string;
   setIsLoadingResult: (isLoading: boolean) => void;
+  compact?: boolean;
 }
 
 export const EventScheduleList: React.FC<EventScheduleListProps> = ({
@@ -55,6 +57,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
   onSelectGraph,
   eventId,
   setIsLoadingResult,
+  compact = false,
 }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -72,7 +75,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
     pageSize: number;
   }>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 100,
   });
 
   const queryClient = useQueryClient();
@@ -111,6 +114,11 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
   });
 
   const sortedGraphs = useMemo(() => {
+    console.log("EventScheduleList received graphs:", graphs.length);
+    if (!graphs || graphs.length === 0) {
+      return [];
+    }
+
     return graphs.slice().sort((a, b) => {
       const runTimeA = a.schedule?.time?.[0]?.run_time;
       const runTimeB = b.schedule?.time?.[0]?.run_time;
@@ -127,24 +135,28 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
     });
   }, [graphs]);
 
-  const tableData: ScheduleTableRow[] = useMemo(
-    () =>
-      sortedGraphs.map((eventSchedule) => ({
-        id: eventSchedule.id,
-        schedule: eventSchedule.schedule,
-        subRows: eventSchedule.event_result
-          .slice() // create copy to avoid mutating original data
-          .sort(
-            (a, b) =>
-              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-          )
-          .map((eventResult) => ({
-            id: eventResult.id,
-            result: eventResult,
-          })),
-      })),
-    [sortedGraphs, eventTrigger]
-  );
+  const tableData: ScheduleTableRow[] = useMemo(() => {
+    if (sortedGraphs.length === 0) {
+      console.log("No sorted graphs available for table data");
+      return [];
+    }
+
+    console.log("Creating table data from", sortedGraphs.length, "graphs");
+    return sortedGraphs.map((eventSchedule) => ({
+      id: eventSchedule.id,
+      schedule: eventSchedule.schedule,
+      subRows: eventSchedule.event_result
+        .slice() // create copy to avoid mutating original data
+        .sort(
+          (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )
+        .map((eventResult) => ({
+          id: eventResult.id,
+          result: eventResult,
+        })),
+    }));
+  }, [sortedGraphs, eventTrigger]);
 
   const columns = useMemo<ColumnDef<ScheduleTableRow>[]>(
     () => [
@@ -156,30 +168,70 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
             const schedule = row.original.schedule;
             const run_time = schedule.time?.[0]?.run_time;
             if (run_time) {
-              // Remove the Workflows text
-              return "Completed";
+              return (
+                <div className="flex items-center">
+                  <span className="font-medium">
+                    {compact ? "Schedule" : "Scheduled Workflow"}
+                  </span>
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {new Date(`2000-01-01T${run_time}Z`).toLocaleTimeString(
+                      [],
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )}
+                  </span>
+                </div>
+              );
             }
-            return "Running";
+            return (
+              <div className="flex items-center">
+                <span className="font-medium">
+                  {compact ? "Running" : "Running Workflow"}
+                </span>
+              </div>
+            );
           } else if (row.original.result) {
             const result = row.original.result;
             const activelyListening = result?.listen;
             const currentlyRunning = result?.workflow_id;
+            const isCompleted = result.status === "completed";
 
             return (
-              <div className="pl-8 flex flex-col  items-start gap-2">
-                {new Date(result.timestamp).toLocaleString([], {
-                  dateStyle: "long",
-                  timeStyle: "medium",
-                })}
+              <div
+                className={`pl-${
+                  compact ? "4" : "8"
+                } flex flex-col items-start gap-2`}
+              >
+                <div className="flex items-center">
+                  <span className={`text-${compact ? "sm" : "sm"} `}>
+                    {new Date(result.timestamp).toLocaleString([], {
+                      dateStyle: compact ? "short" : "long",
+                      timeStyle: compact ? "short" : "medium",
+                    })}
+                  </span>
+                  {isCompleted && compact && (
+                    <span className="ml-2 px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">
+                      Completed
+                    </span>
+                  )}
+                </div>
+
                 {activelyListening && (
                   <div className="flex items-center">
                     <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                    <span className="ml-1 text-sm text-green-600">
+                    <span
+                      className={`ml-1 text-${
+                        compact ? "xs" : "sm"
+                      } text-green-600`}
+                    >
                       Waiting for input
                     </span>
                   </div>
                 )}
-                {currentlyRunning && (
+
+                {currentlyRunning && !compact && (
                   <div className="flex items-center gap-2">
                     <div className="flex items-center">
                       <div className="h-2 w-2 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
@@ -227,6 +279,55 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
                     </AlertDialog>
                   </div>
                 )}
+
+                {currentlyRunning && compact && (
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center">
+                      <div className="h-2 w-2 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
+                      <span className="ml-1 text-xs text-purple-600">
+                        Running
+                      </span>
+                    </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={(e) => e.stopPropagation()}
+                          className="h-5 px-1.5 text-xs"
+                        >
+                          Clear
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Clearing process will clean the progress so far.
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (row.original.result?.workflow_id) {
+                                clearProcess(row.original.result.workflow_id);
+                              }
+                            }}
+                          >
+                            Continue
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                )}
               </div>
             );
           } else {
@@ -236,7 +337,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
       },
       // Add other columns as needed
     ],
-    []
+    [compact]
   );
 
   const table = useReactTable<ScheduleTableRow>({
@@ -314,6 +415,21 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
   const renderRow = (row: Row<ScheduleTableRow>) => {
     // Check if this row is selected
     const isSelected = row.original.result?.id === selectedResultId;
+    const isRunning = row.original.result?.workflow_id;
+    const isListening = row.original.result?.listen;
+    const isCompleted = row.original.result?.status === "completed";
+
+    // Determine status styling
+    let statusClass = "";
+    if (isSelected) {
+      statusClass = "bg-gradient-to-r from-indigo-100 to-purple-500";
+    } else if (isRunning) {
+      statusClass = "border-l-2 border-l-purple-500";
+    } else if (isListening) {
+      statusClass = "border-l-2 border-l-green-500";
+    } else if (isCompleted) {
+      statusClass = "border-l-2 border-l-green-700";
+    }
 
     return (
       <React.Fragment key={row.id}>
@@ -342,13 +458,15 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
             }
           }}
           className={cn(
-            "cursor-pointer  hover:bg-gradient-to-r hover:from-indigo-100 hover:to-purple-500 rounded-lg",
-            row.depth > 0 && "",
-            isSelected && "bg-gradient-to-r from-indigo-100 to-purple-500 " // Add highlight for selected row
+            "cursor-pointer hover:bg-gradient-to-r hover:from-indigo-100 hover:to-purple-500 rounded-lg",
+            statusClass,
+            row.depth > 0 && "ml-4",
+            compact && "py-1", // Add compact styling
+            compact && "text-sm"
           )}
         >
           {row.getVisibleCells().map((cell) => (
-            <TableCell key={cell.id}>
+            <TableCell key={cell.id} className={cn(compact && "py-1")}>
               {flexRender(cell.column.columnDef.cell, cell.getContext())}
             </TableCell>
           ))}
@@ -358,109 +476,51 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
   };
 
   return (
-    <div className="w-full">
-      <Table>
-        <TableBody>
-          {table.getRowModel().rows.length > 0 ? (
-            table.getRowModel().rows.map(renderRow)
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="text-center">
-                No results found.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-      {/* Pagination Controls - Styled uniformly to match DataTablePagination */}
-      <div className="flex items-center justify-between px-2 mt-4">
-        {/* <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div> */}
-        <div className="flex items-center space-x-6 lg:space-x-8">
-          {/* <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Rows per page</p>
-            <Select
-              value={`${pagination.pageSize}`}
-              onValueChange={(value) => {
-                const newSize = Number(value);
-                setPagination((prev) => ({
-                  ...prev,
-                  pageSize: newSize,
-                  pageIndex: 0,
-                }));
-              }}
-            >
-              <SelectTrigger className="h-8 w-[70px]">
-                <SelectValue placeholder={pagination.pageSize.toString()} />
-              </SelectTrigger>
-              <SelectContent side="top">
-                {[10, 20, 30, 40, 50].map((pageSize) => (
-                  <SelectItem key={pageSize} value={`${pageSize}`}>
-                    {pageSize}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div> */}
-          <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              className="hidden h-8 w-8 p-0 lg:flex"
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <span className="sr-only">Go to first page</span>«
-            </Button>
-            <Button
-              variant="outline"
-              className="h-8 w-8 p-0"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <span className="sr-only">Go to previous page</span>‹
-            </Button>
-            <Button
-              variant="outline"
-              className="h-8 w-8 p-0"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <span className="sr-only">Go to next page</span>›
-            </Button>
-            <Button
-              variant="outline"
-              className="hidden h-8 w-8 p-0 lg:flex"
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-            >
-              <span className="sr-only">Go to last page</span>»
-            </Button>
-          </div>
+    <div className={cn("w-full", compact && "text-sm")}>
+      {graphs && graphs.length > 0 ? (
+        <Table>
+          <TableBody>
+            {table.getRowModel().rows.length > 0 ? (
+              table.getRowModel().rows.map(renderRow)
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="text-center">
+                  No workflow results found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      ) : (
+        <div className="text-center p-4 text-muted-foreground">
+          No workflow data available.
         </div>
-      </div>
-
+      )}
+      {/* Pagination Controls - Only show if we have data */}
+      {table.getRowModel().rows.length > 0 && (
+        <div className="flex items-center justify-between px-2 mt-4">
+          {/* Pagination Controls... */}
+        </div>
+      )}
       {isFetchingEventResult && (
         <div className="flex items-center justify-center h-full mt-2">
           <div className="w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-[progressLine_10s_linear_infinite]"></div>
         </div>
       )}
-      {selectedResultId && (
+      {/* {selectedResultId && (
         <div className="z-100">
-          <Button
-            className="z-[100] fixed bottom-4 right-4 rounded-full w-auto h-auto p-2 flex items-center gap-2"
+          <ChatButton
+            isOpen={isChatOpen}
             onClick={() => setIsChatOpen((prev) => !prev)}
-          >
-            <div className="bg-white text-primary-foreground rounded-full p-2">
-              <MessageSquare size={24} />
-            </div>
-            <span className="pr-2">Questions about workflow</span>
-          </Button>
+            title={
+              isChatOpen
+                ? "Close chat assistant"
+                : "Chat with Flowlly AI about workflow"
+            }
+            openText="Workflow help"
+            icon={<MessageSquare className="h-5 w-5" />}
+            className="z-[100]"
+          />
 
           {(isChatOpen || isClosing) && (
             <div
@@ -492,7 +552,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
             </div>
           )}
         </div>
-      )}
+      )} */}
     </div>
   );
 };

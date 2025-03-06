@@ -64,7 +64,7 @@ function AddNewChatEntity({ onComplete }: { onComplete?: () => void }) {
         }
       }}
     >
-      Add New Chat Entity
+      New Chat
     </Button>
     // <Popover>
     //   <PopoverTrigger>

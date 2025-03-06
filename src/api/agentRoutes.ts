@@ -12,6 +12,14 @@ interface AgentTask {
   sessionToken: Session;
 }
 
+export type ProcessedFile = {
+  type: string;
+  resource_id: string;
+  resource_url: string;
+  resource_name: string;
+  extension: string;
+};
+
 export const talkToAgent = async ({
   session,
   agentTask,
@@ -21,6 +29,7 @@ export const talkToAgent = async ({
   responseType = "general",
   model = "gemini-2.0-flash",
   includeContext = false,
+  files = [],
 }: {
   session: Session;
   agentTask: string;
@@ -30,8 +39,9 @@ export const talkToAgent = async ({
   responseType?: string;
   model?: string;
   includeContext?: boolean;
+  files?: ProcessedFile[];
 }) => {
-  const scheduleProps = {
+  const agentTaskProps = {
     task: agentTask,
     brain_id: brainId,
     chat_entity_id: chatId,
@@ -39,10 +49,11 @@ export const talkToAgent = async ({
     response_type: responseType,
     model: model,
     include_context: includeContext,
+    files: files,
   };
 
   const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat`;
-  const response = await axios.post(url, scheduleProps, {
+  const response = await axios.post(url, agentTaskProps, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${session.access_token}`,

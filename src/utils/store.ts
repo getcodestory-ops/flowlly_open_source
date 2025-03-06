@@ -16,6 +16,8 @@ import {
 } from "@/types/updateCollection";
 import { Views, View } from "react-big-calendar";
 import { ViewMode } from "@/components/Schedule/gantt-task-react-main/src/types/public-types";
+import { AgentChat } from "@/types/agentChats";
+
 interface ViewState {
   workbenchView: "table" | "calendar";
   calendarSubView: "current" | "integrations";
@@ -57,7 +59,7 @@ export const useViewStore = create<ViewState>()(
 
 export const useStore = create<State>()((set, get) => ({
   session: null,
-  appView: "workbench",
+  appView: "agent",
   hasHydrated: false,
   userProjects: [],
   refreshInterval: 10000,
@@ -82,6 +84,7 @@ export const useStore = create<State>()((set, get) => ({
     filePath: "",
     highlightDetails: undefined,
   },
+  localChats: [],
   rightPanelView: "gantt",
   taskToView: null,
   taskDetailsView: "details",
@@ -114,6 +117,10 @@ export const useStore = create<State>()((set, get) => ({
     set(() => ({ activeProject })),
   setChatEntities: (chatEntities: AgentChatEntity[]) =>
     set(() => ({ chatEntities })),
+  appendChatEntity: (chatEntity: AgentChatEntity) =>
+    set((state) => ({
+      chatEntities: [...state.chatEntities, chatEntity],
+    })),
   setActiveChatEntity: (activeChatEntity: AgentChatEntity | null) =>
     set(() => ({ activeChatEntity })),
   setSidePanelExtensionView: (sidePanelExtensionView: SidePanelExtension) =>
@@ -206,4 +213,5 @@ export const useStore = create<State>()((set, get) => ({
     set(() => ({ AiActionsView: view })),
   setProjectStatus: (projectStatus: string) =>
     set(() => ({ projectStatus: projectStatus })),
+  setLocalChats: (localChats: AgentChat[]) => set(() => ({ localChats })),
 }));

@@ -1,15 +1,19 @@
 import React from "react";
-import { Flex,  Icon,   Text } from "@chakra-ui/react";
+import { Flex, Icon, Text } from "@chakra-ui/react";
 import { FiPlus } from "react-icons/fi";
 import { useStore } from "@/utils/store";
 
 const CreateNewChatButton = () => {
   const setChatSession = useStore((state) => state.setChatSession);
   const setChatHistory = useStore((state) => state.setChatHistory);
+  const setActiveChatEntity = useStore((state) => state.setActiveChatEntity);
+  const setLocalChats = useStore((state) => state.setLocalChats);
 
   const createNewChat = () => {
-    setChatSession(null);
-    setChatHistory([]);
+    // setChatSession(null);
+    // setChatHistory([]);
+    setActiveChatEntity(null);
+    setLocalChats([]);
   };
 
   return (
@@ -34,7 +38,7 @@ const CreateNewChatButton = () => {
     >
       <Icon as={FiPlus} />
       <Text noOfLines={{ base: 2, md: 1 }} width="full">
-        New Chat
+        New Chats
       </Text>
     </Flex>
     // </Flex>

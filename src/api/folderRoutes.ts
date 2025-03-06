@@ -153,7 +153,8 @@ export const uploadFileInFolder = async (
   projectId: string,
   file: File,
   folderId: string | null,
-  callBack?: (data: any) => void
+  callBack?: (data: any) => void,
+  onProgress?: (progress: number) => void
 ) => {
   if (!session) {
     return;
@@ -165,18 +166,41 @@ export const uploadFileInFolder = async (
   formData.append("folder_id", folderId || "");
   formData.append("extract_method", "unstructured");
 
-  const response = await axios.post<GetFolderFileProp>(baseUrl, formData, {
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  // If progress tracking is requested, use axios with progress event
+  if (onProgress) {
+    const response = await axios.post<GetFolderFileProp>(baseUrl, formData, {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "multipart/form-data",
+      },
+      onUploadProgress: (progressEvent) => {
+        const percentCompleted = progressEvent.total
+          ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          : 0;
+        onProgress(percentCompleted);
+      },
+    });
 
-  if (callBack) {
-    callBack(response.data);
+    if (callBack) {
+      callBack(response.data);
+    }
+
+    return response.data;
+  } else {
+    // Original implementation without progress tracking
+    const response = await axios.post<GetFolderFileProp>(baseUrl, formData, {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (callBack) {
+      callBack(response.data);
+    }
+
+    return response.data;
   }
-
-  return response.data;
 };
 
 export const createDocumentInFolder = async (

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { IoMdSend } from "react-icons/io";
 import { distributeEmails } from "@/api/agentRoutes";
 import { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
@@ -13,10 +12,24 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { X } from "lucide-react";
+import { MdOutlinePeopleAlt } from "react-icons/md";
+import { ToolTipedButton } from "../DocumentEditor/ToolBar";
+import { AiOutlineEnter } from "react-icons/ai";
+
+// Email validation regex
+const isValidEmail = (email: string) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
+enum EmailStatus {
+  VALID = "valid",
+  INVALID = "invalid",
+  EMPTY = "empty",
+  DUPLICATE = "duplicate",
+}
 
 interface EmailModalProps {
   content?: string;
@@ -35,12 +48,36 @@ const EmailModal: React.FC<EmailModalProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [emails, setEmails] = useState<string[]>([]);
   const [emailInput, setEmailInput] = useState("");
+  const [emailStatus, setEmailStatus] = useState<EmailStatus>(EmailStatus.EMPTY);
 
-  const handleAddEmail = () => {
-    if (emailInput && !emails.includes(emailInput)) {
-      setEmails([...emails, emailInput]);
-      setEmailInput("");
+  const clearInput = () => {
+    setEmailInput("");
+    setEmailStatus(EmailStatus.EMPTY);
+  }
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const email = e.target.value;
+    setEmailInput(email);
+    if (email === "") {
+      setEmailStatus(EmailStatus.EMPTY);
+    } else if (isValidEmail(email)) {
+      if (emails.includes(email)) {
+        setEmailStatus(EmailStatus.DUPLICATE);
+      } else {
+        setEmailStatus(EmailStatus.VALID);
+      }
+    } else {
+      setEmailStatus(EmailStatus.INVALID);
     }
+  };
+
+ 
+  const handleAddEmail = () => {
+    if (emailStatus === EmailStatus.INVALID || emailStatus === EmailStatus.DUPLICATE || emailStatus === EmailStatus.EMPTY) {
+      return;
+    }
+    setEmails([...emails, emailInput]);
+    clearInput();
   };
 
   const handleRemoveEmail = (email: string) => {
@@ -61,41 +98,59 @@ const EmailModal: React.FC<EmailModalProps> = ({
       return;
     }
     toast({
-      title: "Emails sent",
-      description: "The minutes of the meeting have been sent to the emails",
+      title: "Email(s) sent",
+      description: "The report has been sent to the email(s)",
     });
+    setEmails([]);
+    clearInput();
     setIsOpen(false);
   };
 
   return (
     <>
-      <Button variant="ghost" onClick={() => setIsOpen((state) => !state)}>
-        <IoMdSend className="mr-2" />
-        Distribute
-      </Button>
+      <ToolTipedButton tooltip="Distribute report" onClick={() => setIsOpen(true)} className="flex gap-2 px-3" variant="default">
+        <MdOutlinePeopleAlt className="h-4 w-4" />
+        <span className="text-sm">Send</span>
+      </ToolTipedButton>
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={isOpen} onOpenChange={() => {
+        clearInput();
+        if (isOpen) {
+          setIsOpen(false);
+        }
+      }}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Add User Emails</DialogTitle>
+            <DialogTitle>Add Recipients</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="email" className="text-right">
-                Email
-              </Label>
+          <div className="flex flex-col items-center gap-1 h-[60px]">
+            <div className="flex flex-row items-center gap-2 justify-between w-full relative">
               <Input
                 id="email"
                 type="email"
                 value={emailInput}
-                onChange={(e) => setEmailInput(e.target.value)}
+                onChange={handleEmailChange}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleAddEmail();
+                  }
+                }}
                 placeholder="Enter email"
-                className="col-span-3"
+                className={`flex-grow flex-1 ${emailStatus === EmailStatus.DUPLICATE ? "border-red-500" : ""}`}
               />
+              <ToolTipedButton tooltip="Add Email" onClick={handleAddEmail} className="ml-auto px-2 absolute right-2 z-10" disabled={emailStatus === EmailStatus.INVALID || emailStatus === EmailStatus.DUPLICATE || emailStatus === EmailStatus.EMPTY} variant="ghost">
+                <AiOutlineEnter className="h-6 w-6" />
+              </ToolTipedButton>
             </div>
-            <Button onClick={handleAddEmail} className="ml-auto">
-              Add Email
-            </Button>
+            {emailStatus === EmailStatus.INVALID && (
+                <p className="text-red-500 text-xs w-full">Please enter a valid email.</p>
+            )}
+            {emailStatus === EmailStatus.VALID && (
+                <p className="text-gray-500 text-xs ml-auto">Press enter to add email</p>
+            )}
+            {emailStatus === EmailStatus.DUPLICATE && (
+                <p className="text-red-500 text-xs w-full">Email already exists.</p>
+            )}
           </div>
           <div className="flex flex-wrap gap-2 mt-4">
             {emails.map((email) => (
@@ -113,14 +168,14 @@ const EmailModal: React.FC<EmailModalProps> = ({
             ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsOpen(false)}>
+            <Button variant="outline" onClick={() => {setIsOpen(false); setEmailInput(""); setEmailStatus(EmailStatus.EMPTY)}}>
               Cancel
             </Button>
             <Button
               disabled={emails.length === 0}
               onClick={handleDistributeEmails}
             >
-              Distribute Emails
+              Send Report
             </Button>
           </DialogFooter>
         </DialogContent>
