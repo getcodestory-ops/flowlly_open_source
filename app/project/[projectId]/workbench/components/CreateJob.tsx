@@ -30,17 +30,25 @@ function CreateJob() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button className="bg-indigo-500 text-white">
-            <Plus className="mr-2 h-4 w-4" /> Create a worker
+            <Plus className="mr-2 h-4 w-4" /> Create new workflow
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
+          <DropdownMenuItem
+            onSelect={() => {
+              setSelectedJobType("customWorkflow");
+              setIsCustomWorkflowDialogOpen(true);
+            }}
+          >
+            Build a workflow
+          </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => {
               setSelectedJobType("documentWriter");
               setIsDocumentWriterDialogOpen(true);
             }}
           >
-            New Document Writer
+            Document Writer
           </DropdownMenuItem>
           {/* <DropdownMenuItem>Search folders</DropdownMenuItem> */}
 
@@ -72,14 +80,6 @@ function CreateJob() {
           >
             New Daily Journal
           </DropdownMenuItem> */}
-          <DropdownMenuItem
-            onSelect={() => {
-              setSelectedJobType("customWorkflow");
-              setIsCustomWorkflowDialogOpen(true);
-            }}
-          >
-            Deploy a new worker
-          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 

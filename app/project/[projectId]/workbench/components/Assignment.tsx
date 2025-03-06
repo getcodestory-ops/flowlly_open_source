@@ -44,6 +44,7 @@ import type {
 import { TriggerUI } from "./TriggerUI";
 import LoaderAnimation from "@/components/Animations/LoaderAnimation";
 import PlatformChatComponent from "@/components/ChatInput/PlatformChat/PlatformChatComponent";
+import CreateJob from "./CreateJob";
 
 export default function AssignmentHome() {
   const [currentGraphId, setCurrentGraphId] = useState<string | null>(null);
@@ -251,7 +252,9 @@ export default function AssignmentHome() {
         <Card className="flex-1 border-0 shadow-none">
           <CardHeader className="px-6 pt-6 pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-2xl font-bold">AI Workflows</CardTitle>
+              <CardTitle className="flex  gap-8 text-2xl font-bold">
+                AI Workflows
+              </CardTitle>
               <div className="flex items-center gap-2">
                 <Button
                   variant={viewMode === "grid" ? "default" : "outline"}
@@ -270,7 +273,12 @@ export default function AssignmentHome() {
               </div>
             </div>
             <CardDescription>
-              Manage and run AI workflows for your project
+              <div className="flex justify-between  ">
+                Manage and run AI workflows for your project
+                <div className="flex justify-end py-2">
+                  <CreateJob />
+                </div>
+              </div>
             </CardDescription>
           </CardHeader>
           <CardContent className="px-6">
@@ -558,7 +566,7 @@ export default function AssignmentHome() {
               </TabsContent>
 
               <TabsContent value="questions" className="flex-1 h-full mt-0 p-4">
-                <Card className="h-full flex flex-col">
+                <Card className="h-full flex flex-col border-0 shadow-none">
                   <CardHeader>
                     <CardTitle>Ask about this workflow</CardTitle>
                     <CardDescription>
@@ -566,10 +574,10 @@ export default function AssignmentHome() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="flex-1 pb-6">
-                    {currentGraph ? (
-                      <div className="h-full border rounded-md">
+                    {currentResult ? (
+                      <div className="h-[full] border rounded-md">
                         <PlatformChatComponent
-                          folderId={currentGraph.id}
+                          folderId={currentResult.id}
                           folderName={currentGraph.name}
                           chatTarget="workflow"
                         />

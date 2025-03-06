@@ -256,7 +256,7 @@ export const GraphList: React.FC<GraphListProps> = ({
             <TabsTrigger value="calendar">Calendar View</TabsTrigger>
             <TabsTrigger value="table">Table View</TabsTrigger>
           </TabsList>
-          <CreateJob />
+          {/* <CreateJob /> */}
         </div>
         <TabsContent value="table">
           <div className="flex items-center py-4 justify-between">
