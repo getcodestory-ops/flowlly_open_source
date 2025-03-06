@@ -34,8 +34,8 @@ const convertJsonTableToCsvTable = (table: JsonTable): string[][] => {
         cell.content
           .map(
             (cellContent) =>
-              cellContent.content
-                .map((content) =>
+              cellContent?.content
+                ?.map((content) =>
                   content?.text == "Ref." ? "" : content?.text
                 )
                 .join(" ") // Joining multiple text contents in a cell
@@ -80,6 +80,7 @@ const downloadCSV = (csvData: string, filename = "tables.csv") => {
 };
 
 export const handleExportTables = (editor: Editor) => {
+  console.log(editor);
   const tables = extractTablesFromEditor(editor);
 
   if (tables.length === 0) {
