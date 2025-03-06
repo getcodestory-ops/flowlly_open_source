@@ -17,6 +17,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { X } from "lucide-react";
+import { MdOutlinePeopleAlt } from "react-icons/md";
+import { ToolTipedButton } from "../DocumentEditor/ToolBar";
 
 interface EmailModalProps {
   content?: string;
@@ -61,18 +63,18 @@ const EmailModal: React.FC<EmailModalProps> = ({
       return;
     }
     toast({
-      title: "Emails sent",
-      description: "The minutes of the meeting have been sent to the emails",
+      title: "Email(s) sent",
+      description: "The report has been sent to the email(s)",
     });
     setIsOpen(false);
   };
 
   return (
     <>
-      <Button variant="ghost" onClick={() => setIsOpen((state) => !state)}>
-        <IoMdSend className="mr-2" />
-        Distribute
-      </Button>
+      <ToolTipedButton tooltip="Distribute report" onClick={() => setIsOpen((state) => !state)} className="flex gap-2 px-3" variant="default">
+        <MdOutlinePeopleAlt className="h-4 w-4" />
+        <span className="text-sm">Send</span>
+      </ToolTipedButton>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-[425px]">
@@ -120,7 +122,7 @@ const EmailModal: React.FC<EmailModalProps> = ({
               disabled={emails.length === 0}
               onClick={handleDistributeEmails}
             >
-              Distribute Emails
+              Send Documents
             </Button>
           </DialogFooter>
         </DialogContent>
