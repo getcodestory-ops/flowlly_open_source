@@ -38,16 +38,16 @@ const config = {
 			},
 		],
 		"array-bracket-spacing": ["error", "never"],
-		"max-len": ["warn", { code: 500, ignoreUrls: true }],
-		"max-lines-per-function": ["warn", 300],
-		"max-lines": ["warn", { "max": 400, "skipBlankLines": true, "skipComments": true }],
+		// "max-len": ["warn", { code: 500, ignoreUrls: true }],
+		// "max-lines-per-function": ["warn", 300],
+		// "max-lines": ["warn", { max: 400, skipBlankLines: true, skipComments: true }],
 		"no-unused-vars": [
 			"warn",
 			{
-				"vars": "all", // Check all variables
-				"args": "after-used", // Only warn for unused arguments after the last used one
+				vars: "all", // Check all variables
+				args: "after-used", // Only warn for unused arguments after the last used one
 				argsIgnorePattern: "^_", // Ignore arguments prefixed with "_"
-				"ignoreRestSiblings": true,
+				ignoreRestSiblings: true,
 			},
 		],
 		"no-console": [
