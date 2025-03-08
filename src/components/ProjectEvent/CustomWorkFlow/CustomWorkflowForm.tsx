@@ -10,9 +10,7 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { useToast } from "../../ui/use-toast";
 import { useStore } from "@/utils/store";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Select,
   SelectContent,
@@ -27,7 +25,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
-import { format, addMinutes, roundToNearestMinutes } from "date-fns";
+import { format, addMinutes } from "date-fns";
 import { Label } from "@/components/ui/label";
 import { BasicMetadata } from "./components/BasicMetadata";
 import { TriggerConfiguration } from "./components/TriggerConfiguration";
@@ -37,6 +35,7 @@ import { WorkflowFormData } from "./types";
 
 import { Loader2 } from "lucide-react";
 import { GraphData } from "../../../../app/project/[projectId]/workbench/components/types";
+import { SheetContent } from "@/components/ui/sheet";
 
 const convertGraphToWorkflow = (graphData: GraphData): WorkflowFormData => ({
   id: graphData.id,
@@ -118,210 +117,160 @@ export default function CustomWorkflowForm({
   }, [formData.recurrence]);
 
   const [startDate, setStartDate] = useState<Date>(new Date());
-  const [endDate, setEndDate] = useState<Date>();
 
   return (
-    <ScrollArea className="w-full h-full">
-      <Card
-        className={`w-full ${
-          currentStep < 2 ? "max-w-4xl" : "w-full"
-        } mx-auto `}
-      >
-        <CardHeader>
-          <CardTitle>Deploy a new worker</CardTitle>
-          <span className="text-sm mt-2 font-thin ">
-            {new Date().toLocaleTimeString()} {formData.timeZone}
-          </span>
-        </CardHeader>
+    <SheetContent side="right" className={` ${currentStep < 2 ? "w-[500px]" : "w-[90vw]"}`}>
+      <h2 className="text-lg font-semibold">Edit Custom Workflow</h2>
+      <ScrollArea className={`h-full`}>
+        <Card
+          className={`w-full ${
+            currentStep < 2 ? "max-w-4xl" : "w-full"
+          } mx-auto shadow-none`}
+        >
+          <CardHeader>
+            <CardTitle>Deploy a new worker</CardTitle>
+            <span className="text-sm mt-2 font-thin ">
+              {new Date().toLocaleTimeString()} {formData.timeZone}
+            </span>
+          </CardHeader>
 
-        <div>
-          <CardContent className="space-y-6  ">
-            {currentStep === 0 && (
-              <BasicMetadata formData={formData} onChange={handleFormUpdate} />
-            )}
+          <div>
+            <CardContent className="space-y-6  ">
+              {currentStep === 0 && (
+                <BasicMetadata formData={formData} onChange={handleFormUpdate} />
+              )}
 
-            {currentStep === 1 && activeProject && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="triggerType">
-                    How do you want to initiate this workflow?
-                  </Label>
-                  <Select
-                    name="triggerBy"
-                    value={formData.triggerBy}
-                    onValueChange={(
-                      value: "email_subject" | "phone" | "time" | "ui"
-                    ) => {
-                      handleFormUpdate({ triggerBy: value });
-                      if (value === "time") {
-                        handleFormUpdate({
-                          startDate: format(new Date(), "yyyy-MM-dd"),
-                          endDate: format(new Date(), "yyyy-MM-dd"),
-                          recurrence: "once",
-                        });
-                      }
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select trigger type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ui">Via UI</SelectItem>
-                      <SelectItem value="email_subject">Via Email</SelectItem>
-                      <SelectItem value="phone">Via Phone</SelectItem>
-                      <SelectItem value="time">At a specific time</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              {currentStep === 1 && activeProject && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="triggerType">
+                      How do you want to initiate this workflow?
+                    </Label>
+                    <Select
+                      name="triggerBy"
+                      value={formData.triggerBy}
+                      onValueChange={(
+                        value: "email_subject" | "phone" | "time" | "ui"
+                      ) => {
+                        handleFormUpdate({ triggerBy: value });
+                        if (value === "time") {
+                          handleFormUpdate({
+                            startDate: format(new Date(), "yyyy-MM-dd"),
+                            endDate: format(new Date(), "yyyy-MM-dd"),
+                            recurrence: "once",
+                          });
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select trigger type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ui">Via UI</SelectItem>
+                        <SelectItem value="email_subject">Via Email</SelectItem>
+                        <SelectItem value="phone">Via Phone</SelectItem>
+                        <SelectItem value="time">At a specific time</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                {formData.triggerBy === "time" && (
-                  <>
-                    <div className="space-y-2 m-2 p-2 bg-secondary rounded-lg">
-                      <div className="space-y-2">
-                        <Label htmlFor="recurrence">Repeat</Label>
-                        <Select
-                          name="recurrence"
-                          value={
-                            formData.recurrence !== "manual"
-                              ? formData.recurrence
-                              : "once"
-                          }
-                          onValueChange={(value) =>
-                            handleFormUpdate({ recurrence: value })
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select repeat frequency" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="once">
-                              Does not repeat
-                            </SelectItem>
-                            <SelectItem value="daily">Daily</SelectItem>
-                            <SelectItem value="weekly">Weekly</SelectItem>
-                            <SelectItem value="monthly">Monthly</SelectItem>
-                            <SelectItem value="weekdays">Weekdays</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        {formData.recurrence === "weekly" && (
-                          <div className="space-y-2 col-span-2">
-                            <Label htmlFor="weeklyRecurrenceDay">On</Label>
-                            <Select
-                              value={formData.recurrenceDay}
-                              onValueChange={(value) =>
-                                handleFormUpdate({ recurrenceDay: value })
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select day" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {[
-                                  "Monday",
-                                  "Tuesday",
-                                  "Wednesday",
-                                  "Thursday",
-                                  "Friday",
-                                  "Saturday",
-                                  "Sunday",
-                                ].map((day) => (
-                                  <SelectItem key={day} value={day}>
-                                    {day}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        )}
-                        {formData.recurrence === "weekdays" && (
-                          <div className="space-y-2 col-span-2">
-                            <Label htmlFor="weeklyRecurrenceDay">
-                              Every Weekday
-                            </Label>
-                            <Select value={formData.recurrenceDay} disabled>
-                              <SelectTrigger>
-                                <SelectValue
-                                  placeholder={format(new Date(), "EEEE")}
-                                />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value={format(new Date(), "EEEE")}>
-                                  {format(new Date(), "EEEE")} (Today)
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        )}
+                  {formData.triggerBy === "time" && (
+                    <>
+                      <div className="space-y-2 m-2 p-2 bg-secondary rounded-lg">
                         <div className="space-y-2">
-                          <Label>
-                            {formData.recurrence === "once"
-                              ? "Date"
-                              : "Start Date"}
-                          </Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={
-                                  !startDate ? "text-muted-foreground" : ""
+                          <Label htmlFor="recurrence">Repeat</Label>
+                          <Select
+                            name="recurrence"
+                            value={
+                              formData.recurrence !== "manual"
+                                ? formData.recurrence
+                                : "once"
+                            }
+                            onValueChange={(value) =>
+                              handleFormUpdate({ recurrence: value })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select repeat frequency" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="once">
+                                Does not repeat
+                              </SelectItem>
+                              <SelectItem value="daily">Daily</SelectItem>
+                              <SelectItem value="weekly">Weekly</SelectItem>
+                              <SelectItem value="monthly">Monthly</SelectItem>
+                              <SelectItem value="weekdays">Weekdays</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          {formData.recurrence === "weekly" && (
+                            <div className="space-y-2 col-span-2">
+                              <Label htmlFor="weeklyRecurrenceDay">On</Label>
+                              <Select
+                                value={formData.recurrenceDay}
+                                onValueChange={(value) =>
+                                  handleFormUpdate({ recurrenceDay: value })
                                 }
                               >
-                                {formData.startDate
-                                  ? format(new Date(formData.startDate), "PPP")
-                                  : "Pick a date"}
-                                <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-auto p-0"
-                              align="start"
-                            >
-                              <Calendar
-                                mode="single"
-                                selected={
-                                  formData.startDate
-                                    ? new Date(formData.startDate)
-                                    : new Date()
-                                }
-                                onSelect={(date) => {
-                                  if (date) {
-                                    const currentDate = formData.startDate
-                                      ? new Date(formData.startDate)
-                                      : new Date();
-                                    const newDate = new Date(date);
-                                    newDate.setHours(currentDate.getHours());
-                                    newDate.setMinutes(
-                                      currentDate.getMinutes()
-                                    );
-                                    handleFormUpdate({
-                                      startDate: newDate.toISOString(),
-                                      startTime: newDate.toISOString(),
-                                    });
-                                  }
-                                }}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                        {formData.recurrence !== "once" && (
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select day" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {[
+                                    "Monday",
+                                    "Tuesday",
+                                    "Wednesday",
+                                    "Thursday",
+                                    "Friday",
+                                    "Saturday",
+                                    "Sunday",
+                                  ].map((day) => (
+                                    <SelectItem key={day} value={day}>
+                                      {day}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+                          {formData.recurrence === "weekdays" && (
+                            <div className="space-y-2 col-span-2">
+                              <Label htmlFor="weeklyRecurrenceDay">
+                                Every Weekday
+                              </Label>
+                              <Select value={formData.recurrenceDay} disabled>
+                                <SelectTrigger>
+                                  <SelectValue
+                                    placeholder={format(new Date(), "EEEE")}
+                                  />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value={format(new Date(), "EEEE")}>
+                                    {format(new Date(), "EEEE")} (Today)
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
                           <div className="space-y-2">
-                            <Label>End Date</Label>
+                            <Label>
+                              {formData.recurrence === "once"
+                                ? "Date"
+                                : "Start Date"}
+                            </Label>
                             <Popover>
                               <PopoverTrigger asChild>
                                 <Button
                                   variant="outline"
                                   className={
-                                    !formData.endDate
-                                      ? "text-muted-foreground"
-                                      : ""
+                                    !startDate ? "text-muted-foreground" : ""
                                   }
                                 >
-                                  {formData.endDate
-                                    ? format(new Date(formData.endDate), "PPP")
+                                  {formData.startDate
+                                    ? format(new Date(formData.startDate), "PPP")
                                     : "Pick a date"}
                                   <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
                                 </Button>
@@ -333,130 +282,182 @@ export default function CustomWorkflowForm({
                                 <Calendar
                                   mode="single"
                                   selected={
-                                    formData.endDate
-                                      ? new Date(formData.endDate)
-                                      : undefined
+                                    formData.startDate
+                                      ? new Date(formData.startDate)
+                                      : new Date()
                                   }
                                   onSelect={(date) => {
                                     if (date) {
-                                      const currentEndDate = formData.endDate
-                                        ? new Date(formData.endDate)
+                                      const currentDate = formData.startDate
+                                        ? new Date(formData.startDate)
                                         : new Date();
-                                      const newEndDate = new Date(date);
-                                      newEndDate.setHours(
-                                        currentEndDate.getHours()
-                                      );
-                                      newEndDate.setMinutes(
-                                        currentEndDate.getMinutes()
+                                      const newDate = new Date(date);
+                                      newDate.setHours(currentDate.getHours());
+                                      newDate.setMinutes(
+                                        currentDate.getMinutes()
                                       );
                                       handleFormUpdate({
-                                        endDate: newEndDate.toISOString(),
+                                        startDate: newDate.toISOString(),
+                                        startTime: newDate.toISOString(),
                                       });
-                                    } else {
-                                      handleFormUpdate({ endDate: undefined });
                                     }
                                   }}
-                                  fromDate={new Date(formData.startDate ?? "")}
                                   initialFocus
                                 />
                               </PopoverContent>
                             </Popover>
                           </div>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="startTime">Start Time</Label>
-                          <Select
-                            value={format(
-                              new Date(formData.startTime),
-                              "HH:mm"
-                            )}
-                            onValueChange={(time) => {
-                              const [hours, minutes] = time
-                                .split(":")
-                                .map(Number);
-                              const newDate = new Date(formData.startTime);
-                              newDate.setHours(hours);
-                              newDate.setMinutes(minutes);
-                              handleFormUpdate({
-                                startTime: newDate.toISOString(),
-                              });
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select start time" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Array.from({ length: 96 }, (_, i) => {
-                                const date = addMinutes(
-                                  new Date().setHours(0, 0, 0, 0),
-                                  i * 15
-                                );
-                                return (
-                                  <SelectItem
-                                    key={i}
-                                    value={format(date, "HH:mm")}
+                          {formData.recurrence !== "once" && (
+                            <div className="space-y-2">
+                              <Label>End Date</Label>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    className={
+                                      !formData.endDate
+                                        ? "text-muted-foreground"
+                                        : ""
+                                    }
                                   >
-                                    {format(date, "p")}
-                                  </SelectItem>
-                                );
-                              })}
-                            </SelectContent>
-                          </Select>
+                                    {formData.endDate
+                                      ? format(new Date(formData.endDate), "PPP")
+                                      : "Pick a date"}
+                                    <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent
+                                  className="w-auto p-0"
+                                  align="start"
+                                >
+                                  <Calendar
+                                    mode="single"
+                                    selected={
+                                      formData.endDate
+                                        ? new Date(formData.endDate)
+                                        : undefined
+                                    }
+                                    onSelect={(date) => {
+                                      if (date) {
+                                        const currentEndDate = formData.endDate
+                                          ? new Date(formData.endDate)
+                                          : new Date();
+                                        const newEndDate = new Date(date);
+                                        newEndDate.setHours(
+                                          currentEndDate.getHours()
+                                        );
+                                        newEndDate.setMinutes(
+                                          currentEndDate.getMinutes()
+                                        );
+                                        handleFormUpdate({
+                                          endDate: newEndDate.toISOString(),
+                                        });
+                                      } else {
+                                        handleFormUpdate({ endDate: undefined });
+                                      }
+                                    }}
+                                    fromDate={new Date(formData.startDate ?? "")}
+                                    initialFocus
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="startTime">Start Time</Label>
+                            <Select
+                              value={format(
+                                new Date(formData.startTime),
+                                "HH:mm"
+                              )}
+                              onValueChange={(time) => {
+                                const [hours, minutes] = time
+                                  .split(":")
+                                  .map(Number);
+                                const newDate = new Date(formData.startTime);
+                                newDate.setHours(hours);
+                                newDate.setMinutes(minutes);
+                                handleFormUpdate({
+                                  startTime: newDate.toISOString(),
+                                });
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select start time" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: 96 }, (_, i) => {
+                                  const date = addMinutes(
+                                    new Date().setHours(0, 0, 0, 0),
+                                    i * 15
+                                  );
+                                  return (
+                                    <SelectItem
+                                      key={i}
+                                      value={format(date, "HH:mm")}
+                                    >
+                                      {format(date, "p")}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </>
-                )}
+                    </>
+                  )}
 
-                <TriggerConfiguration
-                  formData={formData}
-                  onChange={handleFormUpdate}
-                  members={members}
-                  activeProject={activeProject}
-                />
-              </>
-            )}
+                  <TriggerConfiguration
+                    formData={formData}
+                    onChange={handleFormUpdate}
+                    members={members}
+                    activeProject={activeProject}
+                  />
+                </>
+              )}
 
-            {currentStep === 2 && (
-              <WorkflowNodes formData={formData} onChange={handleFormUpdate} />
-            )}
-          </CardContent>
+              {currentStep === 2 && (
+                <WorkflowNodes formData={formData} onChange={handleFormUpdate} />
+              )}
+            </CardContent>
 
-          <CardFooter className="flex justify-between">
-            {currentStep > 0 && (
-              <Button type="button" variant="outline" onClick={handleBack}>
-                Back
-              </Button>
-            )}
-            {currentStep < 2 ? (
-              <Button
-                type="button"
-                onClick={handleNext}
-                disabled={currentStep === 0 && !isFormValid}
-              >
-                Next
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                disabled={!formData.nodes.length || isPending}
-                onClick={handleSubmit}
-              >
-                {isPending ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : editData ? (
-                  "Update Workflow"
-                ) : (
-                  "Save Workflow"
-                )}
-              </Button>
-            )}
-          </CardFooter>
-        </div>
-      </Card>
-    </ScrollArea>
+            <CardFooter className="flex justify-between">
+              {currentStep > 0 && (
+                <Button type="button" variant="outline" onClick={handleBack}>
+                  Back
+                </Button>
+              )}
+              {currentStep < 2 ? (
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={currentStep === 0 && !isFormValid}
+                >
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  disabled={!formData.nodes.length || isPending}
+                  onClick={handleSubmit}
+                >
+                  {isPending ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : editData ? (
+                    "Update Workflow"
+                  ) : (
+                    "Save Workflow"
+                  )}
+                </Button>
+              )}
+            </CardFooter>
+          </div>
+        </Card>
+      </ScrollArea>
+    </SheetContent>
   );
 }

@@ -13,7 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getNotifications } from "@/api/notification";
 import { useStore } from "@/utils/store";
-import { formatDistanceToNow, parseISO } from "date-fns";
+import { convertIsoToTimeAgo } from "@/utils/dateUtils";
 
 interface Notification {
   id: string;
@@ -25,16 +25,6 @@ interface Notification {
   invalidateQueries?: {
     queryKey: string[]; // Array to match React Query's queryKey format
   }[];
-}
-
-function convertIsoToTimeAgo(dateString?: string) {
-  if (!dateString) return "";
-
-  const utcDate = parseISO(`${dateString}Z`);
-  const timeAgo = formatDistanceToNow(utcDate, {
-    addSuffix: true,
-  });
-  return timeAgo;
 }
 
 export default function HeaderNotification() {

@@ -1,6 +1,7 @@
 import { EventTrigger } from "@/types/projectEvents";
 import { Row } from "@tanstack/react-table";
 import { WorkflowNode } from "@/components/ProjectEvent/CustomWorkFlow/types";
+import { ViewMode } from "./Assignment";
 // Action-related types
 export type ActionData = Array<{
   activity_addition: Array<{
@@ -134,7 +135,7 @@ export type GraphListProps = {
   graphs: GraphData[];
   onSelectGraph: (graphId: string) => void;
   setCurrentResult?: (result: EventResult | null) => void;
-  viewMode?: "grid" | "list";
+  viewMode: ViewMode;
 };
 
 export type EventScheduleListProps = {
