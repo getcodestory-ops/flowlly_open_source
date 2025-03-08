@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
@@ -20,13 +20,12 @@ import {
 import ContentEditor from "@/components/DocumentEditor/ContentEditor";
 import ActionItemViewer from "@/components/AiActions/ActionItemViewer";
 import { ResourceTextViewer } from "@/components/DocumentEditor/ResourceTextViewer";
-import { renderJsonValue, truncateObject } from "./utils";
+import { renderJsonValue } from "./utils";
 import { Button } from "@/components/ui/button";
 import type { NodeData, ActionData, EventResult } from "./types";
 import { useStore } from "@/utils/store";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 import { triggerEvent, triggerWorkflowNode } from "@/api/taskQueue";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -45,14 +44,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ResultViewerProps {
   currentResult: EventResult;
-  selectedNode: NodeData | null;
-  onSelectNode: (node: NodeData) => void;
 }
 
 export const ResultViewer: React.FC<ResultViewerProps> = ({
 	currentResult,
-	selectedNode,
-	onSelectNode,
 }) => {
 	const projectId = useStore((state) => state.activeProject?.project_id);
 	const session = useStore((state) => state.session);
@@ -73,19 +68,13 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
     !currentResult?.listen;
 
 	const [pendingEvent, setPendingEvent] = useState(true);
-	const [expandedNodeId, setExpandedNodeId] = useState<string | null>(null);
 	const [showLogs, setShowLogs] = useState(false);
 	const [detailView, setDetailView] = useState<NodeData | null>(null);
 
-	// Set the first node as expanded initially
-	useEffect(() => {
-		if (currentResult?.nodes && currentResult.nodes.length > 0) {
-			setExpandedNodeId(currentResult.nodes[0].id);
-		}
-	}, [currentResult?.nodes]);
+
 
 	// Calculate completion percentage for workflow
-	const calculateProgress = () => {
+	const calculateProgress = () : number =>  {
 		if (!currentResult?.nodes) return 0;
 
 		const totalNodes = currentResult.nodes.length;
@@ -315,14 +304,11 @@ interface TimelineNodeProps {
 
 const TimelineNode: React.FC<TimelineNodeProps> = ({
 	node,
-	isFirst,
 	isLast,
 	isSelected,
 	onClick,
-	workflowId,
-	isWorkflowRunning,
 }) => {
-	const getStatusIcon = (status: string) => {
+	const getStatusIcon = (status: string) : React.ReactNode => {
 		switch (status) {
 			case "completed":
 				return <CheckCircle2 className="h-5 w-5 text-green-600" />;
@@ -443,7 +429,7 @@ const NodeActions: React.FC<NodeActionsProps> = ({
 						) : (
 							<span className="flex items-center gap-1.5">
 								<Loader2 className="h-3.5 w-3.5" />
-                Rerun Step
+                			Rerun Step
 							</span>
 						)}
 					</Button>

@@ -504,8 +504,7 @@ export default function AssignmentHome() {
 											) : (
 												<ResultViewer
 													currentResult={currentResult}
-													onSelectNode={handleSelectNode}
-													selectedNode={selectedNode}
+										
 												/>
 											)
 										) : (
@@ -530,8 +529,6 @@ export default function AssignmentHome() {
 								{currentResult ? (
 									<ResultViewer
 										currentResult={currentResult}
-										onSelectNode={handleSelectNode}
-										selectedNode={selectedNode}
 									/>
 								) : (
 									<div className="flex flex-col items-center justify-center h-full text-center">
