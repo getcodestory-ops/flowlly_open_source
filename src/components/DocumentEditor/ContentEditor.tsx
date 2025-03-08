@@ -15,7 +15,6 @@ import { HoverExtension } from "./extensions/HoverExtension";
 import { DiffStyleExtension } from "./extensions/DiffStyleExtension";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { handleExportTables } from "./utils";
 
 interface EditorBlockProps {
   content: string | any;
@@ -60,7 +59,7 @@ const ContentEditor = ({
     },
     content: content,
     immediatelyRender: false,
-    onUpdate: ({ editor } : {editor: Editor}) => {
+    onUpdate: ({ editor }: { editor: Editor }) => {
       if (setContent) setContent(editor.getHTML());
     },
   });
