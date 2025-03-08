@@ -12,6 +12,7 @@ import {
   Settings,
   Play,
   AlertCircle,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +47,12 @@ import LoaderAnimation from "@/components/Animations/LoaderAnimation";
 import PlatformChatComponent from "@/components/ChatInput/PlatformChat/PlatformChatComponent";
 import CreateJob from "./CreateJob";
 
+export enum ViewMode {
+  GRID = "grid",
+  LIST = "list",
+  CALENDAR = "calendar",
+}
+
 export default function AssignmentHome() {
   const [currentGraphId, setCurrentGraphId] = useState<string | null>(null);
   const [eventSchedule, setEventSchedule] = useState<EventSchedule[] | null>(
@@ -57,7 +64,7 @@ export default function AssignmentHome() {
   const [currentGraph, setCurrentGraph] = useState<GraphData | null>(null);
   const [isLoadingResult, setIsLoadingResult] = useState(false);
   const [activeTab, setActiveTab] = useState("workflows");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.GRID);
 
   const session = useStore((state) => state.session);
   const activeProject = useStore((state) => state.activeProject);
@@ -257,18 +264,25 @@ export default function AssignmentHome() {
               </CardTitle>
               <div className="flex items-center gap-2">
                 <Button
-                  variant={viewMode === "grid" ? "default" : "outline"}
+                  variant={viewMode === ViewMode.GRID ? "default" : "outline"}
                   size="icon"
-                  onClick={() => setViewMode("grid")}
+                  onClick={() => setViewMode(ViewMode.GRID)}
                 >
                   <Grid className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant={viewMode === "list" ? "default" : "outline"}
+                  variant={viewMode === ViewMode.LIST ? "default" : "outline"}
                   size="icon"
-                  onClick={() => setViewMode("list")}
+                  onClick={() => setViewMode(ViewMode.LIST)}
                 >
                   <List className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === ViewMode.CALENDAR ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setViewMode(ViewMode.CALENDAR)}
+                >
+                  <Calendar className="h-4 w-4" />
                 </Button>
               </div>
             </div>
