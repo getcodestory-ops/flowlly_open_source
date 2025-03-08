@@ -11,55 +11,55 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 const queryClient = new QueryClient();
 
 function MainLayout() {
-  const {
-    appView,
-    userActivities,
+	const {
+		appView,
+		userActivities,
 
-    setProjectStatus,
-  } = useStore((state) => ({
-    setSessionToken: state.setSession,
-    appView: state.appView,
-    setAppView: state.setAppView,
-    userActivities: state.userActivities,
+		setProjectStatus,
+	} = useStore((state) => ({
+		setSessionToken: state.setSession,
+		appView: state.appView,
+		setAppView: state.setAppView,
+		userActivities: state.userActivities,
 
-    setProjectStatus: state.setProjectStatus,
-  }));
+		setProjectStatus: state.setProjectStatus,
+	}));
 
-  useEffect(() => {
-    setProjectStatus(checkProjectStatus(userActivities));
-  }, [userActivities, setProjectStatus]);
+	useEffect(() => {
+		setProjectStatus(checkProjectStatus(userActivities));
+	}, [userActivities, setProjectStatus]);
 
-  return (
-    <>
-      <main>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <Flex
-              w="100vw"
-              h="calc(100vh - 64px)"
-              bg={"#E5E5E5"}
-              overflow="auto"
-            >
-              <Flex
-                width="full"
-                flexDir="column"
-                h="calc(100vh - 64px)"
-                w="100vw"
-              >
-                {/* <MainDisplayInLayout appView={appView} /> */}
-              </Flex>
-            </Flex>
-          </TooltipProvider>
-        </QueryClientProvider>
-      </main>
-    </>
-  );
+	return (
+		<>
+			<main>
+				<QueryClientProvider client={queryClient}>
+					<TooltipProvider>
+						<Flex
+							bg="#E5E5E5"
+							h="calc(100vh - 64px)"
+							overflow="auto"
+							w="100vw"
+						>
+							<Flex
+								flexDir="column"
+								h="calc(100vh - 64px)"
+								w="100vw"
+								width="full"
+							>
+								{/* <MainDisplayInLayout appView={appView} /> */}
+							</Flex>
+						</Flex>
+					</TooltipProvider>
+				</QueryClientProvider>
+			</main>
+		</>
+	);
 }
 
 export default function MainLayoutProvider() {
-  return (
-    <ChakraProvider theme={chakraTheme}>
-      <MainLayout />
-    </ChakraProvider>
-  );
+	return (
+		<ChakraProvider theme={chakraTheme}>
+			<MainLayout />
+		</ChakraProvider>
+	);
 }

@@ -6,14 +6,14 @@ type BarProgressHandleProps = {
   onMouseDown: (event: React.MouseEvent<SVGPolygonElement, MouseEvent>) => void;
 };
 export const BarProgressHandle: React.FC<BarProgressHandleProps> = ({
-  progressPoint,
-  onMouseDown,
+	progressPoint,
+	onMouseDown,
 }) => {
-  return (
-    <polygon
-      className={styles.barHandle}
-      points={progressPoint}
-      onMouseDown={onMouseDown}
-    />
-  );
+	return (
+		<polygon
+			className={styles.barHandle}
+			onMouseDown={onMouseDown}
+			points={progressPoint}
+		/>
+	);
 };

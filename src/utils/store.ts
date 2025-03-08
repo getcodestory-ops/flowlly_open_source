@@ -11,8 +11,8 @@ import { immer } from "zustand/middleware/immer";
 import { MemberEntity } from "@/types/members";
 import { ActivityEntityWithMembers } from "./mapOwnerToMembers";
 import {
-  UserUpdateCollectionType,
-  NotificationInterface,
+	UserUpdateCollectionType,
+	NotificationInterface,
 } from "@/types/updateCollection";
 import { Views, View } from "react-big-calendar";
 import { ViewMode } from "@/components/Schedule/gantt-task-react-main/src/types/public-types";
@@ -35,183 +35,183 @@ interface ViewState {
 
 // Create new persisted store
 export const useViewStore = create<ViewState>()(
-  persist(
-    (set) => ({
-      workbenchView: "table",
-      calendarSubView: "current",
-      rowsPerPage: 10,
-      scheduleView: "list",
-      calendarView: Views.WEEK,
-      ganttView: ViewMode.Week,
-      setWorkbenchView: (view) => set(() => ({ workbenchView: view })),
-      setRowsPerPage: (rows) => set(() => ({ rowsPerPage: rows })),
-      setScheduleView: (view) => set(() => ({ scheduleView: view })),
-      setCalendarView: (view) => set(() => ({ calendarView: view })),
-      setGanttView: (view) => set(() => ({ ganttView: view })),
-      setCalendarSubView: (view) => set(() => ({ calendarSubView: view })),
-    }),
-    {
-      name: "view-storage",
-      storage: createJSONStorage(() => localStorage),
-    }
-  )
+	persist(
+		(set) => ({
+			workbenchView: "table",
+			calendarSubView: "current",
+			rowsPerPage: 10,
+			scheduleView: "list",
+			calendarView: Views.WEEK,
+			ganttView: ViewMode.Week,
+			setWorkbenchView: (view) => set(() => ({ workbenchView: view })),
+			setRowsPerPage: (rows) => set(() => ({ rowsPerPage: rows })),
+			setScheduleView: (view) => set(() => ({ scheduleView: view })),
+			setCalendarView: (view) => set(() => ({ calendarView: view })),
+			setGanttView: (view) => set(() => ({ ganttView: view })),
+			setCalendarSubView: (view) => set(() => ({ calendarSubView: view })),
+		}),
+		{
+			name: "view-storage",
+			storage: createJSONStorage(() => localStorage),
+		},
+	),
 );
 
 export const useStore = create<State>()((set, get) => ({
-  session: null,
-  appView: "agent",
-  hasHydrated: false,
-  userProjects: [],
-  refreshInterval: 10000,
-  userActivities: [],
-  activeProject: null,
-  userUpdatesCollection: {},
-  activeChatEntity: null,
-  chatEntities: [],
-  hasAdminRights: false,
-  noteTitle: "",
-  prompts: scopeConfig,
-  sidePanelExtensionView: "memory",
-  members: [],
-  folderList: [],
-  chatSession: null,
-  chatSessions: [],
-  chatMessages: [],
-  selectedContext: null,
-  pdfViewer: {
-    isPdfVisible: false,
-    pageNumber: 1,
-    filePath: "",
-    highlightDetails: undefined,
-  },
-  localChats: [],
-  rightPanelView: "gantt",
-  taskToView: null,
-  taskDetailsView: "details",
-  filterView: "none",
-  scheduleProbability: 1.0,
-  scheduleDate: new Date(),
-  documentId: "",
-  AiActionsView: "open",
-  projectStatus: "On Schedule",
-  setSession: (session: Session | null) => set(() => ({ session })),
-  // setNotification : (notification: NotificationInterface, projectId: string) => {
-  //   const userUpdatesCollection = get().userUpdatesCollection;
-  //   const projectUpdates = userUpdatesCollection[projectId] || [];
-  //   userUpdatesCollection[projectId] = [...projectUpdates, notification];
-  //   set(() => ({ userUpdatesCollection }));
-  // },
+	session: null,
+	appView: "agent",
+	hasHydrated: false,
+	userProjects: [],
+	refreshInterval: 10000,
+	userActivities: [],
+	activeProject: null,
+	userUpdatesCollection: {},
+	activeChatEntity: null,
+	chatEntities: [],
+	hasAdminRights: false,
+	noteTitle: "",
+	prompts: scopeConfig,
+	sidePanelExtensionView: "memory",
+	members: [],
+	folderList: [],
+	chatSession: null,
+	chatSessions: [],
+	chatMessages: [],
+	selectedContext: null,
+	pdfViewer: {
+		isPdfVisible: false,
+		pageNumber: 1,
+		filePath: "",
+		highlightDetails: undefined,
+	},
+	localChats: [],
+	rightPanelView: "gantt",
+	taskToView: null,
+	taskDetailsView: "details",
+	filterView: "none",
+	scheduleProbability: 1.0,
+	scheduleDate: new Date(),
+	documentId: "",
+	AiActionsView: "open",
+	projectStatus: "On Schedule",
+	setSession: (session: Session | null) => set(() => ({ session })),
+	// setNotification : (notification: NotificationInterface, projectId: string) => {
+	//   const userUpdatesCollection = get().userUpdatesCollection;
+	//   const projectUpdates = userUpdatesCollection[projectId] || [];
+	//   userUpdatesCollection[projectId] = [...projectUpdates, notification];
+	//   set(() => ({ userUpdatesCollection }));
+	// },
 
-  setAdminRights: (hasAdminRights: boolean) => set(() => ({ hasAdminRights })),
-  setHasHydrated: (state) => {
-    set({ hasHydrated: state });
-  },
-  setAppView: (appView: AppView) => set(() => ({ appView })),
-  setRefreshInterval: (interval: number) =>
-    set(() => ({ refreshInterval: interval })),
-  setUserProjects: (userProjects: ProjectEntity[]) =>
-    set(() => ({ userProjects })),
-  setUserActivities: (userActivities: ActivityEntity[]) =>
-    set(() => ({ userActivities })),
-  setActiveProject: (activeProject: ProjectEntity | null) =>
-    set(() => ({ activeProject })),
-  setChatEntities: (chatEntities: AgentChatEntity[]) =>
-    set(() => ({ chatEntities })),
-  appendChatEntity: (chatEntity: AgentChatEntity) =>
-    set((state) => ({
-      chatEntities: [...state.chatEntities, chatEntity],
-    })),
-  setActiveChatEntity: (activeChatEntity: AgentChatEntity | null) =>
-    set(() => ({ activeChatEntity })),
-  setSidePanelExtensionView: (sidePanelExtensionView: SidePanelExtension) =>
-    set((state) => ({
-      sidePanelExtensionView:
+	setAdminRights: (hasAdminRights: boolean) => set(() => ({ hasAdminRights })),
+	setHasHydrated: (state) => {
+		set({ hasHydrated: state });
+	},
+	setAppView: (appView: AppView) => set(() => ({ appView })),
+	setRefreshInterval: (interval: number) =>
+		set(() => ({ refreshInterval: interval })),
+	setUserProjects: (userProjects: ProjectEntity[]) =>
+		set(() => ({ userProjects })),
+	setUserActivities: (userActivities: ActivityEntity[]) =>
+		set(() => ({ userActivities })),
+	setActiveProject: (activeProject: ProjectEntity | null) =>
+		set(() => ({ activeProject })),
+	setChatEntities: (chatEntities: AgentChatEntity[]) =>
+		set(() => ({ chatEntities })),
+	appendChatEntity: (chatEntity: AgentChatEntity) =>
+		set((state) => ({
+			chatEntities: [...state.chatEntities, chatEntity],
+		})),
+	setActiveChatEntity: (activeChatEntity: AgentChatEntity | null) =>
+		set(() => ({ activeChatEntity })),
+	setSidePanelExtensionView: (sidePanelExtensionView: SidePanelExtension) =>
+		set((state) => ({
+			sidePanelExtensionView:
         state.sidePanelExtensionView === sidePanelExtensionView
-          ? null
-          : sidePanelExtensionView,
-    })),
-  setNoteTitle: (noteTitle: string) => set(() => ({ noteTitle })),
-  setFolderList: (folderList: Brain[]) => set(() => ({ folderList })),
-  setChatSession: (chatSession: Chat | null) => set(() => ({ chatSession })),
-  setChatSessions: (chatSessions: Chat[]) => set(() => ({ chatSessions })),
-  setChatMessages: (
-    message: any,
-    fromUser: "question" | "context" | "answer",
-    id?: number
-  ) =>
-    set((state) => {
-      if (id !== undefined) {
-        const data = state.chatMessages.filter((resp) => resp.id !== id);
-        return {
-          chatMessages: [
-            ...data,
-            { id: id, message: message, fromUser: fromUser },
-          ],
-        };
-      } else {
-        return {
-          chatMessages: [
-            ...state.chatMessages,
-            {
-              id: state.chatMessages.length + 1,
-              message: message,
-              fromUser: fromUser,
-            },
-          ],
-        };
-      }
-    }),
-  setMembers: (members: MemberEntity[]) => set(() => ({ members })),
-  setChatHistory: (chatMessages: ChatMessage[]) => set({ chatMessages }),
-  setSelectedContext: (selectedContext: Brain | null) =>
-    set(() => ({ selectedContext })),
-  setPdfViewer: (pdfDetails: any) =>
-    set((state) => ({ pdfViewer: { ...state.pdfViewer, ...pdfDetails } })),
+        	? null
+        	: sidePanelExtensionView,
+		})),
+	setNoteTitle: (noteTitle: string) => set(() => ({ noteTitle })),
+	setFolderList: (folderList: Brain[]) => set(() => ({ folderList })),
+	setChatSession: (chatSession: Chat | null) => set(() => ({ chatSession })),
+	setChatSessions: (chatSessions: Chat[]) => set(() => ({ chatSessions })),
+	setChatMessages: (
+		message: any,
+		fromUser: "question" | "context" | "answer",
+		id?: number,
+	) =>
+		set((state) => {
+			if (id !== undefined) {
+				const data = state.chatMessages.filter((resp) => resp.id !== id);
+				return {
+					chatMessages: [
+						...data,
+						{ id: id, message: message, fromUser: fromUser },
+					],
+				};
+			} else {
+				return {
+					chatMessages: [
+						...state.chatMessages,
+						{
+							id: state.chatMessages.length + 1,
+							message: message,
+							fromUser: fromUser,
+						},
+					],
+				};
+			}
+		}),
+	setMembers: (members: MemberEntity[]) => set(() => ({ members })),
+	setChatHistory: (chatMessages: ChatMessage[]) => set({ chatMessages }),
+	setSelectedContext: (selectedContext: Brain | null) =>
+		set(() => ({ selectedContext })),
+	setPdfViewer: (pdfDetails: any) =>
+		set((state) => ({ pdfViewer: { ...state.pdfViewer, ...pdfDetails } })),
 
-  updateChatHistory: (id: string, chatHistory: ChatHistory[]) =>
-    set((state) => {
-      // Find the index of the chat with the matching chat_id
-      const chatSessions = state.chatSessions;
+	updateChatHistory: (id: string, chatHistory: ChatHistory[]) =>
+		set((state) => {
+			// Find the index of the chat with the matching chat_id
+			const chatSessions = state.chatSessions;
 
-      const chatIndex = chatSessions.findIndex((chat) => chat.chat_id === id);
+			const chatIndex = chatSessions.findIndex((chat) => chat.chat_id === id);
 
-      if (chatIndex === -1) {
-        // If the chat_id is not found in the list, you might want to handle this case.
-        console.error("Chat ID not found!");
-        return { chatSessions: chatSessions };
-      }
+			if (chatIndex === -1) {
+				// If the chat_id is not found in the list, you might want to handle this case.
+				console.error("Chat ID not found!");
+				return { chatSessions: chatSessions };
+			}
 
-      const chatToUpdate = chatSessions[chatIndex];
+			const chatToUpdate = chatSessions[chatIndex];
 
-      // If chat_history exists, push the new session, otherwise, initialize it
+			// If chat_history exists, push the new session, otherwise, initialize it
 
-      chatToUpdate.chat_history = chatHistory;
+			chatToUpdate.chat_history = chatHistory;
 
-      // Replace the original chat with the updated one
-      const updatedChatSessions = [
-        ...chatSessions.slice(0, chatIndex),
-        chatToUpdate,
-        ...chatSessions.slice(chatIndex + 1),
-      ];
+			// Replace the original chat with the updated one
+			const updatedChatSessions = [
+				...chatSessions.slice(0, chatIndex),
+				chatToUpdate,
+				...chatSessions.slice(chatIndex + 1),
+			];
 
-      return { chatSessions: updatedChatSessions };
-    }),
-  setRightPanelView: (view: "gantt" | "task") =>
-    set(() => ({ rightPanelView: view })),
-  setTaskToView: (task: ActivityEntity | ActivityEntityWithMembers | null) =>
-    set(() => ({ taskToView: task })),
-  setTaskDetailsView: (
-    view: "details" | "history" | "impact" | "gantt" | "edit"
-  ) => set(() => ({ taskDetailsView: view })),
-  setFilterView: (view: "none" | "Delayed" | "At Risk" | "In Progress" | any) =>
-    set(() => ({ filterView: view })),
-  setScheduleProbability: (probability: number) =>
-    set(() => ({ scheduleProbability: probability })),
-  setScheduleDate: (date: Date) => set(() => ({ scheduleDate: date })),
-  setDocumentId: (id: string) => set(() => ({ documentId: id })),
-  setAiActionsView: (view: "open" | "close" | "expand" | any) =>
-    set(() => ({ AiActionsView: view })),
-  setProjectStatus: (projectStatus: string) =>
-    set(() => ({ projectStatus: projectStatus })),
-  setLocalChats: (localChats: AgentChat[]) => set(() => ({ localChats })),
+			return { chatSessions: updatedChatSessions };
+		}),
+	setRightPanelView: (view: "gantt" | "task") =>
+		set(() => ({ rightPanelView: view })),
+	setTaskToView: (task: ActivityEntity | ActivityEntityWithMembers | null) =>
+		set(() => ({ taskToView: task })),
+	setTaskDetailsView: (
+		view: "details" | "history" | "impact" | "gantt" | "edit",
+	) => set(() => ({ taskDetailsView: view })),
+	setFilterView: (view: "none" | "Delayed" | "At Risk" | "In Progress" | any) =>
+		set(() => ({ filterView: view })),
+	setScheduleProbability: (probability: number) =>
+		set(() => ({ scheduleProbability: probability })),
+	setScheduleDate: (date: Date) => set(() => ({ scheduleDate: date })),
+	setDocumentId: (id: string) => set(() => ({ documentId: id })),
+	setAiActionsView: (view: "open" | "close" | "expand" | any) =>
+		set(() => ({ AiActionsView: view })),
+	setProjectStatus: (projectStatus: string) =>
+		set(() => ({ projectStatus: projectStatus })),
+	setLocalChats: (localChats: AgentChat[]) => set(() => ({ localChats })),
 }));

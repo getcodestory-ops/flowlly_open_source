@@ -2,48 +2,48 @@ import { Task } from "gantt-task-react";
 import { ActivityEntity } from "@/types/activities";
 
 export const activityEntityToTask = (activity: ActivityEntity): Task => {
-  return {
-    id: activity.id,
-    type: "task", // Assuming a default type of 'STANDARD' for demonstration
-    name: activity.status === null ? activity.name : activity.name,
-    // : activity.name + " " + "(" + activity.status + ")",
-    start: new Date(`${activity.start}T23:59:59Z`) as Date,
-    end: new Date(`${activity.end}T23:59:59Z`) as Date,
-    progress: activity.progress,
-    project: activity.project_id,
-    dependencies: activity.dependencies,
-    styles: {
-      progressColor: `
+	return {
+		id: activity.id,
+		type: "task", // Assuming a default type of 'STANDARD' for demonstration
+		name: activity.status === null ? activity.name : activity.name,
+		// : activity.name + " " + "(" + activity.status + ")",
+		start: new Date(`${activity.start}T23:59:59Z`) as Date,
+		end: new Date(`${activity.end}T23:59:59Z`) as Date,
+		progress: activity.progress,
+		project: activity.project_id,
+		dependencies: activity.dependencies,
+		styles: {
+			progressColor: `
       ${
-        activity.activity_critical && activity.activity_critical.critical_path
-          ? "#FA8072"
-          : activity.status === "Delayed"
-          ? "#FF4141"
-          : activity.status === "At Risk"
-          ? "#FFA841"
-          : activity.status === "In Progress"
-          ? "#5F55EE"
-          : activity.status === "Completed"
-          ? "#26d995"
-          : "brand.dark"
-      } `,
-      backgroundColor: `${
-        activity.activity_critical && activity.activity_critical.critical_path
-          ? "#C8987E"
-          : activity.status === "Delayed"
-          ? "#FF4141"
-          : activity.status === "At Risk"
-          ? "#FFA841"
-          : activity.status === "In Progress"
-          ? "#5F55EE"
-          : activity.status === "Completed"
-          ? "#26d995"
-          : "brand.dark"
-      }`,
-    },
-    // Below are the additional fields you might want to set as per your requirements
-    // isDisabled: ...,
-    // hideChildren: ...,
-    // displayOrder: ...,
-  };
+	activity.activity_critical && activity.activity_critical.critical_path
+		? "#FA8072"
+		: activity.status === "Delayed"
+			? "#FF4141"
+			: activity.status === "At Risk"
+				? "#FFA841"
+				: activity.status === "In Progress"
+					? "#5F55EE"
+					: activity.status === "Completed"
+						? "#26d995"
+						: "brand.dark"
+} `,
+			backgroundColor: `${
+				activity.activity_critical && activity.activity_critical.critical_path
+					? "#C8987E"
+					: activity.status === "Delayed"
+						? "#FF4141"
+						: activity.status === "At Risk"
+							? "#FFA841"
+							: activity.status === "In Progress"
+								? "#5F55EE"
+								: activity.status === "Completed"
+									? "#26d995"
+									: "brand.dark"
+			}`,
+		},
+		// Below are the additional fields you might want to set as per your requirements
+		// isDisabled: ...,
+		// hideChildren: ...,
+		// displayOrder: ...,
+	};
 };

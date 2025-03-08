@@ -1,94 +1,94 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import {
-  Flex,
-  Avatar,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  Tooltip,
+	Flex,
+	Avatar,
+	Menu,
+	MenuButton,
+	MenuList,
+	MenuItem,
+	Tooltip,
 } from "@chakra-ui/react";
 import supabase from "../utils/supabaseClient";
 import { useStore } from "@/utils/store";
 
 const UserPanel = () => {
-  const [user, setUser] = useState<any>(null);
-  const { setAppView } = useStore((state) => ({
-    setAppView: state.setAppView,
-  }));
-  const router = useRouter();
-  // const session = useStore(state=>state.session)
+	const [user, setUser] = useState<any>(null);
+	const { setAppView } = useStore((state) => ({
+		setAppView: state.setAppView,
+	}));
+	const router = useRouter();
+	// const session = useStore(state=>state.session)
 
-  useEffect(() => {
-    async function getAndSetUser() {
-      const session = await supabase.auth.getSession();
+	useEffect(() => {
+		async function getAndSetUser() {
+			const session = await supabase.auth.getSession();
 
-      setUser(session.data.session?.user ?? null);
+			setUser(session.data.session?.user ?? null);
 
-      const { data: authSubscription } = supabase.auth.onAuthStateChange(
-        (event, session) => {
-          setUser(session?.user ?? null);
-        }
-      );
-      return authSubscription?.subscription?.unsubscribe();
-    }
-    getAndSetUser();
-  }, []);
+			const { data: authSubscription } = supabase.auth.onAuthStateChange(
+				(event, session) => {
+					setUser(session?.user ?? null);
+				},
+			);
+			return authSubscription?.subscription?.unsubscribe();
+		}
+		getAndSetUser();
+	}, []);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+	const handleLogout = async() => {
+		await supabase.auth.signOut();
 
-    router.push("/");
-    setAppView("login");
-  };
+		router.push("/");
+		setAppView("login");
+	};
 
-  return (
-    <Flex display="flex" alignItems="center">
-      {user && (
-        <Menu>
-          <Tooltip
-            label="User Info"
-            aria-label="A tooltip"
-            bg="white"
-            color="brand.dark"
-          >
-            <MenuButton
-              bg="none"
-              color="teal.500"
-              display="flex"
-              justifyContent="center"
-              cursor={"pointer"}
-            >
-              <Avatar
-                name={user.email}
-                bg={"brand.accent"}
-                color="#14213D"
-                w={"30px"}
-                h={"30px"}
-              />
-            </MenuButton>
-          </Tooltip>
-          <MenuList zIndex="50">
-            <MenuItem>{user.email}</MenuItem>
-            <MenuItem
-              onClick={() => {
-                // setAppView("changePassword");
+	return (
+		<Flex alignItems="center" display="flex">
+			{user && (
+				<Menu>
+					<Tooltip
+						aria-label="A tooltip"
+						bg="white"
+						color="brand.dark"
+						label="User Info"
+					>
+						<MenuButton
+							bg="none"
+							color="teal.500"
+							cursor="pointer"
+							display="flex"
+							justifyContent="center"
+						>
+							<Avatar
+								bg="brand.accent"
+								color="#14213D"
+								h="30px"
+								name={user.email}
+								w="30px"
+							/>
+						</MenuButton>
+					</Tooltip>
+					<MenuList zIndex="50">
+						<MenuItem>{user.email}</MenuItem>
+						<MenuItem
+							onClick={() => {
+								// setAppView("changePassword");
 
-                router.push("/auth/passwordChange");
-              }}
-            >
+								router.push("/auth/passwordChange");
+							}}
+						>
               Change Password
-            </MenuItem>
-            {/* <MenuItem onClick={() => setIsChatbotInstructionsOpen(true)}>
+						</MenuItem>
+						{/* <MenuItem onClick={() => setIsChatbotInstructionsOpen(true)}>
               Show Instructions
             </MenuItem> */}
-            <MenuItem onClick={handleLogout}>Logout</MenuItem>
-          </MenuList>
-        </Menu>
-      )}
-    </Flex>
-  );
+						<MenuItem onClick={handleLogout}>Logout</MenuItem>
+					</MenuList>
+				</Menu>
+			)}
+		</Flex>
+	);
 };
 
 export default UserPanel;

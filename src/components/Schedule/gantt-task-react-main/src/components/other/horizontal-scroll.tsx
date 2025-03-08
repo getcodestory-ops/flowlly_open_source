@@ -8,27 +8,27 @@ export const HorizontalScroll: React.FC<{
   rtl: boolean;
   onScroll: (event: SyntheticEvent<HTMLDivElement>) => void;
 }> = ({ scroll, svgWidth, taskListWidth, rtl, onScroll }) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
+	const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollLeft = scroll;
-    }
-  }, [scroll]);
+	useEffect(() => {
+		if (scrollRef.current) {
+			scrollRef.current.scrollLeft = scroll;
+		}
+	}, [scroll]);
 
-  return (
-    <div
-      dir="ltr"
-      style={{
-        margin: rtl
-          ? `0px ${taskListWidth}px 0px 0px`
-          : `0px 0px 0px ${taskListWidth}px`,
-      }}
-      className={styles.scrollWrapper}
-      onScroll={onScroll}
-      ref={scrollRef}
-    >
-      <div style={{ width: svgWidth }} className={styles.scroll} />
-    </div>
-  );
+	return (
+		<div
+			className={styles.scrollWrapper}
+			dir="ltr"
+			onScroll={onScroll}
+			ref={scrollRef}
+			style={{
+				margin: rtl
+					? `0px ${taskListWidth}px 0px 0px`
+					: `0px 0px 0px ${taskListWidth}px`,
+			}}
+		>
+			<div className={styles.scroll} style={{ width: svgWidth }} />
+		</div>
+	);
 };

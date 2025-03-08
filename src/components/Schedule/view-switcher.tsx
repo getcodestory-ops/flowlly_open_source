@@ -11,21 +11,21 @@ type ViewSwitcherProps = {
   View: string;
 };
 export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
-  onViewModeChange,
-  onViewListChange,
-  isChecked,
-  View,
+	onViewModeChange,
+	onViewListChange,
+	isChecked,
+	View,
 }) => {
-  return (
-    <div className="ViewContainer flex gap-2 h-8 ">
-      <Separator orientation="vertical" />
-      {/* <button
+	return (
+		<div className="ViewContainer flex gap-2 h-8 ">
+			<Separator orientation="vertical" />
+			{/* <button
         className="Button"
         onClick={() => onViewModeChange(ViewMode.Hour)}
       >
         Hour
       </button> */}
-      {/* <button
+			{/* <button
         className="Button"
         onClick={() => onViewModeChange(ViewMode.QuarterDay)}
       >
@@ -37,55 +37,54 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
       >
         Half of Day
       </button> */}
-      <Button
-        variant={View === "Day" ? "default" : "outline"}
-        size="sm"
-        onClick={() => onViewModeChange(ViewMode.Day)}
-      >
+			<Button
+				onClick={() => onViewModeChange(ViewMode.Day)}
+				size="sm"
+				variant={View === "Day" ? "default" : "outline"}
+			>
         Day
-      </Button>
-      <Button
-        variant={View === "Week" ? "default" : "outline"}
-        size="sm"
-        onClick={() => onViewModeChange(ViewMode.Week)}
-      >
+			</Button>
+			<Button
+				onClick={() => onViewModeChange(ViewMode.Week)}
+				size="sm"
+				variant={View === "Week" ? "default" : "outline"}
+			>
         Week
-      </Button>
-      <Button
-        variant={View === "Month" ? "default" : "outline"}
-        size="sm"
-        onClick={() => onViewModeChange(ViewMode.Month)}
-      >
+			</Button>
+			<Button
+				onClick={() => onViewModeChange(ViewMode.Month)}
+				size="sm"
+				variant={View === "Month" ? "default" : "outline"}
+			>
         Month
-      </Button>
-      <Button
-        variant={View === "Year" ? "default" : "outline"}
-        size="sm"
-        onClick={() => onViewModeChange(ViewMode.Year)}
-      >
+			</Button>
+			<Button
+				onClick={() => onViewModeChange(ViewMode.Year)}
+				size="sm"
+				variant={View === "Year" ? "default" : "outline"}
+			>
         Year
-      </Button>
-      {/* <button
+			</Button>
+			{/* <button
         className="Button"
         onClick={() => onViewModeChange(ViewMode.QuarterYear)}
       >
         Year
       </button> */}
-      <Separator orientation="vertical" />
-
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="terms"
-          onClick={() => onViewListChange(!isChecked)}
-          defaultChecked={isChecked}
-        />
-        <label
-          htmlFor="terms"
-          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
+			<Separator orientation="vertical" />
+			<div className="flex items-center space-x-2">
+				<Checkbox
+					defaultChecked={isChecked}
+					id="terms"
+					onClick={() => onViewListChange(!isChecked)}
+				/>
+				<label
+					className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					htmlFor="terms"
+				>
           Show Task List
-        </label>
-      </div>
-    </div>
-  );
+				</label>
+			</div>
+		</div>
+	);
 };

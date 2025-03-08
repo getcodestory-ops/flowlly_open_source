@@ -1,6 +1,6 @@
 export const scopeConfig = {
 
-    scope : `geotechnical Instrumentation Scope 
+	scope : `geotechnical Instrumentation Scope 
 
 
     Complete scope for geotechnical instrumentation for a construction project. This includes installation methods, instruments, risks, closeout submittals, and mitigation measures to ensure the stability and safety of the structure during and after construction.
@@ -53,7 +53,7 @@ export const scopeConfig = {
     
     Conclusion
     Implementing a comprehensive geotechnical instrumentation plan is crucial for the success and safety of the construction project. By following the outlined installation methods, using appropriate instruments, and addressing potential risks, the project team can ensure the stability and safety of the structure during and after construction.`,
-    risks: 
+	risks: 
     `
     Construction projects are complex undertakings that come with a wide variety of potential risks. Here's a broad list of some of the risks that might be encountered:
 
@@ -95,8 +95,8 @@ export const scopeConfig = {
 
 Remember, effective risk management in construction includes identifying potential risks, assessing their impact, planning for risk mitigation, implementing risk responses, and monitoring and reviewing risks regularly.
     `
-,
-getScopePrompt : `generate a detailed project scope for a civil engineering project. The output should be presented exclusively in bullet points without extended descriptions. Please structure your response as follows:
+	,
+	getScopePrompt : `generate a detailed project scope for a civil engineering project. The output should be presented exclusively in bullet points without extended descriptions. Please structure your response as follows:
 Introduction:
 
 Main objectives
@@ -115,7 +115,7 @@ Legal Considerations:
 Potential risks associated with the project
 Proposed contractual terms to mitigate each risk `,
 
-generateScopePrompt: `Generate a detailed project scope for a civil engineering project. This project scope will be used as a reference document for potential bidders, clarifying the expectations and project requirements.
+	generateScopePrompt: `Generate a detailed project scope for a civil engineering project. This project scope will be used as a reference document for potential bidders, clarifying the expectations and project requirements.
 
 Begin the document with an introduction. This should succinctly describe the overall purpose and scope of the work involved, capturing the main objectives and expected outcomes of the project.
 
@@ -123,5 +123,5 @@ Following the introduction, provide a detailed section with the scope of work. T
 
 Lastly, to prevent any potential risks or legal complications, include a section with a list of terms and conditions relevant to the project. Each point should address a specific concern or risk mentioned in the provided context and propose appropriate contractual terms to mitigate it.
 
-Please ensure your response follows the structure and addresses all the points listed above in a list format. Thank you.`
-}
+Please ensure your response follows the structure and addresses all the points listed above in a list format. Thank you.`,
+};

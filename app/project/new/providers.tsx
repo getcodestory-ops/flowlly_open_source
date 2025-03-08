@@ -13,38 +13,38 @@ import { EnhancedSidePanel } from "@/components/TopBar/EnhancedSidePanel";
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
+	const router = useRouter();
 
-  const { setSessionToken } = useStore((state) => ({
-    setSessionToken: state.setSession,
-    userProjects: state.userProjects,
-    setActiveProject: state.setActiveProject,
-  }));
+	const { setSessionToken } = useStore((state) => ({
+		setSessionToken: state.setSession,
+		userProjects: state.userProjects,
+		setActiveProject: state.setActiveProject,
+	}));
 
-  useEffect(() => {
-    async function loginCheck() {
-      const { data } = await supabase.auth.getSession();
+	useEffect(() => {
+		async function loginCheck() {
+			const { data } = await supabase.auth.getSession();
 
-      if (!data?.session?.user) {
-        router.replace("/applogin");
-      } else {
-        setSessionToken(data?.session);
-      }
-    }
-    loginCheck();
-  }, [router, setSessionToken]);
+			if (!data?.session?.user) {
+				router.replace("/applogin");
+			} else {
+				setSessionToken(data?.session);
+			}
+		}
+		loginCheck();
+	}, [router, setSessionToken]);
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Toaster />
-      <TooltipProvider>
-        <div className="flex w-[100vw] h-[100vh]">
-          <EnhancedSidePanel />
-          <ScrollArea className="flex-1 h-full overflow-hidden">
-            {children}
-          </ScrollArea>
-        </div>
-      </TooltipProvider>
-    </QueryClientProvider>
-  );
+	return (
+		<QueryClientProvider client={queryClient}>
+			<Toaster />
+			<TooltipProvider>
+				<div className="flex w-[100vw] h-[100vh]">
+					<EnhancedSidePanel />
+					<ScrollArea className="flex-1 h-full overflow-hidden">
+						{children}
+					</ScrollArea>
+				</div>
+			</TooltipProvider>
+		</QueryClientProvider>
+	);
 }

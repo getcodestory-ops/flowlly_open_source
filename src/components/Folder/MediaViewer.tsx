@@ -14,153 +14,161 @@ import "react-pdf/dist/esm/Page/TextLayer.css";
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
-  resource,
+	resource,
 }) => {
-  const { file_name, metadata, url, created_at } = resource || {};
-  const fileExt = metadata?.extension?.toLowerCase();
-  const { onSubmit, isPending } = useStorageTextFileSave(resource?.id);
-  const traces = useDocumentTracer(resource?.id);
+	const { file_name, metadata, url, created_at } = resource || {};
+	const fileExt = metadata?.extension?.toLowerCase();
+	const { onSubmit, isPending } = useStorageTextFileSave(resource?.id);
+	const traces = useDocumentTracer(resource?.id);
 
-  const [numPages, setNumPages] = useState<number | null>(null);
-  const [pageNumber, setPageNumber] = useState(1);
+	const [numPages, setNumPages] = useState<number | null>(null);
+	const [pageNumber, setPageNumber] = useState(1);
 
-  const renderPreview = () => {
-    switch (fileExt) {
-      case ".jpg":
-      case ".jpeg":
-      case ".png":
-      case ".gif":
-      case "jpg":
-        return (
-          <Dialog>
-            <DialogTrigger asChild>
-              <div className="max-h-96 overflow-auto">
-                <img src={url} alt={file_name} className="object-cover" />
-              </div>
-            </DialogTrigger>
-            <DialogContent className="">
-              <img src={url} alt={file_name} />
-            </DialogContent>
-          </Dialog>
-        );
-      case ".mp4":
-      case ".webm":
-        return (
-          <div className="overflow-auto">
-            <AspectRatio ratio={1}>
-              <video controls>
-                <source src={url} type="video/mp4" />
+	const renderPreview = () => {
+		switch (fileExt) {
+			case ".jpg":
+			case ".jpeg":
+			case ".png":
+			case ".gif":
+			case "jpg":
+				return (
+					<Dialog>
+						<DialogTrigger asChild>
+							<div className="max-h-96 overflow-auto">
+								<img
+									alt={file_name}
+									className="object-cover"
+									src={url}
+								/>
+							</div>
+						</DialogTrigger>
+						<DialogContent className="">
+							<img alt={file_name} src={url} />
+						</DialogContent>
+					</Dialog>
+				);
+			case ".mp4":
+			case ".webm":
+				return (
+					<div className="overflow-auto">
+						<AspectRatio ratio={1}>
+							<video controls>
+								<source src={url} type="video/mp4" />
                 Your browser does not support the video tag
-              </video>
-            </AspectRatio>
-          </div>
-        );
-      case ".mp3":
-      case ".ogg":
-      case ".wav":
-        return (
-          <div className="flex flex-col items-center justify-center  p-4">
-            <div className="w-full min-w-[300px]">
-              <audio src={url} controls style={{ width: "100%" }}>
+							</video>
+						</AspectRatio>
+					</div>
+				);
+			case ".mp3":
+			case ".ogg":
+			case ".wav":
+				return (
+					<div className="flex flex-col items-center justify-center  p-4">
+						<div className="w-full min-w-[300px]">
+							<audio
+								controls
+								src={url}
+								style={{ width: "100%" }}
+							>
                 Your browser does not support the audio element.
-              </audio>
-            </div>
-          </div>
-        );
+							</audio>
+						</div>
+					</div>
+				);
 
-      case ".txt":
-        return (
-          <Dialog>
-            <DialogTrigger asChild>
-              <div className="rounded-lg  transition-all cursor-pointer mt-4">
-                <div className="flex flex-row items-center gap-4">
-                  <FileText className="text-2xl hover:scale-105" />
-                  <div>
+			case ".txt":
+				return (
+					<Dialog>
+						<DialogTrigger asChild>
+							<div className="rounded-lg  transition-all cursor-pointer mt-4">
+								<div className="flex flex-row items-center gap-4">
+									<FileText className="text-2xl hover:scale-105" />
+									<div>
                     No Preview.{" "}
-                    <span
-                      className="text-primary cursor-pointer 
+										<span
+											className="text-primary cursor-pointer 
                     hover:underline
                     "
-                    >
+										>
                       Open
-                    </span>{" "}
+										</span>{" "}
                     to edit!
-                  </div>
-                  <div>{traces && JSON.stringify(traces)}</div>
-                </div>
-              </div>
-            </DialogTrigger>
-            <DialogContent className="max-w-6xl ">
-              <ContentEditor
-                content={metadata?.content}
-                saveFunction={onSubmit}
-              />
-            </DialogContent>
-          </Dialog>
-        );
-      case ".pdf":
-        return (
-          <Dialog>
-            <DialogTrigger asChild>
-              <div className="flex items-center justify-center cursor-pointer">
-                <div className="flex flex-row items-center gap-4">
-                  <File className="text-2xl" />
-                  <div>Click to view PDF</div>
-                </div>
-              </div>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <Document
-                file={url}
-                onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-              >
-                <Page pageNumber={pageNumber} />
-              </Document>
-              <div className="flex justify-between items-center mt-4">
-                <button
-                  onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
-                  disabled={pageNumber <= 1}
-                >
+									</div>
+									<div>{traces && JSON.stringify(traces)}</div>
+								</div>
+							</div>
+						</DialogTrigger>
+						<DialogContent className="max-w-6xl ">
+							<ContentEditor
+								content={metadata?.content}
+								saveFunction={onSubmit}
+							/>
+						</DialogContent>
+					</Dialog>
+				);
+			case ".pdf":
+				return (
+					<Dialog>
+						<DialogTrigger asChild>
+							<div className="flex items-center justify-center cursor-pointer">
+								<div className="flex flex-row items-center gap-4">
+									<File className="text-2xl" />
+									<div>Click to view PDF</div>
+								</div>
+							</div>
+						</DialogTrigger>
+						<DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+							<Document
+								file={url}
+								onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+							>
+								<Page pageNumber={pageNumber} />
+							</Document>
+							<div className="flex justify-between items-center mt-4">
+								<button
+									disabled={pageNumber <= 1}
+									onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
+								>
                   Previous
-                </button>
-                <p>
+								</button>
+								<p>
                   Page {pageNumber} of {numPages}
-                </p>
-                <button
-                  onClick={() =>
-                    setPageNumber((prev) => Math.min(prev + 1, numPages || 1))
-                  }
-                  disabled={pageNumber >= (numPages || 1)}
-                >
+								</p>
+								<button
+									disabled={pageNumber >= (numPages || 1)}
+									onClick={() =>
+										setPageNumber((prev) => Math.min(prev + 1, numPages || 1))
+									}
+								>
                   Next
-                </button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        );
-      default:
-        return (
-          <div className="flex items-center justify-center ">
-            <div className="flex flex-row items-center gap-4">
-              <File className="text-2xl" />
-              <div>Sorry No Preview Available</div>
-              <div>{fileExt}</div>
-            </div>
-          </div>
-        );
-    }
-  };
+								</button>
+							</div>
+						</DialogContent>
+					</Dialog>
+				);
+			default:
+				return (
+					<div className="flex items-center justify-center ">
+						<div className="flex flex-row items-center gap-4">
+							<File className="text-2xl" />
+							<div>Sorry No Preview Available</div>
+							<div>{fileExt}</div>
+						</div>
+					</div>
+				);
+		}
+	};
 
-  return (
-    <div>
-      <div>{renderPreview()}</div>
-      {metadata?.description && (
-        <div className="rounded-lg p-2 bg-white max-h-96 overflow-auto">
-          <div className="space-y-1 text-sm">
-            <p className="text-xs ">{metadata?.description}</p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+	return (
+		<div>
+			<div>{renderPreview()}</div>
+			{metadata?.description && (
+				<div className="rounded-lg p-2 bg-white max-h-96 overflow-auto">
+					<div className="space-y-1 text-sm">
+						<p className="text-xs ">{metadata?.description}</p>
+					</div>
+				</div>
+			)}
+		</div>
+	);
 };

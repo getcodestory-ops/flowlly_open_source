@@ -37,59 +37,59 @@ export type TaskListProps = {
 };
 
 export const TaskList: React.FC<TaskListProps> = ({
-  headerHeight,
-  fontFamily,
-  fontSize,
-  rowWidth,
-  rowHeight,
-  scrollY,
-  tasks,
-  selectedTask,
-  setSelectedTask,
-  onExpanderClick,
-  locale,
-  ganttHeight,
-  taskListRef,
-  horizontalContainerClass,
-  TaskListHeader,
-  TaskListTable,
+	headerHeight,
+	fontFamily,
+	fontSize,
+	rowWidth,
+	rowHeight,
+	scrollY,
+	tasks,
+	selectedTask,
+	setSelectedTask,
+	onExpanderClick,
+	locale,
+	ganttHeight,
+	taskListRef,
+	horizontalContainerClass,
+	TaskListHeader,
+	TaskListTable,
 }) => {
-  const horizontalContainerRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (horizontalContainerRef.current) {
-      horizontalContainerRef.current.scrollTop = scrollY;
-    }
-  }, [scrollY]);
+	const horizontalContainerRef = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		if (horizontalContainerRef.current) {
+			horizontalContainerRef.current.scrollTop = scrollY;
+		}
+	}, [scrollY]);
 
-  const headerProps = {
-    headerHeight,
-    fontFamily,
-    fontSize,
-    rowWidth,
-  };
-  const selectedTaskId = selectedTask ? selectedTask.id : "";
-  const tableProps = {
-    rowHeight,
-    rowWidth,
-    fontFamily,
-    fontSize,
-    tasks,
-    locale,
-    selectedTaskId: selectedTaskId,
-    setSelectedTask,
-    onExpanderClick,
-  };
+	const headerProps = {
+		headerHeight,
+		fontFamily,
+		fontSize,
+		rowWidth,
+	};
+	const selectedTaskId = selectedTask ? selectedTask.id : "";
+	const tableProps = {
+		rowHeight,
+		rowWidth,
+		fontFamily,
+		fontSize,
+		tasks,
+		locale,
+		selectedTaskId: selectedTaskId,
+		setSelectedTask,
+		onExpanderClick,
+	};
 
-  return (
-    <div ref={taskListRef}>
-      <TaskListHeader {...headerProps} />
-      <div
-        ref={horizontalContainerRef}
-        className={horizontalContainerClass}
-        style={ganttHeight ? { height: ganttHeight } : {}}
-      >
-        <TaskListTable {...tableProps} />
-      </div>
-    </div>
-  );
+	return (
+		<div ref={taskListRef}>
+			<TaskListHeader {...headerProps} />
+			<div
+				className={horizontalContainerClass}
+				ref={horizontalContainerRef}
+				style={ganttHeight ? { height: ganttHeight } : {}}
+			>
+				<TaskListTable {...tableProps} />
+			</div>
+		</div>
+	);
 };

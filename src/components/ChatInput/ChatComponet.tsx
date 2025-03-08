@@ -7,18 +7,18 @@ import PlatformChatComponent from "../ChatInput/PlatformChat/PlatformChatCompone
 import { Toaster } from "@/components/ui/toaster";
 import { useStore } from "@/utils/store";
 export default function ChatComponent() {
-  const activeProject = useStore((state) => state.activeProject);
-  return (
-    <div className="p-2">
-      <Toaster />
-      {activeProject && (
-        <PlatformChatComponent
-          folderId={activeProject?.project_id}
-          folderName="Agent"
-          chatTarget="agent"
-        />
-      )}
-      {/* <Card className="h-full w-full rounded-2xl">
+	const activeProject = useStore((state) => state.activeProject);
+	return (
+		<div className="p-2">
+			<Toaster />
+			{activeProject && (
+				<PlatformChatComponent
+					chatTarget="agent"
+					folderId={activeProject?.project_id}
+					folderName="Agent"
+				/>
+			)}
+			{/* <Card className="h-full w-full rounded-2xl">
         <CardHeader className="p-4 h-[50px]">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm font-medium">Chat</CardTitle>
@@ -29,6 +29,6 @@ export default function ChatComponent() {
           <AssistantChatInterface />
         </CardContent>
       </Card> */}
-    </div>
-  );
+		</div>
+	);
 }

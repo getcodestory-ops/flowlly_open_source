@@ -1,15 +1,15 @@
 import React, { useState, useEffect, use } from "react";
 import {
-  Box,
-  Heading,
-  FormControl,
-  FormLabel,
-  Input,
-  Button,
-  useToast,
-  Flex,
-  Center,
-  Image,
+	Box,
+	Heading,
+	FormControl,
+	FormLabel,
+	Input,
+	Button,
+	useToast,
+	Flex,
+	Center,
+	Image,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import supabase from "@/utils/supabaseClient";
@@ -22,144 +22,148 @@ import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import colors from "../../styles/theme";
 
 const theme = extendTheme({
-  colors,
-  styles: {
-    global: {
-      "&::-webkit-scrollbar": {
-        width: "10px",
-      },
-      "&::-webkit-scrollbar-track": {
-        backgroundColor: "transparent", // This hides the track
-      },
-      "&::-webkit-scrollbar-thumb": {
-        backgroundColor: "#888", // Change this color for your desired thumb color
-        borderRadius: "5px",
-      },
-      "&::-webkit-scrollbar-thumb:hover": {
-        backgroundColor: "#555",
-      },
-      scrollbarWidth: "none", // This will hide the scrollbar for Firefox
-    },
-  },
+	colors,
+	styles: {
+		global: {
+			"&::-webkit-scrollbar": {
+				width: "10px",
+			},
+			"&::-webkit-scrollbar-track": {
+				backgroundColor: "transparent", // This hides the track
+			},
+			"&::-webkit-scrollbar-thumb": {
+				backgroundColor: "#888", // Change this color for your desired thumb color
+				borderRadius: "5px",
+			},
+			"&::-webkit-scrollbar-thumb:hover": {
+				backgroundColor: "#555",
+			},
+			scrollbarWidth: "none", // This will hide the scrollbar for Firefox
+		},
+	},
 });
 
 function ResetPassword() {
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [sessionToken, setSessionToken] = useState<Session | null>();
-  const [hasAdminRights, setAdminRights] = useState<boolean>(false);
-  const toast = useToast();
-  const router = useRouter();
-  const setAppView = useStore((state) => state.setAppView);
+	const [password, setPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
+	const [sessionToken, setSessionToken] = useState<Session | null>();
+	const [hasAdminRights, setAdminRights] = useState<boolean>(false);
+	const toast = useToast();
+	const router = useRouter();
+	const setAppView = useStore((state) => state.setAppView);
 
-  useEffect(() => {
-    async function loginCheck() {
-      const { token_hash } = router.query;
+	useEffect(() => {
+		async function loginCheck() {
+			const { token_hash } = router.query;
 
-      if (!token_hash) {
-        router.replace("/");
-      }
-      if (typeof token_hash === "string") {
-        const { data: userSession, error } = await supabase.auth.verifyOtp({
-          type: "email",
-          token_hash,
-        });
+			if (!token_hash) {
+				router.replace("/");
+			}
+			if (typeof token_hash === "string") {
+				const { data: userSession, error } = await supabase.auth.verifyOtp({
+					type: "email",
+					token_hash,
+				});
 
-        if (error) {
-          toast({
-            title: "Error",
-            description: error.message,
-            status: "error",
-            duration: 9000,
-            isClosable: true,
-          });
-          router.replace("/");
-        }
+				if (error) {
+					toast({
+						title: "Error",
+						description: error.message,
+						status: "error",
+						duration: 9000,
+						isClosable: true,
+					});
+					router.replace("/");
+				}
 
-        const { user, session } = userSession;
+				const { user, session } = userSession;
 
-        if (session) {
-          const { access_token, refresh_token } = session;
-          await supabase.auth.setSession({ access_token, refresh_token });
-          setSessionToken(session);
-        }
-      }
+				if (session) {
+					const { access_token, refresh_token } = session;
+					await supabase.auth.setSession({ access_token, refresh_token });
+					setSessionToken(session);
+				}
+			}
 
-      const { data } = await supabase.auth.getSession();
-    }
-    const { token_hash } = router.query;
-    if (token_hash) {
-      loginCheck();
-    }
-  }, [router]);
+			const { data } = await supabase.auth.getSession();
+		}
+		const { token_hash } = router.query;
+		if (token_hash) {
+			loginCheck();
+		}
+	}, [router]);
 
-  useEffect(() => {
-    if (sessionToken) {
-      setAppView("schedule");
-      router.push("/");
-    }
-  }, [sessionToken]);
+	useEffect(() => {
+		if (sessionToken) {
+			setAppView("schedule");
+			router.push("/");
+		}
+	}, [sessionToken]);
 
-  return (
-    <ChakraProvider theme={theme}>
-      <Flex
-        height="100vh"
-        justifyContent={"center"}
-        alignItems="center"
-        width="100vw"
-        bg="brand.dark"
-      >
-        <Flex w={"100vw"}>
-          <Center
-            p="2"
-            width="full"
-            height="100vh"
-            display="flex"
-            alignItems="center"
-            flexDirection="column"
-          >
-            <Box p={6} borderRadius={8} width="full">
-              <Heading
-                size="xl"
-                mb={4}
-                textAlign="center"
-                fontWeight="bold"
-                letterSpacing="tight"
-                color="brand.accent"
-                display="flex"
-                alignItems="center"
-                flexDirection="column"
-              >
-                <Image
-                  src="https://qfktimnmlcnfowxuoune.supabase.co/storage/v1/object/public/logos/logo_full.svg"
-                  alt="logo"
-                  w={60}
-                  mb={4}
-                />
+	return (
+		<ChakraProvider theme={theme}>
+			<Flex
+				alignItems="center"
+				bg="brand.dark"
+				height="100vh"
+				justifyContent="center"
+				width="100vw"
+			>
+				<Flex w="100vw">
+					<Center
+						alignItems="center"
+						display="flex"
+						flexDirection="column"
+						height="100vh"
+						p="2"
+						width="full"
+					>
+						<Box
+							borderRadius={8}
+							p={6}
+							width="full"
+						>
+							<Heading
+								alignItems="center"
+								color="brand.accent"
+								display="flex"
+								flexDirection="column"
+								fontWeight="bold"
+								letterSpacing="tight"
+								mb={4}
+								size="xl"
+								textAlign="center"
+							>
+								<Image
+									alt="logo"
+									mb={4}
+									src="https://qfktimnmlcnfowxuoune.supabase.co/storage/v1/object/public/logos/logo_full.svg"
+									w={60}
+								/>
                 AI Project Management Assistant
-              </Heading>
-            </Box>
-            <Box
-              p={8}
-              backgroundColor="brand.mid"
-              borderRadius="md"
-              m="8"
-              textColor="white"
-            >
-              <Box p={6} borderRadius="md">
-                <Heading mb={6}>Securely logging you in</Heading>
-              </Box>
-            </Box>
-          </Center>
-        </Flex>
-      </Flex>
-    </ChakraProvider>
-  );
+							</Heading>
+						</Box>
+						<Box
+							backgroundColor="brand.mid"
+							borderRadius="md"
+							m="8"
+							p={8}
+							textColor="white"
+						>
+							<Box borderRadius="md" p={6}>
+								<Heading mb={6}>Securely logging you in</Heading>
+							</Box>
+						</Box>
+					</Center>
+				</Flex>
+			</Flex>
+		</ChakraProvider>
+	);
 }
 
 export default function AcceptInvite() {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+	const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  return <ResetPassword />;
+	return <ResetPassword />;
 }
