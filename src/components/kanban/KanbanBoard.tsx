@@ -7,43 +7,43 @@ import UpdateActivityModal from "../Schedule/UpdateActivityModal";
 import { ActivityEntityWithMembers } from "@/utils/mapOwnerToMembers";
 
 function KanbanBoard() {
-  const { userActivities, setUserActivities, taskToView } = useStore(
-    (state) => ({
-      userActivities: state.userActivities,
-      setUserActivities: state.setUserActivities,
-      taskToView: state.taskToView,
-    })
-  );
+	const { userActivities, setUserActivities, taskToView } = useStore(
+		(state) => ({
+			userActivities: state.userActivities,
+			setUserActivities: state.setUserActivities,
+			taskToView: state.taskToView,
+		}),
+	);
 
-  const [modifyTask, setModifyTask] = useState<
+	const [modifyTask, setModifyTask] = useState<
     ActivityEntity | ActivityEntityWithMembers | null
   >(taskToView);
-  const [editOpen, setEditOpen] = useState<boolean>(false);
+	const [editOpen, setEditOpen] = useState<boolean>(false);
 
-  const statuses = [
-    "On Schedule",
-    "At Risk",
-    "Delayed",
-    "In Progress",
-    "Completed",
-  ];
+	const statuses = [
+		"On Schedule",
+		"At Risk",
+		"Delayed",
+		"In Progress",
+		"Completed",
+	];
 
-  const handleDrop = (draggedItem: ActivityEntity, newStatus: string) => {
-    setModifyTask(
-      userActivities.find((task) => task.id === draggedItem.id) ?? taskToView
-    );
-    // setModifyTask((prev) => { if(prev) return { ...prev, status: newStatus } } );
-    setEditOpen(true);
-  };
-  useEffect(() => {
-    if (modifyTask && modifyTask.id !== taskToView?.id) {
-      setEditOpen(true);
-    }
-  }, [modifyTask]);
+	const handleDrop = (draggedItem: ActivityEntity, newStatus: string) => {
+		setModifyTask(
+			userActivities.find((task) => task.id === draggedItem.id) ?? taskToView,
+		);
+		// setModifyTask((prev) => { if(prev) return { ...prev, status: newStatus } } );
+		setEditOpen(true);
+	};
+	useEffect(() => {
+		if (modifyTask && modifyTask.id !== taskToView?.id) {
+			setEditOpen(true);
+		}
+	}, [modifyTask]);
 
-  return (
-    <Flex w={"full"} justifyContent={"space-around"}>
-      {/* {modifyTask && (
+	return (
+		<Flex justifyContent="space-around" w="full">
+			{/* {modifyTask && (
         <UpdateActivityModal
           isOpen={editOpen}
           onClose={() => setEditOpen(false)}
@@ -52,7 +52,7 @@ function KanbanBoard() {
           updateSource={"kanban"}
         />
       )} */}
-      {/* {statuses.map((status, index) => (
+			{/* {statuses.map((status, index) => (
         <KanbanLane
           key={index}
           status={status}
@@ -60,8 +60,8 @@ function KanbanBoard() {
           onDrop={handleDrop}
         />
       ))} */}
-    </Flex>
-  );
+		</Flex>
+	);
 }
 
 export default KanbanBoard;

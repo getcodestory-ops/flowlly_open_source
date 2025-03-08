@@ -12,43 +12,43 @@ interface EditorBlockProps {
 }
 
 const EditorBlock = ({ id }: EditorBlockProps) => {
-  const { content, isLoading, onSubmit } = useContentSave(id);
-  const [key, setKey] = useState(0);
+	const { content, isLoading, onSubmit } = useContentSave(id);
+	const [key, setKey] = useState(0);
 
-  useEffect(() => {
-    setKey(key + 1);
-  }, [id, content]);
+	useEffect(() => {
+		setKey(key + 1);
+	}, [id, content]);
 
-  return (
-    <Flex
-      p={"2"}
-      w="full"
-      h="full"
-      overflowY={"auto"}
-      sx={{
-        "&::-webkit-scrollbar": {
-          width: "0px",
-          borderRadius: "0px",
-          backgroundColor: `rgba(0, 0, 0, 0.01)`,
-        },
-      }}
-      flexDirection={"column"}
-    >
-      {content && !isLoading && (
-        <ContentEditor
-          key={key}
-          content={content}
-          saveFunction={onSubmit}
-          documentType="Daily Report"
-        />
-      )}
-      {isLoading && (
-        <HStack gap="4">
-          <LoaderAnimation />
-        </HStack>
-      )}
-    </Flex>
-  );
+	return (
+		<Flex
+			flexDirection="column"
+			h="full"
+			overflowY="auto"
+			p="2"
+			sx={{
+				"&::-webkit-scrollbar": {
+					width: "0px",
+					borderRadius: "0px",
+					backgroundColor: "rgba(0, 0, 0, 0.01)",
+				},
+			}}
+			w="full"
+		>
+			{content && !isLoading && (
+				<ContentEditor
+					content={content}
+					documentType="Daily Report"
+					key={key}
+					saveFunction={onSubmit}
+				/>
+			)}
+			{isLoading && (
+				<HStack gap="4">
+					<LoaderAnimation />
+				</HStack>
+			)}
+		</Flex>
+	);
 };
 
 export default EditorBlock;

@@ -3,5 +3,14 @@
   "notebook.formatOnSave.enabled": true,
   "html.format.enable": true,
   "typescript.format.insertSpaceAfterConstructor": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  // "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "editor.wordWrap": "on",
+  "files.autoSave": "onFocusChange",
+  "eslint.options": {
+    "overrideConfigFile": "eslint.config.mjs"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  }
 }

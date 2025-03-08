@@ -11,22 +11,27 @@ interface MembersModalProps {
 }
 
 export function MembersModal({
-  onCancel,
-  isOpen,
-  projectAccessId,
+	onCancel,
+	isOpen,
+	projectAccessId,
 }: MembersModalProps) {
-  const { members } = useStore((state) => ({
-    members: state.members,
-  }));
-  return (
-    <Modal show={isOpen} backdrop={true} centered onHide={onCancel}>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <TeamDetail
-          members={members}
-          onCancel={onCancel}
-          projectAccessId={projectAccessId}
-        />
-      </div>
-    </Modal>
-  );
+	const { members } = useStore((state) => ({
+		members: state.members,
+	}));
+	return (
+		<Modal
+			backdrop
+			centered
+			onHide={onCancel}
+			show={isOpen}
+		>
+			<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+				<TeamDetail
+					members={members}
+					onCancel={onCancel}
+					projectAccessId={projectAccessId}
+				/>
+			</div>
+		</Modal>
+	);
 }

@@ -4,10 +4,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  WorkflowNode,
-  ConditionNodeConfig,
-  NodeType,
-  NodeStatus,
+	WorkflowNode,
+	ConditionNodeConfig,
+	NodeType,
+	NodeStatus,
 } from "../../types";
 
 interface ConditionNodeProps {
@@ -17,67 +17,70 @@ interface ConditionNodeProps {
 }
 
 export function ConditionNode({
-  onSave,
-  onCancel,
-  editingNode,
+	onSave,
+	onCancel,
+	editingNode,
 }: ConditionNodeProps) {
-  const [config, setConfig] = useState<ConditionNodeConfig>({
-    conditionPrompt: "",
-    trueSteps: [],
-    falseSteps: [],
-    next_steps: [],
-    retry_count: 0,
-    max_retries: 3,
-  });
+	const [config, setConfig] = useState<ConditionNodeConfig>({
+		conditionPrompt: "",
+		trueSteps: [],
+		falseSteps: [],
+		next_steps: [],
+		retry_count: 0,
+		max_retries: 3,
+	});
 
-  useEffect(() => {
-    if (editingNode && editingNode.type === NodeType.CONDITIONAL) {
-      setConfig(editingNode.config as ConditionNodeConfig);
-    }
-  }, [editingNode]);
+	useEffect(() => {
+		if (editingNode && editingNode.type === NodeType.CONDITIONAL) {
+			setConfig(editingNode.config as ConditionNodeConfig);
+		}
+	}, [editingNode]);
 
-  return (
-    <Card>
-      <CardContent className="space-y-4 pt-6">
-        <div className="space-y-2">
-          <Label htmlFor="conditionPrompt">Condition Prompt</Label>
-          <Textarea
-            id="conditionPrompt"
-            value={config.conditionPrompt}
-            onChange={(e) =>
-              setConfig((prev) => ({
-                ...prev,
-                conditionPrompt: e.target.value,
-              }))
-            }
-            placeholder="Enter the condition prompt..."
-            required
-          />
-        </div>
-
-        <div className="flex justify-end space-x-2">
-          <Button type="button" variant="outline" onClick={onCancel}>
+	return (
+		<Card>
+			<CardContent className="space-y-4 pt-6">
+				<div className="space-y-2">
+					<Label htmlFor="conditionPrompt">Condition Prompt</Label>
+					<Textarea
+						id="conditionPrompt"
+						onChange={(e) =>
+							setConfig((prev) => ({
+								...prev,
+								conditionPrompt: e.target.value,
+							}))
+						}
+						placeholder="Enter the condition prompt..."
+						required
+						value={config.conditionPrompt}
+					/>
+				</div>
+				<div className="flex justify-end space-x-2">
+					<Button
+						onClick={onCancel}
+						type="button"
+						variant="outline"
+					>
             Cancel
-          </Button>
-          <Button
-            type="button"
-            onClick={() => {
-              onSave({
-                id: editingNode?.id || crypto.randomUUID(),
-                type: NodeType.CONDITIONAL,
-                title: "Condition Step",
-                config,
-                status: NodeStatus.PENDING,
-                timestamp: new Date().toISOString(),
-                retry_count: 0,
-              });
-            }}
-            disabled={!config.conditionPrompt}
-          >
-            {editingNode ? "Update" : "Add"} Node
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
+					</Button>
+					<Button
+						disabled={!config.conditionPrompt}
+						onClick={() => {
+							onSave({
+								id: editingNode?.id || crypto.randomUUID(),
+								type: NodeType.CONDITIONAL,
+								title: "Condition Step",
+								config,
+								status: NodeStatus.PENDING,
+								timestamp: new Date().toISOString(),
+								retry_count: 0,
+							});
+						}}
+						type="button"
+					>
+						{editingNode ? "Update" : "Add"} Node
+					</Button>
+				</div>
+			</CardContent>
+		</Card>
+	);
 }

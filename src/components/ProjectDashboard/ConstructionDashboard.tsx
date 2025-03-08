@@ -5,43 +5,43 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Select,
-  SelectGroup,
-  SelectValue,
-  SelectTrigger,
-  SelectContent,
-  SelectLabel,
-  SelectItem,
-  SelectSeparator,
-  SelectScrollUpButton,
-  SelectScrollDownButton,
+	Select,
+	SelectGroup,
+	SelectValue,
+	SelectTrigger,
+	SelectContent,
+	SelectLabel,
+	SelectItem,
+	SelectSeparator,
+	SelectScrollUpButton,
+	SelectScrollDownButton,
 } from "@/components/ui/select";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
 } from "@/components/ui/table";
 
 import {
-  SunIcon,
-  CloudRainIcon,
-  HardHatIcon,
-  ClipboardCheckIcon,
-  CalendarIcon,
-  UsersIcon,
-  CheckCircleIcon,
-  CircleIcon,
-  ReplaceAllIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  AlarmClockCheckIcon,
-  MessageCircleQuestionIcon,
-  TriangleAlertIcon,
-  TrafficConeIcon,
-  LandPlotIcon,
+	SunIcon,
+	CloudRainIcon,
+	HardHatIcon,
+	ClipboardCheckIcon,
+	CalendarIcon,
+	UsersIcon,
+	CheckCircleIcon,
+	CircleIcon,
+	ReplaceAllIcon,
+	ChevronDownIcon,
+	ChevronUpIcon,
+	AlarmClockCheckIcon,
+	MessageCircleQuestionIcon,
+	TriangleAlertIcon,
+	TrafficConeIcon,
+	LandPlotIcon,
 } from "lucide-react";
 import ScheduleNotifications from "../Notifications/ScheduleNotifications";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
@@ -55,18 +55,18 @@ import { ScrollArea } from "@radix-ui/react-scroll-area";
 //   weekly_priorities,
 // } from "@/demo/demo_data";
 import {
-  change_orders,
-  delay_factors,
-  rfi,
-  risk_register,
-  task_progress,
-  trade_assessment,
-  weekly_priorities,
+	change_orders,
+	delay_factors,
+	rfi,
+	risk_register,
+	task_progress,
+	trade_assessment,
+	weekly_priorities,
 } from "@/demo/etro_data";
 import DashboardRightPanel from "./LeftPanel";
 
 export default function ConstructionDashboard() {
-  const [selectedWeek, setSelectedWeek] = useState("40");
+	const [selectedWeek, setSelectedWeek] = useState("40");
   interface ChangeOrder {
     date: string;
     description: string;
@@ -91,204 +91,204 @@ export default function ConstructionDashboard() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const toggleDrawer = () => {
-    setIsDrawerOpen(!isDrawerOpen);
+  	setIsDrawerOpen(!isDrawerOpen);
   };
 
   // Mock data - replace with actual data fetching in a real application!!
   const weatherData = {
-    temperature: 72,
-    condition: "Partly Cloudy",
-    icon: <SunIcon className="h-6 w-6" />,
+  	temperature: 72,
+  	condition: "Partly Cloudy",
+  	icon: <SunIcon className="h-6 w-6" />,
   };
 
   const safetyMetrics = {
-    incidentFreedays: 45,
-    safetyScore: 95,
-    openIssues: 3,
+  	incidentFreedays: 45,
+  	safetyScore: 95,
+  	openIssues: 3,
   };
 
   const scheduleData = [
-    { task: "Foundation Work", progress: 100 },
-    { task: "Framing", progress: 75 },
-    { task: "Electrical", progress: 50 },
-    { task: "Plumbing", progress: 40 },
-    { task: "Interior Finishing", progress: 10 },
+  	{ task: "Foundation Work", progress: 100 },
+  	{ task: "Framing", progress: 75 },
+  	{ task: "Electrical", progress: 50 },
+  	{ task: "Plumbing", progress: 40 },
+  	{ task: "Interior Finishing", progress: 10 },
   ];
 
   const overallProgress = 55;
 
   const tasks = {
-    pending: [
-      { id: 1, title: "Review safety protocols", dueDate: "2023-06-15" },
-      { id: 2, title: "Update project timeline", dueDate: "2023-06-18" },
-      {
-        id: 3,
-        title: "Coordinate with electrical team",
-        dueDate: "2023-06-20",
-      },
-    ],
-    completed: [
-      {
-        id: 4,
-        title: "Finalize building permits",
-        completedDate: "2023-06-10",
-      },
-      {
-        id: 5,
-        title: "Order construction materials",
-        completedDate: "2023-06-08",
-      },
-    ],
+  	pending: [
+  		{ id: 1, title: "Review safety protocols", dueDate: "2023-06-15" },
+  		{ id: 2, title: "Update project timeline", dueDate: "2023-06-18" },
+  		{
+  			id: 3,
+  			title: "Coordinate with electrical team",
+  			dueDate: "2023-06-20",
+  		},
+  	],
+  	completed: [
+  		{
+  			id: 4,
+  			title: "Finalize building permits",
+  			completedDate: "2023-06-10",
+  		},
+  		{
+  			id: 5,
+  			title: "Order construction materials",
+  			completedDate: "2023-06-08",
+  		},
+  	],
   };
 
   const meetings = {
-    upcoming: [
-      {
-        id: 1,
-        title: "Weekly Progress Review",
-        date: "2023-06-16",
-        time: "10:00 AM",
-      },
-      {
-        id: 2,
-        title: "Safety Committee Meeting",
-        date: "2023-06-19",
-        time: "2:00 PM",
-      },
-    ],
-    completed: [
-      {
-        id: 3,
-        title: "Contractor Briefing",
-        date: "2023-06-12",
-        time: "9:00 AM",
-      },
-      { id: 4, title: "Budget Review", date: "2023-06-09", time: "11:00 AM" },
-    ],
+  	upcoming: [
+  		{
+  			id: 1,
+  			title: "Weekly Progress Review",
+  			date: "2023-06-16",
+  			time: "10:00 AM",
+  		},
+  		{
+  			id: 2,
+  			title: "Safety Committee Meeting",
+  			date: "2023-06-19",
+  			time: "2:00 PM",
+  		},
+  	],
+  	completed: [
+  		{
+  			id: 3,
+  			title: "Contractor Briefing",
+  			date: "2023-06-12",
+  			time: "9:00 AM",
+  		},
+  		{ id: 4, title: "Budget Review", date: "2023-06-09", time: "11:00 AM" },
+  	],
   };
 
   const collaborators = [
-    {
-      id: 1,
-      name: "John Doe",
-      role: "Project Manager",
-      avatar: "/avatars/01.png",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      role: "Lead Engineer",
-      avatar: "/avatars/02.png",
-    },
-    {
-      id: 3,
-      name: "Mike Johnson",
-      role: "Safety Officer",
-      avatar: "/avatars/03.png",
-    },
-    {
-      id: 4,
-      name: "Sarah Brown",
-      role: "Architect",
-      avatar: "/avatars/04.png",
-    },
+  	{
+  		id: 1,
+  		name: "John Doe",
+  		role: "Project Manager",
+  		avatar: "/avatars/01.png",
+  	},
+  	{
+  		id: 2,
+  		name: "Jane Smith",
+  		role: "Lead Engineer",
+  		avatar: "/avatars/02.png",
+  	},
+  	{
+  		id: 3,
+  		name: "Mike Johnson",
+  		role: "Safety Officer",
+  		avatar: "/avatars/03.png",
+  	},
+  	{
+  		id: 4,
+  		name: "Sarah Brown",
+  		role: "Architect",
+  		avatar: "/avatars/04.png",
+  	},
   ];
 
   const weeks_in_number = [
-    // { week: "38", week_name: "September 17 - September 23" },
-    // { week: "39", week_name: "September 24 - October 1" },
-    { week: "40", week_name: "October 8 - October 14" },
-    { week: "41", week_name: "October 15 - October 21" },
-    { week: "42", week_name: "October 22 - October 28" },
+  	// { week: "38", week_name: "September 17 - September 23" },
+  	// { week: "39", week_name: "September 24 - October 1" },
+  	{ week: "40", week_name: "October 8 - October 14" },
+  	{ week: "41", week_name: "October 15 - October 21" },
+  	{ week: "42", week_name: "October 22 - October 28" },
   ];
 
   const handleWeekChange = (value: any) => {
-    setSelectedWeek(value);
+  	setSelectedWeek(value);
   };
   const selectedWeekObj = weeks_in_number.find(
-    (week) => week.week === selectedWeek
+  	(week) => week.week === selectedWeek,
   );
 
   const extractChangeOrdersByWeek = (weekNumber: string) => {
-    console.log("change_orders", change_orders);
-    const result: { [key: string]: { date: string; description: string }[] } =
+  	//console.log("change_orders", change_orders);
+  	const result: { [key: string]: { date: string; description: string }[] } =
       {};
 
-    for (const changeOrderKey in change_orders) {
-      const orders = change_orders[changeOrderKey];
-      const filteredOrders = orders.filter((order) => {
-        // Type checking
-        if (typeof order.week !== typeof weekNumber) {
-          console.warn(
-            `Type mismatch: order.week is ${typeof order.week}, but weekNumber is ${typeof weekNumber}`
-          );
-          return false;
-        }
-        return order.week === weekNumber;
-      });
+  	for (const changeOrderKey in change_orders) {
+  		const orders = change_orders[changeOrderKey];
+  		const filteredOrders = orders.filter((order) => {
+  			// Type checking
+  			if (typeof order.week !== typeof weekNumber) {
+  				console.warn(
+  					`Type mismatch: order.week is ${typeof order.week}, but weekNumber is ${typeof weekNumber}`,
+  				);
+  				return false;
+  			}
+  			return order.week === weekNumber;
+  		});
 
-      result[changeOrderKey] = filteredOrders.map((order) => ({
-        date: order.date,
-        description: order["change order"].description,
-      }));
-    }
+  		result[changeOrderKey] = filteredOrders.map((order) => ({
+  			date: order.date,
+  			description: order["change order"].description,
+  		}));
+  	}
 
-    return result;
+  	return result;
   };
 
   const filterByWeek = (data: any, weekNumber: string) => {
-    // Create a new object to store the filtered data
-    const filteredData: any = {};
+  	// Create a new object to store the filtered data
+  	const filteredData: any = {};
 
-    // Iterate over the weeks in the data
-    for (const week in data) {
-      // If the current week matches the provided weekNumber, add it to the filteredData
-      if (week === weekNumber) {
-        filteredData[week] = data[week];
-      }
-    }
+  	// Iterate over the weeks in the data
+  	for (const week in data) {
+  		// If the current week matches the provided weekNumber, add it to the filteredData
+  		if (week === weekNumber) {
+  			filteredData[week] = data[week];
+  		}
+  	}
 
-    // Return the filtered data
-    return filteredData;
+  	// Return the filtered data
+  	return filteredData;
   };
 
   useEffect(() => {
-    console.log("run");
-    const updatedChangeOrders = extractChangeOrdersByWeek(selectedWeek);
-    setChangeOrdersByWeek(updatedChangeOrders);
-    const updatedDelayFactors = filterByWeek(delay_factors, selectedWeek);
-    setDelayFactors(updatedDelayFactors);
-    const updatedRFIs = filterByWeek(rfi, selectedWeek);
-    setWeeklyRFI(updatedRFIs);
-    const updatedRisks = filterByWeek(risk_register, selectedWeek);
-    setRiskRegister(updatedRisks);
-    const updatedTaskProgress = filterByWeek(task_progress, selectedWeek);
-    setTaskProgress(updatedTaskProgress);
-    const updatedTradesAssessment = filterByWeek(
-      trade_assessment,
-      selectedWeek
-    );
-    setTradesAssessment(updatedTradesAssessment);
-    const updateWeeklyPriorities = filterByWeek(
-      weekly_priorities,
-      selectedWeek
-    );
-    setWeeklyPriorities(updateWeeklyPriorities);
+  	//console.log("run");
+  	const updatedChangeOrders = extractChangeOrdersByWeek(selectedWeek);
+  	setChangeOrdersByWeek(updatedChangeOrders);
+  	const updatedDelayFactors = filterByWeek(delay_factors, selectedWeek);
+  	setDelayFactors(updatedDelayFactors);
+  	const updatedRFIs = filterByWeek(rfi, selectedWeek);
+  	setWeeklyRFI(updatedRFIs);
+  	const updatedRisks = filterByWeek(risk_register, selectedWeek);
+  	setRiskRegister(updatedRisks);
+  	const updatedTaskProgress = filterByWeek(task_progress, selectedWeek);
+  	setTaskProgress(updatedTaskProgress);
+  	const updatedTradesAssessment = filterByWeek(
+  		trade_assessment,
+  		selectedWeek,
+  	);
+  	setTradesAssessment(updatedTradesAssessment);
+  	const updateWeeklyPriorities = filterByWeek(
+  		weekly_priorities,
+  		selectedWeek,
+  	);
+  	setWeeklyPriorities(updateWeeklyPriorities);
   }, [selectedWeek]);
 
   useEffect(() => {
-    console.log("change_orders_by_week", changeOrdersByWeek);
-    console.log("delay_factors", delayFactors);
-    console.log("weekly_rfi", weeklyRFI);
-    console.log("risk_register", riskRegister);
-    console.log("task_progress", taskProgress);
-    console.log("trades_assessment", tradesAssessment);
-    console.log("weekly_priorities", weeklyPriorities);
+  	//console.log("change_orders_by_week", changeOrdersByWeek);
+  	//console.log("delay_factors", delayFactors);
+  	//console.log("weekly_rfi", weeklyRFI);
+  	//console.log("risk_register", riskRegister);
+  	//console.log("task_progress", taskProgress);
+  	//console.log("trades_assessment", tradesAssessment);
+  	//console.log("weekly_priorities", weeklyPriorities);
   }, [changeOrdersByWeek]);
 
   return (
-    <>
-      {/* <div>
+  	<>
+  		{/* <div>
         {" "}
          <button onClick={toggleDrawer}>Toggle Drawer</button>
         <div
@@ -299,249 +299,246 @@ export default function ConstructionDashboard() {
           <DashboardRightPanel />
         </div>
       </div> */}
-      <div className="p-8 min-h-screen w-full">
-        <h1 className="text-3xl font-bold mb-6">
+  		<div className="p-8 min-h-screen w-full">
+  			<h1 className="text-3xl font-bold mb-6">
           Construction Project Dashboard
-        </h1>
-        <div className="flex flex-row">
-          <h1 className="text-2xl font-bold mb-6 mr-4 ml-4">Week:</h1>
-
-          <Select
-            onValueChange={(value) => {
-              handleWeekChange(value);
-            }}
-          >
-            <SelectTrigger className="w-fit">
-              <SelectValue
-                placeholder={
-                  selectedWeekObj ? selectedWeekObj.week_name : "Select a week"
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {weeks_in_number.map((week) => (
-                  <SelectItem key={week.week} value={week.week}>
-                    {week.week_name}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="md:col-span-2 lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TriangleAlertIcon className="h-6 w-6" />
+  			</h1>
+  			<div className="flex flex-row">
+  				<h1 className="text-2xl font-bold mb-6 mr-4 ml-4">Week:</h1>
+  				<Select
+  					onValueChange={(value) => {
+  						handleWeekChange(value);
+  					}}
+  				>
+  					<SelectTrigger className="w-fit">
+  						<SelectValue
+  							placeholder={
+  								selectedWeekObj ? selectedWeekObj.week_name : "Select a week"
+  							}
+  						/>
+  					</SelectTrigger>
+  					<SelectContent>
+  						<SelectGroup>
+  							{weeks_in_number.map((week) => (
+  								<SelectItem key={week.week} value={week.week}>
+  									{week.week_name}
+  								</SelectItem>
+  							))}
+  						</SelectGroup>
+  					</SelectContent>
+  				</Select>
+  			</div>
+  			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  				<Card className="md:col-span-2 lg:col-span-2">
+  					<CardHeader>
+  						<CardTitle className="flex items-center gap-2">
+  							<TriangleAlertIcon className="h-6 w-6" />
                 Risks Register
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="h-80 overflow-auto ">
-              <div>
-                {riskRegister && (
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="text-sm ">
-                        <TableHead>Risk</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead>Impact Potential</TableHead>
-                        <TableHead>Likelihood</TableHead>{" "}
-                        {/* Added Likelihood column */}
-                        <TableHead>Date</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody className="text-sm  ">
-                      {Object.keys(riskRegister).map((week) =>
-                        Object.keys(riskRegister[week]).map((date) =>
-                          riskRegister[week][date].map((risk, index) => (
-                            <TableRow key={index}>
-                              <TableCell>{risk.Risk}</TableCell>
-                              <TableCell>{`${risk[
-                                "Impact Potential"
-                              ].description.substring(0, 25)}${
-                                risk["Impact Potential"].description.length > 25
-                                  ? "..."
-                                  : ""
-                              }`}</TableCell>
-                              <TableCell>
-                                {risk["Impact Potential"].score}
-                              </TableCell>
-                              <TableCell>{risk.Likelihood.score}</TableCell>{" "}
-                              {/* Added Likelihood score */}
-                              <TableCell>{date}</TableCell>
-                            </TableRow>
-                          ))
-                        )
-                      )}
-                      {Object.keys(risk_register).map(
-                        (week) =>
-                          week === "Ongoing" // Use a ternary operator for conditional rendering
-                            ? risk_register &&
+  						</CardTitle>
+  					</CardHeader>
+  					<CardContent className="h-80 overflow-auto ">
+  						<div>
+  							{riskRegister && (
+  								<Table>
+  									<TableHeader>
+  										<TableRow className="text-sm ">
+  											<TableHead>Risk</TableHead>
+  											<TableHead>Description</TableHead>
+  											<TableHead>Impact Potential</TableHead>
+  											<TableHead>Likelihood</TableHead>{" "}
+  											{/* Added Likelihood column */}
+  											<TableHead>Date</TableHead>
+  										</TableRow>
+  									</TableHeader>
+  									<TableBody className="text-sm  ">
+  										{Object.keys(riskRegister).map((week) =>
+  											Object.keys(riskRegister[week]).map((date) =>
+  												riskRegister[week][date].map((risk, index) => (
+  													<TableRow key={index}>
+  														<TableCell>{risk.Risk}</TableCell>
+  														<TableCell>{`${risk[
+  															"Impact Potential"
+  														].description.substring(0, 25)}${
+  															risk["Impact Potential"].description.length > 25
+  																? "..."
+  																: ""
+  														}`}</TableCell>
+  														<TableCell>
+  															{risk["Impact Potential"].score}
+  														</TableCell>
+  														<TableCell>{risk.Likelihood.score}</TableCell>{" "}
+  														{/* Added Likelihood score */}
+  														<TableCell>{date}</TableCell>
+  													</TableRow>
+  												)),
+  											),
+  										)}
+  										{Object.keys(risk_register).map(
+  											(week) =>
+  												week === "Ongoing" // Use a ternary operator for conditional rendering
+  													? risk_register &&
                               risk_register[week].Risks.map((risk, index) => (
-                                <TableRow key={index}>
-                                  <TableCell>{risk.Risk}</TableCell>
-                                  <TableCell>
-                                    {`${risk[
-                                      "Impact Potential"
-                                    ].description.substring(0, 25)}${
-                                      risk["Impact Potential"].description
-                                        .length > 25
-                                        ? "..."
-                                        : ""
-                                    }`}
-                                  </TableCell>
-                                  <TableCell>
-                                    {risk["Impact Potential"].score}
-                                  </TableCell>
-                                  <TableCell>{risk.Likelihood.score}</TableCell>
-                                  <TableCell>{week}</TableCell>
-                                </TableRow>
+                              	<TableRow key={index}>
+                              		<TableCell>{risk.Risk}</TableCell>
+                              		<TableCell>
+                              			{`${risk[
+                              				"Impact Potential"
+                              			].description.substring(0, 25)}${
+                              				risk["Impact Potential"].description
+                              					.length > 25
+                              					? "..."
+                              					: ""
+                              			}`}
+                              		</TableCell>
+                              		<TableCell>
+                              			{risk["Impact Potential"].score}
+                              		</TableCell>
+                              		<TableCell>{risk.Likelihood.score}</TableCell>
+                              		<TableCell>{week}</TableCell>
+                              	</TableRow>
                               ))
-                            : null // Render nothing if week is not "Ongoing"
-                      )}
-                    </TableBody>
-                  </Table>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="h-80">
-              <Tabs defaultValue="priorities" className="w-full mt-2">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="priorities">Priorities</TabsTrigger>
-                  <TabsTrigger value="delays">Delay Factors</TabsTrigger>
-                  <TabsTrigger value="trades">Trades</TabsTrigger>
-                </TabsList>
-                <TabsContent
-                  value="priorities"
-                  className="h-[320px] overflow-auto"
-                >
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <LandPlotIcon className="h-6 w-6" />
+  													: null, // Render nothing if week is not "Ongoing"
+  										)}
+  									</TableBody>
+  								</Table>
+  							)}
+  						</div>
+  					</CardContent>
+  				</Card>
+  				<Card>
+  					<CardContent className="h-80">
+  						<Tabs className="w-full mt-2" defaultValue="priorities">
+  							<TabsList className="grid w-full grid-cols-3">
+  								<TabsTrigger value="priorities">Priorities</TabsTrigger>
+  								<TabsTrigger value="delays">Delay Factors</TabsTrigger>
+  								<TabsTrigger value="trades">Trades</TabsTrigger>
+  							</TabsList>
+  							<TabsContent
+  								className="h-[320px] overflow-auto"
+  								value="priorities"
+  							>
+  								<CardHeader>
+  									<CardTitle className="flex items-center gap-2">
+  										<LandPlotIcon className="h-6 w-6" />
                       Week Priorities
-                    </CardTitle>
-                  </CardHeader>
-                  <div>
-                    {weeklyPriorities && (
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="text-sm ">
-                            <TableHead>Priority</TableHead>
-                            <TableHead>Description</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody className="text-sm">
-                          {Object.keys(weeklyPriorities).map((week) => (
-                            // Assuming week is the key for each week's data, like "38"
-                            <React.Fragment key={week}>
-                              {weeklyPriorities[week].priorities.map(
-                                (priority, index) => (
-                                  <TableRow key={index}>
-                                    <TableCell>{priority.topic}</TableCell>
-                                    <TableCell>
-                                      {priority.description}
-                                    </TableCell>
-                                  </TableRow>
-                                )
-                              )}
-                            </React.Fragment>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    )}
-                  </div>
-                </TabsContent>
-                <TabsContent value="delays" className="h-[320px] overflow-auto">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <AlarmClockCheckIcon className="h-6 w-6" />
+  									</CardTitle>
+  								</CardHeader>
+  								<div>
+  									{weeklyPriorities && (
+  										<Table>
+  											<TableHeader>
+  												<TableRow className="text-sm ">
+  													<TableHead>Priority</TableHead>
+  													<TableHead>Description</TableHead>
+  												</TableRow>
+  											</TableHeader>
+  											<TableBody className="text-sm">
+  												{Object.keys(weeklyPriorities).map((week) => (
+  													// Assuming week is the key for each week's data, like "38"
+  													<React.Fragment key={week}>
+  														{weeklyPriorities[week].priorities.map(
+  															(priority, index) => (
+  																<TableRow key={index}>
+  																	<TableCell>{priority.topic}</TableCell>
+  																	<TableCell>
+  																		{priority.description}
+  																	</TableCell>
+  																</TableRow>
+  															),
+  														)}
+  													</React.Fragment>
+  												))}
+  											</TableBody>
+  										</Table>
+  									)}
+  								</div>
+  							</TabsContent>
+  							<TabsContent className="h-[320px] overflow-auto" value="delays">
+  								<CardHeader>
+  									<CardTitle className="flex items-center gap-2">
+  										<AlarmClockCheckIcon className="h-6 w-6" />
                       Delay Factors
-                    </CardTitle>
-                  </CardHeader>
-                  <div>
-                    {delayFactors && (
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="text-sm ">
-                            <TableHead>Factor</TableHead>
-                            <TableHead>Reason</TableHead>
-                            <TableHead>Date</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody className="text-sm">
-                          {Object.keys(delayFactors).map((week) =>
-                            Object.keys(delayFactors[week]).map((date) =>
-                              delayFactors[week][date].map(
-                                (order: any, index: any) => (
-                                  <TableRow key={index}>
-                                    <TableCell>{order.factor}</TableCell>
-                                    <TableCell>{`${order.description.substring(
-                                      0,
-                                      25
-                                    )}${
-                                      order.description.length > 25 ? "..." : ""
-                                    }`}</TableCell>
-                                    <TableCell>{date}</TableCell>{" "}
-                                    {/* Use date from the inner loop */}
-                                  </TableRow>
-                                )
-                              )
-                            )
-                          )}
-                        </TableBody>
-                      </Table>
-                    )}
-                  </div>
-                </TabsContent>
-                <TabsContent value="trades" className="h-[320px] overflow-auto">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrafficConeIcon className="h-6 w-6" />
+  									</CardTitle>
+  								</CardHeader>
+  								<div>
+  									{delayFactors && (
+  										<Table>
+  											<TableHeader>
+  												<TableRow className="text-sm ">
+  													<TableHead>Factor</TableHead>
+  													<TableHead>Reason</TableHead>
+  													<TableHead>Date</TableHead>
+  												</TableRow>
+  											</TableHeader>
+  											<TableBody className="text-sm">
+  												{Object.keys(delayFactors).map((week) =>
+  													Object.keys(delayFactors[week]).map((date) =>
+  														delayFactors[week][date].map(
+  															(order: any, index: any) => (
+  																<TableRow key={index}>
+  																	<TableCell>{order.factor}</TableCell>
+  																	<TableCell>{`${order.description.substring(
+  																		0,
+  																		25,
+  																	)}${
+  																		order.description.length > 25 ? "..." : ""
+  																	}`}</TableCell>
+  																	<TableCell>{date}</TableCell>{" "}
+  																	{/* Use date from the inner loop */}
+  																</TableRow>
+  															),
+  														),
+  													),
+  												)}
+  											</TableBody>
+  										</Table>
+  									)}
+  								</div>
+  							</TabsContent>
+  							<TabsContent className="h-[320px] overflow-auto" value="trades">
+  								<CardHeader>
+  									<CardTitle className="flex items-center gap-2">
+  										<TrafficConeIcon className="h-6 w-6" />
                       Trades Tracking
-                    </CardTitle>
-                  </CardHeader>
-                  <div>
-                    {tradesAssessment && (
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="text-sm ">
-                            <TableHead>Trade</TableHead>
-                            <TableHead>Risk Score</TableHead>
-                            <TableHead>Details</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody className="text-sm">
-                          {Object.keys(tradesAssessment).map((week) =>
-                            Object.keys(tradesAssessment[week]).map((date) =>
-                              tradesAssessment[week][date].map(
-                                (order: any, index: any) => (
-                                  <TableRow key={index}>
-                                    <TableCell>{order.Trade}</TableCell>
-                                    <TableCell>{order["Risk score"]}</TableCell>
-                                    <TableCell>
-                                      {`${order.Rationale.substring(0, 25)}${
-                                        order.Rationale.length > 25 ? "..." : ""
-                                      }`}
-                                    </TableCell>
-                                  </TableRow>
-                                )
-                              )
-                            )
-                          )}
-                        </TableBody>
-                      </Table>
-                    )}
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-
-          {/* <Card>
+  									</CardTitle>
+  								</CardHeader>
+  								<div>
+  									{tradesAssessment && (
+  										<Table>
+  											<TableHeader>
+  												<TableRow className="text-sm ">
+  													<TableHead>Trade</TableHead>
+  													<TableHead>Risk Score</TableHead>
+  													<TableHead>Details</TableHead>
+  												</TableRow>
+  											</TableHeader>
+  											<TableBody className="text-sm">
+  												{Object.keys(tradesAssessment).map((week) =>
+  													Object.keys(tradesAssessment[week]).map((date) =>
+  														tradesAssessment[week][date].map(
+  															(order: any, index: any) => (
+  																<TableRow key={index}>
+  																	<TableCell>{order.Trade}</TableCell>
+  																	<TableCell>{order["Risk score"]}</TableCell>
+  																	<TableCell>
+  																		{`${order.Rationale.substring(0, 25)}${
+  																			order.Rationale.length > 25 ? "..." : ""
+  																		}`}
+  																	</TableCell>
+  																</TableRow>
+  															),
+  														),
+  													),
+  												)}
+  											</TableBody>
+  										</Table>
+  									)}
+  								</div>
+  							</TabsContent>
+  						</Tabs>
+  					</CardContent>
+  				</Card>
+  				{/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <LandPlotIcon className="h-6 w-6" />
@@ -578,146 +575,145 @@ export default function ConstructionDashboard() {
               </div>
             </CardContent>
           </Card> */}
-          <Card className="md:col-span-2 lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <HardHatIcon className="h-6 w-6" />
+  				<Card className="md:col-span-2 lg:col-span-2">
+  					<CardHeader>
+  						<CardTitle className="flex items-center gap-2">
+  							<HardHatIcon className="h-6 w-6" />
                 Tasks Progress
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="h-80 overflow-auto ">
-              <div>
-                {taskProgress && (
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="text-sm ">
-                        <TableHead>Task</TableHead>
-                        <TableHead>Latest Update</TableHead>
-                        <TableHead>Date</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody className="text-sm">
-                      {Object.keys(taskProgress).map((week) =>
-                        Object.keys(taskProgress[week]).map((date) =>
-                          taskProgress[week][date].map(
-                            (order: any, index: any) => (
-                              <TableRow key={index}>
-                                <TableCell>{order.Task}</TableCell>
-                                <TableCell>{`${order.description.substring(
-                                  0,
-                                  25
-                                )}${
-                                  order.description.length > 25 ? "..." : ""
-                                }`}</TableCell>
-                                <TableCell>{date}</TableCell>{" "}
-                                {/* Use date from the inner loop */}
-                              </TableRow>
-                            )
-                          )
-                        )
-                      )}
-                    </TableBody>
-                  </Table>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="h-80 ">
-              <Tabs defaultValue="rfi" className="w-full mt-2">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="rfi">RFIs</TabsTrigger>
-                  <TabsTrigger value="change_order">Change Orders</TabsTrigger>
-                </TabsList>
-                <TabsContent value="rfi" className="h-[320px] overflow-auto">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <MessageCircleQuestionIcon className="h-6 w-6" />
+  						</CardTitle>
+  					</CardHeader>
+  					<CardContent className="h-80 overflow-auto ">
+  						<div>
+  							{taskProgress && (
+  								<Table>
+  									<TableHeader>
+  										<TableRow className="text-sm ">
+  											<TableHead>Task</TableHead>
+  											<TableHead>Latest Update</TableHead>
+  											<TableHead>Date</TableHead>
+  										</TableRow>
+  									</TableHeader>
+  									<TableBody className="text-sm">
+  										{Object.keys(taskProgress).map((week) =>
+  											Object.keys(taskProgress[week]).map((date) =>
+  												taskProgress[week][date].map(
+  													(order: any, index: any) => (
+  														<TableRow key={index}>
+  															<TableCell>{order.Task}</TableCell>
+  															<TableCell>{`${order.description.substring(
+  																0,
+  																25,
+  															)}${
+  																order.description.length > 25 ? "..." : ""
+  															}`}</TableCell>
+  															<TableCell>{date}</TableCell>{" "}
+  															{/* Use date from the inner loop */}
+  														</TableRow>
+  													),
+  												),
+  											),
+  										)}
+  									</TableBody>
+  								</Table>
+  							)}
+  						</div>
+  					</CardContent>
+  				</Card>
+  				<Card>
+  					<CardContent className="h-80 ">
+  						<Tabs className="w-full mt-2" defaultValue="rfi">
+  							<TabsList className="grid w-full grid-cols-2">
+  								<TabsTrigger value="rfi">RFIs</TabsTrigger>
+  								<TabsTrigger value="change_order">Change Orders</TabsTrigger>
+  							</TabsList>
+  							<TabsContent className="h-[320px] overflow-auto" value="rfi">
+  								<CardHeader>
+  									<CardTitle className="flex items-center gap-2">
+  										<MessageCircleQuestionIcon className="h-6 w-6" />
                       RFIs
-                    </CardTitle>
-                  </CardHeader>
-                  <div>
-                    {weeklyRFI && (
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="text-sm ">
-                            <TableHead>RFI</TableHead>
-                            <TableHead>Latest Update</TableHead>
-                            <TableHead>Date</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody className="text-sm">
-                          {Object.keys(weeklyRFI).map((week) =>
-                            Object.keys(weeklyRFI[week]).map((date) =>
-                              weeklyRFI[week][date].map(
-                                (order: any, index: any) => (
-                                  <TableRow key={index}>
-                                    <TableCell>{order.RFI}</TableCell>
-                                    <TableCell>{`${order.description.substring(
-                                      0,
-                                      25
-                                    )}${
-                                      order.description.length > 25 ? "..." : ""
-                                    }`}</TableCell>
-                                    <TableCell>{date}</TableCell>{" "}
-                                    {/* Use date from the inner loop */}
-                                  </TableRow>
-                                )
-                              )
-                            )
-                          )}
-                        </TableBody>
-                      </Table>
-                    )}
-                  </div>
-                </TabsContent>
-                <TabsContent
-                  value="change_order"
-                  className="h-[320px] overflow-auto"
-                >
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <ReplaceAllIcon className="h-6 w-6" />
+  									</CardTitle>
+  								</CardHeader>
+  								<div>
+  									{weeklyRFI && (
+  										<Table>
+  											<TableHeader>
+  												<TableRow className="text-sm ">
+  													<TableHead>RFI</TableHead>
+  													<TableHead>Latest Update</TableHead>
+  													<TableHead>Date</TableHead>
+  												</TableRow>
+  											</TableHeader>
+  											<TableBody className="text-sm">
+  												{Object.keys(weeklyRFI).map((week) =>
+  													Object.keys(weeklyRFI[week]).map((date) =>
+  														weeklyRFI[week][date].map(
+  															(order: any, index: any) => (
+  																<TableRow key={index}>
+  																	<TableCell>{order.RFI}</TableCell>
+  																	<TableCell>{`${order.description.substring(
+  																		0,
+  																		25,
+  																	)}${
+  																		order.description.length > 25 ? "..." : ""
+  																	}`}</TableCell>
+  																	<TableCell>{date}</TableCell>{" "}
+  																	{/* Use date from the inner loop */}
+  																</TableRow>
+  															),
+  														),
+  													),
+  												)}
+  											</TableBody>
+  										</Table>
+  									)}
+  								</div>
+  							</TabsContent>
+  							<TabsContent
+  								className="h-[320px] overflow-auto"
+  								value="change_order"
+  							>
+  								<CardHeader>
+  									<CardTitle className="flex items-center gap-2">
+  										<ReplaceAllIcon className="h-6 w-6" />
                       Change Orders
-                    </CardTitle>
-                  </CardHeader>
-                  <div>
-                    {changeOrdersByWeek && (
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="text-sm  ">
-                            <TableHead>Change Order</TableHead>
-                            <TableHead>Latest Update</TableHead>
-                            <TableHead>Date</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody className="text-sm ">
-                          {Object.keys(changeOrdersByWeek).map((changeOrder) =>
-                            changeOrdersByWeek[changeOrder].map(
-                              (order: any, index: any) => (
-                                <TableRow key={index}>
-                                  <TableCell>{changeOrder}</TableCell>
-                                  <TableCell>{`${order.description.substring(
-                                    0,
-                                    25
-                                  )}${
-                                    order.description.length > 25 ? "..." : ""
-                                  }`}</TableCell>
-                                  <TableCell>{order.date}</TableCell>
-                                </TableRow>
-                              )
-                            )
-                          )}
-                        </TableBody>
-                      </Table>
-                    )}
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-
-          {/* <Card>
+  									</CardTitle>
+  								</CardHeader>
+  								<div>
+  									{changeOrdersByWeek && (
+  										<Table>
+  											<TableHeader>
+  												<TableRow className="text-sm  ">
+  													<TableHead>Change Order</TableHead>
+  													<TableHead>Latest Update</TableHead>
+  													<TableHead>Date</TableHead>
+  												</TableRow>
+  											</TableHeader>
+  											<TableBody className="text-sm ">
+  												{Object.keys(changeOrdersByWeek).map((changeOrder) =>
+  													changeOrdersByWeek[changeOrder].map(
+  														(order: any, index: any) => (
+  															<TableRow key={index}>
+  																<TableCell>{changeOrder}</TableCell>
+  																<TableCell>{`${order.description.substring(
+  																	0,
+  																	25,
+  																)}${
+  																	order.description.length > 25 ? "..." : ""
+  																}`}</TableCell>
+  																<TableCell>{order.date}</TableCell>
+  															</TableRow>
+  														),
+  													),
+  												)}
+  											</TableBody>
+  										</Table>
+  									)}
+  								</div>
+  							</TabsContent>
+  						</Tabs>
+  					</CardContent>
+  				</Card>
+  				{/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlarmClockCheckIcon className="h-6 w-6" />
@@ -762,7 +758,7 @@ export default function ConstructionDashboard() {
             </CardContent>
           </Card> */}
 
-          {/* <Card>
+  				{/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrafficConeIcon className="h-6 w-6" />
@@ -804,9 +800,9 @@ export default function ConstructionDashboard() {
               </div>
             </CardContent>
           </Card> */}
-        </div>
-      </div>
-    </>
+  			</div>
+  		</div>
+  	</>
   );
 }
 

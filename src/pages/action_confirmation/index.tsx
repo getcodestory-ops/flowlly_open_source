@@ -6,15 +6,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 const queryClient = new QueryClient();
 
 export default function Home() {
-  return (
-    <>
-      <main>
-        <QueryClientProvider client={queryClient}>
-          <FormPage>
-            <LoginPage />
-          </FormPage>
-        </QueryClientProvider>
-      </main>
-    </>
-  );
+	return (
+		<>
+			<main>
+				<QueryClientProvider client={queryClient}>
+					<FormPage>
+						<LoginPage />
+					</FormPage>
+				</QueryClientProvider>
+			</main>
+		</>
+	);
 }

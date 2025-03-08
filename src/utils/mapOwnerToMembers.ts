@@ -7,19 +7,19 @@ export interface ActivityEntityWithMembers
 }
 
 export function mapOwnersToMembers(
-  activities: ActivityEntity[],
-  members: MemberEntity[]
+	activities: ActivityEntity[],
+	members: MemberEntity[],
 ): ActivityEntityWithMembers[] {
-  return activities.map((activity) => {
-    const memberOwners: MemberEntity[] = (activity.owner || [])
-      .map((ownerId) => {
-        return members.find((member) => member.id === ownerId);
-      })
-      .filter((member): member is MemberEntity => member !== undefined);
+	return activities.map((activity) => {
+		const memberOwners: MemberEntity[] = (activity.owner || [])
+			.map((ownerId) => {
+				return members.find((member) => member.id === ownerId);
+			})
+			.filter((member): member is MemberEntity => member !== undefined);
 
-    return {
-      ...activity,
-      owner: memberOwners,
-    };
-  });
+		return {
+			...activity,
+			owner: memberOwners,
+		};
+	});
 }

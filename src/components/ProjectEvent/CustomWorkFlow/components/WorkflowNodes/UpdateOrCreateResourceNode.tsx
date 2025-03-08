@@ -4,17 +4,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
 } from "@/components/ui/select";
 import {
-  UpdateOrCreateResourceNodeConfig,
-  NodeStatus,
-  NodeType,
-  WorkflowNode,
+	UpdateOrCreateResourceNodeConfig,
+	NodeStatus,
+	NodeType,
+	WorkflowNode,
 } from "../../types";
 import { Textarea } from "@/components/ui/textarea";
 interface UpdateOrCreateResourceNodeProps {
@@ -24,88 +24,90 @@ interface UpdateOrCreateResourceNodeProps {
 }
 
 export function UpdateOrCreateResourceNode({
-  onSave,
-  onCancel,
-  editingNode,
+	onSave,
+	onCancel,
+	editingNode,
 }: UpdateOrCreateResourceNodeProps) {
-  const [config, setConfig] = useState<UpdateOrCreateResourceNodeConfig>({
-    prompt:
+	const [config, setConfig] = useState<UpdateOrCreateResourceNodeConfig>({
+		prompt:
       (editingNode?.config as UpdateOrCreateResourceNodeConfig)?.prompt || "",
-    resourceType:
+		resourceType:
       (editingNode?.config as UpdateOrCreateResourceNodeConfig)?.resourceType ||
       "text",
-    resourceName:
+		resourceName:
       (editingNode?.config as UpdateOrCreateResourceNodeConfig)?.resourceName ||
       "",
-    next_steps: [],
-    retry_count: 0,
-    max_retries: 3,
-  });
+		next_steps: [],
+		retry_count: 0,
+		max_retries: 3,
+	});
 
-  return (
-    <Card>
-      <CardContent className="space-y-4 pt-6">
-        <div className="space-y-2">
-          <Label htmlFor="resourceName">Resource Name</Label>
-          <Input
-            id="resourceName"
-            value={config.resourceName}
-            onChange={(e) =>
-              setConfig({ ...config, resourceName: e.target.value })
-            }
-            placeholder="Enter the name of the resource"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="prompt">Update Prompt</Label>
-          <Textarea
-            id="prompt"
-            value={config.prompt}
-            onChange={(e) => setConfig({ ...config, prompt: e.target.value })}
-            placeholder="Enter the prompt for updating or creating the resource"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="resourceType">Resource Type</Label>
-          <Select
-            value={config.resourceType}
-            onValueChange={(value: "text" | "table") =>
-              setConfig({ ...config, resourceType: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select resource type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="text">Text</SelectItem>
-              <SelectItem value="table">Table</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex justify-end space-x-2">
-          <Button type="button" variant="outline" onClick={onCancel}>
+	return (
+		<Card>
+			<CardContent className="space-y-4 pt-6">
+				<div className="space-y-2">
+					<Label htmlFor="resourceName">Resource Name</Label>
+					<Input
+						id="resourceName"
+						onChange={(e) =>
+							setConfig({ ...config, resourceName: e.target.value })
+						}
+						placeholder="Enter the name of the resource"
+						value={config.resourceName}
+					/>
+				</div>
+				<div className="space-y-2">
+					<Label htmlFor="prompt">Update Prompt</Label>
+					<Textarea
+						id="prompt"
+						onChange={(e) => setConfig({ ...config, prompt: e.target.value })}
+						placeholder="Enter the prompt for updating or creating the resource"
+						value={config.prompt}
+					/>
+				</div>
+				<div className="space-y-2">
+					<Label htmlFor="resourceType">Resource Type</Label>
+					<Select
+						onValueChange={(value: "text" | "table") =>
+							setConfig({ ...config, resourceType: value })
+						}
+						value={config.resourceType}
+					>
+						<SelectTrigger>
+							<SelectValue placeholder="Select resource type" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="text">Text</SelectItem>
+							<SelectItem value="table">Table</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+				<div className="flex justify-end space-x-2">
+					<Button
+						onClick={onCancel}
+						type="button"
+						variant="outline"
+					>
             Cancel
-          </Button>
-          <Button
-            type="button"
-            onClick={() => {
-              onSave({
-                id: editingNode?.id || crypto.randomUUID(),
-                type: NodeType.UPDATE_RESOURCE,
-                title: "Update or Create Resource",
-                status: NodeStatus.PENDING,
-                timestamp: new Date().toISOString(),
-                retry_count: 0,
-                config,
-              });
-            }}
-          >
-            {editingNode ? "Update" : "Add"} Node
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
+					</Button>
+					<Button
+						onClick={() => {
+							onSave({
+								id: editingNode?.id || crypto.randomUUID(),
+								type: NodeType.UPDATE_RESOURCE,
+								title: "Update or Create Resource",
+								status: NodeStatus.PENDING,
+								timestamp: new Date().toISOString(),
+								retry_count: 0,
+								config,
+							});
+						}}
+						type="button"
+					>
+						{editingNode ? "Update" : "Add"} Node
+					</Button>
+				</div>
+			</CardContent>
+		</Card>
+	);
 }

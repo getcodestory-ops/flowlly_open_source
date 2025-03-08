@@ -5,40 +5,40 @@ import { useStore } from "@/utils/store";
 import { Task } from "gantt-task-react";
 
 export const useArchiveActivity = () => {
-  const toast = useToast();
-  const queryClient = useQueryClient();
+	const toast = useToast();
+	const queryClient = useQueryClient();
 
-  const { session, activeProject } = useStore((state) => ({
-    session: state.session,
-    activeProject: state.activeProject,
-  }));
+	const { session, activeProject } = useStore((state) => ({
+		session: state.session,
+		activeProject: state.activeProject,
+	}));
 
-  const { mutate: mutateArchivectivity, isPending: deletePending } =
+	const { mutate: mutateArchivectivity, isPending: deletePending } =
     useMutation({
-      mutationFn: archiveActivity,
-      onSuccess: (data) => {
-        toast({
-          title: "Success",
-          description: data.message,
-          status: "success",
-          duration: 4000,
-          isClosable: true,
-          position: "bottom-right",
-        });
-        queryClient.invalidateQueries({ queryKey: ["activityList"] });
-      },
+    	mutationFn: archiveActivity,
+    	onSuccess: (data) => {
+    		toast({
+    			title: "Success",
+    			description: data.message,
+    			status: "success",
+    			duration: 4000,
+    			isClosable: true,
+    			position: "bottom-right",
+    		});
+    		queryClient.invalidateQueries({ queryKey: ["activityList"] });
+    	},
     });
 
-  const handleActivityArchive = (id: string) => {
-    if (!activeProject || !session) return;
+	const handleActivityArchive = (id: string) => {
+		if (!activeProject || !session) return;
 
-    mutateArchivectivity({
-      session,
-      projectId: activeProject.project_id,
-      activityId: id,
-    });
-    return;
-  };
+		mutateArchivectivity({
+			session,
+			projectId: activeProject.project_id,
+			activityId: id,
+		});
+		return;
+	};
 
-  return handleActivityArchive;
+	return handleActivityArchive;
 };

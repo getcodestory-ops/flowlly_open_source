@@ -6,14 +6,14 @@ interface HydrationHandlerProps {
 }
 
 const HydrationHandler: React.FC<HydrationHandlerProps> = ({ children }) => {
-  const hasHydrated = useStore((state) => state.hasHydrated);
+	const hasHydrated = useStore((state) => state.hasHydrated);
 
-  if (!hasHydrated) {
-    // You can render a loading state here if you want
-    return <div>Loading...</div>;
-  }
+	if (!hasHydrated) {
+		// You can render a loading state here if you want
+		return <div>Loading...</div>;
+	}
 
-  return <>{children}</>;
+	return <>{children}</>;
 };
 
 export default HydrationHandler;

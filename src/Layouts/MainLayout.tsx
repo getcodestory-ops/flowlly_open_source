@@ -19,117 +19,114 @@ import ConstructionDashboard from "@/components/ProjectDashboard/ConstructionDas
 const queryClient = new QueryClient();
 
 export default function MainLayout({
-  children,
+	children,
 }: {
   children?: React.ReactNode;
 }) {
-  const router = useRouter();
-  const path = router.pathname;
+	const router = useRouter();
+	const path = router.pathname;
 
-  const {
-    setSessionToken,
-    appView,
-    setAppView,
-    userActivities,
+	const {
+		setSessionToken,
+		appView,
+		setAppView,
+		userActivities,
 
-    setProjectStatus,
-  } = useStore((state) => ({
-    setSessionToken: state.setSession,
-    appView: state.appView,
-    setAppView: state.setAppView,
-    userActivities: state.userActivities,
+		setProjectStatus,
+	} = useStore((state) => ({
+		setSessionToken: state.setSession,
+		appView: state.appView,
+		setAppView: state.setAppView,
+		userActivities: state.userActivities,
 
-    setProjectStatus: state.setProjectStatus,
-  }));
+		setProjectStatus: state.setProjectStatus,
+	}));
 
-  useEffect(() => {
-    setProjectStatus(checkProjectStatus(userActivities));
-  }, [userActivities]);
+	useEffect(() => {
+		setProjectStatus(checkProjectStatus(userActivities));
+	}, [userActivities]);
 
-  useEffect(() => {
-    async function loginCheck() {
-      const { accessToken, refreshToken } = router.query;
+	useEffect(() => {
+		async function loginCheck() {
+			const { accessToken, refreshToken } = router.query;
 
-      if (accessToken && refreshToken) {
-        if (
-          typeof accessToken === "string" &&
+			if (accessToken && refreshToken) {
+				if (
+					typeof accessToken === "string" &&
           typeof refreshToken === "string"
-        ) {
-          await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-        }
-      }
+				) {
+					await supabase.auth.setSession({
+						access_token: accessToken,
+						refresh_token: refreshToken,
+					});
+				}
+			}
 
-      const { data } = await supabase.auth.getSession();
+			const { data } = await supabase.auth.getSession();
 
-      if (!data?.session?.user) {
-        setAppView("login");
-        router.replace("/");
-      } else {
-        setSessionToken(data?.session);
-        if (path === "/auth/passwordChange") {
-          setAppView("changePassword");
-        } else {
-          setAppView("dashboard");
-        }
-      }
-    }
-    loginCheck();
-  }, []);
+			if (!data?.session?.user) {
+				setAppView("login");
+				router.replace("/");
+			} else {
+				setSessionToken(data?.session);
+				if (path === "/auth/passwordChange") {
+					setAppView("changePassword");
+				} else {
+					setAppView("dashboard");
+				}
+			}
+		}
+		loginCheck();
+	}, []);
 
-  useEffect(() => {
-    if (path === "/auth/passwordChange") {
-      setAppView("changePassword");
-    } else {
-      setAppView("dashboard");
-    }
-  }, [router.pathname]);
+	useEffect(() => {
+		if (path === "/auth/passwordChange") {
+			setAppView("changePassword");
+		} else {
+			setAppView("dashboard");
+		}
+	}, [router.pathname]);
 
-  return (
-    <>
-      <main>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <div className="w-full h-full overflow-auto">
-              {(appView === "login" || appView === "changePassword") && (
-                <div className=" flex flex-col w-[100vw] h-[100vh] ">
-                  {children}
-                </div>
-              )}
-
-              {appView !== "login" && appView !== "changePassword" && (
-                <div className=" flex flex-col w-[100vw] h-[100vh] ">
-                  <ProjectInfoDisplay />
-
-                  <MainDisplayInLayout appView={appView} />
-                </div>
-              )}
-            </div>
-          </TooltipProvider>
-        </QueryClientProvider>
-      </main>
-    </>
-  );
+	return (
+		<>
+			<main>
+				<QueryClientProvider client={queryClient}>
+					<TooltipProvider>
+						<div className="w-full h-full overflow-auto">
+							{(appView === "login" || appView === "changePassword") && (
+								<div className=" flex flex-col w-[100vw] h-[100vh] ">
+									{children}
+								</div>
+							)}
+							{appView !== "login" && appView !== "changePassword" && (
+								<div className=" flex flex-col w-[100vw] h-[100vh] ">
+									<ProjectInfoDisplay />
+									<MainDisplayInLayout appView={appView} />
+								</div>
+							)}
+						</div>
+					</TooltipProvider>
+				</QueryClientProvider>
+			</main>
+		</>
+	);
 }
 
 const MainDisplayInLayout = ({ appView }: { appView: string }) => {
-  return (
-    <div className="flex gap-2 p-1 w-full h-full overflow-hidden">
-      <div className="w-12 border-r">
-        <SideMenuPanel />
-      </div>
-
-      <ScrollArea className="flex-grow ">
-        {appView === "dashboard" && <ConstructionDashboard />}
-        {appView === "schedule" && <ScheduleInterface />}
-        {appView === "agent" && <ChatComponent />}
-        {appView === "updates" && <DocumentFolderModule />}
-        {appView === "project" && <ProjectBoard />}
-        {appView === "members" && <ProjectSetup />}
-        {appView === "integrations" && <Integration />}
-      </ScrollArea>
-    </div>
-  );
+	return (
+		<div className="flex gap-2 p-1 w-full h-full overflow-hidden">
+			<div className="w-12 border-r">
+				<SideMenuPanel />
+			</div>
+			<ScrollArea className="flex-grow ">
+				{appView === "dashboard" && <ConstructionDashboard />}
+				{appView === "schedule" && <ScheduleInterface />}
+				{appView === "agent" && <ChatComponent />}
+				{appView === "updates" && <DocumentFolderModule />}
+				{appView === "project" && <ProjectBoard />}
+				{appView === "members" && <ProjectSetup />}
+				{appView === "integrations" && <Integration />}
+			</ScrollArea>
+		</div>
+	);
 };

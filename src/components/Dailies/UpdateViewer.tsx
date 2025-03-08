@@ -13,20 +13,20 @@ interface UpdateViewerProps {
 }
 
 function UpdateViewer({
-  previewCardContent,
-  setPreviewCardContent,
-  setUpdateType,
+	previewCardContent,
+	setPreviewCardContent,
+	setUpdateType,
 }: UpdateViewerProps) {
-  return (
-    <Flex flexDirection={"column"} gap="2">
-      <IconButton
-        aria-label="Back"
-        size="sm"
-        icon={<IoMdArrowRoundBack />}
-        onClick={() => setPreviewCardContent(null)}
-      />
-    </Flex>
-  );
+	return (
+		<Flex flexDirection="column" gap="2">
+			<IconButton
+				aria-label="Back"
+				icon={<IoMdArrowRoundBack />}
+				onClick={() => setPreviewCardContent(null)}
+				size="sm"
+			/>
+		</Flex>
+	);
 }
 
 export default UpdateViewer;

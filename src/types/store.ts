@@ -6,9 +6,9 @@ import { ActivityEntity } from "@/types/activities";
 import { ActivityEntityWithMembers } from "@/utils/mapOwnerToMembers";
 import { MemberEntity } from "./members";
 import {
-  UserUpdateCollectionType,
-  NotificationInterface,
-  UserNotifications,
+	UserUpdateCollectionType,
+	NotificationInterface,
+	UserNotifications,
 } from "@/types/updateCollection";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";

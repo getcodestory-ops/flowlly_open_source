@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { Flex, Select, Text, Button } from "@chakra-ui/react";
 
 const ReportsPage = () => {
-  const [reportSelected, setReportSelected] = useState<string>("");
-  const [newReport, setNewReport] = useState<boolean>(false);
+	const [reportSelected, setReportSelected] = useState<string>("");
+	const [newReport, setNewReport] = useState<boolean>(false);
 
-  const reports = {
-    "option 1": `
+	const reports = {
+		"option 1": `
     #John Smith
     **Date:** November 15, 2023
     **Project:** Oakwood Estates
@@ -56,7 +56,7 @@ const ReportsPage = () => {
     
     **Signature:** John Smith
     `,
-    "option 2": `#John Smith 
+		"option 2": `#John Smith 
     **Date:** November 7, 2023
     **Project:** Riverside Apartments
     **Location:** 567 River Road, Riverdale, USA
@@ -105,7 +105,7 @@ const ReportsPage = () => {
     **Signature:**
     John Smith
     `,
-    "option 3": `#Jane Doe
+		"option 3": `#Jane Doe
     **Date:** November 1, 2023
     **Project:** Harborview Marina
     **Location:** 789 Dockside Drive, Seaview Harbor, USA
@@ -154,90 +154,108 @@ const ReportsPage = () => {
     
     **Signature:**
     Jane Doe`,
-  };
+	};
 
-  const reportDisplay = () => {
-    if (reportSelected === "option1") {
-      // console.log(typeof reports["option 1"]);
-      return reports["option 1"];
-    } else if (reportSelected === "option2") {
-      // Use ReactMarkdown for option 2
-      return reports["option 2"];
-    } else if (reportSelected === "option3") {
-      // Use ReactMarkdown for option 3
-      return reports["option 3"];
-    } else {
-      return null;
-    }
-  };
+	const reportDisplay = () => {
+		if (reportSelected === "option1") {
+			// //console.log(typeof reports["option 1"]);
+			return reports["option 1"];
+		} else if (reportSelected === "option2") {
+			// Use ReactMarkdown for option 2
+			return reports["option 2"];
+		} else if (reportSelected === "option3") {
+			// Use ReactMarkdown for option 3
+			return reports["option 3"];
+		} else {
+			return null;
+		}
+	};
 
-  const generateNewReport = () => {
-    return (
-      <Flex direction={"column"}>
-        <Select placeholder="Select Timeframe" size={"sm"} bg={"white"}>
-          <option value="option1">Today</option>
-          <option value="option2">Yesterday</option>
-          <option value="option3">This Week</option>
-          <option value="option4">Last Week</option>
-          <option value="option5">This Month</option>
-        </Select>
-        <Button size={"sm"} bg={"brand.dark"} color={"white"} mt={"6"}>
+	const generateNewReport = () => {
+		return (
+			<Flex direction="column">
+				<Select
+					bg="white"
+					placeholder="Select Timeframe"
+					size="sm"
+				>
+					<option value="option1">Today</option>
+					<option value="option2">Yesterday</option>
+					<option value="option3">This Week</option>
+					<option value="option4">Last Week</option>
+					<option value="option5">This Month</option>
+				</Select>
+				<Button
+					bg="brand.dark"
+					color="white"
+					mt="6"
+					size="sm"
+				>
           Generate Report
-        </Button>
-      </Flex>
-    );
-  };
+				</Button>
+			</Flex>
+		);
+	};
 
-  return (
-    <Flex mt={"10"} px={"10"} direction={"column"} w={"100%"}>
-      <Flex alignItems={"center"}>
-        <Select
-          placeholder="Open Existing Report"
-          size={"sm"}
-          onChange={(e) => {
-            setReportSelected(e.target.value), setNewReport(false);
-          }}
-          w={"280px"}
-        >
-          <option value="option1">November 15th, 2023</option>
-          <option value="option2">November 7th, 2023</option>
-          <option value="option3">November 1st, 2023</option>
-        </Select>
-        <Text ml={"5"} mr={"5"} fontSize={"sm"}>
+	return (
+		<Flex
+			direction="column"
+			mt="10"
+			px="10"
+			w="100%"
+		>
+			<Flex alignItems="center">
+				<Select
+					onChange={(e) => {
+						setReportSelected(e.target.value), setNewReport(false);
+					}}
+					placeholder="Open Existing Report"
+					size="sm"
+					w="280px"
+				>
+					<option value="option1">November 15th, 2023</option>
+					<option value="option2">November 7th, 2023</option>
+					<option value="option3">November 1st, 2023</option>
+				</Select>
+				<Text
+					fontSize="sm"
+					ml="5"
+					mr="5"
+				>
           or
-        </Text>
-        <Button
-          size={"sm"}
-          w={"280px"}
-          onClick={() => setNewReport(!newReport)}
-          _hover={{ bg: "brand.dark", color: "white" }}
-        >
+				</Text>
+				<Button
+					_hover={{ bg: "brand.dark", color: "white" }}
+					onClick={() => setNewReport(!newReport)}
+					size="sm"
+					w="280px"
+				>
           Generate New Report
-        </Button>
-      </Flex>
-      {!newReport ? (
-        <Flex
-          overflowY={"auto"}
-          fontSize={"sm"}
-          h={"88%"}
-          mt={"4"}
-          whiteSpace={"pre-wrap"}
-        >
-          {reportDisplay()}
-        </Flex>
-      ) : (
-        <Flex
-          w={"100%"}
-          justifyContent={"center"}
-          mt={"32"}
-          bg={"brand2.mid"}
-          p={"10"}
-        >
-          {generateNewReport()}
-        </Flex>
-      )}
-    </Flex>
-  );
+				</Button>
+			</Flex>
+			{!newReport ? (
+				<Flex
+					fontSize="sm"
+					h="88%"
+					mt="4"
+					overflowY="auto"
+					whiteSpace="pre-wrap"
+				>
+					{reportDisplay()}
+				</Flex>
+			) : (
+				<Flex
+					bg="brand2.mid"
+					justifyContent="center"
+					mt="32"
+					p="10"
+					w="100%"
+				>
+					{generateNewReport()}
+				</Flex>
+			)}
+		</Flex>
+	);
 };
 
 export default ReportsPage;

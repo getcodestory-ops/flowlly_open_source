@@ -2,39 +2,39 @@ import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "prosemirror-state";
 
 export const DiffStyleExtension = Extension.create({
-  name: "diffStyle",
+	name: "diffStyle",
 
-  addGlobalAttributes() {
-    return [
-      {
-        types: ["paragraph"],
-        attributes: {
-          class: {
-            default: null,
-            parseHTML: (element) => element.getAttribute("class"),
-            renderHTML: (attributes) => {
-              if (!attributes.class) {
-                return {};
-              }
-              return {
-                class: attributes.class,
-              };
-            },
-          },
-        },
-      },
-    ];
-  },
+	addGlobalAttributes() {
+		return [
+			{
+				types: ["paragraph"],
+				attributes: {
+					class: {
+						default: null,
+						parseHTML: (element) => element.getAttribute("class"),
+						renderHTML: (attributes) => {
+							if (!attributes.class) {
+								return {};
+							}
+							return {
+								class: attributes.class,
+							};
+						},
+					},
+				},
+			},
+		];
+	},
 
-  addProseMirrorPlugins() {
-    return [
-      new Plugin({
-        key: new PluginKey("diffStyle"),
-        view: (editorView) => {
-          // Add styles to document
-          const style = document.createElement("style");
-          style.id = "diff-style";
-          style.textContent = `
+	addProseMirrorPlugins() {
+		return [
+			new Plugin({
+				key: new PluginKey("diffStyle"),
+				view: (editorView) => {
+					// Add styles to document
+					const style = document.createElement("style");
+					style.id = "diff-style";
+					style.textContent = `
             .ProseMirror .original,
             .ProseMirror .updated,
             .ProseMirror .insert,
@@ -138,210 +138,210 @@ export const DiffStyleExtension = Extension.create({
               border-color: #cf222e;
             }
           `;
-          document.head.appendChild(style);
+					document.head.appendChild(style);
 
-          // Create action buttons
-          const actionsContainer = document.createElement("div");
-          actionsContainer.className = "ProseMirror-diff-actions";
+					// Create action buttons
+					const actionsContainer = document.createElement("div");
+					actionsContainer.className = "ProseMirror-diff-actions";
 
-          const acceptAllButton = document.createElement("button");
-          acceptAllButton.className =
+					const acceptAllButton = document.createElement("button");
+					acceptAllButton.className =
             "ProseMirror-diff-button ProseMirror-diff-accept-all";
-          acceptAllButton.textContent = "Accept All Changes";
+					acceptAllButton.textContent = "Accept All Changes";
 
-          const rejectAllButton = document.createElement("button");
-          rejectAllButton.className =
+					const rejectAllButton = document.createElement("button");
+					rejectAllButton.className =
             "ProseMirror-diff-button ProseMirror-diff-reject-all";
-          rejectAllButton.textContent = "Reject All Changes";
+					rejectAllButton.textContent = "Reject All Changes";
 
-          actionsContainer.appendChild(acceptAllButton);
-          actionsContainer.appendChild(rejectAllButton);
-          editorView.dom.parentElement?.insertBefore(
-            actionsContainer,
-            editorView.dom
-          );
+					actionsContainer.appendChild(acceptAllButton);
+					actionsContainer.appendChild(rejectAllButton);
+					editorView.dom.parentElement?.insertBefore(
+						actionsContainer,
+						editorView.dom,
+					);
 
-          // Function to check if there are any changes and update button visibility
-          const updateButtonsVisibility = () => {
-            const hasChanges = editorView.dom.querySelector(
-              ".original, .updated, .insert, .delete"
-            );
-            actionsContainer.style.display = hasChanges ? "flex" : "none";
-          };
+					// Function to check if there are any changes and update button visibility
+					const updateButtonsVisibility = () => {
+						const hasChanges = editorView.dom.querySelector(
+							".original, .updated, .insert, .delete",
+						);
+						actionsContainer.style.display = hasChanges ? "flex" : "none";
+					};
 
-          // Initial check
-          updateButtonsVisibility();
+					// Initial check
+					updateButtonsVisibility();
 
-          // Update visibility after each transaction
-          editorView.state.tr.setMeta("addToHistory", false);
-          editorView.dispatch(editorView.state.tr);
+					// Update visibility after each transaction
+					editorView.state.tr.setMeta("addToHistory", false);
+					editorView.dispatch(editorView.state.tr);
 
-          const handleBulkAction = (isAccept: boolean) => {
-            const diffElements = Array.from(
-              editorView.dom.querySelectorAll(
-                ".original, .updated, .insert, .delete"
-              )
-            );
+					const handleBulkAction = (isAccept: boolean) => {
+						const diffElements = Array.from(
+							editorView.dom.querySelectorAll(
+								".original, .updated, .insert, .delete",
+							),
+						);
 
-            // Collect all changes with their positions
-            const changes = diffElements.map((element) => {
-              const paragraph = element as HTMLElement;
-              const pos = editorView.posAtDOM(paragraph as Node, 0);
-              const resolvedPos = editorView.state.doc.resolve(pos);
-              return {
-                start: resolvedPos.before(),
-                end: resolvedPos.after(),
-                content: paragraph.textContent || "",
-                type: paragraph.className,
-              };
-            });
+						// Collect all changes with their positions
+						const changes = diffElements.map((element) => {
+							const paragraph = element as HTMLElement;
+							const pos = editorView.posAtDOM(paragraph as Node, 0);
+							const resolvedPos = editorView.state.doc.resolve(pos);
+							return {
+								start: resolvedPos.before(),
+								end: resolvedPos.after(),
+								content: paragraph.textContent || "",
+								type: paragraph.className,
+							};
+						});
 
-            // Sort changes by position in descending order (end to start)
-            changes.sort((a, b) => b.start - a.start);
+						// Sort changes by position in descending order (end to start)
+						changes.sort((a, b) => b.start - a.start);
 
-            let tr = editorView.state.tr;
+						let tr = editorView.state.tr;
 
-            // Apply changes from end to start
-            changes.forEach(({ start, end, content, type }) => {
-              if (isAccept) {
-                // Accept changes
-                switch (type) {
-                  case "original":
-                  case "delete":
-                    // Delete content
-                    tr = tr.delete(start, end);
-                    break;
-                  case "updated":
-                  case "insert":
-                    // Replace with plain paragraph
-                    const newNode =
+						// Apply changes from end to start
+						changes.forEach(({ start, end, content, type }) => {
+							if (isAccept) {
+								// Accept changes
+								switch (type) {
+									case "original":
+									case "delete":
+										// Delete content
+										tr = tr.delete(start, end);
+										break;
+									case "updated":
+									case "insert":
+										// Replace with plain paragraph
+										const newNode =
                       editorView.state.schema.nodes.paragraph.create(
-                        null,
-                        editorView.state.schema.text(content)
+                      	null,
+                      	editorView.state.schema.text(content),
                       );
-                    tr = tr.replaceWith(start, end, newNode);
-                    break;
-                }
-              } else {
-                // Reject changes
-                switch (type) {
-                  case "original":
-                  case "delete":
-                    // Keep content as plain paragraph
-                    const newNode =
+										tr = tr.replaceWith(start, end, newNode);
+										break;
+								}
+							} else {
+								// Reject changes
+								switch (type) {
+									case "original":
+									case "delete":
+										// Keep content as plain paragraph
+										const newNode =
                       editorView.state.schema.nodes.paragraph.create(
-                        null,
-                        editorView.state.schema.text(content)
+                      	null,
+                      	editorView.state.schema.text(content),
                       );
-                    tr = tr.replaceWith(start, end, newNode);
-                    break;
-                  case "updated":
-                  case "insert":
-                    // Delete content
-                    tr = tr.delete(start, end);
-                    break;
-                }
-              }
-            });
+										tr = tr.replaceWith(start, end, newNode);
+										break;
+									case "updated":
+									case "insert":
+										// Delete content
+										tr = tr.delete(start, end);
+										break;
+								}
+							}
+						});
 
-            editorView.dispatch(tr);
-            // Check visibility after changes
-            updateButtonsVisibility();
-          };
+						editorView.dispatch(tr);
+						// Check visibility after changes
+						updateButtonsVisibility();
+					};
 
-          acceptAllButton.addEventListener("click", () =>
-            handleBulkAction(true)
-          );
-          rejectAllButton.addEventListener("click", () =>
-            handleBulkAction(false)
-          );
+					acceptAllButton.addEventListener("click", () =>
+						handleBulkAction(true),
+					);
+					rejectAllButton.addEventListener("click", () =>
+						handleBulkAction(false),
+					);
 
-          // Add click handler for delete buttons
-          const handleClick = (event: MouseEvent) => {
-            const target = event.target as HTMLElement;
-            const paragraph = target.closest(
-              ".original, .updated, .insert, .delete"
-            ) as HTMLElement;
+					// Add click handler for delete buttons
+					const handleClick = (event: MouseEvent) => {
+						const target = event.target as HTMLElement;
+						const paragraph = target.closest(
+							".original, .updated, .insert, .delete",
+						) as HTMLElement;
 
-            if (!paragraph || event.offsetX > 60) return; // Only handle clicks in button area
+						if (!paragraph || event.offsetX > 60) return; // Only handle clicks in button area
 
-            const pos = editorView.posAtDOM(paragraph as Node, 0);
-            const resolvedPos = editorView.state.doc.resolve(pos);
-            const start = resolvedPos.before();
-            const end = resolvedPos.after();
-            const content = paragraph.textContent || "";
+						const pos = editorView.posAtDOM(paragraph as Node, 0);
+						const resolvedPos = editorView.state.doc.resolve(pos);
+						const start = resolvedPos.before();
+						const end = resolvedPos.after();
+						const content = paragraph.textContent || "";
 
-            const isAcceptButton = event.offsetX <= 25; // First button (accept)
-            const type = paragraph.className;
+						const isAcceptButton = event.offsetX <= 25; // First button (accept)
+						const type = paragraph.className;
 
-            let tr = editorView.state.tr;
+						let tr = editorView.state.tr;
 
-            if (isAcceptButton) {
-              // Accept changes
-              switch (type) {
-                case "original":
-                case "delete":
-                  // Delete content
-                  tr = tr.delete(start, end);
-                  break;
-                case "updated":
-                case "insert":
-                  // Replace with plain paragraph
-                  tr = tr
-                    .deleteRange(start, end)
-                    .insert(
-                      start,
-                      editorView.state.schema.nodes.paragraph.create(
-                        null,
-                        editorView.state.schema.text(content)
-                      )
-                    );
-                  break;
-              }
-            } else {
-              // Reject changes
-              switch (type) {
-                case "original":
-                case "delete":
-                  // Keep content as plain paragraph
-                  tr = tr
-                    .deleteRange(start, end)
-                    .insert(
-                      start,
-                      editorView.state.schema.nodes.paragraph.create(
-                        null,
-                        editorView.state.schema.text(content)
-                      )
-                    );
-                  break;
-                case "updated":
-                case "insert":
-                  // Delete content
-                  tr = tr.delete(start, end);
-                  break;
-              }
-            }
+						if (isAcceptButton) {
+							// Accept changes
+							switch (type) {
+								case "original":
+								case "delete":
+									// Delete content
+									tr = tr.delete(start, end);
+									break;
+								case "updated":
+								case "insert":
+									// Replace with plain paragraph
+									tr = tr
+										.deleteRange(start, end)
+										.insert(
+											start,
+											editorView.state.schema.nodes.paragraph.create(
+												null,
+												editorView.state.schema.text(content),
+											),
+										);
+									break;
+							}
+						} else {
+							// Reject changes
+							switch (type) {
+								case "original":
+								case "delete":
+									// Keep content as plain paragraph
+									tr = tr
+										.deleteRange(start, end)
+										.insert(
+											start,
+											editorView.state.schema.nodes.paragraph.create(
+												null,
+												editorView.state.schema.text(content),
+											),
+										);
+									break;
+								case "updated":
+								case "insert":
+									// Delete content
+									tr = tr.delete(start, end);
+									break;
+							}
+						}
 
-            editorView.dispatch(tr);
-            // Check visibility after changes
-            updateButtonsVisibility();
-          };
+						editorView.dispatch(tr);
+						// Check visibility after changes
+						updateButtonsVisibility();
+					};
 
-          editorView.dom.addEventListener("click", handleClick);
+					editorView.dom.addEventListener("click", handleClick);
 
-          return {
-            destroy: () => {
-              // Clean up styles and event listeners when editor is destroyed
-              const styleElement = document.getElementById("diff-style");
-              if (styleElement) {
-                styleElement.remove();
-              }
-              actionsContainer.remove();
-              editorView.dom.removeEventListener("click", handleClick);
-            },
-          };
-        },
-      }),
-    ];
-  },
+					return {
+						destroy: () => {
+							// Clean up styles and event listeners when editor is destroyed
+							const styleElement = document.getElementById("diff-style");
+							if (styleElement) {
+								styleElement.remove();
+							}
+							actionsContainer.remove();
+							editorView.dom.removeEventListener("click", handleClick);
+						},
+					};
+				},
+			}),
+		];
+	},
 });

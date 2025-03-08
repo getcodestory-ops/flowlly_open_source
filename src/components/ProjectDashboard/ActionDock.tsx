@@ -17,9 +17,9 @@ import React from "react";
 // };
 
 export function ActionDock() {
-  return (
-    <div className="flex sticky items-center justify-center gap-4">
-      {/* <div className=" flex  flex-col items-center justify-center overflow-hidden rounded-lg  bg-background ">
+	return (
+		<div className="flex sticky items-center justify-center gap-4">
+			{/* <div className=" flex  flex-col items-center justify-center overflow-hidden rounded-lg  bg-background ">
         <TooltipProvider>
           <Dock direction="middle">
             {DATA.navbar.map((item) => (
@@ -49,6 +49,6 @@ export function ActionDock() {
         <Separator orientation="vertical" />
         <MediaRecorderButton />
       </div> */}
-    </div>
-  );
+		</div>
+	);
 }
