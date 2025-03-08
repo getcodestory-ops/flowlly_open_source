@@ -470,9 +470,9 @@ export default function ProjectEventCreationForm({
   };
 
   return (
-    <ScrollArea className="w-full h-[calc(100vh-150px)] ">
+    <ScrollArea className="w-full h-full">
       <div>
-        <Card className="w-full">
+        <Card className="w-full shadow-none">
           <CardHeader>
             <CardTitle>
               Join meeting <br />
@@ -502,7 +502,7 @@ export default function ProjectEventCreationForm({
                   setSelectedParticipants={setSelectedParticipants}
                 />
               </div>
-              <div className="space-y-2 m-2 p-2 bg-secondary rounded-lg">
+              <div className="space-y-2 p-2 bg-secondary rounded-lg">
                 <div className="space-y-2">
                   <Label htmlFor="recurrence">Repeat</Label>
                   <Select
@@ -555,7 +555,7 @@ export default function ProjectEventCreationForm({
                   )}
                   <div className="space-y-2 ">
                     <Label className="mr-2">
-                      {recurrence === "once" ? "Meeting Date" : "Start Date"}{" "}
+                      {recurrence === "once" ? "Date" : "Start Date"}{" "}
                     </Label>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -606,10 +606,10 @@ export default function ProjectEventCreationForm({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="startTime">Meeting Start Time</Label>
+                  <Label htmlFor="startTime">Time</Label>
                   <Select value={startTime} onValueChange={setStartTime}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select start time" />
+                      <SelectValue placeholder="Select time" />
                     </SelectTrigger>
                     <SelectContent>
                       {Array.from({ length: 96 }, (_, i) => {

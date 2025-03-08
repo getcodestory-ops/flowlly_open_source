@@ -183,6 +183,10 @@ const config = {
           },
         },
       },
+      fontFamily: {
+        sans: ["Arial", "sans-serif"],
+        serif: ["Georgia", "serif"],
+      },
     },
   },
   plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
