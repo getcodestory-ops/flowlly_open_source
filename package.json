@@ -106,6 +106,7 @@
     "react-syntax-highlighter": "^15.5.0",
     "reactflow": "^11.11.4",
     "recharts": "^2.12.7",
+    "remark-directive": "^4.0.0",
     "remark-gfm": "^4.0.0",
     "shadcn-ui": "^0.8.0",
     "tailwind-merge": "^2.4.0",

@@ -1,7 +1,7 @@
-import { Extension } from "@tiptap/core";
+import { Mark } from "@tiptap/core";
 import { Plugin, PluginKey } from "prosemirror-state";
 
-export const DiffStyleExtension = Extension.create({
+export const DiffStyleExtension = Mark.create({
 	name: "diffStyle",
 
 	addGlobalAttributes() {
@@ -41,23 +41,20 @@ export const DiffStyleExtension = Extension.create({
             .ProseMirror .delete {
               position: relative;
               padding-left: 60px;  /* Increased padding for two buttons */
-              border-radius: 5px;
+            
             }
 
             .ProseMirror .original,
             .ProseMirror .delete {
-              background-color: rgba(255, 0, 0, 0.5);
-              color: rgba(46, 3, 3, 0.8);
+              background-color: rgba(255, 0, 0, 0.2);
             }
 
             .ProseMirror .updated {
-              background-color: rgba(0, 255, 0, 0.5);
-              color: rgba(3, 46, 3, 0.8);
+              background-color: rgba(0, 255, 0, 0.2);
             }
 
             .ProseMirror .insert {
-              background-color: rgba(0, 0, 255, 0.5);
-              color: rgba(3, 3, 46, 0.8);
+              background-color: rgba(0, 0, 255, 0.2);
             }
 
             /* Accept button */

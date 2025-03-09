@@ -92,7 +92,7 @@ const ContentEditor = ({
 								size="sm"
 								variant={editor.isActive("bold") ? "default" : "secondary"}
 							>
-                Bold
+                			Bold
 							</Button>
 							<Button
 								onClick={() => editor.chain().setItalic()
@@ -100,7 +100,7 @@ const ContentEditor = ({
 								size="sm"
 								variant={editor.isActive("italic") ? "default" : "secondary"}
 							>
-                Italic
+                			Italic
 							</Button>
 						</div>
 					</BubbleMenu>
