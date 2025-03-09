@@ -27,7 +27,7 @@ interface Notification {
   }[];
 }
 
-export default function HeaderNotification() {
+export default function HeaderNotification(): React.ReactNode {
 	const session = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
 	const [unreadCount, setUnreadCount] = useState(0);
@@ -112,7 +112,7 @@ export default function HeaderNotification() {
 					)}
 				</Button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="w-80">
+			<DropdownMenuContent align="start" className="w-64">
 				<ScrollArea className="h-[300px]">
 					{notifications.length === 0 ? (
 						<div className="text-center py-4 text-muted-foreground">

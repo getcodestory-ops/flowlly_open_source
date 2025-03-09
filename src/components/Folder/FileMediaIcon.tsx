@@ -5,18 +5,18 @@ export const FileMediaIcon: React.FC<{ fileExt: string }> = ({ fileExt }) => {
 		case ".jpeg":
 		case ".png":
 		case ".gif":
-			return <Image />;
+			return <Image className="w-4 h-4" />;
 		case ".mp4":
 		case ".webm":
-			return <Video />;
+			return <Video className="w-4 h-4" />;
 		case ".mp3":
 		case ".ogg":
 		case ".wav":
-			return <Headphones />;
+			return <Headphones className="w-4 h-4" />;
 		case ".txt":
 		case ".pdf":
-			return <FileText />;
+			return <FileText className="w-4 h-4" />;
 		default:
-			return <File />;
+			return <File className="w-4 h-4" />;
 	}
 };

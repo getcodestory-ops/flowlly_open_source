@@ -9,11 +9,11 @@ import { getActivities } from "@/api/activity_routes";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import Link from "next/link";
 import {
-	Users2,
-	Building2,
+	// Users2,
+	// Building2,
+	// Workflow,
 	Calendar,
 	MessageSquareCode,
-	Workflow,
 	ClipboardList,
 	Folder,
 } from "lucide-react";
@@ -30,12 +30,16 @@ import { AppView } from "@/types/store";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CustomProjectSwitcher } from "./CustomProjectSwitcher";
 import { useParams } from "next/navigation";
+import { Button } from "../ui/button";
+import { ProjectEntity } from "@/types/projects";
+import { cn } from "@/lib/utils";
+import { Tooltipped } from "../Common/Tooltiped";
 const archivoBlack = Archivo_Black({
 	weight: "400",
 	subsets: ["latin"],
 });
 
-export function EnhancedSidePanel() {
+export function EnhancedSidePanel(): React.ReactNode {
 	const [showProjectSwitcher, setShowProjectSwitcher] = useState(false);
 	const params = useParams();
 
@@ -76,7 +80,7 @@ export function EnhancedSidePanel() {
 	const projectButtonRef = useRef<HTMLButtonElement>(null);
 
 	// Fetch project list
-	const { data, isLoading, isSuccess } = useQuery({
+	const { data, isSuccess } = useQuery({
 		queryKey: ["initialProjectList", session],
 		queryFn: () => {
 			if (session && session.access_token) {
@@ -111,7 +115,7 @@ export function EnhancedSidePanel() {
 	}, [userProjects.length, userProjects, setActiveProject, params?.projectId]);
 
 	// Fetch members for active project
-	const { data: membersData, isLoading: membersLoading } = useQuery({
+	const { data: membersData } = useQuery({
 		queryKey: ["memberList", session, activeProject],
 		queryFn: async() => {
 			if (!session || !activeProject) {
@@ -130,7 +134,7 @@ export function EnhancedSidePanel() {
 	}, [membersData, setMembers]);
 
 	// Fetch chat entities for active project
-	const { data: chatEntitities, isLoading: chatsLoading } = useQuery({
+	const { data: chatEntitities } = useQuery({
 		queryKey: ["chatEntityList", session, activeProject],
 		queryFn: () => {
 			if (!session || !activeProject) {
@@ -154,12 +158,12 @@ export function EnhancedSidePanel() {
 
 	// Handle click outside to close project switcher
 	useEffect(() => {
-		function handleClickOutside(event: MouseEvent) {
+		function handleClickOutside(event: MouseEvent): void {
 			if (
 				projectSwitcherRef.current &&
-        !projectSwitcherRef.current.contains(event.target as Node) &&
-        projectButtonRef.current &&
-        !projectButtonRef.current.contains(event.target as Node)
+				!projectSwitcherRef.current.contains(event.target as Node) &&
+				projectButtonRef.current &&
+				!projectButtonRef.current.contains(event.target as Node)
 			) {
 				setShowProjectSwitcher(false);
 			}
@@ -174,27 +178,26 @@ export function EnhancedSidePanel() {
 	return (
 		<div className="flex flex-col h-full bg-white w-[55px] border-r border-gray-200 relative">
 			{/* Logo and Project trigger at the top */}
-			<div className="flex flex-col items-center py-4 border-b border-gray-200">
+			<div className="flex flex-col items-center py-4 ">
 				<Link className="hover:opacity-80 transition-opacity" href="/project">
 					<div
-						className={`${archivoBlack.className} text-2xl text-gray-800 mb-2`}
+						className={`${archivoBlack.className} text-3xl text-gray-800 mb-2`}
 					>
-            F
+						<span>F</span>
 					</div>
 				</Link>
-				<Tooltip>
+				<Tooltip delayDuration={0}>
 					<TooltipTrigger asChild>
 						<button
-							className={`w-[55px] flex flex-col items-center justify-center gap-1 py-2 rounded-lg transition-all
-                ${
-		showProjectSwitcher
-			? "bg-gray-100 text-gray-800 border border-gray-200 shadow-sm"
-			: "bg-white hover:bg-gray-50 text-gray-600 border border-gray-200"
-		}`}
+							className={`w-[55px] flex flex-col items-center justify-center gap-1 py-2  transition-all ${
+								showProjectSwitcher
+									? "bg-gray-100 text-gray-800 border border-gray-200 "
+									: "bg-white hover:bg-gray-50 text-gray-600 border border-gray-200"
+							}`}
 							onClick={() => setShowProjectSwitcher(!showProjectSwitcher)}
 							ref={projectButtonRef}
 						>
-							<div className="relative">
+							{/* <div className="relative">
 								<Avatar className="h-6 w-6 mb-1 ring-2 ring-offset-1 ring-offset-indigo-500 ring-white/30">
 									<AvatarImage
 										alt={activeProject?.name ? activeProject.name : "P"}
@@ -208,7 +211,13 @@ export function EnhancedSidePanel() {
 								{activeProject && (
 									<span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-green-500 border border-white" />
 								)}
-							</div>
+							</div> */}
+							{activeProject && (
+								<ProjectRoundIcon
+									activeProject={activeProject}
+									showProjectSwitcher={showProjectSwitcher}
+								/>
+							)}
 							<div className="text-[10px] font-medium">
 								{activeProject?.name
 									? activeProject.name.length > 8
@@ -216,7 +225,8 @@ export function EnhancedSidePanel() {
 										: activeProject.name
 									: "Project"}
 							</div>
-							<div className="flex items-center text-[8px] font-semibold bg-gray-50 px-2 py-0.5 rounded-full">
+							<div className="flex items-center text-[8px] font-semibold px-2 py-0.5 rounded-full">
+								<span>SWITCH</span>
 								<svg
 									fill="none"
 									height="10"
@@ -231,30 +241,60 @@ export function EnhancedSidePanel() {
 										fillRule="evenodd"
 									/>
 								</svg>
-								<span className="ml-1">SWITCH</span>
 							</div>
 						</button>
 					</TooltipTrigger>
-					<TooltipContent side="right">Switch Project</TooltipContent>
+					<TooltipContent side="right">{activeProject?.name}</TooltipContent>
 				</Tooltip>
 			</div>
 			{/* Project Switcher Popover */}
 			{showProjectSwitcher && (
 				<div className="absolute left-16 top-8 z-20" ref={projectSwitcherRef}>
-					<div className="bg-white rounded-md shadow-lg p-2 border border-gray-200 w-[300px]">
-						<div className="font-medium px-2 py-1 text-sm border-b border-gray-100 mb-1">
-              Project Selection
-						</div>
+					<div className="bg-white rounded-md shadow-lg border border-gray-200 w-[300px]">
+						{activeProject && (
+							<div className="font-medium text-sm border-b border-gray-100 w-full px-2 w-full py-2 bg-indigo-50 font-bold flex flex-row gap-1 justify-between items-center">
+								<div className="flex flex-row gap-1 justify-between items-center h-full">
+									<ProjectRoundIcon
+										activeProject={activeProject}
+										activeSize="h-2 w-2 mt-1"
+										avatarSize="h-4 w-4 mt-1"
+										showProjectSwitcher={showProjectSwitcher}
+									/>
+									<Tooltipped tooltip={activeProject.name}>
+										<span className="text-indigo-600 ml-2 whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px]">{activeProject.name}</span>
+									</Tooltipped>
+								</div>
+								<Link className="text-gray-600 text-xs" href={`/project/${activeProject.project_id}/members`}>
+									<Button 
+										onClick={() => setShowProjectSwitcher(false)}
+										size="sm"
+										variant="outline"
+									>
+										View team
+									</Button>
+								</Link>
+							</div>
+						)}
 						<CustomProjectSwitcher
 							className="w-full"
 							onProjectSwitch={() => setShowProjectSwitcher(false)}
 						/>
+						<Link href={`/project/${activeProject?.project_id}/projects`}>
+							<Button
+								className="w-full rounded-none"
+								onClick={() => setShowProjectSwitcher(false)}
+								size="default"
+								variant="default"
+							>
+								View all projects
+							</Button>
+						</Link>
 					</div>
 				</div>
 			)}
 			{/* Navigation buttons */}
 			<div className="flex-1 overflow-y-auto">
-				<nav className="flex flex-col items-center gap-2 py-4">
+				<nav className="flex flex-col items-center py-4">
 					<AllMenuButtons />
 				</nav>
 			</div>
@@ -268,21 +308,51 @@ export function EnhancedSidePanel() {
 	);
 }
 
+const ProjectRoundIcon = ({
+	activeProject,
+	showProjectSwitcher,
+	avatarSize = "h-6 w-6",
+	activeSize = "h-3 w-3",
+}: {
+	activeProject: ProjectEntity;
+	showProjectSwitcher: boolean;
+	avatarSize?: string;
+	activeSize?: string;
+}): React.ReactNode => {
+	return (
+		<div className="relative">
+			<Avatar className={cn(avatarSize, "mb-1 ring-2 ring-offset-1 ring-offset-indigo-500 ring-white/30")}>
+				<AvatarImage
+					alt={activeProject?.name ? activeProject.name : "P"}
+					className={showProjectSwitcher ? "" : "grayscale"}
+					src={`https://avatar.vercel.sh/${
+						activeProject?.name || "project"
+					}.png`}
+				/>
+				<AvatarFallback>P</AvatarFallback>
+			</Avatar>
+			{activeProject && (
+				<span className={cn(activeSize, "absolute -top-1 -right-1 rounded-full bg-green-500 border border-white")} />
+			)}
+		</div>
+	);
+};
+
 const menuItems: {
   label: string;
   fnKey: AppView;
   icon: React.ReactNode;
   link: string;
 }[] = [
+	// {
+	// 	label: "Projects",
+	// 	fnKey: "project",
+	// 	icon: <Building2 className="h-5 w-5" />,
+	// 	link: "projects",
+	// },
 	{
-		label: "Projects",
-		fnKey: "project",
-		icon: <Building2 className="h-5 w-5" />,
-		link: "projects",
-	},
-	{
-		label: "Workbench",
-		fnKey: "workbench",
+		label: "Workflow",
+		fnKey: "workflows",
 		icon: <ClipboardList className="h-5 w-5" />,
 		link: "workbench",
 	},
@@ -293,32 +363,32 @@ const menuItems: {
 		link: "schedule",
 	},
 	{
-		label: "Documents",
+		label: "Drive",
 		fnKey: "updates",
 		icon: <Folder className="h-5 w-5" />,
 		link: "documents",
 	},
 	{
-		label: "Chat",
+		label: "AI Chat",
 		fnKey: "agent",
 		icon: <MessageSquareCode className="h-5 w-5" />,
 		link: "agent",
 	},
-	{
-		label: "Members",
-		fnKey: "members",
-		icon: <Users2 className="h-5 w-5" />,
-		link: "members",
-	},
-	{
-		label: "Integration",
-		fnKey: "integrations",
-		icon: <Workflow className="h-5 w-5" />,
-		link: "integrations",
-	},
+	// {
+	// 	label: "Team",
+	// 	fnKey: "members",
+	// 	icon: <Users2 className="h-5 w-5" />,
+	// 	link: "members",
+	// },
+	// {
+	// 	label: "Connect",
+	// 	fnKey: "integrations",
+	// 	icon: <Workflow className="h-5 w-5" />,
+	// 	link: "integrations",
+	// },
 ];
 
-const AllMenuButtons = () => {
+const AllMenuButtons = (): React.ReactNode => {
 	const params = useParams();
 	const projectId = params ? params.projectId : null;
 
@@ -355,25 +425,25 @@ const MenuButton = ({
   label: string;
   link: string;
   icon: React.ReactNode;
-}) => {
+}): React.ReactNode => {
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<div
-					className={`flex flex-col text-center justify-center items-center my-1 w-full ${
+					className={`flex flex-col text-center justify-center items-center py-2 w-full border-r-4 border-gray-200 gap-0 ${
 						isSelected
-							? "text-indigo-600 bg-gray-50"
-							: "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+							? "text-indigo-600 bg-indigo-50 border-indigo-600"
+							: "text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 border-white"
 					}`}
 				>
 					<Link
-						className="flex h-8 w-8 items-center justify-center rounded-2xl transition-colors"
+						className="flex h-6 w-6 items-center justify-center rounded-2xl transition-colors"
 						href={link}
 						onClick={onClick}
 					>
 						{icon}
 					</Link>
-					<span className="text-[0.6rem]">{label}</span>
+					<span className="text-[0.65rem]">{label}</span>
 				</div>
 			</TooltipTrigger>
 			<TooltipContent side="right">{label}</TooltipContent>
@@ -381,21 +451,19 @@ const MenuButton = ({
 	);
 };
 
-const SetUseStoreData = () => {
+const SetUseStoreData = (): React.ReactNode => {
 	const {
 		session,
 		activeProject,
 		scheduleDate,
 		scheduleProbability,
 		setUserActivities,
-		setTaskToView,
 	} = useStore((state) => ({
 		session: state.session,
 		activeProject: state.activeProject,
 		scheduleDate: state.scheduleDate,
 		scheduleProbability: state.scheduleProbability,
 		setUserActivities: state.setUserActivities,
-		setTaskToView: state.setTaskToView,
 	}));
 
 	const { data: activities, isSuccess } = useQuery({
