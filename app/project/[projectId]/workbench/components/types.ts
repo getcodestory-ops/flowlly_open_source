@@ -1,7 +1,6 @@
 import { EventTrigger } from "@/types/projectEvents";
 import { Row } from "@tanstack/react-table";
 import { WorkflowNode } from "@/components/ProjectEvent/CustomWorkFlow/types";
-import { ViewMode } from "./Assignment";
 // Action-related types
 export type ActionData = Array<{
   activity_addition: Array<{
@@ -136,6 +135,7 @@ export type GraphListProps = {
   onSelectGraph: (graphId: string) => void;
   setCurrentResult?: (result: EventResult | null) => void;
   viewMode: ViewMode;
+  setViewMode: (_: ViewMode) => void;
 };
 
 export type EventScheduleListProps = {
@@ -163,3 +163,10 @@ export type ColorMapping = {
 export type DayMapping = {
   [key: string]: number;
 };
+
+
+export enum ViewMode {
+	GRID = "grid",
+	LIST = "list",
+	CALENDAR = "calendar",
+}
