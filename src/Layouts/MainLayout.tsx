@@ -11,7 +11,6 @@ import Integration from "./Integration";
 import { DocumentFolderModule } from "@/components/Dailies/DocumentModule";
 import ProjectBoard from "@/components/ProjectDashboard/ProjectDashboard";
 import ProjectInfoDisplay from "@/components/ProjectDashboard/ProjectInfoDisplay";
-import ScheduleSummaryView from "@/components/Schedule/ScheduleSummaryView";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ChatComponent from "@/components/ChatInput/ChatComponet";
@@ -22,7 +21,7 @@ export default function MainLayout({
 	children,
 }: {
   children?: React.ReactNode;
-}) {
+}): React.ReactNode {
 	const router = useRouter();
 	const path = router.pathname;
 
@@ -47,13 +46,13 @@ export default function MainLayout({
 	}, [userActivities]);
 
 	useEffect(() => {
-		async function loginCheck() {
+		async function loginCheck(): Promise<void> {
 			const { accessToken, refreshToken } = router.query;
 
 			if (accessToken && refreshToken) {
 				if (
 					typeof accessToken === "string" &&
-          typeof refreshToken === "string"
+          			typeof refreshToken === "string"
 				) {
 					await supabase.auth.setSession({
 						access_token: accessToken,
@@ -112,7 +111,7 @@ export default function MainLayout({
 	);
 }
 
-const MainDisplayInLayout = ({ appView }: { appView: string }) => {
+const MainDisplayInLayout = ({ appView }: { appView: string }): React.ReactNode => {
 	return (
 		<div className="flex gap-2 p-1 w-full h-full overflow-hidden">
 			<div className="w-12 border-r">

@@ -105,7 +105,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 	const deBounceSave = useDebounce(() => {
 		setSaveStatus(SaveStatus.SAVING);
 
-		if (saveFunction && editor) saveFunction(editor.getHTML());
+		if (saveFunction && editor) saveFunction(editor.storage.markdown.getMarkdown());
 
 		setTimeout(() => {
 			setSaveStatus(SaveStatus.SAVED);

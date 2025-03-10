@@ -16,10 +16,16 @@ import { UserProfileModal } from "@/components/UserProfileModal/UserProfileModal
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/utils/store";
-export function UserNav({}: { email: string }) {
-	const { setAppView, session } = useStore((state) => ({
+import Image from "next/image";
+import { getApiIntegration } from "@/api/integration_routes";
+import { useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
+export function UserNav({}: { email: string }): React.ReactNode {
+	const { setAppView, session, activeProject } = useStore((state) => ({
 		setAppView: state.setAppView,
 		session: state.session,
+		activeProject: state.activeProject,
 	}));
 	const email = session?.user?.email ?? "User";
 	const [isChangePasswordOpen, setIsChangePasswordOpen] =
@@ -27,7 +33,7 @@ export function UserNav({}: { email: string }) {
 	const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
 	const router = useRouter();
 
-	const onLogout = async() => {
+	const onLogout = async(): Promise<void> => {
 		await supabase.auth.signOut();
 		setAppView("login");
 		router.push("/applogin");
@@ -43,7 +49,7 @@ export function UserNav({}: { email: string }) {
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent
-					align="end"
+					align="start"
 					className="w-56"
 					forceMount
 				>
@@ -58,20 +64,21 @@ export function UserNav({}: { email: string }) {
 						</div>
 					</DropdownMenuLabel>
 					<DropdownMenuSeparator />
-					<DropdownMenuGroup>
-						{/* <DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
-              Profile
-            </DropdownMenuItem> */}
-						{/* <DropdownMenuItem>
-            Billing
-            <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-          </DropdownMenuItem> */}
-						<DropdownMenuItem onClick={() => setIsChangePasswordOpen(true)}>
-              Change Password
-						</DropdownMenuItem>
-					</DropdownMenuGroup>
+					<DropdownMenuItem> 
+						<Link className="w-full" href={`/project/${activeProject?.project_id}/integrations`}>
+							<div className="flex flex-row justify-between w-full">
+								<div>Connect</div>
+								<ConnectionIcons />
+							</div>
+						</Link>
+					</DropdownMenuItem>
 					<DropdownMenuSeparator />
-					<DropdownMenuItem onClick={onLogout}>Logout</DropdownMenuItem>
+					<DropdownMenuGroup>
+						<DropdownMenuItem onClick={() => setIsChangePasswordOpen(true)}>
+              				Change Password
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={onLogout}>Logout</DropdownMenuItem>
+					</DropdownMenuGroup>
 				</DropdownMenuContent>
 			</DropdownMenu>
 			<ChangePasswordModal
@@ -86,3 +93,60 @@ export function UserNav({}: { email: string }) {
 		</>
 	);
 }
+
+const ConnectionIcons = (): React.ReactNode => {
+	const session = useStore((state) => state.session);
+	const activeProject = useStore((state) => state.activeProject);
+	const { data: microsoftIntegration } = useQuery({
+		queryKey: ["integration", activeProject?.project_id, "microsoft"],
+		queryFn: () =>
+			getApiIntegration(session!, activeProject?.project_id!, "microsoft"),
+		enabled: !!session && !!activeProject?.project_id,
+	});
+
+	const { data: procoreIntegration } = useQuery({
+		queryKey: ["integration", activeProject?.project_id, "procore"],
+		queryFn: () =>
+			getApiIntegration(session!, activeProject?.project_id!, "procore"),
+		enabled: !!session && !!activeProject?.project_id,
+	});
+	return (
+		<div className="flex flex-row gap-2">
+			<IntegrationActiveState
+				imageAlt="microsoft"
+				imageSrc="/logos/microsoft.png"
+				isConnected={!!microsoftIntegration}
+			/>
+			<IntegrationActiveState
+				imageAlt="procore"
+				imageSrc="/logos/procore.png"
+				isConnected={!!procoreIntegration}
+			/>
+		</div>
+	);
+};
+
+
+const IntegrationActiveState = ({
+	imageAlt,
+	imageSrc,
+	isConnected,
+}: {
+	imageAlt: string;
+	imageSrc: string;
+	isConnected: boolean;
+}): React.ReactNode => {
+	return (
+		<div className="relative">
+			<Image
+				alt={imageAlt}
+				className={`${isConnected ? "grayscale-0" : "grayscale"}`}
+				height={16}
+				src={imageSrc}
+				width={16}
+			/>
+			<span className={cn(isConnected ? "bg-green-500" : "bg-gray-500", "absolute h-2 w-2 -top-1 -right-1 rounded-full border border-white")} />
+	
+		</div>
+	);
+};

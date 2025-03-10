@@ -59,7 +59,7 @@ export type AppView =
   | "members"
   | "folders"
   | "integrations"
-  | "workbench"
+  | "workflows"
   | "configuration"
   | "changePassword";
 

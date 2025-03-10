@@ -61,6 +61,8 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { AddNewFolderModal } from "../CreateNewFolderModal/CreateNewFolderModal";
+import { ToolTipedButton } from "../DocumentEditor/ToolBar";
+import { Tooltipped } from "../Common/Tooltiped";
 
 type SortField = "file_name" | "extension" | "created_at";
 type SortDirection = "asc" | "desc";
@@ -574,7 +576,9 @@ const FileRow = ({
 			<TableCell className="cursor-pointer hidden md:table-cell">
 				<Dialog onOpenChange={setShowDeleteDialog} open={showDeleteDialog}>
 					<DialogTrigger asChild>
-						<Trash size={16} />
+						<Tooltipped tooltip={`Delete ${resource.file_name}`}>
+							<Trash className="text-red-400" size={16} />
+						</Tooltipped>
 					</DialogTrigger>
 					<DialogContent className="sm:max-w-[425px]">
 						<div className="grid gap-4">

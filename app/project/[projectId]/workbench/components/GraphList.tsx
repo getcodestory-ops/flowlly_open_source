@@ -29,7 +29,7 @@ import {
 import { DataTablePagination } from "@/components/Schedule/ScheduleTable/DataTablePagination";
 import { CalendarView } from "./CalendarView";
 import CreateJob from "./CreateJob";
-import type { GraphData, EventResult, GraphListProps } from "./types";
+import type { GraphData, GraphListProps } from "./types";
 import ProjectEventCreationForm from "@/components/ProjectEvent/ProjectEventCreationForm";
 import DocumentWriterForm from "@/components/ProjectEvent/DocumentWriterForm";
 import CustomWorkflowForm from "@/components/ProjectEvent/CustomWorkFlow/CustomWorkflowForm";
@@ -44,22 +44,23 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tooltipped } from "@/components/Common/Tooltiped";
 import { convertIsoToTimeAgo } from "@/utils/dateUtils";
+import { ViewMode } from "./types";
+import { WorkflowViewModeSwitcher } from "./WorkflowViewModeSwitcher";
+const localeText = {
+	searchWorkflows: "Filter workflows by name or type...",
+};
 
-import { ViewMode } from "./Assignment";
 export const GraphList: React.FC<GraphListProps> = ({
 	graphs,
 	onSelectGraph,
 	viewMode = ViewMode.LIST,
+	setViewMode,
 }) => {
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [globalFilter, setGlobalFilter] = useState("");
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
-	const [selectedEventType, setSelectedEventType] = useState<string | null>(
-		null,
-	);
-	const [selectedEventData, setSelectedEventData] = useState<GraphData | null>(
-		null,
-	);
+	const [selectedEventType, setSelectedEventType] = useState<string | null>( null );
+	const [selectedEventData, setSelectedEventData] = useState<GraphData | null>( null );
 
 	const onClickEdit = (info: GraphData) => {
 		const eventType = info.event_type;
@@ -78,7 +79,7 @@ export const GraphList: React.FC<GraphListProps> = ({
 						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 						variant="ghost"
 					>
-            Name
+						Name
 					</Button>
 				),
 				cell: (info) => info.getValue(),
@@ -122,7 +123,7 @@ export const GraphList: React.FC<GraphListProps> = ({
 						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 						variant="ghost"
 					>
-            Created At
+						Created At
 					</Button>
 				),
 				cell: (info) => new Date(info.getValue() as string).toLocaleString(),
@@ -183,21 +184,23 @@ export const GraphList: React.FC<GraphListProps> = ({
 
 	// Add new grid view rendering
 	const filteredGraphs = filterWorkflows(graphs, globalFilter);
- 
 
 	// Existing table view
 	return (
 		<div className="w-full">
+			<div className="flex items-center py-4 gap-2">
+				<WorkflowViewModeSwitcher setViewMode={setViewMode} viewMode={viewMode} />
+				{viewMode !== ViewMode.CALENDAR && (
+					<Input
+						className="max-w-sm"
+						onChange={(e) => setGlobalFilter(e.target.value)}
+						placeholder={localeText.searchWorkflows}
+						value={globalFilter ?? ""}
+					/>
+				)}
+			</div>
 			{viewMode === ViewMode.LIST && (
 				<div>
-					<div className="flex items-center py-4 justify-between">
-						<Input
-							className="max-w-sm"
-							onChange={(e) => setGlobalFilter(e.target.value)}
-							placeholder="Search workflows by name or type..."
-							value={globalFilter ?? ""}
-						/>
-					</div>
 					<Table>
 						<TableHeader>
 							{table.getHeaderGroups().map((headerGroup) => (
@@ -254,7 +257,7 @@ export const GraphList: React.FC<GraphListProps> = ({
 							) : (
 								<TableRow>
 									<TableCell className="text-center" colSpan={columns.length}>
-                    No results found.
+										No results found.
 									</TableCell>
 								</TableRow>
 							)}
@@ -270,14 +273,6 @@ export const GraphList: React.FC<GraphListProps> = ({
 			)}
 			{viewMode === ViewMode.GRID && (
 				<div>
-					<div className="mb-4">
-						<Input
-							className="max-w-sm"
-							onChange={(e) => setGlobalFilter(e.target.value)}
-							placeholder="Search workflows by name or type..."
-							value={globalFilter}
-						/>
-					</div>
 					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
 						{filteredGraphs.length > 0 ? (
 							filteredGraphs.map((graph) => (
@@ -305,10 +300,10 @@ export const GraphList: React.FC<GraphListProps> = ({
 										<div className="flex items-center gap-1">
 											<Calendar className="h-3 w-3" />
 											<span>
-                        Created
+												Created
 											</span>
 											<span className="">
-												{convertIsoToTimeAgo(graph.created_at)}
+												{formatTimeAgo(convertIsoToTimeAgo(graph.created_at) ?? "")}
 											</span>
 										</div>
 										{/* {graph.event_schedule && graph.event_schedule.length > 0 && (
@@ -366,4 +361,24 @@ export const GraphList: React.FC<GraphListProps> = ({
 			</Sheet>
 		</div>
 	);
+};
+
+const formatTimeAgo = (timeAgoString: string): string => {
+	return timeAgoString
+		.replace("about ", "") // Remove "about"
+		.replace(" seconds", "s")
+		.replace(" second", "s")
+		.replace(" minutes", "m")
+		.replace(" minute", "m")
+		.replace(" hours", "h")
+		.replace(" hour", "h")
+		.replace(" months", "mo")
+		.replace(" month", "mo")
+		.replace(" weeks", "wk")
+		.replace(" week", "wk")
+		.replace(" days", "d")
+		.replace(" day", "d")
+		.replace(" years", "y")
+		.replace(" year", "y")
+		.trim(); // Ensure consistent "ago" format
 };

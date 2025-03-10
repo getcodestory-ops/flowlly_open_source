@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useStore } from "@/utils/store";
 import { useQuery } from "@tanstack/react-query";
 import { getActivities } from "@/api/activity_routes";
@@ -9,18 +9,13 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 
 import {
-	Home,
-	Package,
 	Users2,
 	Building2,
 	Calendar,
 	MessageSquareCode,
 	Workflow,
-	FileClock,
-	BrainCircuit,
 	ClipboardList,
 	Folder,
-	CircleGauge,
 } from "lucide-react";
 
 import {
@@ -30,7 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 import { AppView } from "@/types/store";
 
-export function SideMenuPanel() {
+export function SideMenuPanel(): React.ReactNode {
 	return (
 		<>
 			<SetUseStoreData />
@@ -65,7 +60,7 @@ const menuItems: {
 	// },
 	{
 		label: "Workbench",
-		fnKey: "workbench",
+		fnKey: "workflows",
 		icon: <ClipboardList className="h-5 w-5" />,
 		link: "workbench",
 	},
@@ -110,7 +105,7 @@ const menuItems: {
 	// },
 ];
 
-const AllMenuButtons = () => {
+const AllMenuButtons = (): React.ReactNode => {
 	const params = useParams();
 	const projectId = params ? params.projectId : null;
 
@@ -147,7 +142,7 @@ const MenuButton = ({
   label: string;
   link: string;
   icon: React.ReactNode;
-}) => {
+}): React.ReactNode => {
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
@@ -172,34 +167,32 @@ const MenuButton = ({
 	);
 };
 
-const SetUseStoreData = () => {
+const SetUseStoreData = (): React.ReactNode => {
 	const {
 		session,
 		activeProject,
 		scheduleDate,
 		scheduleProbability,
 		setUserActivities,
-		setTaskToView,
 	} = useStore((state) => ({
 		session: state.session,
 		activeProject: state.activeProject,
 		scheduleDate: state.scheduleDate,
 		scheduleProbability: state.scheduleProbability,
 		setUserActivities: state.setUserActivities,
-		setTaskToView: state.setTaskToView,
 	}));
 
-	const defaultTask = {
-		id: "SCHEDULE",
-		project_id: "parent",
-		name: "No active task",
-		start: "01/02/23",
-		end: "01/02/23",
-		progress: 0,
-		activity_critical: {
-			critical_path: false,
-		},
-	};
+	// const defaultTask = {
+	// 	id: "SCHEDULE",
+	// 	project_id: "parent",
+	// 	name: "No active task",
+	// 	start: "01/02/23",
+	// 	end: "01/02/23",
+	// 	progress: 0,
+	// 	activity_critical: {
+	// 		critical_path: false,
+	// 	},
+	// };
 
 	const { data: activities, isSuccess } = useQuery({
 		queryKey: [

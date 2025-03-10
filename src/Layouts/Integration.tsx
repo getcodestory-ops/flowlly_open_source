@@ -7,7 +7,6 @@ import {
 	registerOutlookCalendarWebhook,
 	registerOutlookMailWebhook,
 	getMicrosoftWebhook,
-	getMicrosoftMailWebhook,
 } from "@/api/integration_routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +17,6 @@ import {
 	Card,
 	CardContent,
 	CardDescription,
-	CardFooter,
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
@@ -27,7 +25,7 @@ import { useStore } from "@/utils/store";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 
-export default function Integration() {
+export default function Integration(): React.ReactNode {
 	const { toast } = useToast();
 	const session = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
@@ -194,35 +192,6 @@ export default function Integration() {
 		}
 	};
 
-	// Enhanced Microsoft connection status check
-	// useEffect(() => {
-	//   const checkMicrosoftConnection = async () => {
-	//     try {
-	//       const response = await fetch(
-	//         `${process.env.NEXT_PUBLIC_API_URL}/auth/microsoft/status`,
-	//         {
-	//           credentials: "include",
-	//         }
-	//       );
-	//       const data = await response.json();
-	//       setMicrosoftConnected(data.connected);
-
-	//       // If we have a success or error message in the URL (after redirect)
-	//       const urlParams = new URLSearchParams(window.location.search);
-	//       const status = urlParams.get("auth_status");
-	//       if (status === "success") {
-	//         // You might want to show a success toast/message here
-	//         // Remove the query params
-	//         window.history.replaceState({}, "", window.location.pathname);
-	//       }
-	//     } catch (error) {
-	//       console.error("Failed to check Microsoft connection:", error);
-	//     }
-	//   };
-
-	//   checkMicrosoftConnection();
-	// }, []);
-
 	const handleGoogleConnect = () => {
 		setGoogleConnected(!googleConnected);
 	};
@@ -236,11 +205,11 @@ export default function Integration() {
 		<div className="p-4 space-y-4">
 			<Toaster />
 			{/* Procore Integration Card */}
-			<Card className="w-full max-w-3xl">
+			<Card className="w-full max-w-xl">
 				<CardHeader>
 					<CardTitle>Procore Integration</CardTitle>
 					<CardDescription>
-            Connect and manage your Procore account integration
+            			Connect and manage your Procore account integration
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-6">
@@ -290,7 +259,7 @@ export default function Integration() {
 				</CardContent>
 			</Card>
 			{/* Microsoft Integration Card */}
-			<Card className="w-full max-w-3xl">
+			<Card className="w-full max-w-xl">
 				<CardHeader>
 					<CardTitle>Microsoft Integration</CardTitle>
 					<CardDescription>
@@ -367,7 +336,7 @@ export default function Integration() {
 				</CardContent>
 			</Card>
 			{/* Google Integration Card */}
-			<Card className="w-full max-w-3xl">
+			{/* <Card className="w-full max-w-3xl">
 				<CardHeader>
 					<CardTitle>Google Integration</CardTitle>
 					<CardDescription>
@@ -395,11 +364,10 @@ export default function Integration() {
 					</Button>
 					{googleConnected && (
 						<div className="space-y-4">
-							{/* Add Google-specific settings here */}
 						</div>
 					)}
-				</CardContent>
-			</Card>
+				</CardContent> 
+			</Card> */}
 			{/* Save Settings Button */}
 			<Button
 				className="mt-4"

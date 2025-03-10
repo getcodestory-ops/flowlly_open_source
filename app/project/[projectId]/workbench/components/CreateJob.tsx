@@ -14,7 +14,7 @@ import DailyJournalForm from "@/components/ProjectEvent/DailyJournalForm";
 import CustomWorkflowForm from "@/components/ProjectEvent/CustomWorkFlow/CustomWorkflowForm";
 import { useRouter } from "next/navigation";
 
-function CreateJob() {
+function CreateJob(): React.ReactNode {
 	const router = useRouter();
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [isDocumentWriterDialogOpen, setIsDocumentWriterDialogOpen] =
@@ -26,11 +26,11 @@ function CreateJob() {
     useState(false);
 
 	return (
-		<div className="flex justify-between items-center mb-4">
+		<div className="flex justify-between items-center">
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button className="bg-indigo-500 text-white">
-						<Plus className="mr-2 h-4 w-4" /> Create new workflow
+						<Plus className="mr-2 h-4 w-4" /> Create Workflow
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent>
@@ -40,7 +40,7 @@ function CreateJob() {
 							setIsCustomWorkflowDialogOpen(true);
 						}}
 					>
-            Build a workflow
+						Build a workflow
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						onSelect={() => {
@@ -48,7 +48,7 @@ function CreateJob() {
 							setIsDocumentWriterDialogOpen(true);
 						}}
 					>
-            Document Writer
+						Document Writer
 					</DropdownMenuItem>
 					{/* <DropdownMenuItem>Search folders</DropdownMenuItem> */}
 
@@ -58,7 +58,7 @@ function CreateJob() {
 							setIsDialogOpen(true);
 						}}
 					>
-            Create New Meeting
+						Create New Meeting
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						onSelect={() => {
@@ -69,7 +69,7 @@ function CreateJob() {
 							);
 						}}
 					>
-            Connect to Calendar
+						Connect to Calendar
 					</DropdownMenuItem>
 					{/* <DropdownMenuItem>Update Schedule</DropdownMenuItem> */}
 					{/* <DropdownMenuItem
