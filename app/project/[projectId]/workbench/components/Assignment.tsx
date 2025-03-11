@@ -1,14 +1,8 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
 import {
-	ArrowLeft,
-	List,
-	Info,
-	MessageSquare,
-	Play,
 	AlertCircle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -20,12 +14,6 @@ import { useQuery } from "@tanstack/react-query";
 import { getProjectEvents } from "@/api/taskQueue";
 import { useStore } from "@/utils/store";
 import { GraphList } from "./GraphList";
-import { EventScheduleList } from "./EventScheduleList";
-import { ResultViewer } from "./ResultViewer";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 import type {
 	GraphData,
@@ -34,12 +22,10 @@ import type {
 	ProjectEvents,
 } from "./types";
 
-import { TriggerUI } from "./TriggerUI";
 import LoaderAnimation from "@/components/Animations/LoaderAnimation";
-import PlatformChatComponent from "@/components/ChatInput/PlatformChat/PlatformChatComponent";
 import CreateJob from "./CreateJob";
-import { WorkflowViewModeSwitcher } from "./WorkflowViewModeSwitcher";
 import { ViewMode } from "./types";
+import { WorkflowViewer } from "./AssignmentComponents/WorkflowViewer";
 
 export default function AssignmentHome(): React.ReactNode {
 	const [currentGraphId, setCurrentGraphId] = useState<string | null>(null);
@@ -220,7 +206,7 @@ export default function AssignmentHome(): React.ReactNode {
 	}
 
 	return (
-		<div className="mx-auto h-full flex flex-col">
+		<div className="mx-auto h-[100vh] flex flex-col">
 			{!currentGraph ? (
 				<Card className="flex-1 border-0 shadow-none h-[100vh]">
 					<CardHeader className="px-6 pt-6 pb-2 sticky top-0 bg-white z-10">
@@ -266,311 +252,6 @@ export default function AssignmentHome(): React.ReactNode {
 					workflowStats={workflowStats}
 				/>
 			)}
-		</div>
-	);
-};
-
-interface WorkflowViewerProps {
-	currentGraphId: string | null;
-	setCurrentGraphId: (_: string | null) => void;
-	currentResult: EventResult | null;
-	setCurrentResult: (_: EventResult | null) => void;
-	runningWorkflows: EventSchedule[];
-	completedWorkflows: EventSchedule[];
-	eventSchedule: EventSchedule[];
-	setIsLoadingResult: (_: boolean) => void;
-	currentGraph: GraphData | null;
-	workflowStats: { completed: number, running: number, other: number, total: number };
-	isLoadingResult: boolean;
-
-}
-const WorkflowViewer = ({ currentGraphId, setCurrentGraphId, currentResult, setCurrentResult, runningWorkflows, completedWorkflows, eventSchedule, setIsLoadingResult, currentGraph, workflowStats, isLoadingResult }: WorkflowViewerProps): React.ReactNode => {
-	return (
-		<div className="flex flex-col flex-1">
-			<div className="flex items-center gap-4 p-4 border-b">
-				<Button
-					className="p-2"
-					onClick={() => {
-						setCurrentGraphId(null);
-						setCurrentResult(null);
-					}}
-					variant="ghost"
-				>
-					<ArrowLeft className="h-5 w-5 mr-2" />
-					Back to Workflows
-				</Button>
-				<h2 className="text-xl font-semibold">{currentGraph?.name}</h2>
-				<Badge className="ml-auto" variant="outline">
-					{currentGraph?.event_type}
-				</Badge>
-			</div>
-			<Tabs
-				className="flex-1 flex flex-col"
-				defaultValue="workflows"
-			>
-				<div className="border-b px-4">
-					<TabsList className="h-12">
-						<TabsTrigger
-							className="data-[state=active]:border-b-2 data-[state=active]:border-primary"
-							value="workflows"
-						>
-							<List className="h-4 w-4 mr-2" />
-							Workflows
-							{runningWorkflows.length > 0 && (
-								<Badge className="ml-2" variant="secondary">
-									{runningWorkflows.length}
-								</Badge>
-							)}
-						</TabsTrigger>
-						<TabsTrigger
-							className="data-[state=active]:border-b-2 data-[state=active]:border-primary"
-							value="results"
-						>
-							<Info className="h-4 w-4 mr-2" />
-							Results
-							{currentResult && (
-								<Badge className="ml-2" variant="secondary">
-									1
-								</Badge>
-							)}
-						</TabsTrigger>
-						{currentGraph?.event_trigger &&
-							currentGraph?.event_trigger.length > 0 && (
-							<TabsTrigger
-								className="data-[state=active]:border-b-2 data-[state=active]:border-primary"
-								value="trigger"
-							>
-								<Play className="h-4 w-4 mr-2" />
-								Trigger Workflow
-							</TabsTrigger>
-						)}
-						<TabsTrigger
-							className="data-[state=active]:border-b-2 data-[state=active]:border-primary"
-							value="questions"
-						>
-							<MessageSquare className="h-4 w-4 mr-2" />
-							Questions
-						</TabsTrigger>
-					</TabsList>
-				</div>
-				<div className="flex-1 overflow-hidden">
-					<TabsContent className="flex-1 h-full mt-0" value="workflows">
-						<div className="grid grid-cols-1 lg:grid-cols-6 h-full">
-							<div className="p-4 overflow-auto border-r">
-								<div className="mb-4">
-									<h3 className="text-lg font-medium mb-2 flex items-center">
-										<span>Running Workflows</span>
-										{runningWorkflows && runningWorkflows.length > 0 && (
-											<Badge className="ml-2" variant="secondary">
-												{runningWorkflows.length}
-											</Badge>
-										)}
-									</h3>
-									{!eventSchedule ||
-										!runningWorkflows ||
-										runningWorkflows.length === 0 ? (
-											<Card className="p-4 bg-muted">
-												<p className="text-sm text-muted-foreground">
-													No running workflows
-												</p>
-											</Card>
-										) : (
-											<ScrollArea className="h-[200px]">
-												<EventScheduleList
-													compact
-													eventId={currentGraphId || ""}
-													graphs={runningWorkflows}
-													onSelectGraph={(result) => {
-														setCurrentResult(result);
-													}}
-													setIsLoadingResult={setIsLoadingResult}
-												/>
-											</ScrollArea>
-										)}
-								</div>
-								<Separator className="my-4" />
-								<div>
-									<h3 className="text-lg font-medium mb-2 flex items-center">
-										<span>Completed Workflows</span>
-										{completedWorkflows &&
-											completedWorkflows.length > 0 && (
-											<Badge className="ml-2" variant="secondary">
-												{completedWorkflows.length}
-											</Badge>
-										)}
-									</h3>
-									{!eventSchedule ||
-										!completedWorkflows ||
-										completedWorkflows.length === 0 ? (
-											<Card className="p-4 bg-muted">
-												<p className="text-sm text-muted-foreground">
-													No completed workflows
-												</p>
-												{eventSchedule && eventSchedule.length > 0 && (
-													<div className="text-xs text-blue-600 mt-2">
-														<p>Diagnostic Info:</p>
-														<p>
-															Total event schedules: {eventSchedule.length}
-														</p>
-														<p>Total results: {workflowStats.total}</p>
-														<p>
-															Explicitly completed:{" "}
-															{
-																eventSchedule.filter((s) =>
-																	s.event_result.some(
-																		(r) => r.status === "completed",
-																	),
-																).length
-															}
-														</p>
-														<p>
-															Implicitly completed:{" "}
-															{
-																eventSchedule.filter((s) =>
-																	s.event_result.some(
-																		(r) =>
-																			(r.status === null ||
-																				r.status === undefined) &&
-																			!r.listen &&
-																			!r.workflow_id,
-																	),
-																).length
-															}
-														</p>
-														<p>
-															Running:{" "}
-															{
-																eventSchedule.filter((s) =>
-																	s.event_result.some(
-																		(r) =>
-																			r.status === "processing" ||
-																			!!r.listen ||
-																			(!!r.workflow_id &&
-																			r.status !== "completed"),
-																	),
-																).length
-															}
-														</p>
-														<p>
-															Stats: {workflowStats.completed} completed,{" "}
-															{workflowStats.running} running,{" "}
-															{workflowStats.other} other
-														</p>
-													</div>
-												)}
-											</Card>
-										) : (
-											<ScrollArea className="h-[calc(100vh-500px)]">
-												<EventScheduleList
-													compact
-													eventId={currentGraphId || ""}
-													graphs={completedWorkflows}
-													onSelectGraph={(result) => {
-														setCurrentResult(result);
-													}}
-													setIsLoadingResult={setIsLoadingResult}
-												/>
-											</ScrollArea>
-										)}
-								</div>
-							</div>
-							<div className="col-span-5 p-4 h-full overflow-auto">
-								{currentResult ? (
-									isLoadingResult ? (
-										<div className="flex h-full items-center justify-center">
-											<LoaderAnimation />
-										</div>
-									) : (
-										<ResultViewer
-											currentResult={currentResult}											
-										/>
-									)
-								) : (
-									<div className="flex flex-col items-center justify-center h-full text-center">
-										<AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-										<h3 className="text-xl font-medium mb-2">
-											No workflow selected
-										</h3>
-										<p className="text-muted-foreground">
-											Select a workflow from the left panel to view its
-											details
-										</p>
-									</div>
-								)}
-							</div>
-						</div>
-					</TabsContent>
-					<TabsContent
-						className="flex-1 h-full mt-0 p-4 overflow-auto"
-						value="results"
-					>
-						{currentResult ? (
-							<ResultViewer
-								currentResult={currentResult}
-							/>
-						) : (
-							<div className="flex flex-col items-center justify-center h-full text-center">
-								<AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-								<h3 className="text-xl font-medium mb-2">
-									No results to display
-								</h3>
-								<p className="text-muted-foreground">
-									Select a workflow from the Workflows tab to view its results
-								</p>
-							</div>
-						)}
-					</TabsContent>
-					<TabsContent className="flex-1 h-full mt-0 p-4" value="trigger">
-						{currentGraph?.event_trigger &&
-							currentGraph?.event_trigger.length > 0 &&
-							currentGraph?.event_trigger[0].trigger_by === "ui" && (
-							<Card>
-								<CardHeader>
-									<CardTitle>Trigger Workflow</CardTitle>
-									<CardDescription>
-										Start a new workflow run
-									</CardDescription>
-								</CardHeader>
-								<CardContent>
-									<TriggerUI
-										eventId={currentGraphId || ""}
-										onTrigger={(result) => {
-											setCurrentResult(result);
-										}}
-									/>
-								</CardContent>
-							</Card>
-						)}
-					</TabsContent>
-					<TabsContent className="flex-1 h-full mt-0 p-4" value="questions">
-						<Card className="h-full flex flex-col border-0 shadow-none">
-							<CardHeader>
-								<CardTitle>Ask about this workflow</CardTitle>
-								<CardDescription>
-									Get help and information about this workflow
-								</CardDescription>
-							</CardHeader>
-							<CardContent className="flex-1 pb-6">
-								{currentResult ? (
-									<div className="h-[full] border rounded-md">
-										<PlatformChatComponent
-											chatTarget="workflow"
-											folderId={currentResult.id}
-											folderName={currentGraph?.name || ""}
-										/>
-									</div>
-								) : (
-									<div className="bg-muted p-4 rounded-lg">
-										<p className="text-muted-foreground">
-											No workflow selected to answer questions about
-										</p>
-									</div>
-								)}
-							</CardContent>
-						</Card>
-					</TabsContent>
-				</div>
-			</Tabs>
 		</div>
 	);
 };

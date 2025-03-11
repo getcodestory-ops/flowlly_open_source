@@ -71,8 +71,6 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 	const [showLogs, setShowLogs] = useState(false);
 	const [detailView, setDetailView] = useState<NodeData | null>(null);
 
-
-
 	// Calculate completion percentage for workflow
 	const calculateProgress = () : number =>  {
 		if (!currentResult?.nodes) return 0;
@@ -111,7 +109,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 								<div className="flex items-center gap-2 text-gray-500">
 									<Loader2 className="h-4 w-4 animate-[heartbeat_1.5s_ease-in-out_infinite]" />
 									<span>
-                    Reading through attached files and your instructions
+										Reading through attached files and your instructions
 									</span>
 								</div>
 							)}
@@ -193,74 +191,6 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 					)}
 				</div>
 				<div className="w-full lg:w-1/4 bg-white rounded-lg border shadow-sm p-4">
-					<div className="mb-6 bg-white rounded-lg shadow-sm p-4 border">
-						<div className="flex items-center justify-between mb-2">
-							<div className="flex items-center gap-2">
-								<div className="bg-purple-100 p-2 rounded-full">
-									<FileText className="h-5 w-5 text-purple-800" />
-								</div>
-								<h2 className="text-xl font-semibold">
-									{currentResult.name || "Workflow Result"}
-								</h2>
-							</div>
-							<div className="flex items-center gap-3">
-								<Badge
-									className={cn(
-										"px-3 py-1 text-sm font-medium rounded-full",
-										isWorkflowRunning
-											? "bg-purple-100 text-purple-800 border-purple-200"
-											: "bg-green-100 text-green-800 border-green-200",
-									)}
-									variant="outline"
-								>
-									{isWorkflowRunning ? (
-										<span className="flex items-center gap-1.5">
-											<span className="relative flex h-2 w-2">
-												<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
-												<span className="relative inline-flex rounded-full h-2 w-2 bg-purple-600" />
-											</span>
-                      Running
-										</span>
-									) : (
-										<span className="flex items-center gap-1.5">
-											<CheckCircle2 className="h-3.5 w-3.5" />
-                      Completed
-										</span>
-									)}
-								</Badge>
-								<div className="text-sm">
-									{isWorkflowRunning ? (
-										<span className="text-gray-600">
-											{progressPercentage}% in progress
-										</span>
-									) : (
-										(currentResult.status === "completed" ||
-                      isImplicitlyCompleted) && (
-											<span className="text-green-600 font-medium">
-                        100% complete
-											</span>
-										)
-									)}
-								</div>
-							</div>
-						</div>
-						{/* Progress Bar */}
-						<div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mt-4">
-							<div
-								className={`h-full ${
-									hasFailedNodes
-										? "bg-red-500"
-										: isWorkflowRunning
-											? "bg-blue-500"
-											: "bg-green-500"
-								}`}
-								style={{
-									width: `${isWorkflowRunning ? progressPercentage : 100}%`,
-									transition: "width 0.5s ease-in-out",
-								}}
-							/>
-						</div>
-					</div>
 					<h3 className="text-lg font-medium mb-4 px-2">Workflow Timeline</h3>
 					<div className="relative">
 						{(() => {
@@ -291,6 +221,70 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 		</div>
 	);
 };
+{/* <div className="mb-6 bg-white rounded-lg shadow-sm p-4 border">
+						<div className="flex items-center justify-between mb-2">
+							<div className="flex items-center gap-2">
+								<div className="bg-purple-100 p-2 rounded-full">
+									<FileText className="h-5 w-5 text-purple-800" />
+								</div>
+								<h2 className="text-xl font-semibold">
+									{currentResult.name || "Workflow Result"}
+								</h2>
+							</div>
+							<div className="flex items-center gap-3">
+								<Badge
+									className={cn(
+										"px-3 py-1 text-sm font-medium rounded-full",
+										isWorkflowRunning
+											? "bg-purple-100 text-purple-800 border-purple-200"
+											: "bg-green-100 text-green-800 border-green-200",
+									)}
+									variant="outline"
+								>
+									{isWorkflowRunning ? (
+										<span className="flex items-center gap-1.5">
+											<span className="relative flex h-2 w-2">
+												<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
+												<span className="relative inline-flex rounded-full h-2 w-2 bg-purple-600" />
+											</span>
+											Running
+										</span>
+									) : (
+										<span className="flex items-center gap-1.5">
+											<CheckCircle2 className="h-3.5 w-3.5" />
+											Completed
+										</span>
+									)}
+								</Badge>
+								<div className="text-sm">
+									{isWorkflowRunning ? (
+										<span className="text-gray-600">
+											{progressPercentage}% in progress
+										</span>
+									) : ((currentResult.status === "completed" || isImplicitlyCompleted) && (
+										<span className="text-green-600 font-medium">
+											100% complete
+										</span>
+									))}
+								</div>
+							</div>
+						</div>
+						<div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mt-4">
+							<div
+								className={`h-full ${
+									hasFailedNodes
+										? "bg-red-500"
+										: isWorkflowRunning
+											? "bg-blue-500"
+											: "bg-green-500"
+								}`}
+								style={{
+									width: `${isWorkflowRunning ? progressPercentage : 100}%`,
+									transition: "width 0.5s ease-in-out",
+								}}
+							/>
+						</div>
+					</div> */}
 
 interface TimelineNodeProps {
   node: NodeData;
@@ -429,7 +423,7 @@ const NodeActions: React.FC<NodeActionsProps> = ({
 						) : (
 							<span className="flex items-center gap-1.5">
 								<Loader2 className="h-3.5 w-3.5" />
-                			Rerun Step
+								Rerun Step
 							</span>
 						)}
 					</Button>
@@ -558,7 +552,7 @@ const ResultBox: React.FC<ResultBoxProps> = ({
 							<div className="flex items-center gap-2">
 								<h3 className="font-medium">{node.title}</h3>
 								<span className={`text-sm ${getStatusColor(node.status)}`}>
-                  • {node.status}
+									• {node.status}
 								</span>
 							</div>
 						</div>
@@ -671,7 +665,7 @@ const UserInputForm = ({
 			<div className="flex items-center gap-2 mb-4">
 				<MessageSquare className="h-5 w-5 text-gray-600" />
 				<h3 className="font-medium">
-          What do you want to do? Attach files if needed.
+					What do you want to do? Attach files if needed.
 				</h3>
 			</div>
 			{files.length > 0 && (
@@ -750,7 +744,7 @@ const UserInputForm = ({
 					variant="outline"
 				>
 					<FileText className="h-4 w-4 mr-2" />
-          Attach Files
+					Attach Files
 				</Button>
 				<Input
 					className="hidden"
@@ -771,7 +765,7 @@ const UserInputForm = ({
 					variant="outline"
 				>
 					<Edit3 className="h-4 w-4 mr-2" />
-          Attach Drawings
+					Attach Drawings
 				</Button>
 				<Button
 					className="ml-auto"
@@ -796,12 +790,11 @@ const renderNodeContent = (node: NodeData, isFullScreen: boolean) => {
 	switch (nodeId) {
 		case "record_meeting":
 			return (
-				typeof node.output === "object" &&
-        node.output?.url && (
+				typeof node.output === "object" && node.output?.url && (
 					<AspectRatio ratio={16 / 9}>
 						<video className="rounded-lg" controls>
 							<source src={node.output.url} type="video/mp4" />
-              Your browser does not support the video tag
+							Your browser does not support the video tag
 						</video>
 					</AspectRatio>
 				)
