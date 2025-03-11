@@ -1,12 +1,9 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
-import { ArrowDown, ArrowUp, MessageSquare, X } from "lucide-react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Table,
 	TableBody,
 	TableCell,
-	TableHead,
-	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
 import {
@@ -41,14 +38,12 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import PlatformChatComponent from "@/components/ChatInput/PlatformChat/PlatformChatComponent";
-import ChatButton from "@/components/ChatButton";
 
 interface EventScheduleListProps {
   graphs: EventSchedule[];
-  onSelectGraph: (event: EventResult) => void;
+  onSelectGraph: (_: EventResult) => void;
   eventId: string;
-  setIsLoadingResult: (isLoading: boolean) => void;
+  setIsLoadingResult: (_: boolean) => void;
   compact?: boolean;
 }
 
@@ -65,9 +60,6 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	const activeProject = useStore((state) => state.activeProject);
 	const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 	const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
-	const [isChatOpen, setIsChatOpen] = useState(false);
-	const [isClosing, setIsClosing] = useState(false);
-	const chatRef = useRef<HTMLDivElement>(null);
 
 	// Added pagination state
 	const [pagination, setPagination] = useState<{
@@ -114,7 +106,6 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	});
 
 	const sortedGraphs = useMemo(() => {
-		//console.log("EventScheduleList received graphs:", graphs.length);
 		if (!graphs || graphs.length === 0) {
 			return [];
 		}
@@ -137,11 +128,9 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 
 	const tableData: ScheduleTableRow[] = useMemo(() => {
 		if (sortedGraphs.length === 0) {
-			//console.log("No sorted graphs available for table data");
 			return [];
 		}
 
-		//console.log("Creating table data from", sortedGraphs.length, "graphs");
 		return sortedGraphs.map((eventSchedule) => ({
 			id: eventSchedule.id,
 			schedule: eventSchedule.schedule,
@@ -205,7 +194,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 								} flex flex-col items-start gap-2`}
 							>
 								<div className="flex items-center">
-									<span className={`text-${compact ? "sm" : "sm"} `}>
+									<span className="text-sm">
 										{new Date(result.timestamp).toLocaleString([], {
 											dateStyle: compact ? "short" : "long",
 											timeStyle: compact ? "short" : "medium",
@@ -213,7 +202,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 									</span>
 									{isCompleted && compact && (
 										<span className="ml-2 px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">
-                      Completed
+											Completed
 										</span>
 									)}
 								</div>
@@ -225,104 +214,18 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 												compact ? "xs" : "sm"
 											} text-green-600`}
 										>
-                      Waiting for input
+											Waiting for input
 										</span>
 									</div>
 								)}
-								{currentlyRunning && !compact && (
-									<div className="flex items-center gap-2">
-										<div className="flex items-center">
-											<div className="h-2 w-2 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
-											<span className="ml-1 text-sm text-purple-600">
-                        Currently running
-											</span>
-										</div>
-										<AlertDialog>
-											<AlertDialogTrigger asChild>
-												<Button
-													className="h-6 px-2 text-xs"
-													onClick={(e) => e.stopPropagation()}
-													size="sm"
-													variant="destructive"
-												>
-                          Clear
-												</Button>
-											</AlertDialogTrigger>
-											<AlertDialogContent>
-												<AlertDialogHeader>
-													<AlertDialogTitle>Are you sure?</AlertDialogTitle>
-													<AlertDialogDescription>
-                            Clearing process will clean the progress so far.
-                            This action cannot be undone.
-													</AlertDialogDescription>
-												</AlertDialogHeader>
-												<AlertDialogFooter>
-													<AlertDialogCancel
-														onClick={(e) => e.stopPropagation()}
-													>
-                            Cancel
-													</AlertDialogCancel>
-													<AlertDialogAction
-														onClick={(e) => {
-															e.stopPropagation();
-															if (row.original.result?.workflow_id) {
-																clearProcess(row.original.result.workflow_id);
-															}
-														}}
-													>
-                            Continue
-													</AlertDialogAction>
-												</AlertDialogFooter>
-											</AlertDialogContent>
-										</AlertDialog>
-									</div>
-								)}
-								{currentlyRunning && compact && (
-									<div className="flex items-center justify-between w-full">
-										<div className="flex items-center">
-											<div className="h-2 w-2 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
-											<span className="ml-1 text-xs text-purple-600">
-                        Running
-											</span>
-										</div>
-										<AlertDialog>
-											<AlertDialogTrigger asChild>
-												<Button
-													className="h-5 px-1.5 text-xs"
-													onClick={(e) => e.stopPropagation()}
-													size="sm"
-													variant="destructive"
-												>
-                          Clear
-												</Button>
-											</AlertDialogTrigger>
-											<AlertDialogContent>
-												<AlertDialogHeader>
-													<AlertDialogTitle>Are you sure?</AlertDialogTitle>
-													<AlertDialogDescription>
-                            Clearing process will clean the progress so far.
-                            This action cannot be undone.
-													</AlertDialogDescription>
-												</AlertDialogHeader>
-												<AlertDialogFooter>
-													<AlertDialogCancel
-														onClick={(e) => e.stopPropagation()}
-													>
-                            Cancel
-													</AlertDialogCancel>
-													<AlertDialogAction
-														onClick={(e) => {
-															e.stopPropagation();
-															if (row.original.result?.workflow_id) {
-																clearProcess(row.original.result.workflow_id);
-															}
-														}}
-													>
-                            Continue
-													</AlertDialogAction>
-												</AlertDialogFooter>
-											</AlertDialogContent>
-										</AlertDialog>
+								{currentlyRunning && (
+									<div className={`flex items-center ${compact ? "justify-between w-full" : "gap-2"}`}>
+										<RunningText textSize={compact ? "xs" : "sm"} />
+										<CancelRunningWorkflowButton
+											buttonClassName={compact ? "h-5 px-1.5 text-xs" : "h-6 px-2 text-xs"}
+											clearProcess={clearProcess}
+											row={row}
+										/>
 									</div>
 								)}
 							</div>
@@ -409,88 +312,39 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 		}
 	}, [fetchedEventResult]);
 
-	const renderRow = (row: Row<ScheduleTableRow>) => {
-		// Check if this row is selected
-		const isSelected = row.original.result?.id === selectedResultId;
-		const isRunning = row.original.result?.workflow_id;
-		const isListening = row.original.result?.listen;
-		const isCompleted = row.original.result?.status === "completed";
-
-		// Determine status styling
-		let statusClass = "";
-		if (isSelected) {
-			statusClass = "bg-gradient-to-r from-indigo-100 to-purple-500";
-		} else if (isRunning) {
-			statusClass = "border-l-2 border-l-purple-500";
-		} else if (isListening) {
-			statusClass = "border-l-2 border-l-green-500";
-		} else if (isCompleted) {
-			statusClass = "border-l-2 border-l-green-700";
-		}
-
-		return (
-			<React.Fragment key={row.id}>
-				<TableRow
-					className={cn(
-						"cursor-pointer hover:bg-gradient-to-r hover:from-indigo-100 hover:to-purple-500 rounded-lg",
-						statusClass,
-						row.depth > 0 && "ml-4",
-						compact && "py-1", // Add compact styling
-						compact && "text-sm",
-					)}
-					onClick={() => {
-						if (row.original.subRows) {
-							row.toggleExpanded();
-						} else if (row.original.result) {
-							if (row.original.id === "eventTrigger") {
-								onSelectGraph(row.original.result);
-								setSelectedResultId(row.original.result.id);
-								return;
-							}
-
-							const eventResult = graphs
-								.flatMap((schedule) => schedule.event_result)
-								.find((er) => er.id === row.original.result?.id);
-
-							if (eventResult?.nodes) {
-								onSelectGraph(eventResult);
-								setSelectedResultId(row.original.result.id);
-							} else {
-								setSelectedEventId(row.original.result?.id);
-								setSelectedResultId(row.original.result.id);
-							}
-						}
-					}}
-				>
-					{row.getVisibleCells().map((cell) => (
-						<TableCell className={cn(compact && "py-1")} key={cell.id}>
-							{flexRender(cell.column.columnDef.cell, cell.getContext())}
-						</TableCell>
-					))}
-				</TableRow>
-			</React.Fragment>
-		);
-	};
-
 	return (
 		<div className={cn("w-full", compact && "text-sm")}>
 			{graphs && graphs.length > 0 ? (
 				<Table>
 					<TableBody>
 						{table.getRowModel().rows.length > 0 ? (
-							table.getRowModel().rows.map(renderRow)
+							table.getRowModel().rows.map((row) => (
+								<WorkflowListItem
+									compact={compact}
+									graphs={graphs}
+									key={row.id}
+									onSelectGraph={onSelectGraph}
+									row={row}
+									selectedResultId={selectedResultId || ""}
+									setSelectedEventId={setSelectedEventId}
+									setSelectedResultId={setSelectedResultId}
+								/>
+							))
 						) : (
 							<TableRow>
 								<TableCell className="text-center" colSpan={columns.length}>
-                  No workflow results found.
+									<div>
+										No workflow results found.
+									</div>
 								</TableCell>
 							</TableRow>
 						)}
+						{/* </div> */}
 					</TableBody>
-				</Table>
+				 </Table>
 			) : (
 				<div className="text-center p-4 text-muted-foreground">
-          No workflow data available.
+					No workflow data available.
 				</div>
 			)}
 			{/* Pagination Controls - Only show if we have data */}
@@ -504,52 +358,150 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 					<div className="w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-[progressLine_10s_linear_infinite]" />
 				</div>
 			)}
-			{/* {selectedResultId && (
-        <div className="z-100">
-          <ChatButton
-            isOpen={isChatOpen}
-            onClick={() => setIsChatOpen((prev) => !prev)}
-            title={
-              isChatOpen
-                ? "Close chat assistant"
-                : "Chat with Flowlly AI about workflow"
-            }
-            openText="Workflow help"
-            icon={<MessageSquare className="h-5 w-5" />}
-            className="z-[100]"
-          />
+		</div>
+	);
+};
 
-          {(isChatOpen || isClosing) && (
-            <div
-              ref={chatRef}
-              className={`fixed bottom-20 right-4 w-[calc(100vw-200px)] z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden transition-opacity duration-300 ${
-                isClosing ? "opacity-0" : "opacity-100"
-              }`}
-            >
-              <div className="absolute top-2 left-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    setIsClosing(true);
-                    setTimeout(() => {
-                      setIsChatOpen(false);
-                      setIsClosing(false);
-                    }, 300);
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <PlatformChatComponent
-                folderId={selectedResultId}
-                folderName={fetchedEventResult?.result.name ?? "workflow"}
-                chatTarget="workflow"
-              />
-            </div>
-          )}
-        </div>
-      )} */}
+interface WorkflowListItemProps {
+	row: Row<ScheduleTableRow>;
+	compact: boolean;
+	selectedResultId: string;
+	onSelectGraph: (_: EventResult) => void;
+	graphs: EventSchedule[];
+	setSelectedResultId: (_: string) => void;
+	setSelectedEventId: (_: string) => void;
+}
+
+const WorkflowListItem = ({ row, compact, selectedResultId, onSelectGraph, graphs, setSelectedResultId, setSelectedEventId }: WorkflowListItemProps): React.ReactNode => {
+	const isSelected = row.original.result?.id === selectedResultId;
+	const isRunning = row.original.result?.workflow_id;
+	const isListening = row.original.result?.listen;
+	const isCompleted = row.original.result?.status === "completed";
+
+	// Determine status styling
+	let statusClass = "";
+	if (isSelected) {
+		statusClass = "bg-gradient-to-r from-indigo-100 to-purple-500";
+	} else if (isRunning) {
+		statusClass = "border-l-2 border-l-purple-500";
+	} else if (isListening) {
+		statusClass = "border-l-2 border-l-green-500";
+	} else if (isCompleted) {
+		statusClass = "border-l-2 border-l-green-700";
+	}
+	return (
+		<React.Fragment key={row.id}>
+			<TableRow
+				className={cn(
+					"cursor-pointer rounded-lg",
+					statusClass,
+					row.depth > 0 && "ml-4",
+					compact && "py-1", // Add compact styling
+					compact && "text-sm",
+					"my-4",
+					"border-none",
+				)}
+				onClick={() => {
+					if (row.original.subRows) {
+						row.toggleExpanded();
+					} else if (row.original.result) {
+						if (row.original.id === "eventTrigger") {
+							onSelectGraph(row.original.result);
+							setSelectedResultId(row.original.result.id);
+							return;
+						}
+
+						const eventResult = graphs
+							.flatMap((schedule) => schedule.event_result)
+							.find((er) => er.id === row.original.result?.id);
+
+						if (eventResult?.nodes) {
+							onSelectGraph(eventResult);
+							setSelectedResultId(row.original.result.id);
+						} else {
+							setSelectedEventId(row.original.result?.id);
+							setSelectedResultId(row.original.result.id);
+						}
+					}
+				}}
+			>
+				{row.getVisibleCells().map((cell) => (
+					<TableCell className={cn(compact && "py-2 border-none")} key={cell.id}>
+						<WorkflowItem name={flexRender(cell.column.columnDef.cell, cell.getContext()) || ""} />
+					</TableCell>
+				))}
+			</TableRow>
+		</React.Fragment>
+	);
+};
+
+const WorkflowItem = ({ name }: {name: any}): React.ReactNode => {
+	return (
+		<div className="flex items-center gap-1 flex-row">
+			{/* <div>
+				<Button className="rounded-full w-4 h-4"
+					size="icon"
+					variant="outline"
+				>
+					<ChevronRight className="w-3 h-3" /> 
+				</Button>
+			</div> */}
+			<div>{name}</div>
+		</div>
+	);
+};
+
+const CancelRunningWorkflowButton = ({ clearProcess, row, buttonClassName }: { clearProcess: (_: string) => void, row: Row<ScheduleTableRow>, buttonClassName: string }) => {
+	return (
+		<AlertDialog>
+			<AlertDialogTrigger asChild>
+				<Button
+					className={buttonClassName}
+					onClick={(e) => e.stopPropagation()}
+					size="sm"
+					variant="destructive"
+				>
+					Cancel
+				</Button>
+			</AlertDialogTrigger>
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle>Are you sure?</AlertDialogTitle>
+					<AlertDialogDescription>
+						Clearing process will clean the progress so far.
+						This action cannot be undone.
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<AlertDialogCancel
+						onClick={(e) => e.stopPropagation()}
+					>
+						Cancel
+					</AlertDialogCancel>
+					<AlertDialogAction
+						onClick={(e) => {
+							e.stopPropagation();
+							if (row.original.result?.workflow_id) {
+								clearProcess(row.original.result.workflow_id);
+							}
+						}}
+					>
+						Continue
+					</AlertDialogAction>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
+
+	);
+};
+
+const RunningText = ({ textSize }: {textSize: string}): React.ReactNode => {
+	return (
+		<div className="flex items-center">
+			<div className="h-2 w-2 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
+			<span className={`ml-1 text-${textSize} text-purple-600`}>
+				Running
+			</span>
 		</div>
 	);
 };

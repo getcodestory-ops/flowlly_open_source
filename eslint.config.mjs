@@ -3,7 +3,6 @@ import pluginJs from "@eslint/js";
 import tsParser from "@typescript-eslint/parser";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
 import pluginReact from "eslint-plugin-react";
-
 const config = {
 	files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
 	languageOptions: {
@@ -39,8 +38,8 @@ const config = {
 		],
 		"array-bracket-spacing": ["error", "never"],
 		"max-len": ["warn", { code: 500, ignoreUrls: true }],
-		"max-lines-per-function": ["warn", 300],
-		"max-lines": ["warn", { max: 400, skipBlankLines: true, skipComments: true }],
+		"max-lines-per-function": ["warn", 900],
+		"max-lines": ["warn", { max: 700, skipBlankLines: true, skipComments: true }],
 		"no-unused-vars": [
 			"warn",
 			{
@@ -61,7 +60,6 @@ const config = {
 		"space-before-function-paren": ["error", "never"],
 		semi: ["error", "always"],
 		quotes: ["error", "double"],
-		// indent: ["error", 2],
 		indent: ["error", "tab", { SwitchCase: 1 }],
 		"quote-props": ["error", "as-needed"],
 		"arrow-parens": ["error", "always"],
@@ -70,10 +68,8 @@ const config = {
 		"comma-dangle": ["error", { arrays: "always-multiline", objects: "always-multiline", imports: "only-multiline", exports: "only-multiline", functions: "always-multiline" }],
 		"prefer-arrow-callback": ["error", { allowNamedFunctions: true }],
 		"newline-per-chained-call": ["error", { ignoreChainWithDepth: 2 }],
-		// "react/jsx-wrap-multilines": ["error", { declaration: "parens-new-line", assignment: "parens-new-line", return: "parens-new-line", arrow: "parens-new-line", condition: "parens-new-line", logical: "parens-new-line", prop: "parens-new-line" }],
 		"react/jsx-sort-props": ["warn", { noSortAlphabetically: false }],
 		"react/jsx-max-props-per-line": ["error", { maximum: { single: 2, multi: 1 } }],
-		// "react/jsx-first-prop-new-line": ["error", "multiline"],
 		"react/jsx-closing-bracket-location": ["error", "tag-aligned"],
 		"react/jsx-curly-spacing": ["error", "never"],
 		"react/jsx-curly-brace-presence": ["error", { props: "never" }],
@@ -84,6 +80,13 @@ const config = {
 		"react/jsx-pascal-case": "error",
 		"react/jsx-props-no-multi-spaces": "error",
 		"react/self-closing-comp": ["error", { component: true, html: true }],
+		// Comment the following while comming
+		"react/jsx-indent": ["error", "tab"],
+		"react/jsx-indent-props": ["error", "tab"],
+		"no-multiple-empty-lines": ["error", { max: 1, maxEOF: 0, maxBOF: 0 }],
+		// The above we will turn on in one go, the below we will not turn on
+		"react/jsx-wrap-multilines": ["error", { declaration: "parens-new-line", assignment: "parens-new-line", return: "parens-new-line", arrow: "parens-new-line", condition: "parens-new-line", logical: "parens-new-line", prop: "parens-new-line" }],
+		"react/jsx-first-prop-new-line": ["error", "multiline"],
 	},
 	settings: {
 		react: {
@@ -91,5 +94,4 @@ const config = {
 		},
 	},
 };
-
 export default [config];
