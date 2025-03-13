@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
-	ChevronRight,
 	Loader2,
 	Video,
 	Mic,
@@ -40,7 +39,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ResultViewerProps {
   currentResult: EventResult;
@@ -60,38 +58,12 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
     (!!currentResult?.workflow_id && currentResult.status !== "completed") ||
     !!currentResult?.listen;
 
-	// For workflows with null/undefined status, we'll consider them completed
-	// if they don't have any running indicators
-	const isImplicitlyCompleted =
-    (currentResult.status === null || currentResult.status === undefined) &&
-    !currentResult?.workflow_id &&
-    !currentResult?.listen;
-
 	const [pendingEvent, setPendingEvent] = useState(true);
 	const [showLogs, setShowLogs] = useState(false);
 	const [detailView, setDetailView] = useState<NodeData | null>(null);
 
-	// Calculate completion percentage for workflow
-	const calculateProgress = () : number =>  {
-		if (!currentResult?.nodes) return 0;
-
-		const totalNodes = currentResult.nodes.length;
-		if (totalNodes === 0) return 0;
-
-		const completedNodes = currentResult.nodes.filter(
-			(node) => node.status === "completed",
-		).length;
-
-		return Math.round((completedNodes / totalNodes) * 100);
-	};
-
-	const progressPercentage = calculateProgress();
-	const hasFailedNodes = currentResult?.nodes?.some(
-		(node) => node.status === "failed",
-	);
-
 	return (
-		<div className="p-6 min-h-screen">
+		<>
 			{/* Workflow Status Summary */}
 
 			{currentResult?.listen && (
@@ -157,15 +129,13 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 					</div>
 				</div>
 			)}
-			{/* Workflow Timeline View */}
-			<div className="flex flex-col lg:flex-row gap-6 h-full">
-				{/* Workflow Steps Timeline */}
-
+			{/* Workflow Details */}
+			<div className="flex flex-row gap-6 h-full items-start">
 				{/* Node Details */}
-				<div className="w-full lg:w-3/4 bg-white rounded-lg border shadow-sm p-4">
+				<div className="w-full rounded-lg border shadow-sm h-full flex-1 flex-grow">
 					{detailView ? (
-						<div className="animate-fadeIn">
-							<div className="flex items-center justify-between mb-4">
+						<div className="animate-fadeIn h-full">
+							<div className="flex items-center justify-between p-4 border-b">
 								<div className="flex items-center gap-2">
 									{getNodeIcon(detailView)}
 									<h3 className="font-medium text-lg">{detailView.title}</h3>
@@ -177,12 +147,12 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 									workflowId={currentResult.workflow_id || ""}
 								/>
 							</div>
-							<ScrollArea className="border-t pt-4 h-[calc(100vh-100px)] ">
+							<div className="h-full flex-grow flex-1 overflow-auto p-0" style={{ maxHeight: "calc(100% - 65px)" }}>
 								{renderNodeContent(detailView, false)}
-							</ScrollArea>
+							</div>
 						</div>
 					) : (
-						<div className="h-full flex items-center justify-center text-gray-500 p-8">
+						<div className="h-full flex items-center justify-center text-gray-500 p-8 flex-1 flex-grow">
 							<div className="text-center">
 								<FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
 								<p>Select a step from the timeline to view details</p>
@@ -190,34 +160,46 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 						</div>
 					)}
 				</div>
-				<div className="w-full lg:w-1/4 bg-white rounded-lg border shadow-sm p-4">
-					<h3 className="text-lg font-medium mb-4 px-2">Workflow Timeline</h3>
-					<div className="relative">
-						{(() => {
-							const nodes = currentResult?.nodes || [];
-							return nodes.length > 0 ? (
-								nodes.map((node, index) => (
-									<React.Fragment key={node.id}>
-										<TimelineNode
-											isFirst={index === 0}
-											isLast={index === nodes.length - 1}
-											isSelected={detailView?.id === node.id}
-											isWorkflowRunning={isWorkflowRunning}
-											node={node}
-											onClick={() => setDetailView(node)}
-											workflowId={currentResult.workflow_id || ""}
-										/>
-									</React.Fragment>
-								))
-							) : (
-								<div className="text-center py-8 text-gray-500">
-									<p>No workflow steps available</p>
-								</div>
-							);
-						})()}
+				{/* Workflow Steps Timeline */}
+				<div className="rounded-lg border shadow-sm p-4 gap-4 flex flex-col" style={{ maxHeight: "100%" }}>
+					<h3 className="text-lg font-medium px-2">Workflow Timeline</h3>
+					<div className="flex-1 pl-4 overflow-y-auto">
+						<Timeline
+							currentResult={currentResult}
+							detailView={detailView}
+							isWorkflowRunning={isWorkflowRunning}
+							setDetailView={setDetailView}
+						/>
 					</div>
 				</div>
 			</div>
+		</>
+	);
+};
+
+interface TimelineProps {
+	currentResult: EventResult;
+	isWorkflowRunning: boolean;
+	setDetailView: (_: NodeData) => void;
+	detailView: NodeData | null;
+}
+
+const Timeline = ({ currentResult, isWorkflowRunning, setDetailView, detailView }: TimelineProps): React.ReactNode => {
+	const nodes = currentResult?.nodes || [];
+	return nodes.length > 0 ? nodes.map((node, index) => (
+		<TimelineNode
+			isFirst={index === 0}
+			isLast={index === nodes.length - 1}
+			isSelected={detailView?.id === node.id}
+			isWorkflowRunning={isWorkflowRunning}
+			key={node.id}
+			node={node}
+			onClick={() => setDetailView(node)}
+			workflowId={currentResult.workflow_id || ""}
+		/>
+	)) : (
+		<div className="text-center py-8 text-gray-500">
+			<p>No workflow steps available</p>
 		</div>
 	);
 };
@@ -349,7 +331,7 @@ const TimelineNode: React.FC<TimelineNodeProps> = ({
 				)}
 			/>
 			{/* Content */}
-			<div className="flex justify-between items-center">
+			<div className="flex justify-between items-start gap-2">
 				<div className="flex flex-col">
 					<div className="flex items-center gap-2">
 						{getStatusIcon(node.status)}
@@ -360,7 +342,7 @@ const TimelineNode: React.FC<TimelineNodeProps> = ({
 					</span>
 				</div>
 				<ArrowRight
-					className={cn("h-4 w-4 text-gray-400", isSelected && "text-blue-500")}
+					className={cn("h-4 w-4 text-gray-400 mt-1", isSelected && "text-blue-500")}
 				/>
 			</div>
 			{/* Connecting line to next node */}
@@ -459,136 +441,6 @@ const StatusBadge = ({ status }: { status: string }) => {
 		>
 			{status}
 		</Badge>
-	);
-};
-
-interface ResultBoxProps {
-  node: NodeData;
-  workflowId: string;
-  isWorkflowRunning: boolean;
-  isExpanded: boolean;
-  onToggleExpand: () => void;
-}
-
-const ResultBox: React.FC<ResultBoxProps> = ({
-	node,
-	workflowId,
-	isWorkflowRunning,
-	isExpanded,
-	onToggleExpand,
-}) => {
-	const session = useStore((state) => state.session);
-	const activeProject = useStore((state) => state.activeProject);
-	const queryClient = useQueryClient();
-
-	const { mutate: rerunNode, isPending: isRerunning } = useMutation({
-		mutationFn: async() => {
-			if (!session || !activeProject) throw new Error("No session or project");
-			return triggerWorkflowNode({
-				session,
-				projectId: activeProject.project_id,
-				workflowId,
-				nodeId: node.id,
-			});
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["eventResult"] });
-		},
-	});
-
-	const canRerun =
-    isWorkflowRunning &&
-    (node.status === "failed" || (node.status === "completed" && workflowId));
-
-	const getBorderColor = (status: string) => {
-		switch (status) {
-			case "completed":
-				return "border-l-green-500";
-			case "failed":
-				return "border-l-red-500";
-			case "running":
-				return "border-l-blue-500";
-			case "pending":
-				return "border-l-yellow-500";
-			default:
-				return "border-l-gray-500";
-		}
-	};
-
-	const getStatusColor = (status: string) => {
-		switch (status) {
-			case "completed":
-				return "text-green-600";
-			case "failed":
-				return "text-red-600";
-			case "running":
-				return "text-blue-600";
-			case "pending":
-				return "text-yellow-600";
-			default:
-				return "text-gray-600";
-		}
-	};
-
-	return (
-		<div
-			className={`border-l-4 ${getBorderColor(
-				node.status,
-			)} transition-all duration-300 border rounded-lg overflow-hidden animate-[fadeInDown_0.5s_ease-in-out] mb-3 shadow-sm`}
-		>
-			<div
-				className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50"
-				onClick={onToggleExpand}
-			>
-				<div className="flex items-center gap-4 p-2 h-6">
-					<ChevronRight
-						className={`h-5 w-5 transition-transform ${
-							isExpanded ? "rotate-90" : ""
-						}`}
-					/>
-					<div className="flex items-center gap-2">
-						{getNodeIcon(node)}
-						<div className="flex flex-col">
-							<div className="flex items-center gap-2">
-								<h3 className="font-medium">{node.title}</h3>
-								<span className={`text-sm ${getStatusColor(node.status)}`}>
-									• {node.status}
-								</span>
-							</div>
-						</div>
-					</div>
-				</div>
-				{canRerun && (
-					<Button
-						className="h-7 px-2"
-						disabled={isRerunning}
-						onClick={(e) => {
-							e.stopPropagation();
-							rerunNode();
-						}}
-						size="sm"
-						variant="outline"
-					>
-						{isRerunning ? (
-							<Loader2 className="h-3 w-3 animate-spin" />
-						) : (
-							"Rerun"
-						)}
-					</Button>
-				)}
-			</div>
-			<div
-				className={`overflow-hidden transition-all duration-300 ${
-					isExpanded ? "max-h-screen" : "max-h-0"
-				}`}
-			>
-				<div className="px-4 pb-4 pt-2 border-t">
-					<div className="overflow-y-auto p-4 max-h-screen">
-						{renderNodeContent(node, false)}
-					</div>
-				</div>
-			</div>
-		</div>
 	);
 };
 
@@ -791,7 +643,7 @@ const renderNodeContent = (node: NodeData, isFullScreen: boolean) => {
 		case "record_meeting":
 			return (
 				typeof node.output === "object" && node.output?.url && (
-					<AspectRatio ratio={16 / 9}>
+					<AspectRatio className="m-4" ratio={16 / 9}>
 						<video className="rounded-lg" controls>
 							<source src={node.output.url} type="video/mp4" />
 							Your browser does not support the video tag
@@ -810,8 +662,8 @@ const renderNodeContent = (node: NodeData, isFullScreen: boolean) => {
 		default:
 			if (
 				node.output &&
-        typeof node.output === "object" &&
-        "drawings" in node.output
+				typeof node.output === "object" &&
+				"drawings" in node.output
 			) {
 				const drawings = node.output.drawings;
 				const body = node.output.body || "";
@@ -836,7 +688,7 @@ const renderNodeContent = (node: NodeData, isFullScreen: boolean) => {
 					resource_id={node.output?.report_path || node.output?.resource_id}
 				/>
 			) : (
-				<div className="h-full">{renderJsonValue(node.output)}</div>
+				<div className="bg-gray-50">{renderJsonValue(node.output)}</div>
 			);
 	}
 };

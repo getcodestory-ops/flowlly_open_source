@@ -211,7 +211,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 		return null;
 	}
 	return (
-		<div className="flex top-0 sticky z-10 ">
+		<div className="flex top-0 sticky z-10 bg-white border-b">
 			<div className="flex px-4 py-2 rounded-lg justify-between w-full">
 				<div className="flex items-center gap-1">
 					<Menubar className="bg-transparent border-none p-0 m-0 shadow-none">
@@ -223,7 +223,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 							</MenubarTrigger>
 							<MenubarContent>
 								<MenubarItem className="cursor-pointer" onClick={exportPdf}>
-                  Export PDF
+									Export PDF
 									<MenubarShortcut>
 										<FaFileDownload className="h-4 w-4" />
 									</MenubarShortcut>
@@ -232,7 +232,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 									className="cursor-pointer"
 									onClick={() => handleExportTables(editor)}
 								>
-                  Export Tables{" "}
+									Export Tables{" "}
 									<MenubarShortcut>
 										<FaFileCsv className="h-4 w-4" />
 									</MenubarShortcut>
@@ -345,7 +345,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 								<div className="space-y-2">
 									<h4 className="font-medium leading-none">Insert Table</h4>
 									<p className="text-sm text-muted-foreground">
-                    Set the number of rows and columns for your table.
+										Set the number of rows and columns for your table.
 									</p>
 								</div>
 								<div className="grid gap-2">
@@ -383,7 +383,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 											.run();
 									}}
 								>
-                  Insert Table
+									Insert Table
 								</Button>
 							</div>
 						</PopoverContent>
@@ -432,7 +432,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 								<div className="space-y-2">
 									<h4 className="font-medium leading-none">Insert Image</h4>
 									<p className="text-sm text-muted-foreground">
-                    Upload an image or enter a URL.
+										Upload an image or enter a URL.
 									</p>
 								</div>
 								<div className="grid gap-2">
@@ -466,7 +466,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 										}
 									}}
 								>
-                  Insert Image from URL
+									Insert Image from URL
 								</Button>
 							</div>
 						</PopoverContent>

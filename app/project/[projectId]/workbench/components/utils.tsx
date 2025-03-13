@@ -57,8 +57,8 @@ export const renderJsonValue = (value: any, depth = 0): JSX.Element => {
 					return (
 						<div
 							className={cn(
-								"border rounded-lg p-4",
-								depth === 0 ? "bg-gray-50" : "bg-white/50",
+								"p-4 rounded-lg",
+								depth === 0 ? "text-lg" : "bg-white/50 border rounded-lg",
 							)}
 							key={key}
 						>
@@ -66,7 +66,7 @@ export const renderJsonValue = (value: any, depth = 0): JSX.Element => {
 								className={cn(
 									"font-medium capitalize mb-2",
 									depth === 0
-										? "text-sm text-gray-900"
+										? "text-lg text-black"
 										: "text-xs text-gray-700",
 								)}
 							>

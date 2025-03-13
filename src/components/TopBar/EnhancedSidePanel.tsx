@@ -9,9 +9,6 @@ import { getActivities } from "@/api/activity_routes";
 import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import Link from "next/link";
 import {
-	// Users2,
-	// Building2,
-	// Workflow,
 	Calendar,
 	MessageSquareCode,
 	ClipboardList,
@@ -21,11 +18,6 @@ import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getProjects } from "@/api/projectRoutes";
 import { getMembers } from "@/api/membersRoutes";
 import { getAgentChatEntities } from "@/api/agentRoutes";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { AppView } from "@/types/store";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CustomProjectSwitcher } from "./CustomProjectSwitcher";
@@ -186,18 +178,17 @@ export function EnhancedSidePanel(): React.ReactNode {
 						<span>F</span>
 					</div>
 				</Link>
-				<Tooltip delayDuration={0}>
-					<TooltipTrigger asChild>
-						<button
-							className={`w-[55px] flex flex-col items-center justify-center gap-1 py-2  transition-all ${
-								showProjectSwitcher
-									? "bg-gray-100 text-gray-800 border border-gray-200 "
-									: "bg-white hover:bg-gray-50 text-gray-600 border border-gray-200"
-							}`}
-							onClick={() => setShowProjectSwitcher(!showProjectSwitcher)}
-							ref={projectButtonRef}
-						>
-							{/* <div className="relative">
+				<Tooltipped tooltip={activeProject?.name || ""}>
+					<button
+						className={`w-[55px] flex flex-col items-center justify-center gap-1 py-2  transition-all ${
+							showProjectSwitcher
+								? "bg-gray-100 text-gray-800 border border-gray-200 "
+								: "bg-white hover:bg-gray-50 text-gray-600 border border-gray-200"
+						}`}
+						onClick={() => setShowProjectSwitcher(!showProjectSwitcher)}
+						ref={projectButtonRef}
+					>
+						{/* <div className="relative">
 								<Avatar className="h-6 w-6 mb-1 ring-2 ring-offset-1 ring-offset-indigo-500 ring-white/30">
 									<AvatarImage
 										alt={activeProject?.name ? activeProject.name : "P"}
@@ -212,40 +203,38 @@ export function EnhancedSidePanel(): React.ReactNode {
 									<span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-green-500 border border-white" />
 								)}
 							</div> */}
-							{activeProject && (
-								<ProjectRoundIcon
-									activeProject={activeProject}
-									showProjectSwitcher={showProjectSwitcher}
+						{activeProject && (
+							<ProjectRoundIcon
+								activeProject={activeProject}
+								showProjectSwitcher={showProjectSwitcher}
+							/>
+						)}
+						<div className="text-[10px] font-medium">
+							{activeProject?.name
+								? activeProject.name.length > 8
+									? `${activeProject.name.substring(0, 8)}...`
+									: activeProject.name
+								: "Project"}
+						</div>
+						<div className="flex items-center text-[8px] font-semibold px-2 py-0.5 rounded-full">
+							<span>SWITCH</span>
+							<svg
+								fill="none"
+								height="10"
+								viewBox="0 0 15 15"
+								width="10"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									clipRule="evenodd"
+									d="M4.18179 6.18181C4.35753 6.00608 4.64245 6.00608 4.81819 6.18181L7.49999 8.86362L10.1818 6.18181C10.3575 6.00608 10.6424 6.00608 10.8182 6.18181C10.9939 6.35755 10.9939 6.64247 10.8182 6.81821L7.81819 9.81821C7.73379 9.9026 7.61934 9.95001 7.49999 9.95001C7.38064 9.95001 7.26618 9.9026 7.18179 9.81821L4.18179 6.81821C4.00605 6.64247 4.00605 6.35755 4.18179 6.18181Z"
+									fill="currentColor"
+									fillRule="evenodd"
 								/>
-							)}
-							<div className="text-[10px] font-medium">
-								{activeProject?.name
-									? activeProject.name.length > 8
-										? `${activeProject.name.substring(0, 8)}...`
-										: activeProject.name
-									: "Project"}
-							</div>
-							<div className="flex items-center text-[8px] font-semibold px-2 py-0.5 rounded-full">
-								<span>SWITCH</span>
-								<svg
-									fill="none"
-									height="10"
-									viewBox="0 0 15 15"
-									width="10"
-									xmlns="http://www.w3.org/2000/svg"
-								>
-									<path
-										clipRule="evenodd"
-										d="M4.18179 6.18181C4.35753 6.00608 4.64245 6.00608 4.81819 6.18181L7.49999 8.86362L10.1818 6.18181C10.3575 6.00608 10.6424 6.00608 10.8182 6.18181C10.9939 6.35755 10.9939 6.64247 10.8182 6.81821L7.81819 9.81821C7.73379 9.9026 7.61934 9.95001 7.49999 9.95001C7.38064 9.95001 7.26618 9.9026 7.18179 9.81821L4.18179 6.81821C4.00605 6.64247 4.00605 6.35755 4.18179 6.18181Z"
-										fill="currentColor"
-										fillRule="evenodd"
-									/>
-								</svg>
-							</div>
-						</button>
-					</TooltipTrigger>
-					<TooltipContent side="right">{activeProject?.name}</TooltipContent>
-				</Tooltip>
+							</svg>
+						</div>
+					</button>
+				</Tooltipped>
 			</div>
 			{/* Project Switcher Popover */}
 			{showProjectSwitcher && (
@@ -427,27 +416,22 @@ const MenuButton = ({
   icon: React.ReactNode;
 }): React.ReactNode => {
 	return (
-		<Tooltip>
-			<TooltipTrigger asChild>
-				<div
-					className={`flex flex-col text-center justify-center items-center py-2 w-full border-r-4 border-gray-200 gap-0 ${
-						isSelected
-							? "text-indigo-600 bg-indigo-50 border-indigo-600"
-							: "text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 border-white"
-					}`}
-				>
-					<Link
-						className="flex h-6 w-6 items-center justify-center rounded-2xl transition-colors"
-						href={link}
-						onClick={onClick}
-					>
-						{icon}
-					</Link>
-					<span className="text-[0.65rem]">{label}</span>
-				</div>
-			</TooltipTrigger>
-			<TooltipContent side="right">{label}</TooltipContent>
-		</Tooltip>
+		<div
+			className={`flex flex-col text-center justify-center items-center py-2 w-full border-r-4 border-gray-200 gap-0 ${
+				isSelected
+					? "text-indigo-600 bg-indigo-50 border-indigo-600"
+					: "text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 border-white"
+			}`}
+		>
+			<Link
+				className="flex h-6 w-6 items-center justify-center rounded-2xl transition-colors"
+				href={link}
+				onClick={onClick}
+			>
+				{icon}
+			</Link>
+			<span className="text-[0.65rem]">{label}</span>
+		</div>
 	);
 };
 

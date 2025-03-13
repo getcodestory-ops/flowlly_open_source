@@ -80,13 +80,13 @@ const config = {
 		"react/jsx-pascal-case": "error",
 		"react/jsx-props-no-multi-spaces": "error",
 		"react/self-closing-comp": ["error", { component: true, html: true }],
-		// Comment the following while comming
-		"react/jsx-indent": ["error", "tab"],
-		"react/jsx-indent-props": ["error", "tab"],
-		"no-multiple-empty-lines": ["error", { max: 1, maxEOF: 0, maxBOF: 0 }],
-		// The above we will turn on in one go, the below we will not turn on
-		"react/jsx-wrap-multilines": ["error", { declaration: "parens-new-line", assignment: "parens-new-line", return: "parens-new-line", arrow: "parens-new-line", condition: "parens-new-line", logical: "parens-new-line", prop: "parens-new-line" }],
-		"react/jsx-first-prop-new-line": ["error", "multiline"],
+		// // Comment the following while comming
+		// "react/jsx-indent": ["error", "tab"],
+		// "react/jsx-indent-props": ["error", "tab"],
+		// "no-multiple-empty-lines": ["error", { max: 1, maxEOF: 0, maxBOF: 0 }],
+		// // The above we will turn on in one go, the below we will not turn on
+		// "react/jsx-wrap-multilines": ["error", { declaration: "parens-new-line", assignment: "parens-new-line", return: "parens-new-line", arrow: "parens-new-line", condition: "parens-new-line", logical: "parens-new-line", prop: "parens-new-line" }],
+		// "react/jsx-first-prop-new-line": ["error", "multiline"],
 	},
 	settings: {
 		react: {
