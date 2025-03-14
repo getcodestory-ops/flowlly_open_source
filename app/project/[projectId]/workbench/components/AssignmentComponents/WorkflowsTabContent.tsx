@@ -43,36 +43,48 @@ interface WorkflowsTabContentProps {
 
 export const WorkflowsTabContent = (props: WorkflowsTabContentProps): React.ReactNode => {
 	return (
-		<div className="flex flex-row h-full relative flex-1 flex-grow">
+		<div className="flex flex-row flex-1 flex-grow" style={{ maxHeight: "calc(100vh - 69px)" }}>
 			<WorkflowSidebar {...props} />
-			<div className="flex-1 flex-grow p-4 h-full overflow-auto">
-				<Tabs defaultValue="workflows">
-					<TabsList className="ml-4">
-						<TabsTrigger value="workflows">
-							<List className="h-4 w-4 mr-2" />
-							Workflows
-							{props.runningWorkflows.length > 0 && (
-								<Badge className="ml-2" variant="secondary">
-									{props.runningWorkflows.length}
-								</Badge>
-							)}
-						</TabsTrigger>
-						<TabsTrigger value="questions">
-							<MessageSquare className="h-4 w-4 mr-2" />
-							Questions
-						</TabsTrigger>
-					</TabsList>
-					<TabsContent value="workflows">
-						<WorkflowContent {...props} />
-					</TabsContent>
-					<TabsContent value="questions">
-						<ChatContent
-							currentGraph={props.currentGraph}
-							currentResult={props.currentResult}
-						/>
-					</TabsContent>
-				</Tabs>
-			</div>
+			<Tabs
+				className="p-4 flex-grow flex-1 flex flex-col gap-2"
+				defaultValue="workflows"
+				style={{ maxHeight: "calc(100vh -69px)" }}
+			>
+				<div>
+					{props.currentResult && (
+						<TabsList>
+							<>
+								<TabsTrigger value="workflows">
+									<List className="h-4 w-4 mr-2" />
+									Workflows
+									{props.runningWorkflows.length > 0 && (
+										<Badge className="ml-2" variant="secondary">
+											{props.runningWorkflows.length}
+										</Badge>
+									)}
+								</TabsTrigger>
+								<TabsTrigger value="questions">
+									<MessageSquare className="h-4 w-4 mr-2" />
+									Questions
+								</TabsTrigger>
+							</>
+						</TabsList>
+				 )} 
+				</div>
+				<TabsContent
+					className="mt-0"
+					style={{ maxHeight: "calc(100% - 8px - 36px)" }}
+					value="workflows"
+				>
+					<WorkflowContent {...props} />
+				</TabsContent>
+				<TabsContent value="questions">
+					<ChatContent
+						currentGraph={props.currentGraph}
+						currentResult={props.currentResult}
+					/>
+				</TabsContent>
+			</Tabs>
 		</div>
 	);
 };
@@ -227,7 +239,7 @@ const WorkflowContent = ({ currentResult, isLoadingResult }: WorkflowsTabContent
 		<>
 			{currentResult ? (
 				isLoadingResult ? (
-					<div className="flex h-full items-center justify-center">
+					<div className="flex flex-grow flex-1 h-full items-center justify-center">
 						<LoaderAnimation />
 					</div>
 				) : (

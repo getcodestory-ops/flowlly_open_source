@@ -276,7 +276,7 @@ function ActionItemViewer({ results }: ActionItemInterface) {
 	};
 
 	return (
-		<div className="font-normal">
+		<div className="font-normal p-4">
 			<Toaster />
 			<AddNewActivityModal
 				isOpen={isAddModalOpen}
@@ -285,7 +285,7 @@ function ActionItemViewer({ results }: ActionItemInterface) {
 			{editableAdditions.length > 0 && (
 				<div className="my-4">
 					<h2 className="m-2 text-xl font-bold">
-            New activities to be added in schedule
+						New activities to be added in schedule
 					</h2>
 					<Table>
 						<TableHeader>
@@ -444,7 +444,7 @@ function ActionItemViewer({ results }: ActionItemInterface) {
 			{activity_modification && activity_modification.length > 0 && (
 				<div className="my-4">
 					<h2 className="m-2 text-xl font-bold">
-            Existing activities to be changed
+						Existing activities to be changed
 					</h2>
 					<Table>
 						<TableHeader>
