@@ -185,7 +185,7 @@ export default function AssignmentHome(): React.ReactNode {
 	}, [eventSchedule]);
 
 	if (isLoading) {
-		return <LoaderAnimation />;
+		return <div className="flex flex-col items-center justify-center h-[100vh]"><LoaderAnimation /></div>;
 	}
 
 	if (isError) {

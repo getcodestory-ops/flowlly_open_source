@@ -1,11 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
 	FileSearch,
 	Maximize,
 	Trash,
 	ChevronLeft,
 	ChevronRight,
-	MessageCircle,
 	ArrowUpDown,
 	Folder,
 	X,
@@ -27,7 +26,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { MediaDialogContent } from "./MediaViewer/MediaDialogContent";
 
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +41,6 @@ import {
 
 import {
 	uploadFileInFolder,
-	createDocumentInFolder,
 	createSubFolder,
 } from "@/api/folderRoutes";
 import { getTaskStatus } from "@/api/schedule_routes";
@@ -61,7 +59,6 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { AddNewFolderModal } from "../CreateNewFolderModal/CreateNewFolderModal";
-import { ToolTipedButton } from "../DocumentEditor/ToolBar";
 import { Tooltipped } from "../Common/Tooltiped";
 
 type SortField = "file_name" | "extension" | "created_at";
@@ -562,9 +559,13 @@ const FileRow = ({
 				</DialogTrigger>
 				<DialogContent
 					aria-describedby="file viewer"
-					className="max-w-6xl flex flex-col items-center justify-center"
+					className="max-w-6xl flex-1 flex flex-col items-center justify-center overflow-y-auto"
+					style={{ maxHeight: "calc(100% - 100px)" }}
 				>
-					<MediaDialogContent resource={resource} />
+					<DialogTitle className="w-full flex-start">{resource.file_name}{resource.metadata.extension}</DialogTitle>
+					<div className="flex-1 flex flex-col items-center justify-center overflow-y-auto w-full border rounded-sm" style={{ width: "100%" }}>
+						<MediaDialogContent resource={resource} />
+					</div>
 				</DialogContent>
 			</Dialog>
 			<TableCell className="hidden sm:table-cell">

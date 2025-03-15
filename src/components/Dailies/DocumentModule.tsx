@@ -156,7 +156,6 @@ interface FolderDetailsProp {
   currentFolderStructure: CurrentFolderStructure;
   setCurrentFolderStructure: { (val: CurrentFolderStructure): void };
 }
-
 const DatabaseHeader = ({
 	currentFolderStructure,
 	setCurrentFolderStructure,
