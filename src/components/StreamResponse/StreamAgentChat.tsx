@@ -88,7 +88,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 
 	// Continue displaying content even after streaming is complete
 	return (
-		<div className="whitespace-pre-wrap mb-4">
+		<div className="mb-4">
 			{displayValue ? (
 				<div className="pb-4">
 					<MarkDownDisplay content={displayValue} />

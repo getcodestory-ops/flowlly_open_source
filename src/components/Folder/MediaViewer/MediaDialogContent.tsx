@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { StorageResourceEntity } from "@/types/document";
-import { FileText, ExternalLink, Download } from "lucide-react";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { FileText, Download } from "lucide-react";
 import ContentEditor from "@/components/DocumentEditor/ContentEditor";
 import { useStorageTextFileSave } from "@/components/DocumentEditor/useStorageTextSave";
-import { Table } from "@/components/ui/table";
 
 // Update the import for react-pdf
 // import { Document, Page, pdfjs } from "react-pdf";
@@ -24,15 +22,7 @@ export const MediaDialogContent: React.FC<MediaDialogContentProps> = ({
 	const { file_name, metadata, url } = resource || {};
 	const description = metadata?.description;
 	const fileExt = metadata?.extension?.toLowerCase();
-
 	const { onSubmit, isPending } = useStorageTextFileSave(resource?.id);
-
-	const [numPages, setNumPages] = useState<number | null>(null);
-	const [pageNumber, setPageNumber] = useState(1);
-
-	function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-		setNumPages(numPages);
-	}
 
 	switch (fileExt) {
 		case ".jpg":

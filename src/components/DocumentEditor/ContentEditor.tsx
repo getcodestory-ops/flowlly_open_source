@@ -101,7 +101,7 @@ const ContentEditor = ({
 					</Button>
 				</div>
 			</BubbleMenu>
-			<div className="flex-grow bg-gray-50 overflow-auto rounded-b-lg border-none" style={{ maxHeight: "calc(100% - 52px)" }}>
+			<div className="flex-grow bg-gray-50 overflow-auto rounded-b-lg border-none w-full" style={{ maxHeight: "calc(100% - 52px)" }}>
 				<div className="px-10 py-6 w-[768px] mx-auto bg-white my-0 border-l border-r border-gray-200">
 					<EditorContent
 						className="

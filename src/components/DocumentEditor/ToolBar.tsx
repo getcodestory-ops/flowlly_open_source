@@ -211,7 +211,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 		return null;
 	}
 	return (
-		<div className="flex top-0 sticky z-10 bg-white border-b">
+		<div className="flex top-0 sticky z-10 bg-white border-b w-full">
 			<div className="flex px-4 py-2 rounded-lg justify-between w-full">
 				<div className="flex items-center gap-1">
 					<Menubar className="bg-transparent border-none p-0 m-0 shadow-none">
