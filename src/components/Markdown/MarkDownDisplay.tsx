@@ -106,6 +106,19 @@ const DocumentReference: React.FC<{ documentId: string, content: string }> = ({ 
 	);
 };
 
+const CustomViewer: React.FC<{ content: string }> = ({ content }) => {
+	return (
+		<div className="flex w-full transition-all ">
+			<div className="flex justify-center gap-2  bg-gray-100 rounded-md p-2 border border-gray-300 ">
+				<Play className="w-4 h-4" />
+				<div className="font-medium text-gray-700 text-center text-xs ">
+          			{content}
+				</div>
+			</div>
+		</div>
+	);
+};
+
 // Custom directive plugin that transforms directives to custom components
 function remarkDirectiveComponents() {
 	return (tree: any) => {
@@ -160,7 +173,38 @@ function remarkDirectiveComponents() {
 							position: node.position,
 						};
 						break;
+					case "read_file":
+						data.hName = "custom-read-file";
+						data.hProperties = {
+							content: "Read File",
+						};
 					
+						break;
+					case "execute_file_code":
+						data.hName = "custom-execute-file-code";
+						data.hProperties = {
+							content: "Execute File Code",
+						};
+						break;
+					case "write_report":
+						data.hName = "custom-write-file";
+						data.hProperties = {
+							content: "Write Report Section",
+						};
+						break;
+					case "edit_report":
+						data.hName = "custom-edit-report";
+						data.hProperties = {
+							content: "Edit Report Section",
+						};
+						break;
+					case "complete_report":
+						data.hName = "custom-complete-report";
+						data.hProperties = {
+							content: "Saving Report",
+						};
+						break;
+						
 					default:
 						// Use the directive name directly if not mapped
 						data.hName = `custom-${hName}`;
@@ -183,6 +227,12 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
 	const components: CustomMarkdownComponents = {
 		// Define components for each custom element
 		"custom-source": ({ sourceText }: { sourceText: string }) => <SourceComponent sourceText={sourceText} />,
+		"custom-viewer": ({ content }: { content: string }) => <CustomViewer content={content} />,
+		"custom-read-file": ({ content }: { content: string }) => <CustomViewer content={content} />,
+		"custom-execute-file-code": ({ content }: { content: string }) => <CustomViewer content={content} />,
+		"custom-write-file": ({ content }: { content: string }) => <CustomViewer content={content} />,
+		"custom-edit-report": ({ content }: { content: string }) => <CustomViewer content={content} />,
+		"custom-complete-report": ({ content }: { content: string }) => <CustomViewer content={content} />,
 		"custom-workflow": ({ id }: { id: string }) => <WorkflowComponent id={id} />,
 		"custom-workflow-results": ({ content }: { content: string }) => <WorkflowResultsComponent content={content} />,
 		"custom-addition": ({ children }: { children: React.ReactNode }) => <AdditionHighlight>{children}</AdditionHighlight>,
