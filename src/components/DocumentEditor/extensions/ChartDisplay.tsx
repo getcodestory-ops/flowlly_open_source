@@ -2,7 +2,7 @@ import { NodeViewWrapper } from "@tiptap/react";
 import React, { useMemo } from "react";
 import { renderJsxString } from "@/utils/jsxStringRenderer";
 
-// Function to decode base64 to string
+
 const decodeBase64 = (base64String: string): string => {
 	try {
 		return atob(base64String);
@@ -21,10 +21,12 @@ export const ChartDisplay = (props: any) => {
 		// Check if the jsx is base64 encoded and decode it if needed
 		let jsxDecoded = jsxEncoded;
 		
+		
 		// Simple check if the string looks like it's base64 encoded
 		if (jsxEncoded.match(/^[A-Za-z0-9+/=]+$/)) {
 			try {
-				jsxDecoded = decodeBase64(jsxEncoded);
+				jsxDecoded = decodeBase64(jsxEncoded).replace("{/*", "")
+					.replace("*/}", "");
 			} catch (error) {
 				console.error("Failed to decode JSX:", error);
 			}

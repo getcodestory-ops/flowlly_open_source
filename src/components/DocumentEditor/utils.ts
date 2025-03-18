@@ -145,6 +145,12 @@ export const printDocument = (editorElement: HTMLElement): void => {
 					max-width: 800px;
 					margin: 0 auto;
 				}
+				:root {
+					--chart-1: 12 85% 65%; /* Brighter red-orange */
+					--chart-2: 173 75% 45%; /* More vibrant teal */
+					--chart-3: 210 60% 95%; /* Lighter blue */
+					--chart-4: 210 45% 85%; /* More saturated gray-blue */
+				}
 				
 				table {
 					border-collapse: collapse;
