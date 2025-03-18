@@ -100,28 +100,6 @@ const ContentEditor = ({
 				onAIEditedContent={handleAIEditedContent}
 				saveFunction={saveFunction}
 			/>
-			{/* <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-				<div className="flex gap-2 bg-background border rounded-md shadow-sm p-1">
-					<Button
-						onClick={() => editor.chain().focus()
-							.toggleMark("bold")
-							.run()}
-						size="sm"
-						variant={editor.isActive("bold") ? "default" : "secondary"}
-					>
-						Bold
-					</Button>
-					<Button
-						onClick={() => editor.chain().focus()
-							.toggleMark("italic")
-							.run()}
-						size="sm"
-						variant={editor.isActive("italic") ? "default" : "secondary"}
-					>
-						Italic
-					</Button>
-				</div>
-			</BubbleMenu> */}
 			<div className="flex-grow bg-gray-50 overflow-auto rounded-b-lg border-none w-full" style={{ maxHeight: "calc(100% - 52px)" }}>
 				<div className="px-10 py-6 w-[768px] mx-auto bg-white my-0 border-l border-r border-gray-200">
 					<EditorContent
