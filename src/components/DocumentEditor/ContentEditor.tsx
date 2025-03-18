@@ -80,7 +80,7 @@ const ContentEditor = ({
 				saveFunction={saveFunction}
 			/>
 			<BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-				<div className="flex gap-2 bg-background border rounded-md shadow-sm">
+				<div className="flex gap-2 bg-background border rounded-md shadow-sm p-1">
 					<Button
 						onClick={() => editor.chain().setBold()
 							.run()}
