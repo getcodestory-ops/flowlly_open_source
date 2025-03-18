@@ -4,7 +4,7 @@ import { create } from "zustand";
 interface WorkflowStore {
   currentGraphId: string | null;
   setCurrentGraphId: (_: string | null) => void;
-  
+
   eventSchedule: EventSchedule[] | null;
   setEventSchedule: (_: EventSchedule[] | null) => void;
 
@@ -22,9 +22,14 @@ interface WorkflowStore {
   
   viewMode: ViewMode;
   setViewMode: (_: ViewMode) => void;
+
+   // Computed values
+   workflowStats: () => { completed: number; running: number; other: number; total: number };
+   completedWorkflows: () => EventSchedule[];
+   runningWorkflows: () => EventSchedule[];
 }
 
-export const useWorkflow = create<WorkflowStore>((set) => ({
+export const useWorkflow = create<WorkflowStore>((set, get) => ({
 	currentGraphId: null,
 	setCurrentGraphId: (currentGraphId: string | null) => set({ currentGraphId }),
 
@@ -45,4 +50,86 @@ export const useWorkflow = create<WorkflowStore>((set) => ({
 
 	viewMode: ViewMode.GRID,
 	setViewMode: (viewMode: ViewMode) => set({ viewMode }),
+
+	// Computed workflow statistics
+	workflowStats: () => {
+		const eventSchedule = get().eventSchedule;
+		if (!eventSchedule || eventSchedule.length === 0) {
+			return { completed: 0, running: 0, other: 0, total: 0 };
+		}
+
+		let completed = 0;
+		let running = 0;
+		let other = 0;
+		let total = 0;
+
+		eventSchedule.forEach((schedule) => {
+			schedule.event_result.forEach((result) => {
+				total++;
+
+				const isExplicitlyCompleted = !!result;
+				const isImplicitlyCompleted =
+          (result.status === null || result.status === undefined) &&
+          !result.listen &&
+          !result.workflow_id;
+
+				const isCompleted = isExplicitlyCompleted || isImplicitlyCompleted;
+
+				const isRunning =
+          result.status === "processing" ||
+          !!result.listen ||
+          (!!result.workflow_id && !isCompleted);
+
+				const isOther = !isCompleted && !isRunning;
+
+				if (isCompleted) completed++;
+				if (isRunning) running++;
+				if (isOther) other++;
+			});
+		});
+
+		return { completed, running, other, total };
+	},
+
+	// Completed workflows
+	completedWorkflows: () => {
+		const eventSchedule = get().eventSchedule;
+		if (!eventSchedule) return [];
+
+		return eventSchedule.filter((schedule) => {
+			const hasCompletedResult = schedule.event_result.some((result) => {
+				const isExplicitlyCompleted = !!result;
+				const isImplicitlyCompleted =
+          (result.status === null || result.status === undefined) &&
+          !result.listen &&
+          !result.workflow_id;
+
+				return isExplicitlyCompleted || isImplicitlyCompleted;
+			});
+
+			const hasRunningResult = schedule.event_result.some(
+				(result) =>
+					result.status === "processing" ||
+          !!result.listen ||
+          (!!result.workflow_id && result.status !== "completed"),
+			);
+
+			return hasCompletedResult && !hasRunningResult;
+		});
+	},
+
+	// Running workflows
+	runningWorkflows: () => {
+		const eventSchedule = get().eventSchedule;
+		if (!eventSchedule) return [];
+
+		return eventSchedule.filter((schedule) =>
+			schedule.event_result.some(
+				(result) =>
+					result.status === "processing" ||
+          !!result.listen ||
+          (!!result.workflow_id && result.status !== "completed"),
+			),
+		);
+	},
 }));
