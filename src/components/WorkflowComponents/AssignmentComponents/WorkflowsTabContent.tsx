@@ -17,8 +17,6 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import type {
-	GraphData,
-	EventResult,
 	EventSchedule,
 } from "../types";
 
@@ -27,21 +25,17 @@ import { Button } from "@/components/ui/button";
 import { Tooltipped } from "@/components/Common/Tooltiped";
 import { ChatContent } from "./ChatContent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useWorkflow } from "@/hooks/useWorkflow";
 
 interface WorkflowsTabContentProps {
-	currentGraphId: string | null;
-	currentGraph: GraphData | null;
-	currentResult: EventResult | null;
-	setCurrentResult: (_: EventResult | null) => void;
 	runningWorkflows: EventSchedule[];
 	completedWorkflows: EventSchedule[];
-	eventSchedule: EventSchedule[];
-	setIsLoadingResult: (_: boolean) => void;
 	workflowStats: { completed: number, running: number, other: number, total: number };
-	isLoadingResult: boolean;
 }
 
 export const WorkflowsTabContent = (props: WorkflowsTabContentProps): React.ReactNode => {
+	const { currentResult } = useWorkflow();
+	const { runningWorkflows } = props;
 	return (
 		<div className="flex flex-row flex-1 flex-grow" style={{ maxHeight: "calc(100vh - 69px)" }}>
 			<WorkflowSidebar {...props} />
@@ -51,15 +45,15 @@ export const WorkflowsTabContent = (props: WorkflowsTabContentProps): React.Reac
 				style={{ maxHeight: "calc(100vh -69px)" }}
 			>
 				<div>
-					{props.currentResult && (
+					{currentResult && (
 						<TabsList>
 							<>
 								<TabsTrigger value="workflows">
 									<List className="h-4 w-4 mr-2" />
 									Workflows
-									{props.runningWorkflows.length > 0 && (
+									{runningWorkflows.length > 0 && (
 										<Badge className="ml-2" variant="secondary">
-											{props.runningWorkflows.length}
+											{runningWorkflows.length}
 										</Badge>
 									)}
 								</TabsTrigger>
@@ -76,20 +70,18 @@ export const WorkflowsTabContent = (props: WorkflowsTabContentProps): React.Reac
 					style={{ maxHeight: "calc(100% - 8px - 36px)" }}
 					value="workflows"
 				>
-					<WorkflowContent {...props} />
+					<WorkflowContent />
 				</TabsContent>
 				<TabsContent value="questions">
-					<ChatContent
-						currentGraph={props.currentGraph}
-						currentResult={props.currentResult}
-					/>
+					<ChatContent />
 				</TabsContent>
 			</Tabs>
 		</div>
 	);
 };
 
-const WorkflowSidebar = ({ runningWorkflows, completedWorkflows, eventSchedule, setCurrentResult, setIsLoadingResult, currentGraphId, workflowStats }: WorkflowsTabContentProps): React.ReactNode => {
+const WorkflowSidebar = ({ runningWorkflows, completedWorkflows,  workflowStats }: WorkflowsTabContentProps): React.ReactNode => {
+	const { eventSchedule } = useWorkflow();
 	const [isCollapsed, setIsCollapsed] = useState(false);
 	const [isButtonHovered, setIsButtonHovered] = useState(false);
 	return (
@@ -131,13 +123,7 @@ const WorkflowSidebar = ({ runningWorkflows, completedWorkflows, eventSchedule, 
 								) : (
 									<ScrollArea>
 										<EventScheduleList
-											compact
-											eventId={currentGraphId || ""}
 											graphs={runningWorkflows}
-											onSelectGraph={(result) => {
-												setCurrentResult(result);
-											}}
-											setIsLoadingResult={setIsLoadingResult}
 										/>
 									</ScrollArea>
 								)}
@@ -148,11 +134,6 @@ const WorkflowSidebar = ({ runningWorkflows, completedWorkflows, eventSchedule, 
 					<div className="h-full flex flex-col">
 						<h3 className="text-lg font-medium p-4 flex items-center">
 							<span>Completed Workflows</span>
-							{/* {completedWorkflows && completedWorkflows.length > 0 && (
-								<Badge className="ml-2" variant="secondary">
-									{completedWorkflows.length}
-								</Badge>
-							)} */}
 						</h3>
 						{!eventSchedule || !completedWorkflows || completedWorkflows.length === 0 ? (
 							<Card className="bg-muted mx-4 p-2">
@@ -216,13 +197,7 @@ const WorkflowSidebar = ({ runningWorkflows, completedWorkflows, eventSchedule, 
 							<div className="h-full flex-grow flex-1">
 								<ScrollArea className="h-full flex-grow flex-1">
 									<EventScheduleList
-										compact
-										eventId={currentGraphId || ""}
 										graphs={completedWorkflows}
-										onSelectGraph={(result) => {
-											setCurrentResult(result);
-										}}
-										setIsLoadingResult={setIsLoadingResult}
 									/>
 								</ScrollArea>
 							</div>
@@ -234,7 +209,8 @@ const WorkflowSidebar = ({ runningWorkflows, completedWorkflows, eventSchedule, 
 	);
 };
 
-const WorkflowContent = ({ currentResult, isLoadingResult }: WorkflowsTabContentProps): React.ReactNode => {
+const WorkflowContent = (): React.ReactNode => {
+	const { currentResult, isLoadingResult } = useWorkflow();
 	return (
 		<>
 			{currentResult ? (

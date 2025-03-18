@@ -16,8 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { WorkflowsTabContent } from "./WorkflowsTabContent";
 
 import type {
-	GraphData,
-	EventResult,
 	EventSchedule,
 } from "../types";
 
@@ -28,21 +26,19 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { useWorkflow } from "@/hooks/useWorkflow";
 interface WorkflowViewerProps {
-	currentGraphId: string | null;
-	setCurrentGraphId: (_: string | null) => void;
-	currentResult: EventResult | null;
-	setCurrentResult: (_: EventResult | null) => void;
-	runningWorkflows: EventSchedule[];
 	completedWorkflows: EventSchedule[];
-	eventSchedule: EventSchedule[];
-	setIsLoadingResult: (_: boolean) => void;
-	currentGraph: GraphData | null;
 	workflowStats: { completed: number, running: number, other: number, total: number };
-	isLoadingResult: boolean;
+	runningWorkflows: EventSchedule[];
 
 }
-export const WorkflowViewer = ({ currentGraphId, setCurrentGraphId, currentResult, setCurrentResult, runningWorkflows, completedWorkflows, eventSchedule, setIsLoadingResult, currentGraph, workflowStats, isLoadingResult }: WorkflowViewerProps): React.ReactNode => {
+export const WorkflowViewer = ({ completedWorkflows, workflowStats, runningWorkflows }: WorkflowViewerProps): React.ReactNode => {
+	const {
+		setCurrentGraphId,
+		setCurrentResult,
+		currentGraph,
+	} = useWorkflow();
 	return (
 		<div className="flex flex-col h-full overflow-hidden">
 			<div className="flex items-center gap-4 p-4 border-b">
@@ -74,11 +70,7 @@ export const WorkflowViewer = ({ currentGraphId, setCurrentGraphId, currentResul
 							</Button>
 						</PopoverTrigger>
 						<PopoverContent className="w-80">
-							<TriggerWorkflowContent
-								currentGraph={currentGraph}
-								currentGraphId={currentGraphId}
-								setCurrentResult={setCurrentResult}
-							/>
+							<TriggerWorkflowContent />
 						</PopoverContent>
 					</Popover>
 				)
@@ -86,27 +78,19 @@ export const WorkflowViewer = ({ currentGraphId, setCurrentGraphId, currentResul
 			</div>
 			<WorkflowsTabContent
 				completedWorkflows={completedWorkflows}
-				currentGraph={currentGraph}
-				currentGraphId={currentGraphId}
-				currentResult={currentResult}
-				eventSchedule={eventSchedule}
-				isLoadingResult={isLoadingResult}
 				runningWorkflows={runningWorkflows}
-				setCurrentResult={setCurrentResult}
-				setIsLoadingResult={setIsLoadingResult}
 				workflowStats={workflowStats}
 			/>
 		</div>
 	);
 };
 
-interface TriggerWorkflowContentProps {
-	currentGraphId: string | null;
-	setCurrentResult: (_: EventResult | null) => void;
-	currentGraph: GraphData | null;
-}
-
-const TriggerWorkflowContent = ({ currentGraphId, setCurrentResult, currentGraph }: TriggerWorkflowContentProps): React.ReactNode => {
+const TriggerWorkflowContent = (): React.ReactNode => {
+	const {
+		currentGraphId,
+		setCurrentResult,
+		currentGraph,
+	} = useWorkflow();
 	return (
 		<>
 			{currentGraph?.event_trigger &&

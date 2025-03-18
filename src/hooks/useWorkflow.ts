@@ -10,6 +10,8 @@ interface WorkflowStore {
   setCurrentResult: (_: EventResult | null) => void;
   graphs: GraphData[] | null;
   setGraphs: (_: GraphData[] | null) => void;
+  currentGraph: GraphData | null;
+  setCurrentGraph: (_: GraphData | null) => void;
   isLoadingResult: boolean;
   setIsLoadingResult: (_: boolean) => void;
   viewMode: ViewMode;
@@ -25,6 +27,8 @@ export const useWorkflow = create<WorkflowStore>((set) => ({
 	setCurrentResult: (currentResult: EventResult | null) => set({ currentResult }),
 	graphs: null,
 	setGraphs: (graphs: GraphData[] | null) => set({ graphs }),
+	currentGraph: null,
+	setCurrentGraph: (currentGraph: GraphData | null) => set({ currentGraph }),
 	isLoadingResult: false,
 	setIsLoadingResult: (isLoadingResult: boolean) => set({ isLoadingResult }),
 	viewMode: ViewMode.GRID,

@@ -38,22 +38,23 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useWorkflow } from "@/hooks/useWorkflow";
 
 interface EventScheduleListProps {
   graphs: EventSchedule[];
-  onSelectGraph: (_: EventResult) => void;
-  eventId: string;
-  setIsLoadingResult: (_: boolean) => void;
-  compact?: boolean;
 }
 
 export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	graphs,
-	onSelectGraph,
-	eventId,
-	setIsLoadingResult,
-	compact = false,
 }) => {
+	const { setIsLoadingResult, setCurrentResult, currentGraphId  } = useWorkflow();
+	const onSelectGraph = (result: EventResult):void => {
+		setCurrentResult(result);
+	};
+	const eventId = currentGraphId || "";
+	const compact = true;
+	
+
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [globalFilter, setGlobalFilter] = useState("");
 	const session = useStore((state) => state.session);

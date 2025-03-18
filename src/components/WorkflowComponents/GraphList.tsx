@@ -29,7 +29,7 @@ import {
 import { DataTablePagination } from "@/components/Schedule/ScheduleTable/DataTablePagination";
 import { CalendarView } from "./CalendarView";
 import CreateJob from "./CreateJob";
-import type { GraphData, GraphListProps } from "./types";
+import type { GraphData } from "./types";
 import ProjectEventCreationForm from "@/components/ProjectEvent/ProjectEventCreationForm";
 import DocumentWriterForm from "@/components/ProjectEvent/DocumentWriterForm";
 import CustomWorkflowForm from "@/components/ProjectEvent/CustomWorkFlow/CustomWorkflowForm";
@@ -46,16 +46,17 @@ import { Tooltipped } from "@/components/Common/Tooltiped";
 import { convertIsoToTimeAgo } from "@/utils/dateUtils";
 import { ViewMode } from "./types";
 import { WorkflowViewModeSwitcher } from "./WorkflowViewModeSwitcher";
+import { useWorkflow } from "@/hooks/useWorkflow";
 const localeText = {
 	searchWorkflows: "Filter workflows by name or type...",
 };
 
-export const GraphList: React.FC<GraphListProps> = ({
-	graphs,
-	onSelectGraph,
-	viewMode = ViewMode.LIST,
-	setViewMode,
+export const GraphList: React.FC = ({
 }) => {
+	const { setCurrentGraphId, viewMode, setViewMode, graphs } = useWorkflow();
+	const onSelectGraph = (id: string): void => {
+		setCurrentGraphId(id);
+	};
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [globalFilter, setGlobalFilter] = useState("");
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -156,7 +157,7 @@ export const GraphList: React.FC<GraphListProps> = ({
 	);
 
 	const table = useReactTable({
-		data: graphs,
+		data: graphs || [],
 		columns,
 		state: {
 			sorting,
@@ -183,7 +184,7 @@ export const GraphList: React.FC<GraphListProps> = ({
 	};
 
 	// Add new grid view rendering
-	const filteredGraphs = filterWorkflows(graphs, globalFilter);
+	const filteredGraphs = filterWorkflows(graphs || [], globalFilter);
 
 	// Existing table view
 	return (
@@ -269,7 +270,7 @@ export const GraphList: React.FC<GraphListProps> = ({
 				</div>
 			)}
 			{viewMode === ViewMode.CALENDAR && (
-				<CalendarView graphs={graphs} onSelectGraph={onSelectGraph} />
+				<CalendarView />
 			)}
 			{viewMode === ViewMode.GRID && (
 				<div>

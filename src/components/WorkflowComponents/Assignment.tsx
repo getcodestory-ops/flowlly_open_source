@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
 	AlertCircle,
 } from "lucide-react";
@@ -16,28 +16,26 @@ import { useStore } from "@/utils/store";
 import { GraphList } from "./GraphList";
 
 import type {
-	GraphData,
-	EventResult,
-	EventSchedule,
 	ProjectEvents,
 } from "./types";
 
 import LoaderAnimation from "@/components/Animations/LoaderAnimation";
 import CreateJob from "./CreateJob";
-import { ViewMode } from "./types";
 import { WorkflowViewer } from "./AssignmentComponents/WorkflowViewer";
+import { useWorkflow } from "@/hooks/useWorkflow";
 
 export default function AssignmentHome(): React.ReactNode {
-	const [currentGraphId, setCurrentGraphId] = useState<string | null>(null);
-	const [eventSchedule, setEventSchedule] = useState<EventSchedule[] | null>(
-		null,
-	);
-	const [currentResult, setCurrentResult] = useState<EventResult | null>(null);
-	const [graphs, setGraphs] = useState<GraphData[] | null>(null);
-	const [currentGraph, setCurrentGraph] = useState<GraphData | null>(null);
-	const [isLoadingResult, setIsLoadingResult] = useState(false);
-	const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.GRID);
-
+	const {
+		currentGraphId,
+		eventSchedule,
+		setEventSchedule,
+		currentResult,
+		setCurrentResult,
+		graphs,
+		setGraphs,
+		currentGraph,
+		setCurrentGraph,
+	} = useWorkflow();
 	const session = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
 
@@ -229,26 +227,13 @@ export default function AssignmentHome(): React.ReactNode {
 						</div>
 					</CardHeader>
 					<CardContent className="px-6 flex-1 overflow-y-auto">
-						<GraphList
-							graphs={graphs}
-							onSelectGraph={setCurrentGraphId}
-							setViewMode={setViewMode}
-							viewMode={viewMode}
-						/>
+						<GraphList />
 					</CardContent>
 				</Card>
 			) : (
 				<WorkflowViewer
 					completedWorkflows={completedWorkflows}
-					currentGraph={currentGraph}
-					currentGraphId={currentGraphId}
-					currentResult={currentResult}
-					eventSchedule={eventSchedule || []}
-					isLoadingResult={isLoadingResult}
 					runningWorkflows={runningWorkflows}
-					setCurrentGraphId={setCurrentGraphId}
-					setCurrentResult={setCurrentResult}
-					setIsLoadingResult={setIsLoadingResult}
 					workflowStats={workflowStats}
 				/>
 			)}
