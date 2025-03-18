@@ -97,7 +97,6 @@ const DeletionHighlight: React.FC<{ children: React.ReactNode }> = ({ children }
 
 // Component for rendering document references
 const DocumentReference: React.FC<{ documentId: string, content: string }> = ({ documentId, content }) => {
-	const testContent = "<p class='updated'>This is a test content</p>";
 	return (
 		<div className="flex items-center gap-1">
 		
