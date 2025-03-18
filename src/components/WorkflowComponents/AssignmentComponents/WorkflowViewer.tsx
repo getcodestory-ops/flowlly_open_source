@@ -29,9 +29,6 @@ export const WorkflowViewer = (): React.ReactNode => {
 		setCurrentResult,
 		currentGraph,
 	} = useWorkflow();
-	const workflowStats = useWorkflow((state) => state.workflowStats());
-	const completedWorkflows = useWorkflow((state) => state.completedWorkflows());
-	const runningWorkflows = useWorkflow((state) => state.runningWorkflows());
 	return (
 		<div className="flex flex-col h-full overflow-hidden">
 			<div className="flex items-center gap-4 p-4 border-b">

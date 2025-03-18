@@ -53,7 +53,7 @@ const localeText = {
 
 export const GraphList: React.FC = ({
 }) => {
-	const { setCurrentGraphId, viewMode, setViewMode, graphs } = useWorkflow();
+	const { setCurrentGraphId, viewMode, graphs } = useWorkflow();
 	const onSelectGraph = (id: string): void => {
 		setCurrentGraphId(id);
 	};
@@ -190,7 +190,7 @@ export const GraphList: React.FC = ({
 	return (
 		<div className="w-full">
 			<div className="flex items-center py-4 gap-2">
-				<WorkflowViewModeSwitcher setViewMode={setViewMode} viewMode={viewMode} />
+				<WorkflowViewModeSwitcher />
 				{viewMode !== ViewMode.CALENDAR && (
 					<Input
 						className="max-w-sm"
