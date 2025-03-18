@@ -419,6 +419,13 @@ const Toolbar: React.FC<ToolbarProps> = ({
 					>
 						<FaListOl />
 					</ToolTipedButton>
+					{/* FOnt family in turotail 2:09:08 */}
+					{/* Multi color at 2:29:33 */}
+					{/* Highlight 2:32:27 */}
+					{/*  Link button 2:39:20 */}
+					{/* ALign (left alighn, righ aliwgn, center align) line height 2:51:54 */}
+					{/* FOnt size 3:00:20 */}
+
 					{/* <Button
           variant={"ghost"}
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
