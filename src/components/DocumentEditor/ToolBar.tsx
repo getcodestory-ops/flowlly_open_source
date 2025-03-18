@@ -24,7 +24,6 @@ import {
 	FaUnderline,
 	FaListUl,
 	FaListOl,
-	FaCode,
 	FaUndo,
 	FaRedo,
 	FaTable,
@@ -58,12 +57,9 @@ import PlatformChatComponent from "@/components/ChatInput/PlatformChat/PlatformC
 import {
 	Dialog,
 	DialogContent,
-	DialogHeader,
-	DialogTitle,
 	DialogTrigger,
-	DialogDescription,
 } from "@/components/ui/dialog";
-import { handleExportTables } from "./utils";
+import { handleExportTables, areThereTablesinEditor } from "./utils";
 import {
 	Tooltip,
 	TooltipContent,
@@ -71,14 +67,15 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { Editor } from "@tiptap/react";
 
 (pdfMake as any).vfs = pdfFonts.vfs;
 
 interface ToolbarProps {
-  editor: any;
+  editor: Editor;
   documentType: string;
-  saveFunction?: (contentData: string) => void;
-  onAIEditedContent?: (content: string) => void;
+  saveFunction?: (_: string) => void;
+  onAIEditedContent?: (_: string) => void;
   documentId?: string;
 }
 
@@ -143,7 +140,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 	const [tableCols, setTableCols] = useState(3);
 
 	const [imageUrl, setImageUrl] = useState("");
-	const [zoomLevel, setZoomLevel] = useState(100);
+	// const [zoomLevel, setZoomLevel] = useState(100);
 
 	const handleImageUpload = async(file: File) => {
 		if (!sessionToken) {
@@ -189,23 +186,23 @@ const Toolbar: React.FC<ToolbarProps> = ({
 		}
 	};
 
-	const handleZoomIn = () => {
-		const newZoom = Math.min(zoomLevel + 10, 200);
-		setZoomLevel(newZoom);
-		if (editor) {
-			editor.commands.setTextSelection(editor.state.selection);
-			editor.view.dom.style.fontSize = `${newZoom}%`;
-		}
-	};
+	// const handleZoomIn = () => {
+	// 	const newZoom = Math.min(zoomLevel + 10, 200);
+	// 	setZoomLevel(newZoom);
+	// 	if (editor) {
+	// 		editor.commands.setTextSelection(editor.state.selection);
+	// 		editor.view.dom.style.fontSize = `${newZoom}%`;
+	// 	}
+	// };
 
-	const handleZoomOut = () => {
-		const newZoom = Math.max(zoomLevel - 10, 50);
-		setZoomLevel(newZoom);
-		if (editor) {
-			editor.commands.setTextSelection(editor.state.selection);
-			editor.view.dom.style.fontSize = `${newZoom}%`;
-		}
-	};
+	// const handleZoomOut = () => {
+	// 	const newZoom = Math.max(zoomLevel - 10, 50);
+	// 	setZoomLevel(newZoom);
+	// 	if (editor) {
+	// 		editor.commands.setTextSelection(editor.state.selection);
+	// 		editor.view.dom.style.fontSize = `${newZoom}%`;
+	// 	}
+	// };
 
 	if (!editor) {
 		return null;
@@ -228,15 +225,17 @@ const Toolbar: React.FC<ToolbarProps> = ({
 										<FaFileDownload className="h-4 w-4" />
 									</MenubarShortcut>
 								</MenubarItem>
-								<MenubarItem
-									className="cursor-pointer"
-									onClick={() => handleExportTables(editor)}
-								>
-									Export Tables{" "}
-									<MenubarShortcut>
-										<FaFileCsv className="h-4 w-4" />
-									</MenubarShortcut>
-								</MenubarItem>
+								{areThereTablesinEditor(editor) && (
+									<MenubarItem
+										className="cursor-pointer"
+										onClick={() => handleExportTables(editor)}
+									>
+									Export Tables
+										<MenubarShortcut>
+											<FaFileCsv className="h-4 w-4" />
+										</MenubarShortcut>
+									</MenubarItem>
+								)}
 							</MenubarContent>
 						</MenubarMenu>
 					</Menubar>

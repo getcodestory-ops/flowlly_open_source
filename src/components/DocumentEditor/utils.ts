@@ -23,9 +23,9 @@ type JsonTableCellContent = {
   }[];
 };
 
-const convertJsonTableToCsvTable = (table: JsonTable): string[][] => {
+const convertJsonTableToCsvTable = (table: JsonTable): string[][] | null => {
 	if (!table || table.type !== "table" || !table.content) {
-		return [["Invalid Table Data"]];
+		return null;
 	}
 
 	return table.content.map((row) =>
@@ -62,13 +62,13 @@ const extractTablesFromEditor = (editor: Editor): string[][][] => {
 	return allTables;
 };
 
-const convertToCSV = (tableData: string[][]) => {
+const convertToCSV = (tableData: string[][]): string => {
 	return tableData
 		.map((row) => row.map((cell) => `"${cell}"`).join(",")) // Format as CSV row
 		.join("\n"); // Join rows with newline
 };
 
-const downloadCSV = (csvData: string, filename = "tables.csv") => {
+const downloadCSV = (csvData: string, filename = "tables.csv"): void => {
 	const blob = new Blob([csvData], { type: "text/csv" });
 	const url = URL.createObjectURL(blob);
 	const a = document.createElement("a");
@@ -79,8 +79,7 @@ const downloadCSV = (csvData: string, filename = "tables.csv") => {
 	document.body.removeChild(a);
 };
 
-export const handleExportTables = (editor: Editor) => {
-	//console.log(editor);
+export const handleExportTables = (editor: Editor): void => {
 	const tables = extractTablesFromEditor(editor);
 
 	if (tables.length === 0) {
@@ -99,4 +98,14 @@ export const handleExportTables = (editor: Editor) => {
 		})
 		.join("\n\n");
 	downloadCSV(csvData);
+};
+
+export const areThereTablesinEditor = (editor: Editor): boolean => {
+	if (!editor) return false;
+	
+	const editorJson = editor.getJSON(); // Get editor's content as JSON
+	if (!editorJson || !editorJson.content) return false;
+
+	const areThereTables = editorJson.content.some((node) => node.type === "table" && node.content);
+	return areThereTables;
 };
