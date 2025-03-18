@@ -14,11 +14,6 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { WorkflowsTabContent } from "./WorkflowsTabContent";
-
-import type {
-	EventSchedule,
-} from "../types";
-
 import { TriggerUI } from "../TriggerUI";
 import { Tooltipped } from "@/components/Common/Tooltiped";
 import {
@@ -27,18 +22,16 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { useWorkflow } from "@/hooks/useWorkflow";
-interface WorkflowViewerProps {
-	completedWorkflows: EventSchedule[];
-	workflowStats: { completed: number, running: number, other: number, total: number };
-	runningWorkflows: EventSchedule[];
 
-}
-export const WorkflowViewer = ({ completedWorkflows, workflowStats, runningWorkflows }: WorkflowViewerProps): React.ReactNode => {
+export const WorkflowViewer = (): React.ReactNode => {
 	const {
 		setCurrentGraphId,
 		setCurrentResult,
 		currentGraph,
 	} = useWorkflow();
+	const workflowStats = useWorkflow((state) => state.workflowStats());
+	const completedWorkflows = useWorkflow((state) => state.completedWorkflows());
+	const runningWorkflows = useWorkflow((state) => state.runningWorkflows());
 	return (
 		<div className="flex flex-col h-full overflow-hidden">
 			<div className="flex items-center gap-4 p-4 border-b">
@@ -76,11 +69,7 @@ export const WorkflowViewer = ({ completedWorkflows, workflowStats, runningWorkf
 				)
 				}
 			</div>
-			<WorkflowsTabContent
-				completedWorkflows={completedWorkflows}
-				runningWorkflows={runningWorkflows}
-				workflowStats={workflowStats}
-			/>
+			<WorkflowsTabContent />
 		</div>
 	);
 };

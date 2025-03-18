@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import {
 	AlertCircle,
 } from "lucide-react";
@@ -34,9 +34,6 @@ export default function AssignmentHome(): React.ReactNode {
 		setGraphs,
 		currentGraph,
 		setCurrentGraph,
-		workflowStats,
-		completedWorkflows,
-		runningWorkflows,
 	} = useWorkflow();
 	const session = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
@@ -233,11 +230,7 @@ export default function AssignmentHome(): React.ReactNode {
 					</CardContent>
 				</Card>
 			) : (
-				<WorkflowViewer
-					completedWorkflows={completedWorkflows()}
-					runningWorkflows={runningWorkflows()}
-					workflowStats={workflowStats()}
-				/>
+				<WorkflowViewer />
 			)}
 		</div>
 	);

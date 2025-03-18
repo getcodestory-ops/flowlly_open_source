@@ -15,11 +15,6 @@ import { ResultViewer } from "../ResultViewer";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-import type {
-	EventSchedule,
-} from "../types";
-
 import LoaderAnimation from "@/components/Animations/LoaderAnimation";
 import { Button } from "@/components/ui/button";
 import { Tooltipped } from "@/components/Common/Tooltiped";
@@ -27,18 +22,13 @@ import { ChatContent } from "./ChatContent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useWorkflow } from "@/hooks/useWorkflow";
 
-interface WorkflowsTabContentProps {
-	runningWorkflows: EventSchedule[];
-	completedWorkflows: EventSchedule[];
-	workflowStats: { completed: number, running: number, other: number, total: number };
-}
-
-export const WorkflowsTabContent = (props: WorkflowsTabContentProps): React.ReactNode => {
+export const WorkflowsTabContent = (): React.ReactNode => {
+	const runningWorkflows = useWorkflow((state) => state.runningWorkflows());
 	const { currentResult } = useWorkflow();
-	const { runningWorkflows } = props;
+
 	return (
 		<div className="flex flex-row flex-1 flex-grow" style={{ maxHeight: "calc(100vh - 69px)" }}>
-			<WorkflowSidebar {...props} />
+			<WorkflowSidebar />
 			<Tabs
 				className="p-4 flex-grow flex-1 flex flex-col gap-2"
 				defaultValue="workflows"
@@ -80,7 +70,11 @@ export const WorkflowsTabContent = (props: WorkflowsTabContentProps): React.Reac
 	);
 };
 
-const WorkflowSidebar = ({ runningWorkflows, completedWorkflows,  workflowStats }: WorkflowsTabContentProps): React.ReactNode => {
+const WorkflowSidebar = (): React.ReactNode => {
+	const workflowStats = useWorkflow((state) => state.workflowStats());
+	const completedWorkflows = useWorkflow((state) => state.completedWorkflows());
+	const runningWorkflows = useWorkflow((state) => state.runningWorkflows());
+
 	const { eventSchedule } = useWorkflow();
 	const [isCollapsed, setIsCollapsed] = useState(false);
 	const [isButtonHovered, setIsButtonHovered] = useState(false);
