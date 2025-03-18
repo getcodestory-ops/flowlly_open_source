@@ -36,11 +36,7 @@ import { RxTriangleDown } from "react-icons/rx";
 
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
-import htmlToPdfmake from "html-to-pdfmake";
-import html2canvas from "html2canvas";
-import { jsPDF } from "jspdf";
 import { FaFileDownload } from "react-icons/fa";
-import { TDocumentDefinitions } from "pdfmake/interfaces";
 import useDebounce from "@/utils/useDebounce";
 import EmailModal from "../AiActions/EmailModal";
 import { useStore } from "@/utils/store";
@@ -61,7 +57,7 @@ import {
 	DialogContent,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { handleExportTables, areThereTablesinEditor } from "./utils";
+import { handleExportTables, areThereTablesinEditor, convertToPdf, printDocument } from "./utils";
 import {
 	Tooltip,
 	TooltipContent,
@@ -69,12 +65,10 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { Editor } from "@tiptap/react";
-
+import { useEditorStore } from "@/hooks/useEditorStore";
 (pdfMake as any).vfs = pdfFonts.vfs;
 
 interface ToolbarProps {
-  editor: Editor;
   documentType: string;
   saveFunction?: (_: string) => void;
   onAIEditedContent?: (_: string) => void;
@@ -90,18 +84,19 @@ enum SaveStatus {
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
-	editor,
 	saveFunction,
 	documentType,
 	onAIEditedContent,
 	documentId,
 }) => {
+	const editor = useEditorStore((state) => state.editor);
 	const [saveStatus, setSaveStatus] = useState(SaveStatus.HIDDEN);
 	const sessionToken = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
 	const { toast } = useToast();
 	const [isUploading, setIsUploading] = useState(false);
 	const [isExporting, setIsExporting] = useState(false);
+	const [isPrinting, setIsPrinting] = useState(false);
 	const deBounceSave = useDebounce(() => {
 		setSaveStatus(SaveStatus.SAVING);
 
@@ -140,97 +135,19 @@ const Toolbar: React.FC<ToolbarProps> = ({
 			if (!editorElement) {
 				toast({
 					title: "Error",
-					description: "Could not find editor element",
+					description: "Error in processing document. Please try again later.",
 					variant: "destructive",
 				});
 				setIsExporting(false);
 				return;
 			}
-			
-			// Use html2canvas to capture the rendered view
-			html2canvas(editorElement as HTMLElement, {
-				scale: 2, // Higher scale for better quality
-				useCORS: true, // To handle images from other domains
-				logging: false,
-				backgroundColor: "#ffffff",
-			}).then((canvas) => {
-				// Create the PDF document
-				const pdf = new jsPDF({
-					orientation: "portrait",
-					unit: "mm",
-					format: "a4",
-				});
-				
-				// Define margins (in mm)
-				const margin = {
-					top: 15,
-					right: 15,
-					bottom: 15,
-					left: 15,
-				};
-				
-				// Calculate dimensions
-				const pageWidth = 210; // A4 width in mm
-				const pageHeight = 297; // A4 height in mm
-				const contentWidth = pageWidth - margin.left - margin.right;
-				const contentHeight = pageHeight - margin.top - margin.bottom;
-				
-				// Get PDF page ratio
-				const pageRatio = contentHeight / contentWidth;
-				
-				// Create a new canvas to split content into pages
-				const totalPages = Math.ceil(canvas.height / (canvas.width * pageRatio));
-				let currentPage = 0;
-				
-				// Process each page
-				while (currentPage < totalPages) {
-					// For pages after the first one, add a new page
-					if (currentPage > 0) {
-						pdf.addPage();
-					}
-					
-					// Calculate the slice of the canvas for this page
-					const sliceY = currentPage * (canvas.width * pageRatio);
-					const sliceHeight = Math.min(canvas.width * pageRatio, canvas.height - sliceY);
-					
-					// Create a temporary canvas for this slice
-					const tempCanvas = document.createElement("canvas");
-					tempCanvas.width = canvas.width;
-					tempCanvas.height = sliceHeight;
-					const tempCtx = tempCanvas.getContext("2d");
-					
-					if (tempCtx) {
-						// Draw the slice to the temporary canvas
-						tempCtx.drawImage(
-							canvas,
-							0, sliceY, canvas.width, sliceHeight,
-							0, 0, canvas.width, sliceHeight,
-						);
-						
-						// Add the slice to the PDF
-						const imgData = tempCanvas.toDataURL("image/png");
-						pdf.addImage(
-							imgData,
-							"PNG",
-							margin.left,
-							margin.top,
-							contentWidth,
-							(sliceHeight * contentWidth) / canvas.width,
-						);
-					}
-					
-					currentPage++;
-				}
-				
-				// Save the PDF
-				pdf.save("document.pdf");
-				
-				toast({
-					title: "Success",
-					description: "PDF exported successfully",
-				});
-				setIsExporting(false);
-			})
+			convertToPdf(editorElement as HTMLElement)
+				.then(() => {
+					toast({
+						title: "Success",
+						description: "PDF exported successfully",
+					});
+				})
 				.catch((error) => {
 					console.error("Error exporting PDF:", error);
 					toast({
@@ -238,8 +155,46 @@ const Toolbar: React.FC<ToolbarProps> = ({
 						description: "Failed to export PDF. Please try again.",
 						variant: "destructive",
 					});
+				})
+				.finally(() => {
 					setIsExporting(false);
 				});
+		}
+	}, [editor, toast]);
+
+	const printPreview = useCallback(() => {
+		if (editor) {
+			setIsPrinting(true);
+			
+			// Get the editor DOM element
+			const editorElement = document.querySelector(".ProseMirror");
+			
+			if (!editorElement) {
+				toast({
+					title: "Error",
+					description: "Error in processing document for printing. Please try again later.",
+					variant: "destructive",
+				});
+				setIsPrinting(false);
+				return;
+			}
+			
+			try {
+				printDocument(editorElement as HTMLElement);
+				toast({
+					title: "Success",
+					description: "Print dialog opened in a new window",
+				});
+			} catch (error) {
+				console.error("Error opening print dialog:", error);
+				toast({
+					title: "Error",
+					description: "Failed to open print dialog. Please check your popup settings and try again.",
+					variant: "destructive",
+				});
+			} finally {
+				setIsPrinting(false);
+			}
 		}
 	}, [editor, toast]);
 
@@ -274,13 +229,16 @@ const Toolbar: React.FC<ToolbarProps> = ({
 				projectId: activeProject?.project_id,
 				file,
 			});
-			editor.chain().focus()
-				.setImage({ src: result.url })
-				.run();
-			toast({
-				title: "Success",
-				description: "Image uploaded successfully.",
-			});
+			if (editor) {
+				editor.chain().focus()
+					.setImage({ src: result.url })
+					.run();
+			
+				toast({
+					title: "Success",
+					description: "Image uploaded successfully.",
+				});
+			}
 		} catch (error) {
 			console.error("Error uploading image:", error);
 			toast({
@@ -327,6 +285,23 @@ const Toolbar: React.FC<ToolbarProps> = ({
 							</MenubarTrigger>
 							<MenubarContent>
 								<MenubarItem className="cursor-pointer"
+									disabled={isPrinting}
+									onClick={printPreview}
+								>
+									{isPrinting ? (
+										<>
+											Opening Print Dialog... <FaSpinner className="h-4 w-4 ml-2 animate-spin" />
+										</>
+									) : (
+										<>
+											Print
+											<MenubarShortcut>
+												<FaFileDownload className="h-4 w-4" />
+											</MenubarShortcut>
+										</>
+									)}
+								</MenubarItem>
+								{/* <MenubarItem className="cursor-pointer"
 									disabled={isExporting}
 									onClick={exportPdf}
 								>
@@ -342,7 +317,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 											</MenubarShortcut>
 										</>
 									)}
-								</MenubarItem>
+								</MenubarItem> */}
 								{areThereTablesinEditor(editor) && (
 									<MenubarItem
 										className="cursor-pointer"
@@ -406,24 +381,27 @@ const Toolbar: React.FC<ToolbarProps> = ({
 							.toggleMark("bold")
 							.run()}
 						tooltip="Bold"
+						variant={editor.isActive("bold") ? "secondary" : "ghost"}
 					>
-						<FaBold />
+						<FaBold className={`${editor.isActive("bold") ? "text-indigo-600" : ""}`} />
 					</ToolTipedButton>
 					<ToolTipedButton
 						onClick={() => editor.chain().focus()
 							.toggleMark("italic")
 							.run()}
 						tooltip="Italic"
+						variant={editor.isActive("italic") ? "secondary" : "ghost"}
 					>
-						<FaItalic />
+						<FaItalic className={`${editor.isActive("italic") ? "text-indigo-600" : ""}`} />
 					</ToolTipedButton>
 					<ToolTipedButton
 						onClick={() => editor.chain().focus()
 							.toggleMark("underline")
 							.run()}
 						tooltip="Underline"
+						variant={editor.isActive("underline") ? "secondary" : "ghost"}
 					>
-						<FaUnderline />
+						<FaUnderline className={`${editor.isActive("underline") ? "text-indigo-600" : ""}`} />
 					</ToolTipedButton>
 					<ToolTipedButton
 						onClick={() => editor.chain().focus()
