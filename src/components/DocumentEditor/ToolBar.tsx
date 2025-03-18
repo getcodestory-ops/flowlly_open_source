@@ -154,8 +154,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 				logging: false,
 				backgroundColor: "#ffffff",
 			}).then((canvas) => {
-				// Convert canvas to PDF
-				const imgData = canvas.toDataURL("image/png");
+				// Create the PDF document
 				const pdf = new jsPDF({
 					orientation: "portrait",
 					unit: "mm",
@@ -170,37 +169,57 @@ const Toolbar: React.FC<ToolbarProps> = ({
 					left: 15,
 				};
 				
-				// Calculate dimensions with margins
+				// Calculate dimensions
 				const pageWidth = 210; // A4 width in mm
 				const pageHeight = 297; // A4 height in mm
 				const contentWidth = pageWidth - margin.left - margin.right;
 				const contentHeight = pageHeight - margin.top - margin.bottom;
 				
-				// Calculate image dimensions while respecting margins
-				const imgWidth = contentWidth;
-				const imgHeight = (canvas.height * imgWidth) / canvas.width;
+				// Get PDF page ratio
+				const pageRatio = contentHeight / contentWidth;
 				
-				// Calculate total height of content with proper scaling
-				let heightLeft = imgHeight;
-				let position = 0;
+				// Create a new canvas to split content into pages
+				const totalPages = Math.ceil(canvas.height / (canvas.width * pageRatio));
+				let currentPage = 0;
 				
-				// Add image to first page (with margins)
-				pdf.addImage(imgData, "PNG", margin.left, margin.top, imgWidth, imgHeight);
-				heightLeft -= contentHeight;
-				
-				// Add new pages if the content is longer than one page
-				while (heightLeft > 0) {
-					position = heightLeft - imgHeight;
-					pdf.addPage();
-					pdf.addImage(
-						imgData, 
-						"PNG", 
-						margin.left, 
-						position + margin.top, 
-						imgWidth, 
-						imgHeight,
-					);
-					heightLeft -= contentHeight;
+				// Process each page
+				while (currentPage < totalPages) {
+					// For pages after the first one, add a new page
+					if (currentPage > 0) {
+						pdf.addPage();
+					}
+					
+					// Calculate the slice of the canvas for this page
+					const sliceY = currentPage * (canvas.width * pageRatio);
+					const sliceHeight = Math.min(canvas.width * pageRatio, canvas.height - sliceY);
+					
+					// Create a temporary canvas for this slice
+					const tempCanvas = document.createElement("canvas");
+					tempCanvas.width = canvas.width;
+					tempCanvas.height = sliceHeight;
+					const tempCtx = tempCanvas.getContext("2d");
+					
+					if (tempCtx) {
+						// Draw the slice to the temporary canvas
+						tempCtx.drawImage(
+							canvas,
+							0, sliceY, canvas.width, sliceHeight,
+							0, 0, canvas.width, sliceHeight,
+						);
+						
+						// Add the slice to the PDF
+						const imgData = tempCanvas.toDataURL("image/png");
+						pdf.addImage(
+							imgData,
+							"PNG",
+							margin.left,
+							margin.top,
+							contentWidth,
+							(sliceHeight * contentWidth) / canvas.width,
+						);
+					}
+					
+					currentPage++;
 				}
 				
 				// Save the PDF
@@ -365,7 +384,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 								editor
 									.chain()
 									.focus()
-									.toggleHeading({ level: parseInt(value.charAt(1)) })
+									.toggleHeading({ level: parseInt(value.charAt(1)) as 1 | 2 | 3 | 4 | 5 | 6 })
 									.run();
 							}
 						}}

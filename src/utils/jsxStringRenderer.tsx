@@ -81,6 +81,24 @@ const TrustedJsxRenderer: React.FC<{ jsxString: string }> = ({ jsxString }) => {
 		return <div>Loading component...</div>;
 	}
 
+	// If there's an error, show the error message
+	if (error) {
+		return (
+			<Card>
+				<CardHeader>
+					<CardTitle>Error</CardTitle>
+					<CardDescription>Failed to render component</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-600">
+						<p className="font-medium">Error rendering component:</p>
+						<pre className="mt-2 text-sm overflow-auto">{error}</pre>
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	try {
 		return (
 			<JsxParser
@@ -100,12 +118,21 @@ const TrustedJsxRenderer: React.FC<{ jsxString: string }> = ({ jsxString }) => {
 	} catch (err) {
 		console.error("Failed to render JSX string:", err);
 		const errorMessage = err instanceof Error ? err.message : String(err);
+		setError(errorMessage);
 		
 		return (
-			<div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-600">
-				<p className="font-medium">Error rendering component:</p>
-				<pre className="mt-2 text-sm overflow-auto">{errorMessage}</pre>
-			</div>
+			<Card>
+				<CardHeader>
+					<CardTitle>Error</CardTitle>
+					<CardDescription>Failed to render component</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-600">
+						<p className="font-medium">Error rendering component:</p>
+						<pre className="mt-2 text-sm overflow-auto">{errorMessage}</pre>
+					</div>
+				</CardContent>
+			</Card>
 		);
 	}
 };
