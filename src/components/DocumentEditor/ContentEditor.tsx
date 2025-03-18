@@ -1,4 +1,4 @@
-import { useEditor, EditorContent, BubbleMenu, Editor } from "@tiptap/react";
+import { useEditor, EditorContent, Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import UnderLine from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
@@ -8,12 +8,11 @@ import Table from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
-import { Button } from "../ui/button";
 import Toolbar from "./ToolBar";
 import { HoverExtension } from "./extensions/HoverExtension";
 import { DiffStyleExtension } from "./extensions/DiffStyleExtension";
 import ReactChartDisplayExtension from "./extensions/ReactChartDisplayExtension";
-;
+import { useEditorStore } from "@/hooks/useEditorStore";
 interface EditorBlockProps {
   content: string | any;
   setContent?: (_: string) => void;
@@ -29,7 +28,8 @@ const ContentEditor = ({
 	documentType = "Minutes of the meeting",
 	documentId,
 }: EditorBlockProps): React.ReactNode => {
-	const editor = useEditor({
+	const { setEditor, editor } = useEditorStore();
+	useEditor({
 		extensions: [
 			StarterKit,
 			Markdown.configure({
@@ -60,6 +60,28 @@ const ContentEditor = ({
 		immediatelyRender: false,
 		onUpdate: ({ editor }: { editor: Editor }) => {
 			if (setContent) setContent(editor?.storage.markdown.getMarkdown());
+			setEditor(editor);
+		},
+		onCreate: ({ editor }: { editor: Editor }) => {
+			setEditor(editor);
+		},
+		onDestroy: () => {
+			setEditor(null);
+		},
+		onSelectionUpdate: ({ editor }: { editor: Editor }) => {
+			setEditor(editor);
+		},
+		onTransaction: ({ editor }: { editor: Editor }) => {
+			setEditor(editor);
+		},
+		onFocus: ({ editor }: { editor: Editor }) => {
+			setEditor(editor);
+		},
+		onBlur: ({ editor }: { editor: Editor }) => {
+			setEditor(editor);
+		},
+		onContentError: ({ editor }: { editor: Editor }) => {
+			setEditor(editor);
 		},
 	});
 
@@ -75,14 +97,14 @@ const ContentEditor = ({
 			<Toolbar
 				documentId={documentId}
 				documentType={documentType}
-				editor={editor}
 				onAIEditedContent={handleAIEditedContent}
 				saveFunction={saveFunction}
 			/>
-			<BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
+			{/* <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
 				<div className="flex gap-2 bg-background border rounded-md shadow-sm p-1">
 					<Button
-						onClick={() => editor.chain().setBold()
+						onClick={() => editor.chain().focus()
+							.toggleMark("bold")
 							.run()}
 						size="sm"
 						variant={editor.isActive("bold") ? "default" : "secondary"}
@@ -90,7 +112,8 @@ const ContentEditor = ({
 						Bold
 					</Button>
 					<Button
-						onClick={() => editor.chain().setItalic()
+						onClick={() => editor.chain().focus()
+							.toggleMark("italic")
 							.run()}
 						size="sm"
 						variant={editor.isActive("italic") ? "default" : "secondary"}
@@ -98,7 +121,7 @@ const ContentEditor = ({
 						Italic
 					</Button>
 				</div>
-			</BubbleMenu>
+			</BubbleMenu> */}
 			<div className="flex-grow bg-gray-50 overflow-auto rounded-b-lg border-none w-full" style={{ maxHeight: "calc(100% - 52px)" }}>
 				<div className="px-10 py-6 w-[768px] mx-auto bg-white my-0 border-l border-r border-gray-200">
 					<EditorContent

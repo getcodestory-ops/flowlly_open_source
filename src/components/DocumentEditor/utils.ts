@@ -1,4 +1,6 @@
 import { Editor } from "@tiptap/react";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 
 type JsonTable = {
   type: "table";
@@ -108,4 +110,83 @@ export const areThereTablesinEditor = (editor: Editor): boolean => {
 
 	const areThereTables = editorJson.content.some((node) => node.type === "table" && node.content);
 	return areThereTables;
+};
+
+export const convertToPdf = async(editorElement: HTMLElement): Promise<void> => {
+	const canvas = await html2canvas(editorElement as HTMLElement, {
+		scale: 2, // Higher scale for better quality
+		useCORS: true, // To handle images from other domains
+		logging: false,
+		backgroundColor: "#ffffff",
+	});
+
+	const pdf = new jsPDF({
+		orientation: "portrait",
+		unit: "mm",
+		format: "a4",
+	});
+		
+	// Define margins (in mm)
+	const margin = {
+		top: 15,
+		right: 15,
+		bottom: 15,
+		left: 15,
+	};
+		
+	// Calculate dimensions
+	const pageWidth = 210; // A4 width in mm
+	const pageHeight = 297; // A4 height in mm
+	const contentWidth = pageWidth - margin.left - margin.right;
+	const contentHeight = pageHeight - margin.top - margin.bottom;
+		
+	// Get PDF page ratio
+	const pageRatio = contentHeight / contentWidth;
+		
+	// Create a new canvas to split content into pages
+	const totalPages = Math.ceil(canvas.height / (canvas.width * pageRatio));
+	let currentPage = 0;
+		
+	// Process each page
+	while (currentPage < totalPages) {
+		// For pages after the first one, add a new page
+		if (currentPage > 0) {
+			pdf.addPage();
+		}
+			
+		// Calculate the slice of the canvas for this page
+		const sliceY = currentPage * (canvas.width * pageRatio);
+		const sliceHeight = Math.min(canvas.width * pageRatio, canvas.height - sliceY);
+			
+		// Create a temporary canvas for this slice
+		const tempCanvas = document.createElement("canvas");
+		tempCanvas.width = canvas.width;
+		tempCanvas.height = sliceHeight;
+		const tempCtx = tempCanvas.getContext("2d");
+			
+		if (tempCtx) {
+			// Draw the slice to the temporary canvas
+			tempCtx.drawImage(
+				canvas,
+				0, sliceY, canvas.width, sliceHeight,
+				0, 0, canvas.width, sliceHeight,
+			);
+				
+			// Add the slice to the PDF
+			const imgData = tempCanvas.toDataURL("image/png");
+			pdf.addImage(
+				imgData,
+				"PNG",
+				margin.left,
+				margin.top,
+				contentWidth,
+				(sliceHeight * contentWidth) / canvas.width,
+			);
+		}
+			
+		currentPage++;
+	}
+		
+	// Save the PDF
+	pdf.save("document.pdf");
 };
