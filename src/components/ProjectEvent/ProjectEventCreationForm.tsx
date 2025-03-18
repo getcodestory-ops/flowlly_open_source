@@ -42,7 +42,7 @@ import { useStore } from "@/utils/store";
 import { CreateEvent } from "@/types/projectEvents";
 import { createNewProjectEvent } from "@/api/taskQueue";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { GraphData } from "../../../app/project/[projectId]/workbench/components/types";
+import { GraphData } from "../WorkflowComponents/types";
 
 interface Participant {
   id: string;

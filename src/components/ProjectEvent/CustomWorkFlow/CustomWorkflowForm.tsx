@@ -34,7 +34,7 @@ import { useWorkflowForm } from "./hooks/useWorkflowForm";
 import { WorkflowFormData } from "./types";
 
 import { Loader2 } from "lucide-react";
-import { GraphData } from "../../../../app/project/[projectId]/workbench/components/types";
+import { GraphData } from "../../WorkflowComponents/types";
 import { SheetContent } from "@/components/ui/sheet";
 
 const convertGraphToWorkflow = (graphData: GraphData): WorkflowFormData => ({
