@@ -10,18 +10,14 @@ import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import { Button } from "../ui/button";
 import Toolbar from "./ToolBar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { HoverExtension } from "./extensions/HoverExtension";
 import { DiffStyleExtension } from "./extensions/DiffStyleExtension";
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import ReactChartDisplayExtension from "./extensions/ReactChartDisplayExtension";
-
 ;
 interface EditorBlockProps {
   content: string | any;
-  setContent?: (content: string) => void;
-  saveFunction?: (contentData: string) => void;
+  setContent?: (_: string) => void;
+  saveFunction?: (_: string) => void;
   documentType?: string;
   documentId?: string;
 }
@@ -32,27 +28,27 @@ const ContentEditor = ({
 	saveFunction,
 	documentType = "Minutes of the meeting",
 	documentId,
-}: EditorBlockProps) => {
+}: EditorBlockProps): React.ReactNode => {
 	const editor = useEditor({
 		extensions: [
-      StarterKit as any,
-      Markdown.configure({
-      	html: true,
-      }),
-      UnderLine,
-      ImageResize,
-      TextAlign.configure({
-      	types: ["heading", "paragraph"],
-      }),
-      Table.configure({
-      	resizable: true,
-      }),
-      TableRow,
-      TableHeader,
-      TableCell,
-      HoverExtension,
-      DiffStyleExtension,
-	  ReactChartDisplayExtension,
+			StarterKit,
+			Markdown.configure({
+				html: true,
+			}),
+			UnderLine,
+			ImageResize,
+			TextAlign.configure({
+				types: ["heading", "paragraph"],
+			}),
+			Table.configure({
+				resizable: true,
+			}),
+			TableRow,
+			TableHeader,
+			TableCell,
+			HoverExtension,
+			DiffStyleExtension,
+			ReactChartDisplayExtension,
 		],
 		editorProps: {
 			attributes: {
@@ -67,11 +63,10 @@ const ContentEditor = ({
 		},
 	});
 
-	const handleAIEditedContent = (newAIContent: string) => {
+	const handleAIEditedContent = (newAIContent: string): void => {
 		if (editor) {
 			editor.commands.setContent(newAIContent);
 			if (setContent) setContent(newAIContent);
-			//console.log(newAIContent);
 		}
 	};
 
@@ -114,7 +109,7 @@ const ContentEditor = ({
 									prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-7 prose-h2:ml-[-8px] prose-h2:mb-5
 									prose-h3:text-xl prose-h3:font-bold prose-h3:mt-6 prose-h3:ml-[-6px] prose-h3:mb-4
 									prose-h4:text-lg prose-h4:font-bold prose-h4:mt-5 prose-h4:ml-[-4px] prose-h4:mb-3
-									prose-li:list-decimal prose-li:text-gray-900 prose-li:text-sm prose-li:ml-5 prose-li:mb-2 prose-li:mt-4
+									prose-ul:list-disc prose-ol:list-decimal prose-li:text-gray-900 prose-li:text-sm prose-li:ml-5 prose-li:mb-2 prose-li:mt-4
 									prose-p:leading-normal prose-p:text-gray-900 
 									prose-strong:text-gray-900 prose-strong:font-semibold
 									prose-img:rounded-lg prose-img:shadow-md prose-img:mx-auto

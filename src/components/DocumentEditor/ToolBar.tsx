@@ -24,7 +24,6 @@ import {
 	FaUnderline,
 	FaListUl,
 	FaListOl,
-	FaCode,
 	FaUndo,
 	FaRedo,
 	FaTable,
@@ -38,6 +37,8 @@ import { RxTriangleDown } from "react-icons/rx";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import htmlToPdfmake from "html-to-pdfmake";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import { FaFileDownload } from "react-icons/fa";
 import { TDocumentDefinitions } from "pdfmake/interfaces";
 import useDebounce from "@/utils/useDebounce";
@@ -58,12 +59,9 @@ import PlatformChatComponent from "@/components/ChatInput/PlatformChat/PlatformC
 import {
 	Dialog,
 	DialogContent,
-	DialogHeader,
-	DialogTitle,
 	DialogTrigger,
-	DialogDescription,
 } from "@/components/ui/dialog";
-import { handleExportTables } from "./utils";
+import { handleExportTables, areThereTablesinEditor } from "./utils";
 import {
 	Tooltip,
 	TooltipContent,
@@ -71,14 +69,15 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { Editor } from "@tiptap/react";
 
 (pdfMake as any).vfs = pdfFonts.vfs;
 
 interface ToolbarProps {
-  editor: any;
+  editor: Editor;
   documentType: string;
-  saveFunction?: (contentData: string) => void;
-  onAIEditedContent?: (content: string) => void;
+  saveFunction?: (_: string) => void;
+  onAIEditedContent?: (_: string) => void;
   documentId?: string;
 }
 
@@ -102,6 +101,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 	const activeProject = useStore((state) => state.activeProject);
 	const { toast } = useToast();
 	const [isUploading, setIsUploading] = useState(false);
+	const [isExporting, setIsExporting] = useState(false);
 	const deBounceSave = useDebounce(() => {
 		setSaveStatus(SaveStatus.SAVING);
 
@@ -128,22 +128,107 @@ const Toolbar: React.FC<ToolbarProps> = ({
 
 	const exportPdf = useCallback(() => {
 		if (editor) {
-			const htmlContent = editor.getHTML();
-			const pdfContent = htmlToPdfmake(htmlContent);
-
-			const documentDefinition: TDocumentDefinitions = {
-				content: pdfContent,
-			};
-
-			pdfMake.createPdf(documentDefinition).download("document.pdf");
+			setIsExporting(true);
+			toast({
+				title: "Exporting PDF",
+				description: "Please wait while we generate your PDF...",
+			});
+			
+			// Get the editor DOM element
+			const editorElement = document.querySelector(".ProseMirror");
+			
+			if (!editorElement) {
+				toast({
+					title: "Error",
+					description: "Could not find editor element",
+					variant: "destructive",
+				});
+				setIsExporting(false);
+				return;
+			}
+			
+			// Use html2canvas to capture the rendered view
+			html2canvas(editorElement as HTMLElement, {
+				scale: 2, // Higher scale for better quality
+				useCORS: true, // To handle images from other domains
+				logging: false,
+				backgroundColor: "#ffffff",
+			}).then((canvas) => {
+				// Convert canvas to PDF
+				const imgData = canvas.toDataURL("image/png");
+				const pdf = new jsPDF({
+					orientation: "portrait",
+					unit: "mm",
+					format: "a4",
+				});
+				
+				// Define margins (in mm)
+				const margin = {
+					top: 15,
+					right: 15,
+					bottom: 15,
+					left: 15,
+				};
+				
+				// Calculate dimensions with margins
+				const pageWidth = 210; // A4 width in mm
+				const pageHeight = 297; // A4 height in mm
+				const contentWidth = pageWidth - margin.left - margin.right;
+				const contentHeight = pageHeight - margin.top - margin.bottom;
+				
+				// Calculate image dimensions while respecting margins
+				const imgWidth = contentWidth;
+				const imgHeight = (canvas.height * imgWidth) / canvas.width;
+				
+				// Calculate total height of content with proper scaling
+				let heightLeft = imgHeight;
+				let position = 0;
+				
+				// Add image to first page (with margins)
+				pdf.addImage(imgData, "PNG", margin.left, margin.top, imgWidth, imgHeight);
+				heightLeft -= contentHeight;
+				
+				// Add new pages if the content is longer than one page
+				while (heightLeft > 0) {
+					position = heightLeft - imgHeight;
+					pdf.addPage();
+					pdf.addImage(
+						imgData, 
+						"PNG", 
+						margin.left, 
+						position + margin.top, 
+						imgWidth, 
+						imgHeight,
+					);
+					heightLeft -= contentHeight;
+				}
+				
+				// Save the PDF
+				pdf.save("document.pdf");
+				
+				toast({
+					title: "Success",
+					description: "PDF exported successfully",
+				});
+				setIsExporting(false);
+			})
+				.catch((error) => {
+					console.error("Error exporting PDF:", error);
+					toast({
+						title: "Error",
+						description: "Failed to export PDF. Please try again.",
+						variant: "destructive",
+					});
+					setIsExporting(false);
+				});
 		}
-	}, [editor]);
+	}, [editor, toast]);
 
 	const [tableRows, setTableRows] = useState(3);
 	const [tableCols, setTableCols] = useState(3);
 
 	const [imageUrl, setImageUrl] = useState("");
-	const [zoomLevel, setZoomLevel] = useState(100);
+	// const [zoomLevel, setZoomLevel] = useState(100);
 
 	const handleImageUpload = async(file: File) => {
 		if (!sessionToken) {
@@ -189,23 +274,23 @@ const Toolbar: React.FC<ToolbarProps> = ({
 		}
 	};
 
-	const handleZoomIn = () => {
-		const newZoom = Math.min(zoomLevel + 10, 200);
-		setZoomLevel(newZoom);
-		if (editor) {
-			editor.commands.setTextSelection(editor.state.selection);
-			editor.view.dom.style.fontSize = `${newZoom}%`;
-		}
-	};
+	// const handleZoomIn = () => {
+	// 	const newZoom = Math.min(zoomLevel + 10, 200);
+	// 	setZoomLevel(newZoom);
+	// 	if (editor) {
+	// 		editor.commands.setTextSelection(editor.state.selection);
+	// 		editor.view.dom.style.fontSize = `${newZoom}%`;
+	// 	}
+	// };
 
-	const handleZoomOut = () => {
-		const newZoom = Math.max(zoomLevel - 10, 50);
-		setZoomLevel(newZoom);
-		if (editor) {
-			editor.commands.setTextSelection(editor.state.selection);
-			editor.view.dom.style.fontSize = `${newZoom}%`;
-		}
-	};
+	// const handleZoomOut = () => {
+	// 	const newZoom = Math.max(zoomLevel - 10, 50);
+	// 	setZoomLevel(newZoom);
+	// 	if (editor) {
+	// 		editor.commands.setTextSelection(editor.state.selection);
+	// 		editor.view.dom.style.fontSize = `${newZoom}%`;
+	// 	}
+	// };
 
 	if (!editor) {
 		return null;
@@ -222,21 +307,34 @@ const Toolbar: React.FC<ToolbarProps> = ({
 								</ToolTipedButton>
 							</MenubarTrigger>
 							<MenubarContent>
-								<MenubarItem className="cursor-pointer" onClick={exportPdf}>
-									Export PDF
-									<MenubarShortcut>
-										<FaFileDownload className="h-4 w-4" />
-									</MenubarShortcut>
-								</MenubarItem>
-								<MenubarItem
-									className="cursor-pointer"
-									onClick={() => handleExportTables(editor)}
+								<MenubarItem className="cursor-pointer"
+									disabled={isExporting}
+									onClick={exportPdf}
 								>
-									Export Tables{" "}
-									<MenubarShortcut>
-										<FaFileCsv className="h-4 w-4" />
-									</MenubarShortcut>
+									{isExporting ? (
+										<>
+											Exporting PDF... <FaSpinner className="h-4 w-4 ml-2 animate-spin" />
+										</>
+									) : (
+										<>
+											Export PDF
+											<MenubarShortcut>
+												<FaFileDownload className="h-4 w-4" />
+											</MenubarShortcut>
+										</>
+									)}
 								</MenubarItem>
+								{areThereTablesinEditor(editor) && (
+									<MenubarItem
+										className="cursor-pointer"
+										onClick={() => handleExportTables(editor)}
+									>
+									Export Tables
+										<MenubarShortcut>
+											<FaFileCsv className="h-4 w-4" />
+										</MenubarShortcut>
+									</MenubarItem>
+								)}
 							</MenubarContent>
 						</MenubarMenu>
 					</Menubar>
