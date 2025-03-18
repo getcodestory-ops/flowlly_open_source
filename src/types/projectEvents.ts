@@ -108,12 +108,14 @@ export enum EventFrequency {
   MANUAL = "manual",
 }
 
-export interface EventSchedule {
-  id: string;
-  event_id: string;
-  schedule: RunConfig;
-  run_frequency?: "daily" | "weekly" | "weekdays" | "monthly" | "yearly";
-}
+//Hiding this for now because this name conflicts with the EventSchedule type in the WorkflowComponents/types.ts file
+// It isnt used anywhere in the project right now
+// export interface EventSchedule {
+//   id: string;
+//   event_id: string;
+//   schedule: RunConfig;
+//   run_frequency?: "daily" | "weekly" | "weekdays" | "monthly" | "yearly";
+// }
 
 export interface CreateEvent {
   id?: string;
