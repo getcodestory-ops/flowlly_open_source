@@ -57,7 +57,7 @@ import {
 	DialogContent,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { handleExportTables, areThereTablesinEditor, convertToPdf } from "./utils";
+import { handleExportTables, areThereTablesinEditor, convertToPdf, printDocument } from "./utils";
 import {
 	Tooltip,
 	TooltipContent,
@@ -96,6 +96,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 	const { toast } = useToast();
 	const [isUploading, setIsUploading] = useState(false);
 	const [isExporting, setIsExporting] = useState(false);
+	const [isPrinting, setIsPrinting] = useState(false);
 	const deBounceSave = useDebounce(() => {
 		setSaveStatus(SaveStatus.SAVING);
 
@@ -158,6 +159,42 @@ const Toolbar: React.FC<ToolbarProps> = ({
 				.finally(() => {
 					setIsExporting(false);
 				});
+		}
+	}, [editor, toast]);
+
+	const printPreview = useCallback(() => {
+		if (editor) {
+			setIsPrinting(true);
+			
+			// Get the editor DOM element
+			const editorElement = document.querySelector(".ProseMirror");
+			
+			if (!editorElement) {
+				toast({
+					title: "Error",
+					description: "Error in processing document for printing. Please try again later.",
+					variant: "destructive",
+				});
+				setIsPrinting(false);
+				return;
+			}
+			
+			try {
+				printDocument(editorElement as HTMLElement);
+				toast({
+					title: "Success",
+					description: "Print dialog opened in a new window",
+				});
+			} catch (error) {
+				console.error("Error opening print dialog:", error);
+				toast({
+					title: "Error",
+					description: "Failed to open print dialog. Please check your popup settings and try again.",
+					variant: "destructive",
+				});
+			} finally {
+				setIsPrinting(false);
+			}
 		}
 	}, [editor, toast]);
 
@@ -248,6 +285,23 @@ const Toolbar: React.FC<ToolbarProps> = ({
 							</MenubarTrigger>
 							<MenubarContent>
 								<MenubarItem className="cursor-pointer"
+									disabled={isPrinting}
+									onClick={printPreview}
+								>
+									{isPrinting ? (
+										<>
+											Opening Print Dialog... <FaSpinner className="h-4 w-4 ml-2 animate-spin" />
+										</>
+									) : (
+										<>
+											Print
+											<MenubarShortcut>
+												<FaFileDownload className="h-4 w-4" />
+											</MenubarShortcut>
+										</>
+									)}
+								</MenubarItem>
+								{/* <MenubarItem className="cursor-pointer"
 									disabled={isExporting}
 									onClick={exportPdf}
 								>
@@ -263,7 +317,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 											</MenubarShortcut>
 										</>
 									)}
-								</MenubarItem>
+								</MenubarItem> */}
 								{areThereTablesinEditor(editor) && (
 									<MenubarItem
 										className="cursor-pointer"
