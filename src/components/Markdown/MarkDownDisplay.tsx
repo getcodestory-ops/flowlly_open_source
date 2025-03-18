@@ -203,6 +203,12 @@ function remarkDirectiveComponents() {
 							content: "Saving Report",
 						};
 						break;
+					case "generate_chart":
+						data.hName = "custom-generate-chart";
+						data.hProperties = {
+							content: "Generating Chart",
+						};
+						break;
 						
 					default:
 						// Use the directive name directly if not mapped
@@ -232,6 +238,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
 		"custom-write-file": ({ content }: { content: string }) => <CustomViewer content={content} />,
 		"custom-edit-report": ({ content }: { content: string }) => <CustomViewer content={content} />,
 		"custom-complete-report": ({ content }: { content: string }) => <CustomViewer content={content} />,
+		"custom-generate-chart": ({ content }: { content: string }) => <CustomViewer content={content} />,
 		"custom-workflow": ({ id }: { id: string }) => <WorkflowComponent id={id} />,
 		"custom-workflow-results": ({ content }: { content: string }) => <WorkflowResultsComponent content={content} />,
 		"custom-addition": ({ children }: { children: React.ReactNode }) => <AdditionHighlight>{children}</AdditionHighlight>,
