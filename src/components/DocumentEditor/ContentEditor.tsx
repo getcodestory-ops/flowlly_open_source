@@ -15,7 +15,9 @@ import { HoverExtension } from "./extensions/HoverExtension";
 import { DiffStyleExtension } from "./extensions/DiffStyleExtension";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import ReactChartDisplayExtension from "./extensions/ReactChartDisplayExtension";
 
+;
 interface EditorBlockProps {
   content: string | any;
   setContent?: (content: string) => void;
@@ -50,6 +52,7 @@ const ContentEditor = ({
       TableCell,
       HoverExtension,
       DiffStyleExtension,
+	  ReactChartDisplayExtension,
 		],
 		editorProps: {
 			attributes: {

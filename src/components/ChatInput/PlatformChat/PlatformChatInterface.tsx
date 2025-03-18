@@ -333,8 +333,9 @@ export default function PlatformChatInterface({
 
 			const lastChat = chats[chats.length - 1];
 			if (lastChat.sender !== "User" && lastChat.message.content) {
+				const documentID = `:::document{#${folderId}}`;
 				if (typeof lastChat.message.content === "string" && onContentUpdate) {
-					onContentUpdate(lastChat.message.content.replace(":::document", "").replace(":::", ""));
+					onContentUpdate(lastChat.message.content.replace(documentID, "").replace(":::", ""));
 
 					// Reset the state after a brief delay to show success
 					setTimeout(() => {
