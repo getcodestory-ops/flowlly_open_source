@@ -23,6 +23,9 @@ interface WorkflowStore {
   viewMode: ViewMode;
   setViewMode: (_: ViewMode) => void;
 
+  selectedWorkflowId: string | null;
+  setSelectedWorkflowId: (_: string | null) => void;
+
    // Computed values
    workflowStats: () => { completed: number; running: number; other: number; total: number };
    completedWorkflows: () => EventSchedule[];
@@ -50,6 +53,9 @@ export const useWorkflow = create<WorkflowStore>((set, get) => ({
 
 	viewMode: ViewMode.GRID,
 	setViewMode: (viewMode: ViewMode) => set({ viewMode }),
+
+	selectedWorkflowId: null,
+	setSelectedWorkflowId: (selectedWorkflowId: string | null) => set({ selectedWorkflowId }),
 
 	// Computed workflow statistics
 	workflowStats: () => {
@@ -96,7 +102,7 @@ export const useWorkflow = create<WorkflowStore>((set, get) => ({
 		const eventSchedule = get().eventSchedule;
 		if (!eventSchedule) return [];
 
-		return eventSchedule.filter((schedule) => {
+		const completed = eventSchedule.filter((schedule) => {
 			const hasCompletedResult = schedule.event_result.some((result) => {
 				const isExplicitlyCompleted = !!result;
 				const isImplicitlyCompleted =
@@ -116,6 +122,8 @@ export const useWorkflow = create<WorkflowStore>((set, get) => ({
 
 			return hasCompletedResult && !hasRunningResult;
 		});
+		// setSelectedWorkflowId(completed[0].event_result[0].id);
+		return completed;
 	},
 
 	// Running workflows
