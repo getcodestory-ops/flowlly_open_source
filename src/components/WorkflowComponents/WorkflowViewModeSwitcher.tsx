@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, Grid, List } from "lucide-react";
 import { ViewMode } from "./types";
+import { useWorkflow } from "@/hooks/useWorkflow";
 
-export const WorkflowViewModeSwitcher = ({ viewMode, setViewMode }: { viewMode: ViewMode, setViewMode: (_: ViewMode) => void }): React.ReactNode => {
+export const WorkflowViewModeSwitcher = (): React.ReactNode => {
+	const { viewMode, setViewMode } = useWorkflow();
 	return (
 		<div className="flex items-center gap-1">
 			<Button

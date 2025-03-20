@@ -29,7 +29,7 @@ import { Folder, File, X } from "lucide-react";
 import DocumentSelector from "./DocumentSelector";
 import { CreateEvent } from "@/types/projectEvents";
 import { createNewProjectEvent } from "@/api/taskQueue";
-import { GraphData } from "../../../app/project/[projectId]/workbench/components/types";
+import { GraphData } from "../WorkflowComponents/types";
 import FolderBrowserModal from "./FolderBrowserModal";
 import {
 	Dialog,

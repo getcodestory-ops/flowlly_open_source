@@ -3,6 +3,7 @@ import { useStore } from "@/utils/store";
 import { fetchResource } from "@/api/folderRoutes";
 import ContentEditor from "../DocumentEditor/ContentEditor";
 import { useStorageTextFileSave } from "../DocumentEditor/useStorageTextSave";
+import LoaderAnimation from "../Animations/LoaderAnimation";
 
 export function ResourceTextViewer({ resource_id }: { resource_id: string }) {
 	const activeProject = useStore((state) => state.activeProject);
@@ -17,7 +18,7 @@ export function ResourceTextViewer({ resource_id }: { resource_id: string }) {
 
 	return (
 		<div>
-			{isLoading && <div>Loading...</div>}
+			{isLoading &&  <div className="flex justify-center items-center h-full"><LoaderAnimation /></div>}
 			{data && (
 				<div>
 					<ContentEditor

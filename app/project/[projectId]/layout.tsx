@@ -1,4 +1,5 @@
 import { Providers } from "./providers";
+import { WorkflowStack } from "@/components/WorkflowStack/WorkflowStack";
 
 export const metadata = {
 	title: "Construction Documentation",
@@ -11,8 +12,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
 	return (
-		<body className="bg-background text-foreground">
+		<body className="bg-background text-foreground relative">
 			<Providers>{children}</Providers>
+			<WorkflowStack />
+			{/* <TemporaryButtonForWorkflowStack /> */}
 		</body>
 	);
 }

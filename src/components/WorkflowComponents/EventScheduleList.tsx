@@ -19,7 +19,7 @@ import {
 	getPaginationRowModel,
 } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
-import type { EventResult, EventSchedule, ScheduleTableRow } from "./types";
+import type { EventSchedule, ScheduleTableRow } from "./types";
 import {
 	getEventResult,
 	getEventTrigger,
@@ -38,28 +38,23 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useWorkflow } from "@/hooks/useWorkflow";
 
 interface EventScheduleListProps {
   graphs: EventSchedule[];
-  onSelectGraph: (_: EventResult) => void;
-  eventId: string;
-  setIsLoadingResult: (_: boolean) => void;
-  compact?: boolean;
 }
 
 export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	graphs,
-	onSelectGraph,
-	eventId,
-	setIsLoadingResult,
-	compact = false,
 }) => {
+	const { setIsLoadingResult, setCurrentResult, currentGraphId, selectedWorkflowId } = useWorkflow();
+	const compact = true;
+
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [globalFilter, setGlobalFilter] = useState("");
 	const session = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
 	const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-	const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
 
 	// Added pagination state
 	const [pagination, setPagination] = useState<{
@@ -73,11 +68,11 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	const queryClient = useQueryClient();
 
 	useEffect(() => {
-		if (graphs && !selectedEventId && selectedResultId) {
-			const freshGraph = graphs.find((g) => g.id === selectedResultId);
+		if (graphs && !selectedEventId && selectedWorkflowId) {
+			const freshGraph = graphs.find((g) => g.id === selectedWorkflowId);
 			if (freshGraph && freshGraph.event_result) {
 				if (freshGraph.event_result[0].nodes) {
-					onSelectGraph(freshGraph.event_result[0]);
+					setCurrentResult(freshGraph.event_result[0]);
 					setSelectedEventId(freshGraph.event_result[0].id);
 				} else {
 					setSelectedEventId(freshGraph.event_result[0].id);
@@ -91,18 +86,18 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	const { data: eventTrigger } = useQuery({
 		queryKey: ["eventTrigger", selectedEventId],
 		queryFn: async() => {
-			if (!session || !activeProject || !eventId)
+			if (!session || !activeProject || !currentGraphId)
 				return Promise.reject(
 					"Either session, active project, or selected event ID is missing",
 				);
 			return getEventTrigger({
 				session,
 				projectId: activeProject?.project_id || "",
-				eventId: eventId,
+				eventId: currentGraphId,
 				triggerType: "ui",
 			});
 		},
-		enabled: !!session && !!activeProject && !!eventId,
+		enabled: !!session && !!activeProject && !!currentGraphId,
 	});
 
 	const sortedGraphs = useMemo(() => {
@@ -307,7 +302,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 
 	useEffect(() => {
 		if (fetchedEventResult) {
-			onSelectGraph(fetchedEventResult?.result);
+			setCurrentResult(fetchedEventResult?.result);
 			setSelectedEventId(null);
 		}
 	}, [fetchedEventResult]);
@@ -323,11 +318,8 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 									compact={compact}
 									graphs={graphs}
 									key={row.id}
-									onSelectGraph={onSelectGraph}
 									row={row}
-									selectedResultId={selectedResultId || ""}
 									setSelectedEventId={setSelectedEventId}
-									setSelectedResultId={setSelectedResultId}
 								/>
 							))
 						) : (
@@ -365,15 +357,14 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 interface WorkflowListItemProps {
 	row: Row<ScheduleTableRow>;
 	compact: boolean;
-	selectedResultId: string;
-	onSelectGraph: (_: EventResult) => void;
 	graphs: EventSchedule[];
-	setSelectedResultId: (_: string) => void;
 	setSelectedEventId: (_: string) => void;
 }
 
-const WorkflowListItem = ({ row, compact, selectedResultId, onSelectGraph, graphs, setSelectedResultId, setSelectedEventId }: WorkflowListItemProps): React.ReactNode => {
-	const isSelected = row.original.result?.id === selectedResultId;
+const WorkflowListItem = ({ row, compact,  graphs, setSelectedEventId }: WorkflowListItemProps): React.ReactNode => {
+	const { selectedWorkflowId, setSelectedWorkflowId } = useWorkflow();
+	const { setCurrentResult } = useWorkflow();
+	const isSelected = row.original.result?.id === selectedWorkflowId;
 	const isRunning = row.original.result?.workflow_id;
 	const isListening = row.original.result?.listen;
 	const isCompleted = row.original.result?.status === "completed";
@@ -406,8 +397,8 @@ const WorkflowListItem = ({ row, compact, selectedResultId, onSelectGraph, graph
 						row.toggleExpanded();
 					} else if (row.original.result) {
 						if (row.original.id === "eventTrigger") {
-							onSelectGraph(row.original.result);
-							setSelectedResultId(row.original.result.id);
+							setCurrentResult(row.original.result);
+							setSelectedWorkflowId(row.original.result.id);
 							return;
 						}
 
@@ -416,11 +407,11 @@ const WorkflowListItem = ({ row, compact, selectedResultId, onSelectGraph, graph
 							.find((er) => er.id === row.original.result?.id);
 
 						if (eventResult?.nodes) {
-							onSelectGraph(eventResult);
-							setSelectedResultId(row.original.result.id);
+							setCurrentResult(eventResult);
+							setSelectedWorkflowId(row.original.result.id);
 						} else {
 							setSelectedEventId(row.original.result?.id);
-							setSelectedResultId(row.original.result.id);
+							setSelectedWorkflowId(row.original.result.id);
 						}
 					}
 				}}

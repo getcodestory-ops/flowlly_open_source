@@ -6,14 +6,13 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import type {
-	GraphData,
-	EventResult,
-} from "../types";
+
 
 import PlatformChatComponent from "@/components/ChatInput/PlatformChat/PlatformChatComponent";
+import { useWorkflow } from "@/hooks/useWorkflow";
 
-export const ChatContent = ({ currentResult, currentGraph }: { currentResult: EventResult | null, currentGraph: GraphData | null }): React.ReactNode => {
+export const ChatContent = (): React.ReactNode => {
+	const { currentResult, currentGraph } = useWorkflow();
 	return (
 		<>
 			<Card className="h-full flex flex-col border-0 shadow-none">

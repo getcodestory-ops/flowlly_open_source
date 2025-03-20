@@ -6,11 +6,7 @@ import { dayMapping, localizer } from "./calendar-utils";
 import type { GraphData } from "./types";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useViewStore } from "@/utils/store";
-
-interface CalendarViewProps {
-  graphs: GraphData[];
-  onSelectGraph: (graphId: string) => void;
-}
+import { useWorkflow } from "@/hooks/useWorkflow";
 
 const CustomToolbar = (toolbar: any) => {
 	const goToBack = () => {
@@ -68,10 +64,12 @@ const CustomToolbar = (toolbar: any) => {
 	);
 };
 
-export const CalendarView: React.FC<CalendarViewProps> = ({
-	graphs,
-	onSelectGraph,
+export const CalendarView: React.FC = ({
 }) => {
+	const { graphs, setCurrentGraphId } = useWorkflow();
+	const onSelectGraph = (id: string): void => {
+		setCurrentGraphId(id);
+	};
 	const { calendarView, setCalendarView } = useViewStore();
 	const [date, setDate] = useState(new Date());
 
@@ -155,6 +153,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 	};
 
 	const events = useMemo(() => {
+		if (!graphs) {
+			return [];
+		}
 		return graphs.flatMap(generateRecurringEvents);
 	}, [graphs]);
 

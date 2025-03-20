@@ -13,6 +13,7 @@ import { HoverExtension } from "./extensions/HoverExtension";
 import { DiffStyleExtension } from "./extensions/DiffStyleExtension";
 import ReactChartDisplayExtension from "./extensions/ReactChartDisplayExtension";
 import { useEditorStore } from "@/hooks/useEditorStore";
+import Image from "@tiptap/extension-image";
 interface EditorBlockProps {
   content: string | any;
   setContent?: (_: string) => void;
@@ -42,6 +43,10 @@ const ContentEditor = ({
 			}),
 			Table.configure({
 				resizable: true,
+			}),
+			Image.configure({
+				allowBase64: true,
+				inline: true,
 			}),
 			TableRow,
 			TableHeader,

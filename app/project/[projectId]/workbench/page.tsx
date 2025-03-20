@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import AssignmentHome from "./components/Assignment";
+import AssignmentHome from "@/components/WorkflowComponents/Assignment";
 import { useStore } from "@/utils/store";
 
 export default function ConstructionDashboardHome() {

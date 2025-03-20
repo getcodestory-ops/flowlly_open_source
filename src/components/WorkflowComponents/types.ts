@@ -131,18 +131,18 @@ export type CalendarViewProps = {
 };
 
 export type GraphListProps = {
-  graphs: GraphData[];
-  onSelectGraph: (graphId: string) => void;
-  setCurrentResult?: (result: EventResult | null) => void;
-  viewMode: ViewMode;
-  setViewMode: (_: ViewMode) => void;
+  // graphs: GraphData[];
+  // onSelectGraph: (graphId: string) => void;
+  // setCurrentResult?: (result: EventResult | null) => void;
+  // viewMode: ViewMode;
+  // setViewMode: (_: ViewMode) => void;
 };
 
 export type EventScheduleListProps = {
   graphs: EventSchedule[];
-  onSelectGraph: (event: EventResult) => void;
+  // onSelectGraph: (event: EventResult) => void;
   eventId?: string;
-  setIsLoadingResult?: (isLoading: boolean) => void;
+  // setIsLoadingResult?: (isLoading: boolean) => void;
   compact?: boolean;
 };
 
