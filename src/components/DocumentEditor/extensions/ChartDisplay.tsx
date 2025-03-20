@@ -12,6 +12,8 @@ const decodeBase64 = (base64String: string): string => {
 	}
 };
 
+
+
 export const ChartDisplay = (props: any) => {
 	const chart_id = props.node.attrs.chart_id;
 	const jsxEncoded = props.node.attrs.jsx || "<p>No chart data available</p>";
@@ -19,7 +21,8 @@ export const ChartDisplay = (props: any) => {
 	// Use useMemo to render the component only when chart_id or jsx_string changes
 	const renderedComponent = useMemo(() => {
 		// Check if the jsx is base64 encoded and decode it if needed
-		let jsxDecoded = jsxEncoded;
+		let jsxDecoded = "";
+		
 		
 		
 		// Simple check if the string looks like it's base64 encoded
@@ -31,7 +34,6 @@ export const ChartDisplay = (props: any) => {
 				console.error("Failed to decode JSX:", error);
 			}
 		}
-		
 		// Use our utility function to render the JSX string as a component
 		const component = renderJsxString(jsxDecoded, chart_id);
 
