@@ -212,7 +212,7 @@ export default function PlatformChatComponent({
 								<Plus className="mr-1" size={14} /> New Chat
 							</Button>
 						</div>
-						<ScrollArea className="flex-grow m-2 ">
+						<ScrollArea className="flex-grow m-2 h-full">
 							{chatEntities && chatEntities.length > 0 ? (
 								chatEntities
 									.toReversed()
