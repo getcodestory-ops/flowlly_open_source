@@ -130,6 +130,8 @@ function remarkDirectiveComponents() {
 			) {
 				const data = node.data || (node.data = {});
 				const hName = node.name;
+				const attributes = node.attributes || {};
+				const id = attributes.id || "";
 				
 				// Map directive names to component names based on the directive name
 				switch (hName) {
@@ -209,10 +211,18 @@ function remarkDirectiveComponents() {
 							content: "Generating Chart",
 						};
 						break;
+					case "workflow_result":
+						data.hName = "custom-workflow-result";
+						data.hProperties = {
+							content: node.children?.[0]?.value || "",
+							id: id,
+						};
+						break;
 						
 					default:
 						// Use the directive name directly if not mapped
 						data.hName = `custom-${hName}`;
+						data.id = id;
 						data.hProperties = node.attributes || {};
 				}
 			}
@@ -243,6 +253,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
 		"custom-workflow-results": ({ content }: { content: string }) => <WorkflowResultsComponent content={content} />,
 		"custom-addition": ({ children }: { children: React.ReactNode }) => <AdditionHighlight>{children}</AdditionHighlight>,
 		"custom-deletion": ({ children }: { children: React.ReactNode }) => <DeletionHighlight>{children}</DeletionHighlight>,
+		"custom-workflow-result": ({ content }: { content: string }) => <CustomViewer content={content} />,
 		"custom-document-reference": ({ documentId, position }: { documentId: string, position: any }) => {
 			let documentContent = "";
 			if (position && position.start && position.end) {

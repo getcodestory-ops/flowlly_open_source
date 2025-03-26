@@ -214,7 +214,8 @@ const WorkflowContent = (): React.ReactNode => {
 					</div>
 				) : (
 					<ResultViewer
-						currentResult={currentResult}											
+						currentResult={currentResult}
+						key={currentResult.id}											
 					/>
 				)
 			) : (

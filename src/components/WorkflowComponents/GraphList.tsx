@@ -28,7 +28,6 @@ import {
 } from "@tanstack/react-table";
 import { DataTablePagination } from "@/components/Schedule/ScheduleTable/DataTablePagination";
 import { CalendarView } from "./CalendarView";
-import CreateJob from "./CreateJob";
 import type { GraphData } from "./types";
 import ProjectEventCreationForm from "@/components/ProjectEvent/ProjectEventCreationForm";
 import DocumentWriterForm from "@/components/ProjectEvent/DocumentWriterForm";
@@ -47,10 +46,16 @@ import { convertIsoToTimeAgo } from "@/utils/dateUtils";
 import { ViewMode } from "./types";
 import { WorkflowViewModeSwitcher } from "./WorkflowViewModeSwitcher";
 import { useWorkflow } from "@/hooks/useWorkflow";
+import { TriggerUI } from "@/components/WorkflowComponents/TriggerUI";
+import {
+	Dialog,
+	DialogContent,
+	DialogTrigger,
+} from "@/components/ui/dialog";
 const localeText = {
 	searchWorkflows: "Filter workflows by name or type...",
 };
-
+import { PlayIcon } from "lucide-react";
 export const GraphList: React.FC = ({
 }) => {
 	const { setCurrentGraphId, viewMode, graphs } = useWorkflow();
@@ -274,63 +279,133 @@ export const GraphList: React.FC = ({
 			)}
 			{viewMode === ViewMode.GRID && (
 				<div>
-					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-						{filteredGraphs.length > 0 ? (
-							filteredGraphs.map((graph) => (
-								<Card
-									className="hover:shadow-md transition-shadow cursor-pointer border border-gray-200"
-									key={graph.id}
-									onClick={() => onSelectGraph(graph.id)}
-								>
-									<CardHeader className="pb-2">
-										<div className="flex justify-between items-center gap-4">
-											<CardTitle className="text-lg font-medium truncate whitespace-nowrap overflow-hidden w-full">
-												<Tooltipped tooltip={graph.name}>
-													<div className="truncate">{graph.name}</div>
-												</Tooltipped>
-											</CardTitle>
-											<Badge variant="outline">{graph.event_type}</Badge>
-										</div>
-									</CardHeader>
-									<CardContent>
-										<p className="text-sm text-muted-foreground line-clamp-2">
-											{graph.description}
-										</p>
-									</CardContent>
-									<CardFooter className="pt-2 flex justify-between text-xs text-muted-foreground">
-										<div className="flex items-center gap-1">
-											<Calendar className="h-3 w-3" />
-											<span>
-												Created
-											</span>
-											<span className="">
-												{formatTimeAgo(convertIsoToTimeAgo(graph.created_at) ?? "")}
-											</span>
-										</div>
-										{/* {graph.event_schedule && graph.event_schedule.length > 0 && (
-                      <div className="flex items-center">
-                        <Workflow className="h-3 w-3 mr-1" />
-                        Runs: {graph.event_schedule.length}
-                      </div>
-                    )} */}
-										<Button
-											onClick={(e) => {
-												e.stopPropagation();
-												onClickEdit(graph);}}
-											size="icon"
-											variant="ghost"
+					{/* Non-meeting events section */}
+					<div className="mb-8">
+						<h2 className="text-xl font-semibold mb-4 border-b border-gray-200 pb-2">Workflows</h2>
+						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+							{filteredGraphs.filter((graph) => graph.event_type !== "meeting").length > 0 ? (
+								filteredGraphs
+									.filter((graph) => graph.event_type !== "meeting")
+									.map((graph) => (
+										<Card
+											className="hover:shadow-md transition-shadow cursor-pointer border border-gray-200"
+											key={graph.id}
+											onClick={() => onSelectGraph(graph.id)}
 										>
-											<PencilIcon className="h-3 w-3" />
-										</Button>
-									</CardFooter>
-								</Card>
-							))
-						) : (
-							<div className="col-span-full text-center p-8 flex flex-col items-center justify-center gap-4">
-								<p className="text-muted-foreground">No workflows found</p>
-								<CreateJob />
-							</div>
-						)}
+											<CardHeader className="pb-2">
+												<div className="flex justify-between items-center gap-4">
+													<CardTitle className="text-lg font-medium truncate whitespace-nowrap overflow-hidden w-full">
+														<Tooltipped tooltip={graph.name}>
+															<div className="truncate">{graph.name}</div>
+														</Tooltipped>
+													</CardTitle>
+													<Badge variant="outline">{graph.event_type}</Badge>
+												</div>
+											</CardHeader>
+											<CardContent>
+												<p className="text-sm text-muted-foreground line-clamp-2">
+													{graph.description}
+												</p>
+											</CardContent>
+											<CardFooter className="pt-2 flex justify-between text-xs text-muted-foreground">
+												<div className="flex items-center gap-1">
+													<Calendar className="h-3 w-3" />
+													<span>
+														Created
+													</span>
+													<span className="">
+														{formatTimeAgo(convertIsoToTimeAgo(graph.created_at) ?? "")}
+													</span>
+												</div>
+												<Button
+													onClick={(e) => {
+														e.stopPropagation();
+														onClickEdit(graph);
+													}}
+													size="icon"
+													variant="ghost"
+												>
+													<PencilIcon className="h-3 w-3" />
+												</Button>
+												{/* <Dialog>
+													<DialogTrigger asChild>
+														<Button size="icon" variant="ghost">
+															<PlayIcon className="h-3 w-3" />
+														</Button>
+													</DialogTrigger>
+													<DialogContent>
+														<TriggerUI eventId={graph.id}
+															name={graph.name}
+															onTrigger={() => {}}
+														/>
+													</DialogContent>
+												</Dialog> */}
+											</CardFooter>
+										</Card>
+									))
+							) : (
+								<div className="col-span-full text-center p-4">
+									<p className="text-muted-foreground">No other events found</p>
+								</div>
+							)}
+						</div>
+					</div>
+					<div>
+						<h2 className="text-xl font-semibold mb-4 border-b border-gray-200 pb-2">Meetings</h2>
+						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+							{filteredGraphs.filter((graph) => graph.event_type === "meeting").length > 0 ? (
+								filteredGraphs
+									.filter((graph) => graph.event_type === "meeting")
+									.map((graph) => (
+										<Card
+											className="hover:shadow-md transition-shadow cursor-pointer border border-gray-200"
+											key={graph.id}
+											onClick={() => onSelectGraph(graph.id)}
+										>
+											<CardHeader className="pb-2">
+												<div className="flex justify-between items-center gap-4">
+													<CardTitle className="text-lg font-medium truncate whitespace-nowrap overflow-hidden w-full">
+														<Tooltipped tooltip={graph.name}>
+															<div className="truncate">{graph.name}</div>
+														</Tooltipped>
+													</CardTitle>
+													<Badge variant="outline">{graph.event_type}</Badge>
+												</div>
+											</CardHeader>
+											<CardContent>
+												<p className="text-sm text-muted-foreground line-clamp-2">
+													{graph.description}
+												</p>
+											</CardContent>
+											<CardFooter className="pt-2 flex justify-between text-xs text-muted-foreground">
+												<div className="flex items-center gap-1">
+													<Calendar className="h-3 w-3" />
+													<span>
+														Created
+													</span>
+													<span className="">
+														{formatTimeAgo(convertIsoToTimeAgo(graph.created_at) ?? "")}
+													</span>
+												</div>
+												<Button
+													onClick={(e) => {
+														e.stopPropagation();
+														onClickEdit(graph);
+													}}
+													size="icon"
+													variant="ghost"
+												>
+													<PencilIcon className="h-3 w-3" />
+												</Button>
+											</CardFooter>
+										</Card>
+									))
+							) : (
+								<div className="col-span-full text-center p-4">
+									<p className="text-muted-foreground">No meetings found</p>
+								</div>
+							)}
+						</div>
 					</div>
 				</div>
 			)}

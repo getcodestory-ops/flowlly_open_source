@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
@@ -10,7 +10,6 @@ import {
 	FileText,
 	MessageSquare,
 	LogsIcon,
-	X,
 	CheckCircle2,
 	AlertCircle,
 	Clock,
@@ -23,13 +22,11 @@ import { renderJsonValue } from "./utils";
 import { Button } from "@/components/ui/button";
 import type { NodeData, ActionData, EventResult } from "./types";
 import { useStore } from "@/utils/store";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
+
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
-import { triggerEvent, triggerWorkflowNode } from "@/api/taskQueue";
+import {  triggerWorkflowNode } from "@/api/taskQueue";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import MarkDownDisplay from "@/components/Markdown/MarkDownDisplay";
-import LoaderAnimation from "@/components/Animations/LoaderAnimation";
 import PdfLoader from "./PdfLoader";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -39,16 +36,19 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-
+import WorkflowInputForm from "./WorkflowInputform";
 interface ResultViewerProps {
   currentResult: EventResult;
+  cacheId?: string;
 }
 
 export const ResultViewer: React.FC<ResultViewerProps> = ({
 	currentResult,
+	cacheId,
 }) => {
 	const projectId = useStore((state) => state.activeProject?.project_id);
 	const session = useStore((state) => state.session);
+	
 
 	// Update how we determine if a workflow is running
 	// A workflow is running if:
@@ -62,73 +62,89 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 	const [showLogs, setShowLogs] = useState(false);
 	const [detailView, setDetailView] = useState<NodeData | null>(null);
 
+	// Add useEffect to select last node on mount
+	useEffect(() => {
+		if (currentResult?.nodes && currentResult.nodes.length > 0) {
+			// First try to find save_minutes_in_project_documents node
+			const saveMinutesNode = currentResult.nodes.find(
+				(node) => node.id.toLowerCase() === "save_minutes_in_project_documents",
+			);
+			
+			// If found, use it, otherwise fall back to last node
+			const nodeToSelect = saveMinutesNode || currentResult.nodes[currentResult.nodes.length - 1];
+			setDetailView(nodeToSelect);
+		}
+	}, [currentResult?.id]);
+
 	return (
 		<>
 			{/* Workflow Status Summary */}
-
-			{currentResult?.listen && (
-				<Card className="p-4 mb-6 border-2 border-yellow-500 shadow-md rounded-lg">
-					{currentResult.workflow_id && projectId && (
-						<>
-							{pendingEvent ? (
-								<UserInputForm
-									eventId={currentResult.event_id}
-									projectId={projectId}
-									resultId={currentResult.id}
-									setPendingEvent={setPendingEvent}
-								/>
-							) : (
-								<div className="flex items-center gap-2 text-gray-500">
-									<Loader2 className="h-4 w-4 animate-[heartbeat_1.5s_ease-in-out_infinite]" />
-									<span>
+			<div className="flex flex-col w-full ">
+				{currentResult?.listen && (
+					<Card className="p-4 mb-6 border-2 border-yellow-500 shadow-md rounded-lg">
+						{currentResult.workflow_id && projectId && (
+							<>
+								{pendingEvent	? (
+									<WorkflowInputForm
+										cacheId={cacheId}
+										eventId={currentResult.event_id}
+										projectId={projectId}
+										resultId={currentResult.id}
+										setPendingEvent={setPendingEvent}
+									/>
+								) : (
+									<div className="flex items-center gap-2 text-gray-500">
+										<Loader2 className="h-4 w-4 animate-[heartbeat_1.5s_ease-in-out_infinite]" />
+										<span>
 										Reading through attached files and your instructions
-									</span>
-								</div>
-							)}
-						</>
-					)}
-				</Card>
-			)}
-			{session?.access_token && currentResult.streaming && (
-				<div className="mb-6">
-					<div className="border rounded-lg overflow-hidden relative border-l-green-500 border-l-4 shadow-sm">
-						<div className="relative">
-							<div className="h-1 w-full bg-gray-100 overflow-hidden">
-								<div
-									className="h-1 w-full bg-gradient-to-r from-blue-500 to-purple-500 absolute"
-									style={{
-										animation: "progressLine 10s ease-in-out infinite",
-									}}
-								/>
-							</div>
-							<div className="p-4 flex items-center justify-between bg-white">
-								<div className="flex items-center gap-2">
-									<LogsIcon className="h-5 w-5 text-gray-600" />
-									<h3 className="font-medium">Workflow Logs</h3>
-								</div>
-								<Button
-									className="h-7 px-2"
-									onClick={() => setShowLogs(!showLogs)}
-									size="sm"
-									variant="outline"
-								>
-									{showLogs ? "Hide Logs" : "Show Logs"}
-								</Button>
-							</div>
-						</div>
-						{showLogs && (
-							<div className="border-t">
-								<div className="max-h-[400px] overflow-y-auto p-4">
-									<StreamComponent
-										authToken={session.access_token}
-										streamingKey={currentResult.id}
+										</span>
+									</div>
+								)}
+							</>
+						)}
+					</Card>
+				)}
+				{session?.access_token && currentResult?.streaming && (
+					<div className="mb-6">
+						<div className="border rounded-lg overflow-hidden relative border-l-green-500 border-l-4 shadow-sm">
+							<div className="relative">
+								<div className="h-1 w-full bg-gray-100 overflow-hidden">
+									<div
+										className="h-1 w-full bg-gradient-to-r from-blue-500 to-purple-500 absolute"
+										style={{
+											animation: "progressLine 10s ease-in-out infinite",
+										}}
 									/>
 								</div>
+								<div className="p-4 flex items-center justify-between bg-white">
+									<div className="flex items-center gap-2">
+										<LogsIcon className="h-5 w-5 text-gray-600" />
+										<h3 className="font-medium">Workflow Logs</h3>
+									</div>
+									<Button
+										className="h-7 px-2"
+										onClick={() => setShowLogs(!showLogs)}
+										size="sm"
+										variant="outline"
+									>
+										{showLogs ? "Hide Logs" : "Show Logs"}
+									</Button>
+								</div>
 							</div>
-						)}
+							{showLogs && (
+								<div className="border-t">
+									<div className="max-h-[400px] overflow-y-auto p-4">
+										<StreamComponent
+											authToken={session.access_token}
+											streamingKey={currentResult.id}
+										/>
+									</div>
+								</div>
+							)}
+						</div>
 					</div>
-				</div>
-			)}
+				)}
+			</div>
 			{/* Workflow Details */}
 			<div className="flex flex-row gap-6 h-full items-start">
 				{/* Node Details */}
@@ -148,7 +164,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 								/>
 							</div>
 							<div className="h-full flex-grow flex-1 overflow-auto p-0" style={{ maxHeight: "calc(100% - 65px)" }}>
-								{renderNodeContent(detailView, false)}
+								{renderNodeContent(detailView)}
 							</div>
 						</div>
 					) : (
@@ -418,8 +434,8 @@ const NodeActions: React.FC<NodeActionsProps> = ({
 	);
 };
 
-const StatusBadge = ({ status }: { status: string }) => {
-	const getStatusColor = () => {
+const StatusBadge = ({ status }: { status: string }): React.ReactNode => {
+	const getStatusColor = (): string => {
 		switch (status) {
 			case "completed":
 				return "bg-green-100 text-green-800 border-green-200";
@@ -445,7 +461,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 // Returns an appropriate icon for the node based on its ID.
-const getNodeIcon = (node: NodeData) => {
+const getNodeIcon = (node: NodeData): React.ReactNode => {
 	const nodeId = node.id.toLowerCase();
 	switch (nodeId) {
 		case "record_meeting":
@@ -468,176 +484,7 @@ const getNodeIcon = (node: NodeData) => {
 	}
 };
 
-const UserInputForm = ({
-	eventId,
-	projectId,
-	setPendingEvent,
-	resultId,
-}: {
-  eventId?: string;
-  projectId: string;
-  setPendingEvent: (pending: boolean) => void;
-  resultId: string;
-}) => {
-	const [inputText, setInputText] = useState("");
-	const [files, setFiles] = useState<File[]>([]);
-	const [drawings, setDrawings] = useState<File[]>([]);
-	const [isLoading, setIsLoading] = useState(false);
-	const session = useStore((state) => state.session);
-
-	const handleSubmit = async() => {
-		if (!session || !projectId || !eventId) return;
-
-		setIsLoading(true);
-		try {
-			const formData = new FormData();
-			formData.append("body", inputText);
-			files.forEach((file) => formData.append("files", file));
-			drawings.forEach((file) => formData.append("drawings", file));
-			formData.append("streaming_key", resultId);
-
-			await triggerEvent({
-				session,
-				projectId,
-				eventId: eventId,
-				formData,
-			});
-
-			setInputText("");
-			setFiles([]);
-			setDrawings([]);
-		} finally {
-			setIsLoading(false);
-			setPendingEvent(false);
-		}
-	};
-
-	return (
-		<div className="space-y-4">
-			<div className="flex items-center gap-2 mb-4">
-				<MessageSquare className="h-5 w-5 text-gray-600" />
-				<h3 className="font-medium">
-					What do you want to do? Attach files if needed.
-				</h3>
-			</div>
-			{files.length > 0 && (
-				<div className="border rounded-lg overflow-hidden">
-					<div className="p-4 bg-muted/30">
-						<div className="flex flex-wrap gap-2">
-							{files.map((file, index) => (
-								<div
-									className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-md text-sm border"
-									key={index}
-								>
-									<FileText className="h-4 w-4 text-gray-500" />
-									<span className="truncate max-w-[200px]">{file.name}</span>
-									<button
-										className="hover:text-destructive"
-										onClick={() =>
-											setFiles(files.filter((_, i) => i !== index))
-										}
-									>
-										<X className="h-4 w-4" />
-									</button>
-								</div>
-							))}
-						</div>
-					</div>
-				</div>
-			)}
-			{drawings.length > 0 && (
-				<div className="border rounded-lg overflow-hidden">
-					<div className="p-4 bg-muted/30">
-						<div className="flex flex-wrap gap-2">
-							{drawings.map((file, index) => (
-								<div
-									className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-md text-sm border"
-									key={index}
-								>
-									<Edit3 className="h-4 w-4 text-gray-500" />
-									<span className="truncate max-w-[200px]">{file.name}</span>
-									<button
-										className="hover:text-destructive"
-										onClick={() =>
-											setDrawings(drawings.filter((_, i) => i !== index))
-										}
-									>
-										<X className="h-4 w-4" />
-									</button>
-								</div>
-							))}
-						</div>
-					</div>
-				</div>
-			)}
-			<Textarea
-				className="min-h-[100px] resize-none"
-				onChange={(e) => setInputText(e.target.value)}
-				placeholder="Type your instructions here..."
-				value={inputText}
-			/>
-			<div className="flex gap-2 items-center">
-				<Input
-					className="hidden"
-					id={`file-upload-${eventId}`}
-					multiple
-					onChange={(e) =>
-						e.target.files &&
-            setFiles([...files, ...Array.from(e.target.files)])
-					}
-					type="file"
-				/>
-				<Button
-					className="h-9"
-					onClick={() =>
-						document.getElementById(`file-upload-${eventId}`)?.click()
-					}
-					size="sm"
-					variant="outline"
-				>
-					<FileText className="h-4 w-4 mr-2" />
-					Attach Files
-				</Button>
-				<Input
-					className="hidden"
-					id={`drawing-upload-${eventId}`}
-					multiple
-					onChange={(e) =>
-						e.target.files &&
-            setDrawings([...drawings, ...Array.from(e.target.files)])
-					}
-					type="file"
-				/>
-				<Button
-					className="h-9"
-					onClick={() =>
-						document.getElementById(`drawing-upload-${eventId}`)?.click()
-					}
-					size="sm"
-					variant="outline"
-				>
-					<Edit3 className="h-4 w-4 mr-2" />
-					Attach Drawings
-				</Button>
-				<Button
-					className="ml-auto"
-					disabled={isLoading}
-					onClick={handleSubmit}
-				>
-					{isLoading ? (
-						<>
-							<LoaderAnimation />
-						</>
-					) : (
-						"Submit Response"
-					)}
-				</Button>
-			</div>
-		</div>
-	);
-};
-
-const renderNodeContent = (node: NodeData, isFullScreen: boolean) => {
+const renderNodeContent = (node: NodeData): React.ReactNode => {
 	const nodeId = node.id.toLowerCase();
 	switch (nodeId) {
 		case "record_meeting":
@@ -659,6 +506,7 @@ const renderNodeContent = (node: NodeData, isFullScreen: boolean) => {
 		case "save_document":
 		case "save_minutes_in_project_documents":
 			return <ResourceTextViewer resource_id={node.output?.resource_id} />;
+		case "workflow_logs":
 		default:
 			if (
 				node.output &&
@@ -680,11 +528,12 @@ const renderNodeContent = (node: NodeData, isFullScreen: boolean) => {
 			}
 
 			return typeof node.output === "string" ? (
-				<p className="text-sm text-gray-700 whitespace-pre-line">
+				<div className="text-sm text-gray-700 whitespace-pre-line">
 					<MarkDownDisplay content={node.output} />
-				</p>
+				</div>
 			) : node.output?.report_path || node.output?.resource_id ? (
 				<ResourceTextViewer
+					key={node.output?.report_path || node.output?.resource_id}
 					resource_id={node.output?.report_path || node.output?.resource_id}
 				/>
 			) : (

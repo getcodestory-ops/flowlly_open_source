@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useEditor, EditorContent, Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import UnderLine from "@tiptap/extension-underline";
@@ -30,14 +31,14 @@ const ContentEditor = ({
 	documentId,
 }: EditorBlockProps): React.ReactNode => {
 	const { setEditor, editor } = useEditorStore();
-	useEditor({
+	
+	const editorInstance = useEditor({
 		extensions: [
 			StarterKit,
 			Markdown.configure({
 				html: true,
 			}),
 			UnderLine,
-			ImageResize,
 			TextAlign.configure({
 				types: ["heading", "paragraph"],
 			}),
@@ -53,15 +54,15 @@ const ContentEditor = ({
 			TableCell,
 			HoverExtension,
 			DiffStyleExtension,
+			
 			ReactChartDisplayExtension,
 		],
 		editorProps: {
 			attributes: {
 				class: "focus:outline-none",
-				// "prose prose-lg max-w-none focus:outline-none prose-headings:font-bold prose-p:leading-relaxed prose-img:rounded-lg prose-img:shadow-md",
 			},
 		},
-		content: content,
+		content: content || "",
 		immediatelyRender: false,
 		onUpdate: ({ editor }: { editor: Editor }) => {
 			if (setContent) setContent(editor?.storage.markdown.getMarkdown());
@@ -90,14 +91,20 @@ const ContentEditor = ({
 		},
 	});
 
+	useEffect(() => {
+		if (editorInstance && content !== undefined) {
+			editorInstance.commands.setContent(content);
+		}
+	}, [content, editorInstance]);
+
 	const handleAIEditedContent = (newAIContent: string): void => {
-		if (editor) {
-			editor.commands.setContent(newAIContent);
+		if (editorInstance) {
+			editorInstance.commands.setContent(newAIContent);
 			if (setContent) setContent(newAIContent);
 		}
 	};
 
-	return editor && (
+	return editorInstance && (
 		<>
 			<Toolbar
 				documentId={documentId}
@@ -124,7 +131,7 @@ const ContentEditor = ({
 									prose-th:bg-gray-50 prose-th:text-left prose-th:font-medium prose-th:border prose-th:border-gray-200 prose-th:font-bold prose-th:p-2
 									prose-td:border prose-td:border-gray-200 prose-td:p-2 
 								"
-						editor={editor}
+						editor={editorInstance}
 					/>
 				</div>
 			</div>

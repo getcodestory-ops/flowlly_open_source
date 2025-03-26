@@ -128,7 +128,7 @@ export default function AssignmentHome(): React.ReactNode {
 					</CardContent>
 				</Card>
 			) : (
-				<WorkflowViewer />
+				<WorkflowViewer session={session} />
 			)}
 		</div>
 	);
