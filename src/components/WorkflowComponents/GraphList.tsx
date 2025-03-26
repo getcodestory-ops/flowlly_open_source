@@ -53,7 +53,7 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 const localeText = {
-	searchWorkflows: "Filter workflows by name or type...",
+	searchWorkflows: "Filter workflowsby name or type...",
 };
 import { PlayIcon } from "lucide-react";
 export const GraphList: React.FC = ({
@@ -67,6 +67,7 @@ export const GraphList: React.FC = ({
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [selectedEventType, setSelectedEventType] = useState<string | null>( null );
 	const [selectedEventData, setSelectedEventData] = useState<GraphData | null>( null );
+	const [isTriggerDialogOpen, setIsTriggerDialogOpen] = useState(false);
 
 	const onClickEdit = (info: GraphData) => {
 		const eventType = info.event_type;
@@ -317,29 +318,37 @@ export const GraphList: React.FC = ({
 														{formatTimeAgo(convertIsoToTimeAgo(graph.created_at) ?? "")}
 													</span>
 												</div>
-												<Button
-													onClick={(e) => {
+												<div className="flex items-center gap-1">
+													<Button
+														onClick={(e) => {
+															e.stopPropagation();
+															onClickEdit(graph);
+														}}
+														size="icon"
+														variant="ghost"
+													>
+														<PencilIcon className="h-3 w-3" />
+													</Button>
+													<div onClick={(e) => {
 														e.stopPropagation();
-														onClickEdit(graph);
 													}}
-													size="icon"
-													variant="ghost"
-												>
-													<PencilIcon className="h-3 w-3" />
-												</Button>
-												{/* <Dialog>
-													<DialogTrigger asChild>
-														<Button size="icon" variant="ghost">
-															<PlayIcon className="h-3 w-3" />
-														</Button>
-													</DialogTrigger>
-													<DialogContent>
-														<TriggerUI eventId={graph.id}
-															name={graph.name}
-															onTrigger={() => {}}
-														/>
-													</DialogContent>
-												</Dialog> */}
+													>
+														<Dialog>
+															<DialogTrigger asChild>
+																<Button size="icon" variant="ghost">
+																	<PlayIcon className="h-3 w-3" />
+																</Button>
+															</DialogTrigger>
+															<DialogContent>
+																<TriggerUI 
+																	eventId={graph.id}
+																	name={graph.name}
+																	onTrigger={() => setIsTriggerDialogOpen(false)}
+																/>
+															</DialogContent>
+														</Dialog>
+													</div>
+												</div>
 											</CardFooter>
 										</Card>
 									))
