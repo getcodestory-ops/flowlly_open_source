@@ -39,7 +39,7 @@ interface WorkflowStackStore {
   startStatusPolling: (session: Session) => void;
   stopStatusPolling: () => void;
   getWorkflow: (id: string) => Workflow | undefined;
-  updateWorkflowByCacheId: (cacheId: string, updates: Partial<Workflow>) => void;
+  updateWorkflowByCacheId: (cacheId: string, updates: Partial<Workflow>, session: Session) => void;
 }
 
 export const useWorkflowStack = create<WorkflowStackStore>((set, get) => ({
@@ -154,7 +154,7 @@ export const useWorkflowStack = create<WorkflowStackStore>((set, get) => ({
 	getWorkflow: (id: string) => {
 		return get().workflows[id];
 	},	
-	updateWorkflowByCacheId: (cacheId: string, updates: Partial<Workflow>) => {
+	updateWorkflowByCacheId: (cacheId: string, updates: Partial<Workflow>, session: Session) => {
 		set((state) => {
 			const workflow = Object.values(state.workflows).find((w) => w.workflowId === cacheId);
 			if (workflow) {
@@ -185,5 +185,10 @@ export const useWorkflowStack = create<WorkflowStackStore>((set, get) => ({
 			}
 			return state;
 		});
+
+		// Start polling if not already polling
+		if (!get().pollingInterval) {
+			get().startStatusPolling(session);
+		}
 	},
 }));

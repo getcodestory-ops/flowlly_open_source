@@ -108,18 +108,11 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 					<div className="mb-6">
 						<div className="border rounded-lg overflow-hidden relative border-l-green-500 border-l-4 shadow-sm">
 							<div className="relative">
-								<div className="h-1 w-full bg-gray-100 overflow-hidden">
-									<div
-										className="h-1 w-full bg-gradient-to-r from-blue-500 to-purple-500 absolute"
-										style={{
-											animation: "progressLine 10s ease-in-out infinite",
-										}}
-									/>
-								</div>
+				
 								<div className="p-4 flex items-center justify-between bg-white">
 									<div className="flex items-center gap-2">
 										<LogsIcon className="h-5 w-5 text-gray-600" />
-										<h3 className="font-medium">Workflow Logs</h3>
+										<h3 className="font-medium">Logs</h3>
 									</div>
 									<Button
 										className="h-7 px-2"
@@ -141,12 +134,21 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 									</div>
 								</div>
 							)}
+							<div className="h-1 w-full bg-gray-100 overflow-hidden">
+								<div
+									className="h-1 w-full bg-gradient-to-r from-blue-100 to-purple-200 absolute"
+									style={{
+										animation: "progressLine 10s ease-in-out infinite",
+									}}
+								/>
+							</div>
 						</div>
+	
 					</div>
 				)}
 			</div>
 			{/* Workflow Details */}
-			<div className="flex flex-row gap-6 h-full items-start">
+			{!currentResult?.listen && !currentResult?.streaming && <div className="flex flex-row gap-6 h-full items-start">
 				{/* Node Details */}
 				<div className="w-full rounded-lg border shadow-sm h-full flex-1 flex-grow">
 					{detailView ? (
@@ -188,7 +190,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 						/>
 					</div>
 				</div>
-			</div>
+			</div> }
 		</>
 	);
 };

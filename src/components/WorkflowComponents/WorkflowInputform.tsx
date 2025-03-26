@@ -56,6 +56,7 @@ const WorkflowInputForm: React.FC<WorkflowInputFormProps> = ({
 			files.forEach((file) => formData.append("files", file));
 			drawings.forEach((file) => formData.append("drawings", file));
 			formData.append("streaming_key", resultId);
+			formData.append("workflow_id", cacheId ?? "");
 
 			const workflowResult = await triggerEvent({
 				session,
@@ -65,7 +66,7 @@ const WorkflowInputForm: React.FC<WorkflowInputFormProps> = ({
 			});
 
 			if (cacheId) {
-				updateWorkflowByCacheId(cacheId, workflowResult);
+				updateWorkflowByCacheId(cacheId, workflowResult, session);
 			}
 			else{
 				addWorkflow({
@@ -92,7 +93,7 @@ const WorkflowInputForm: React.FC<WorkflowInputFormProps> = ({
 			<div className="flex items-center gap-2 mb-4">
 				<MessageSquare className="h-5 w-5 text-gray-600" />
 				<h3 className="font-medium">
-					What do you want to do? Attach files if needed.
+					Attach files and provide instructions to continue.
 				</h3>
 			</div>
 			{files.length > 0 && (

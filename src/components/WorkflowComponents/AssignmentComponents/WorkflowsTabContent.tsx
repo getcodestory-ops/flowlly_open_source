@@ -97,7 +97,7 @@ const WorkflowSidebar = (): React.ReactNode => {
 			</Tooltipped>
 			{(!isCollapsed) && (
 				<div className="overflow-auto h-full">
-					{runningWorkflows && runningWorkflows.length > 0 && (
+					{/* {runningWorkflows && runningWorkflows.length > 0 && (
 						<>
 							<div className="p-4">
 								<h3 className="text-lg font-medium mb-2 flex items-center">
@@ -124,7 +124,7 @@ const WorkflowSidebar = (): React.ReactNode => {
 							</div>
 							<Separator />
 						</>
-					)}
+					)} */}
 					<div className="h-full flex flex-col">
 						<h3 className="text-lg font-medium p-4 flex items-center">
 							<span>Completed Workflows</span>
