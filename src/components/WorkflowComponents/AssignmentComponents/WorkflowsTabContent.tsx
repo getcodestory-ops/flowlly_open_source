@@ -62,7 +62,7 @@ export const WorkflowsTabContent = (): React.ReactNode => {
 				>
 					<WorkflowContent />
 				</TabsContent>
-				<TabsContent value="questions">
+				<TabsContent style={{ maxHeight: "calc(100% - 8px - 36px)" }} value="questions">
 					<ChatContent />
 				</TabsContent>
 			</Tabs>

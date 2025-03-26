@@ -16,15 +16,15 @@ export const ChatContent = (): React.ReactNode => {
 	return (
 		<>
 			<Card className="h-full flex flex-col border-0 shadow-none">
-				<CardHeader>
-					<CardTitle>Ask about this workflow</CardTitle>
+				<CardHeader className="p-2">
+					<CardTitle>Ask questions about this workflow</CardTitle>
 					<CardDescription>
 						Get help and information about this workflow
 					</CardDescription>
 				</CardHeader>
-				<CardContent className="flex-1 pb-6">
+				<CardContent className="flex-1 pb-6 h-full overflow-auto" style={{ maxHeight: "calc(100% - 90px)" }}>
 					{currentResult ? (
-						<div className="h-[full] border rounded-md">
+						<div className="h-[full] border rounded-md overflow-auto">
 							<PlatformChatComponent
 								chatTarget="workflow"
 								folderId={currentResult.id}
