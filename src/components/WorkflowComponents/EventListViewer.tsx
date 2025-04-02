@@ -53,10 +53,12 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 const localeText = {
-	searchWorkflows: "Filter workflowsby name or type...",
+	searchWorkflows: "Filter workflows by name or type...",
 };
 import { PlayIcon } from "lucide-react";
-export const GraphList: React.FC = ({
+
+
+export const EventListViewer: React.FC = ({
 }) => {
 	const { setCurrentGraphId, viewMode, graphs } = useWorkflow();
 	const onSelectGraph = (id: string): void => {

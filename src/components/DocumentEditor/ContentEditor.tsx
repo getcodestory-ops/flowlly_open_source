@@ -54,7 +54,6 @@ const ContentEditor = ({
 			TableCell,
 			HoverExtension,
 			DiffStyleExtension,
-			
 			ReactChartDisplayExtension,
 		],
 		editorProps: {

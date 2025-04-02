@@ -97,34 +97,6 @@ const WorkflowSidebar = (): React.ReactNode => {
 			</Tooltipped>
 			{(!isCollapsed) && (
 				<div className="overflow-auto h-full">
-					{/* {runningWorkflows && runningWorkflows.length > 0 && (
-						<>
-							<div className="p-4">
-								<h3 className="text-lg font-medium mb-2 flex items-center">
-									<span>Running Workflows</span>
-									{runningWorkflows && runningWorkflows.length > 0 && (
-										<Badge className="ml-2" variant="secondary">
-											{runningWorkflows.length}
-										</Badge>
-									)}
-								</h3>
-								{!eventSchedule || !runningWorkflows || runningWorkflows.length === 0 ? (
-									<Card className="p-4 bg-muted">
-										<p className="text-sm text-muted-foreground">
-											No running workflows
-										</p>
-									</Card>
-								) : (
-									<ScrollArea>
-										<EventScheduleList
-											graphs={runningWorkflows}
-										/>
-									</ScrollArea>
-								)}
-							</div>
-							<Separator />
-						</>
-					)} */}
 					<div className="h-full flex flex-col">
 						<h3 className="text-lg font-medium p-4 flex items-center">
 							<span>Completed Workflows</span>

@@ -104,24 +104,24 @@ export function usePlatformChat(
 
 				if (response.status === "completed" && response.result) {
 					// Add the agent response to local chats
-					const agentMessage: AgentChat = {
-						id: Date.now().toString(),
-						sender: "Flowlly",
-						receiver: "User",
-						project_id: activeProject?.project_id || "",
-						message: {
-							content: response.result,
-							role: "assistant",
-						},
-						created_at: new Date().toISOString(),
-					};
+					// const agentMessage: AgentChat = {
+					// 	id: Date.now().toString(),
+					// 	sender: "Flowlly",
+					// 	receiver: "User",
+					// 	project_id: activeProject?.project_id || "",
+					// 	message: {
+					// 		content: response.result,
+					// 		role: "assistant",
+					// 	},
+					// 	created_at: new Date().toISOString(),
+					// };
 
 					// We need a slight delay before updating the state to ensure a smooth transition
 					// from the streaming component to the final message
 					setTimeout(() => {
 						// Get the latest state from the store
 						const currentLocalChats = useStore.getState().localChats;
-						const updatedChats = [...currentLocalChats, agentMessage];
+						const updatedChats = [...currentLocalChats, ...response.result];
 
 						// Update the store with the new chats
 						setLocalChats(updatedChats);

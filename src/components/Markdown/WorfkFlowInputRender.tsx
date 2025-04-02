@@ -11,7 +11,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/utils/store";
-import { triggerEvent } from "@/api/taskQueue";
 
 
 interface WorkflowInputRenderProps {
@@ -21,10 +20,10 @@ interface WorkflowInputRenderProps {
 const WorkflowInputRender: React.FC<WorkflowInputRenderProps> = ({
 	cacheId,
 }: WorkflowInputRenderProps) => {
-	const [inputText, setInputText] = useState("");
+	const [inputText, setInputText] = useState<string>("");
 	const [files, setFiles] = useState<File[]>([]);
 	const [drawings, setDrawings] = useState<File[]>([]);
-	const [isLoading, setIsLoading] = useState(false);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const session = useStore((state) => state.session);
 
 	const handleSubmit = async(): Promise<void> => {
@@ -36,9 +35,6 @@ const WorkflowInputRender: React.FC<WorkflowInputRenderProps> = ({
 			formData.append("body", inputText);
 			files.forEach((file) => formData.append("files", file));
 			drawings.forEach((file) => formData.append("drawings", file));
-
-
-
 			setInputText("");
 			setFiles([]);
 			setDrawings([]);

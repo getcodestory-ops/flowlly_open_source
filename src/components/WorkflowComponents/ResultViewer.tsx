@@ -126,7 +126,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 							</div>
 							{showLogs && (
 								<div className="border-t">
-									<div className="max-h-[400px] overflow-y-auto p-4">
+									<div className="max-h-[80vh] overflow-y-auto p-4">
 										<StreamComponent
 											authToken={session.access_token}
 											streamingKey={currentResult.id}

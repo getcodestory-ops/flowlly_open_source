@@ -885,7 +885,7 @@ export default function PlatformChatInterface({
 										}`}
 										ref={messageRefs.current[index] || null}
 									>
-										{history.message.content && (
+										{history.message && (
 											<AgentMessageInteractiveView message={history.message} />
 										)}
 									</div>

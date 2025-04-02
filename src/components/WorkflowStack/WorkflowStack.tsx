@@ -13,8 +13,11 @@ import { getInProgressWorkflows } from "@/api/taskQueue";
 import { clearWorkflowProcess } from "@/api/taskQueue";
 import { getInprogressWorkflowResult } from "@/api/taskQueue";
 import { ResultViewer } from "../WorkflowComponents/ResultViewer";
+import { useToast } from "@/components/ui/use-toast";
+import type { EventResult } from "../WorkflowComponents/types";
 
 export const WorkflowStack = (): React.ReactNode => {
+	const { toast } = useToast();
 	const { workflows, addWorkflow } = useWorkflowStack();
 	const [isCollapsed, setIsCollapsed] = useState(false);
 	const session = useStore((state) => state.session);
@@ -24,9 +27,18 @@ export const WorkflowStack = (): React.ReactNode => {
 		if (session && projectId) {
 			getInProgressWorkflows({ session, projectId }).then(
 				(data)=>{
-					data.forEach((workflow) => {
-						addWorkflow(workflow, session);
-					});
+					if (data) {
+						data.forEach((workflow) => {
+							addWorkflow(workflow, session);
+						});
+					}
+					else {
+						toast({
+							title: "Error",
+							variant: "destructive",
+							description: "Something went wrong while fetching running workflows",
+						});
+					}
 				},
 			);
 		}
@@ -213,24 +225,36 @@ const ConfirmCancelModal = ({ workflow }: {workflow: Workflow}): React.ReactNode
 };
 
 const SteamingWorkflowEvents = ({ workflow }: { workflow: Workflow }): React.ReactNode => {
+	const { toast } = useToast();
 	const session = useStore((state) => state.session);
 	const projectId = useStore((state) => state.activeProject?.project_id);
-	const [result, setResult] = useState<any>(null);
+	const [result, setResult] = useState<EventResult | null>(null);
 	useEffect(() => {
 		if (session && projectId && workflow.workflowId) {
 			getInprogressWorkflowResult({ session, projectId, workflowId: workflow.workflowId }).then((result) => {
-				setResult(result);
-			});
+				if (result) {
+					setResult(result);
+				}
+				else {
+					toast({
+						title: "Error",
+						variant: "destructive",
+						description: "Something went wrong while fetching in-progress workflow results!",
+					});
+				}
+			});	
 		}
 	}, [session, projectId, workflow.workflowId]);
 
 	return (
 		<div className="max-w-7xl overflow-auto">
-			<ResultViewer 
-				cacheId={workflow.workflowId}
-				currentResult={result}
-				key={workflow.workflowId}
-			/>
+			{result && (
+				<ResultViewer 
+					cacheId={workflow.workflowId}
+					currentResult={result}
+					key={workflow.workflowId}
+				/>
+			)}
 		</div>
 	);
 };
