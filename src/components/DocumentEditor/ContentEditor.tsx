@@ -3,7 +3,6 @@ import { useEditor, EditorContent, Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import UnderLine from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
-import ImageResize from "tiptap-extension-resize-image";
 import { Markdown } from "tiptap-markdown";
 import Table from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
