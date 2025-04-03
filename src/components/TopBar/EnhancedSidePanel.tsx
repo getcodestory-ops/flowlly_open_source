@@ -346,7 +346,7 @@ const menuItems: {
 		link: "workbench",
 	},
 	{
-		label: "Schedule",
+		label: "Tasks",
 		fnKey: "schedule",
 		icon: <Calendar className="h-5 w-5" />,
 		link: "schedule",

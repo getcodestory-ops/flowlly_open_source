@@ -24,7 +24,9 @@ export function UserInputNode({
 }: UserInputNodeProps) {
 	const [config, setConfig] = useState<UserInputNodeConfig>({
 		instructions: "",
-		required: false,
+		required: true,
+		files_required: false,
+		drawings_required: false,
 		type: "user_input",
 		next_steps: [],
 		retry_count: 0,
@@ -41,13 +43,13 @@ export function UserInputNode({
 			<CardContent className="space-y-4 pt-6">
 				<div className="space-y-4">
 					<div className="space-y-2">
-						<Label htmlFor="instructions">Instructions</Label>
+						<Label htmlFor="instructions">Description of information needed to successfully complete the workflow</Label>
 						<Textarea
 							id="instructions"
 							onChange={(e) =>
 								setConfig((prev) => ({ ...prev, instructions: e.target.value }))
 							}
-							placeholder="Enter instructions for the agent..."
+							placeholder="e.g. 'For starting bid levelling workflow provide atleast 2 bids files in pdf format with instruction on end goal."
 							value={config.instructions}
 						/>
 					</div>
@@ -59,7 +61,25 @@ export function UserInputNode({
 								setConfig((prev) => ({ ...prev, required: checked as boolean }))
 							}
 						/>
-						<Label htmlFor="required">Required Field</Label>
+						<Label htmlFor="required">Need instructions from user before starting the workflow</Label>
+					</div>					<div className="flex items-center space-x-2">
+						<Checkbox
+							checked={config.files_required}
+							id="files_required"
+							onCheckedChange={(checked) =>
+								setConfig((prev) => ({ ...prev, files_required: checked as boolean }))
+							}
+						/>
+						<Label htmlFor="files_required">Files are required to be included.</Label>
+					</div>					<div className="flex items-center space-x-2">
+						<Checkbox
+							checked={config.drawings_required}
+							id="drawings_required"
+							onCheckedChange={(checked) =>
+								setConfig((prev) => ({ ...prev, drawings_required: checked as boolean }))
+							}
+						/>
+						<Label htmlFor="drawings_required">Drawings are required to be included.</Label>
 					</div>
 				</div>
 				<div className="flex justify-end space-x-2">

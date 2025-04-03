@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import React, { useEffect, useState } from "react";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
 import { CircleIcon } from "lucide-react";
 
@@ -17,7 +16,6 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	onStreamComplete,
 }) => {
 	const [displayValue, setDisplayValue] = useState<string>("");
-	const queryClient = useQueryClient();
 	const [isPending, setIsPending] = useState(true);
 	const [streamComplete, setStreamComplete] = useState(false);
 

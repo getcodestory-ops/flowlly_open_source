@@ -21,14 +21,12 @@ import {
 } from "lucide-react";
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent } from "@/components/ui/card";
 import { usePlatformChat } from "./usePlatformChat";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { uploadFileInFolder } from "@/api/folderRoutes";
 import { getTaskStatus } from "@/api/schedule_routes";
 import { ProcessedFile } from "@/api/agentRoutes";
-import { AgentChat } from "@/types/agentChats";
 
 // Define models for the UI
 const models = [
@@ -881,7 +879,7 @@ export default function PlatformChatInterface({
 										}`}
 										ref={messageRefs.current[index] || null}
 									>
-										{history.message.content && (
+										{history.message && (
 											<AgentMessageInteractiveView message={history.message} />
 										)}
 									</div>

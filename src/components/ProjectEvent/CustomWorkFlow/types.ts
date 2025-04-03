@@ -167,6 +167,8 @@ export interface UserInputNodeConfig extends BaseNodeConfig {
   type: "user_input";
   instructions: string;
   required: boolean;
+  files_required: boolean;
+  drawings_required: boolean;
 }
 export interface ProcoreProject {
   id: string;
@@ -205,6 +207,10 @@ export interface DocumentComparisonNodeConfig extends BaseNodeConfig {
   analyze_implications: boolean;
 }
 
+export interface DocumentSearchNodeConfig extends BaseNodeConfig {
+  type: "document_search";
+}
+
 interface BranchNodes {
   nodes: WorkflowNode[];
 }
@@ -232,6 +238,7 @@ export enum NodeType {
   PROCORE = "procore",
   USER_INPUT = "user_input",
   DOCUMENT_COMPARISON = "document_comparison",
+  DOCUMENT_SEARCH = "document_search",
 }
 
 export enum NodeStatus {
@@ -349,6 +356,11 @@ export type WorkflowNode = {
   | {
       type: NodeType.DOCUMENT_COMPARISON;
       config: DocumentComparisonNodeConfig;
+      title: string;
+    }
+  | {
+      type: NodeType.DOCUMENT_SEARCH;
+      config: DocumentSearchNodeConfig;
       title: string;
     }
 );

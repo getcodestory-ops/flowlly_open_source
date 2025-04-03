@@ -1,8 +1,6 @@
-import React, { useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { triggerEvent } from "@/api/taskQueue";
-import { useStore } from "@/utils/store";
-import type { EventResult } from "./types";
+"use client";
+
+import { useState } from "react";
 import {
 	MessageSquare,
 	FileText,
@@ -11,62 +9,37 @@ import {
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { useWorkflowStack } from "@/hooks/useWorkflowStack";
+import { Button } from "@/components/ui/button";
+import { useStore } from "@/utils/store";
 
-interface TriggerUIProps {
-  eventId: string;
-  name: string;
-  onTrigger: (_: EventResult) => void;
+
+interface WorkflowInputRenderProps {
+	cacheId: string;
 }
 
-export const TriggerUI: React.FC<TriggerUIProps> = ({ eventId, name, onTrigger }: TriggerUIProps) => {
-	const [inputText, setInputText] = useState("");
+const WorkflowInputRender: React.FC<WorkflowInputRenderProps> = ({
+	cacheId,
+}: WorkflowInputRenderProps) => {
+	const [inputText, setInputText] = useState<string>("");
 	const [files, setFiles] = useState<File[]>([]);
 	const [drawings, setDrawings] = useState<File[]>([]);
-	const [isLoading, setIsLoading] = useState(false);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const session = useStore((state) => state.session);
-	const activeProject = useStore((state) => state.activeProject);
-	const setRefreshInterval = useStore((state) => state.setRefreshInterval);
-	const { addWorkflow } = useWorkflowStack((state) => ({
-		addWorkflow: state.addWorkflow,
-	}));
-	const fileInputId = useRef(`file-upload-${eventId}-${Math.random().toString(36)
-		.substring(7)}`).current;
-	const drawingInputId = useRef(`drawing-upload-${eventId}-${Math.random().toString(36)
-		.substring(7)}`).current;
-
 
 	const handleSubmit = async(): Promise<void> => {
-		if (!session || !activeProject) return;
+		if (!session ) return;
 
 		setIsLoading(true);
 		try {
 			const formData = new FormData();
 			formData.append("body", inputText);
-
 			files.forEach((file) => formData.append("files", file));
-
-			const result = await triggerEvent({
-				session,
-				projectId: activeProject.project_id,
-				eventId,
-				formData,
-			});
-
-			addWorkflow({
-				id: result.id,
-				name: name,
-				status: result.status,
-				requiresInput: false,
-				message: result.message,
-				isPollingEnabled: true,
-			}, session);
-			onTrigger(result);
+			drawings.forEach((file) => formData.append("drawings", file));
+			setInputText("");
+			setFiles([]);
+			setDrawings([]);
 		} finally {
-			setRefreshInterval(5000);
-			setTimeout(() => {
-				setIsLoading(false);
-			}, 8000);
+			setIsLoading(false);
 		}
 	};
 
@@ -137,7 +110,7 @@ export const TriggerUI: React.FC<TriggerUIProps> = ({ eventId, name, onTrigger }
 			<div className="flex gap-2 items-center">
 				<Input
 					className="hidden"
-					id={fileInputId}
+					id={`file-upload-${cacheId}`}
 					multiple
 					onChange={(e) =>
 						e.target.files &&
@@ -148,7 +121,7 @@ export const TriggerUI: React.FC<TriggerUIProps> = ({ eventId, name, onTrigger }
 				<Button
 					className="h-9"
 					onClick={() =>
-						document.getElementById(fileInputId)?.click()
+						document.getElementById(`file-upload-${cacheId}`)?.click()
 					}
 					size="sm"
 					variant="outline"
@@ -158,7 +131,7 @@ export const TriggerUI: React.FC<TriggerUIProps> = ({ eventId, name, onTrigger }
 				</Button>
 				<Input
 					className="hidden"
-					id={drawingInputId}
+					id={`drawing-upload-${cacheId}`}
 					multiple
 					onChange={(e) =>
 						e.target.files &&
@@ -169,7 +142,7 @@ export const TriggerUI: React.FC<TriggerUIProps> = ({ eventId, name, onTrigger }
 				<Button
 					className="h-9"
 					onClick={() =>
-						document.getElementById(drawingInputId)?.click()
+						document.getElementById(`drawing-upload-${cacheId}`)?.click()
 					}
 					size="sm"
 					variant="outline"
@@ -194,3 +167,5 @@ export const TriggerUI: React.FC<TriggerUIProps> = ({ eventId, name, onTrigger }
 		</div>
 	);
 };
+
+export default WorkflowInputRender;

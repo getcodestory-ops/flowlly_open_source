@@ -1,5 +1,4 @@
 import globals from "globals";
-import pluginJs from "@eslint/js";
 import tsParser from "@typescript-eslint/parser";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
 import pluginReact from "eslint-plugin-react";
@@ -40,15 +39,11 @@ const config = {
 		"max-len": ["warn", { code: 500, ignoreUrls: true }],
 		"max-lines-per-function": ["warn", 900],
 		"max-lines": ["warn", { max: 700, skipBlankLines: true, skipComments: true }],
-		"no-unused-vars": [
-			"warn",
-			{
-				vars: "all", // Check all variables
-				args: "after-used", // Only warn for unused arguments after the last used one
-				argsIgnorePattern: "^_", // Ignore arguments prefixed with "_"
-				ignoreRestSiblings: true,
-			},
-		],
+		"no-unused-vars": "off",
+		"@typescript-eslint/no-unused-vars": ["warn", {
+			argsIgnorePattern: "^_",
+			varsIgnorePattern: "^[A-Z][A-Z_]+$",
+		}],
 		"no-console": [
 			"error",
 			{

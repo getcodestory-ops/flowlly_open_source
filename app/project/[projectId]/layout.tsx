@@ -13,8 +13,10 @@ export default function RootLayout({
 }) {
 	return (
 		<body className="bg-background text-foreground relative">
-			<Providers>{children}</Providers>
-			<WorkflowStack />
+			<Providers>
+				<WorkflowStack />
+				{children}
+			</Providers>
 			{/* <TemporaryButtonForWorkflowStack /> */}
 		</body>
 	);
