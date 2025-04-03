@@ -3,6 +3,9 @@ import { AddTaskQueue, TaskQueue } from "@/types/taskQueue";
 import { Notification } from "@/types/notification";
 import { CreateEvent } from "@/types/projectEvents";
 import axios from "axios";
+import { Workflow } from "@/hooks/useWorkflowStack";
+import type { EventResult } from "@/components/WorkflowComponents/types";
+
 
 export const getTaskQueue = async(
 	session: Session,
@@ -159,6 +162,56 @@ export const getProjectEvents = async({
 	return response.data;
 };
 
+
+export const getInProgressWorkflows = async({
+	session,
+	projectId,
+}: {
+	session: Session;
+	projectId: string;
+}): Promise<Workflow[] | undefined> => {
+	try {
+		const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_events/in_progress/${projectId}`;
+		const response = await axios.get(url, {
+			headers: {
+				Authorization: `Bearer ${session.access_token}`,
+			},
+		});
+		return response.data;
+	} catch (error) {
+		if (axios.isAxiosError(error)) {
+			console.error(`Failed to fetch in-progress workflows: ${error.response?.data?.message || error.message}`);
+		}
+		console.error("An unexpected error occurred while fetching in-progress workflows");
+		return undefined;
+	}
+};
+
+export const getInprogressWorkflowResult = async({
+	session,
+	projectId,
+	workflowId,
+}: {
+	session: Session;
+	projectId: string;
+	workflowId: string;
+}): Promise<EventResult | undefined> => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/in_progress/${projectId}`;
+	try {
+		const response = await axios.get(url, {
+			params: { workflow_id: workflowId },
+			headers: {
+				Authorization: `Bearer ${session.access_token}`,
+			},
+		});
+		return response.data;
+	} catch (error) {
+		console.error("Failed to fetch in-progress workflow results!");
+		return undefined;
+	}
+};
+
+
 export const getEventResult = async({
 	session,
 	projectId,
@@ -277,17 +330,41 @@ export const triggerWorkflowNode = async({
   nodeId: string;
 }) => {
 	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/trigger/${projectId}/execute_node`;
-	const response = await axios.post(
-		url,
-		{
-			workflow_id: workflowId,
-			node_id: nodeId,
-		},
-		{
-			headers: {
-				Authorization: `Bearer ${session.access_token}`,
+	try {
+		const response = await axios.post(
+			url,
+			{
+				workflow_id: workflowId,
+				node_id: nodeId,
 			},
+			{
+				headers: {
+					Authorization: `Bearer ${session.access_token}`,
+				},
+			},
+		);
+		return response.data;
+	} catch (error) {
+		console.error("Failed to trigger workflow node!");
+		return undefined;
+	}
+};
+
+export const getEventsStatus = async({
+	session,
+	taskIds,
+}: {
+	session: Session;
+	taskIds: string[];
+}) => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_events/status`;
+	const response = await axios.get(url, {
+		params: { task_ids: taskIds.join(",") },
+	
+		headers: {
+			Authorization: `Bearer ${session.access_token}`,
 		},
-	);
+	});
 	return response.data;
 };
+

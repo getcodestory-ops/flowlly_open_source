@@ -13,7 +13,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { getProjectEvents } from "@/api/taskQueue";
 import { useStore } from "@/utils/store";
-import { GraphList } from "./GraphList";
+import { EventListViewer } from "./EventListViewer";
 
 import type {
 	ProjectEvents,
@@ -124,11 +124,11 @@ export default function AssignmentHome(): React.ReactNode {
 						</div>
 					</CardHeader>
 					<CardContent className="px-6 flex-1 overflow-y-auto">
-						<GraphList />
+						<EventListViewer />
 					</CardContent>
 				</Card>
 			) : (
-				<WorkflowViewer />
+				<WorkflowViewer session={session} />
 			)}
 		</div>
 	);

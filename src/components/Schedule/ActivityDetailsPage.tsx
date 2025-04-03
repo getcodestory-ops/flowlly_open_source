@@ -278,7 +278,7 @@ export default function ActivitiesDetailPage() {
 							</div>
 							<Tabs className="w-full" defaultValue="history">
 								<TabsList className="grid w-full grid-cols-3">
-									<TabsTrigger value="details">Task Details</TabsTrigger>
+									<TabsTrigger value="details">Task Information</TabsTrigger>
 									<TabsTrigger value="history">Task History</TabsTrigger>
 									<TabsTrigger value="impact">Delay Impact</TabsTrigger>
 								</TabsList>

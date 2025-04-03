@@ -108,7 +108,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
 			>
 				<Card className="h-full">
 					<CardHeader className="flex flex-row justify-between items-center">
-						<CardTitle className="text-3xl">Activity Details</CardTitle>
+						<CardTitle className="text-3xl">Task Details</CardTitle>
 						<Button
 							onClick={() => setTaskToView(null)}
 							size="icon"
@@ -122,7 +122,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
 					</CardContent>
 				</Card>
 			</div>
-			<Draggable
+			{/* <Draggable
 				bounds="parent"
 				nodeRef={nodeRef}
 				onStop={handleDrag}
@@ -141,7 +141,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
 						}
 					/>
 				</div>
-			</Draggable>
+			</Draggable> */}
 			{(isChatOpen || isClosing) && (
 				<div
 					className={`fixed bottom-2 right-4 w-[calc(100vw-200px)] z-40 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden transition-opacity duration-300 ${

@@ -26,13 +26,15 @@ import { RecipeNode } from "./RecipeNode";
 import { ProcoreNode } from "./ProcoreNode";
 import { UserInputNode } from "./UserInputNode";
 import { DocumentComparisonNode } from "./DocumentComparisonNode";
+import { DocumentSearchNode } from "./DocumentSearchNode";
+
 interface NodeTypeSelectorProps {
-  currentNodeType: string;
-  setCurrentNodeType: (type: string) => void;
-  onSave: (node: WorkflowNode) => void;
-  onCancel: () => void;
-  editingNode?: WorkflowNode;
-  existingNodes: WorkflowNode[];
+	currentNodeType: string;
+	setCurrentNodeType: (type: string) => void;
+	onSave: (node: WorkflowNode) => void;
+	onCancel: () => void;
+	editingNode?: WorkflowNode;
+	existingNodes: WorkflowNode[];
 }
 
 const nodeComponents: Record<string, React.FC<any>> = {
@@ -55,6 +57,7 @@ const nodeComponents: Record<string, React.FC<any>> = {
 	procore: ProcoreNode,
 	user_input: UserInputNode,
 	document_comparison: DocumentComparisonNode,
+	document_search: DocumentSearchNode,
 };
 
 export function NodeTypeSelector({

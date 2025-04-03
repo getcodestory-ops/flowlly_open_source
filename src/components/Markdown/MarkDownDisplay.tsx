@@ -33,7 +33,6 @@ const SourceComponent: React.FC<{ sourceText: string }> = ({ sourceText }) => {
 		<span className="inline-block relative group">
 			<span className="inline-flex items-center gap-1 text-xs text-gray-600 px-1.5 py-0.5 rounded cursor-help mx-1">
 				<Info className="w-3 h-3" />
-			
 			</span>
 			<span className="absolute left-0 bottom-full mb-2 w-64 bg-white p-2 rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
 				<p className="text-xs text-gray-700">{sourceText}</p>
@@ -44,19 +43,12 @@ const SourceComponent: React.FC<{ sourceText: string }> = ({ sourceText }) => {
 
 // Custom component for workflow results
 const WorkflowResultsComponent: React.FC<{ content?: any }> = ({ content }) => {
-	let jsonContent: any;
-	try {
-		jsonContent = JSON.parse(content);
-	} catch (error) {
-		console.error("Error parsing JSON content:", error);
-	}
-
 	return (
-		<div className="bg-gray-50 border border-emerald-200 rounded-lg p-4 my-3 shadow-sm">
-			<div className="flex items-center gap-2">
+		<div className="bg-white  rounded-lg p-4 my-3 shadow-sm">
+			<div className="flex flex-col gap-2">
 				{content && (
-					<div className="text-sm text-gray-500">
-						{JSON.stringify(jsonContent?.output?.body)}
+					<div className="text-sm text-gray-700 whitespace-pre-wrap">
+						{content}
 					</div>
 				)}
 			</div>
@@ -130,6 +122,8 @@ function remarkDirectiveComponents() {
 			) {
 				const data = node.data || (node.data = {});
 				const hName = node.name;
+				const attributes = node.attributes || {};
+				const id = attributes.id || "";
 				
 				// Map directive names to component names based on the directive name
 				switch (hName) {
@@ -209,10 +203,18 @@ function remarkDirectiveComponents() {
 							content: "Generating Chart",
 						};
 						break;
+					case "workflow_result":
+						data.hName = "custom-workflow-result";
+						data.hProperties = {
+							content: node.children?.[0]?.value || "",
+							id: id,
+						};
+						break;
 						
 					default:
 						// Use the directive name directly if not mapped
 						data.hName = `custom-${hName}`;
+						data.id = id;
 						data.hProperties = node.attributes || {};
 				}
 			}
@@ -243,6 +245,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
 		"custom-workflow-results": ({ content }: { content: string }) => <WorkflowResultsComponent content={content} />,
 		"custom-addition": ({ children }: { children: React.ReactNode }) => <AdditionHighlight>{children}</AdditionHighlight>,
 		"custom-deletion": ({ children }: { children: React.ReactNode }) => <DeletionHighlight>{children}</DeletionHighlight>,
+		"custom-workflow-result": ({ content }: { content: string }) => <WorkflowResultsComponent content={content} />,
 		"custom-document-reference": ({ documentId, position }: { documentId: string, position: any }) => {
 			let documentContent = "";
 			if (position && position.start && position.end) {

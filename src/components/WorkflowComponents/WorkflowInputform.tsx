@@ -1,8 +1,6 @@
-import React, { useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { triggerEvent } from "@/api/taskQueue";
-import { useStore } from "@/utils/store";
-import type { EventResult } from "./types";
+"use client";
+
+import { useState, useRef } from "react";
 import {
 	MessageSquare,
 	FileText,
@@ -11,62 +9,82 @@ import {
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import LoaderAnimation from "@/components/Animations/LoaderAnimation";
+import { useStore } from "@/utils/store";
+import { triggerEvent } from "@/api/taskQueue";
 import { useWorkflowStack } from "@/hooks/useWorkflowStack";
 
-interface TriggerUIProps {
-  eventId: string;
-  name: string;
-  onTrigger: (_: EventResult) => void;
+interface WorkflowInputFormProps {
+	eventId?: string;
+	projectId: string;
+	setPendingEvent: (_: boolean) => void;
+	resultId: string;
+	cacheId?: string;
 }
 
-export const TriggerUI: React.FC<TriggerUIProps> = ({ eventId, name, onTrigger }: TriggerUIProps) => {
+const WorkflowInputForm: React.FC<WorkflowInputFormProps> = ({
+	eventId,
+	projectId,
+	setPendingEvent,
+	resultId,
+	cacheId,
+}: WorkflowInputFormProps) => {
 	const [inputText, setInputText] = useState("");
 	const [files, setFiles] = useState<File[]>([]);
 	const [drawings, setDrawings] = useState<File[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const session = useStore((state) => state.session);
-	const activeProject = useStore((state) => state.activeProject);
-	const setRefreshInterval = useStore((state) => state.setRefreshInterval);
-	const { addWorkflow } = useWorkflowStack((state) => ({
+	const { updateWorkflowByCacheId, addWorkflow } = useWorkflowStack((state) => ({
+		updateWorkflowByCacheId: state.updateWorkflowByCacheId,
 		addWorkflow: state.addWorkflow,
 	}));
+
+	// Generate stable IDs for file inputs using useRef
 	const fileInputId = useRef(`file-upload-${eventId}-${Math.random().toString(36)
 		.substring(7)}`).current;
 	const drawingInputId = useRef(`drawing-upload-${eventId}-${Math.random().toString(36)
 		.substring(7)}`).current;
 
-
 	const handleSubmit = async(): Promise<void> => {
-		if (!session || !activeProject) return;
+		if (!session || !projectId || !eventId) return;
 
 		setIsLoading(true);
 		try {
 			const formData = new FormData();
 			formData.append("body", inputText);
-
 			files.forEach((file) => formData.append("files", file));
+			drawings.forEach((file) => formData.append("drawings", file));
+			formData.append("streaming_key", resultId);
+			formData.append("workflow_id", cacheId ?? "");
 
-			const result = await triggerEvent({
+			const workflowResult = await triggerEvent({
 				session,
-				projectId: activeProject.project_id,
-				eventId,
+				projectId,
+				eventId: eventId,
 				formData,
 			});
 
-			addWorkflow({
-				id: result.id,
-				name: name,
-				status: result.status,
-				requiresInput: false,
-				message: result.message,
-				isPollingEnabled: true,
-			}, session);
-			onTrigger(result);
+			if (cacheId) {
+				updateWorkflowByCacheId(cacheId, workflowResult, session);
+			}
+			else{
+				addWorkflow({
+					id: workflowResult.id,
+					name: workflowResult.name,
+					status: workflowResult.status,
+					requiresInput: false,
+					message: workflowResult.message,
+					isPollingEnabled: true,
+				}, session);
+			}
+
+			setInputText("");
+			setFiles([]);
+			setDrawings([]);
 		} finally {
-			setRefreshInterval(5000);
-			setTimeout(() => {
-				setIsLoading(false);
-			}, 8000);
+			setIsLoading(false);
+			setPendingEvent(false);
 		}
 	};
 
@@ -75,7 +93,7 @@ export const TriggerUI: React.FC<TriggerUIProps> = ({ eventId, name, onTrigger }
 			<div className="flex items-center gap-2 mb-4">
 				<MessageSquare className="h-5 w-5 text-gray-600" />
 				<h3 className="font-medium">
-					What do you want to do? Attach files if needed.
+					Attach files and provide instructions to continue.
 				</h3>
 			</div>
 			{files.length > 0 && (
@@ -130,6 +148,7 @@ export const TriggerUI: React.FC<TriggerUIProps> = ({ eventId, name, onTrigger }
 			)}
 			<Textarea
 				className="min-h-[100px] resize-none"
+				key={cacheId ?? "no-cache-id"}
 				onChange={(e) => setInputText(e.target.value)}
 				placeholder="Type your instructions here..."
 				value={inputText}
@@ -194,3 +213,5 @@ export const TriggerUI: React.FC<TriggerUIProps> = ({ eventId, name, onTrigger }
 		</div>
 	);
 };
+
+export default WorkflowInputForm;
