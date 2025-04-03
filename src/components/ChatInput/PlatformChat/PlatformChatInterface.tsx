@@ -99,10 +99,6 @@ export default function PlatformChatInterface({
 
 	// Example prompts for empty state
 	const examplePrompts = [
-		"I want to level my bid",
-		"I want to search project documents",
-		"I want to write my daily report",
-		"I want to complete my inspection report",
 	];
 
 	// Function to set chat input with an example prompt
