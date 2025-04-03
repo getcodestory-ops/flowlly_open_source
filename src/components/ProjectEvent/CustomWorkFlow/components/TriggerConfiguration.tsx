@@ -40,12 +40,13 @@ export function TriggerConfiguration({
 					<Label htmlFor="triggerKeyword">
 						{formData.triggerBy === "email_subject"
 							? "Email Subject"
-							: "Optional: Starting Prompt"}
+							: "Describe in detail what tasks are accomplished by this workflow and what kind of input is required to run the workflow, e.g. files , instructions, etc."}
 					</Label>
 					<Textarea
 						id="startingPrompt"
 						onChange={(e) => onChange({ triggerKeyword: e.target.value })}
 						required
+						rows={10}
 						value={formData.triggerKeyword}
 					/>
 				</div>

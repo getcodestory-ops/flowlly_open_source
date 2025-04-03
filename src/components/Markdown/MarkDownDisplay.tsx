@@ -33,7 +33,6 @@ const SourceComponent: React.FC<{ sourceText: string }> = ({ sourceText }) => {
 		<span className="inline-block relative group">
 			<span className="inline-flex items-center gap-1 text-xs text-gray-600 px-1.5 py-0.5 rounded cursor-help mx-1">
 				<Info className="w-3 h-3" />
-			
 			</span>
 			<span className="absolute left-0 bottom-full mb-2 w-64 bg-white p-2 rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
 				<p className="text-xs text-gray-700">{sourceText}</p>

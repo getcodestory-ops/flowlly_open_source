@@ -35,7 +35,6 @@ import { WorkflowFormData } from "./types";
 
 import { Loader2 } from "lucide-react";
 import { GraphData } from "../../WorkflowComponents/types";
-import { SheetContent } from "@/components/ui/sheet";
 
 const convertGraphToWorkflow = (graphData: GraphData): WorkflowFormData => ({
 	id: graphData.id,
@@ -119,8 +118,7 @@ export default function CustomWorkflowForm({
 	const [startDate, setStartDate] = useState<Date>(new Date());
 
 	return (
-		<SheetContent className={` ${currentStep < 2 ? "w-[500px]" : "w-[90vw]"}`} side="right">
-			<h2 className="text-lg font-semibold">Edit Custom Workflow</h2>
+		<div className="mx-auto border border-gray-200 rounded-lg p-4">
 			<ScrollArea className="h-full">
 				<Card
 					className={`w-full ${
@@ -147,7 +145,7 @@ export default function CustomWorkflowForm({
 										<Select
 											name="triggerBy"
 											onValueChange={(
-												value: "email_subject" | "phone" | "time" | "ui",
+												value: "ui" | "time",
 											) => {
 												handleFormUpdate({ triggerBy: value });
 												if (value === "time") {
@@ -164,9 +162,7 @@ export default function CustomWorkflowForm({
 												<SelectValue placeholder="Select trigger type" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="ui">Via UI</SelectItem>
-												<SelectItem value="email_subject">Via Email</SelectItem>
-												<SelectItem value="phone">Via Phone</SelectItem>
+												<SelectItem value="ui">Chat</SelectItem>
 												<SelectItem value="time">At a specific time</SelectItem>
 											</SelectContent>
 										</Select>
@@ -454,6 +450,6 @@ export default function CustomWorkflowForm({
 					</div>
 				</Card>
 			</ScrollArea>
-		</SheetContent>
+		</div>
 	);
 }

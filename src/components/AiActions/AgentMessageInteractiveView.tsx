@@ -78,17 +78,19 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
 			const getFunctionName = (name: string) => {
 				switch (name) {
 					case "run_workflow":
-						return "Workflow started";
+						return <div className="text-green-500 text-sm ">Workflow started</div>;
 					case "get_running_workflows":
 						return "Checking running workflows";
+					case "send_data_to_workflow":
+						return <div className="text-green-500 text-sm ">Continuing workflow with new data</div>;
 					case "update_schedule":
-						return "Update Schedule";
+						return <div className="text-green-500 text-sm ">Update Schedule</div>;
 					default:
 						return name;
 				}
 			};
 			return (
-				<div className="flex flex-col">
+				<div className="flex flex-col tex">
 					{getFunctionName(message.function_call?.name || "")}
 				</div>
 			);
