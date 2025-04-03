@@ -59,18 +59,18 @@ export const WorkflowStack = (): React.ReactNode => {
 							const workflow = workflows[workflowId];
 							return (
                 				<Card
-                					className="p-2 flex items-center justify-between shadow-none rounded-none w-full gap-2"
+                					className="p-2 flex items-center justify-between shadow-none rounded-none w-full gap-1"
 									key={workflow.id}
                 				>
-                					<div className="flex items-center gap-1 flex-1 min-w-0 group">
-                						<StausIcon status={workflow.status} />
-                						<span className="text-sm flex-1 truncate overflow-hidden whitespace-nowrap">{workflow.name}</span>
-                					</div>
-                					<div className="flex items-center gap-1">
-								
-                						<OpenWorkflowButton workflow={workflow} />
-                						<CloseWorkflowButton workflow={workflow} />
-                					</div>
+                					<StausIcon status={workflow.status} />
+									<div className="flex flex-col flex-1 min-w-0 gap-0">
+										<span className=" flex-1 min-w-0 group text-sm flex-1 truncate overflow-hidden whitespace-nowrap">{workflow.name}</span>
+										<div className="text-xs flex-1 truncate overflow-hidden whitespace-nowrap gap-1 flex items-center text-gray-500 px-0">{workflow.message}</div>
+									</div>
+									<div className="flex items-center">
+										<OpenWorkflowButton workflow={workflow} />
+										<CloseWorkflowButton workflow={workflow} />
+									</div>
                 				</Card>
                 	        );
 						})}
@@ -153,17 +153,31 @@ const StausIcon = ({ status }: {status: WorkflowStatus}):  React.ReactNode  => {
 const OpenWorkflowButton = ({ workflow }: {workflow: Workflow}): React.ReactNode => {
 	return <Dialog>
 		<DialogTrigger asChild>
-			<Button className="gap-1 flex items-center text-gray-500 px-0"
-				size="sm"
-				variant="link"
-			>
-				<span>{workflow.message}</span> <ExternalLink className="w-3 h-3" />
-			</Button>
+			<div className="gap-1 flex items-center text-gray-500 px-0 py-0 hover:text-gray-700 cursor-pointer hover:underline text-xs">
+				<span>{openMessage(workflow.status)}</span> <ExternalLink className="w-3 h-3" />
+			</div>
 		</DialogTrigger>
-		<DialogContent className="max-w-7xl h-full">
+		<DialogContent className="max-w-4xl py-12">
 			<SteamingWorkflowEvents workflow={workflow} />
 		</DialogContent>
 	</Dialog>;
+};
+
+const openMessage = (status: WorkflowStatus): string => {
+	switch (status) {
+		case WorkflowStatus.RUNNING:
+			return "View logs";
+		case WorkflowStatus.PENDING:
+			return "Input required";
+		case WorkflowStatus.SUCCESS:
+			return "View results";
+		case WorkflowStatus.ERROR:
+			return "View errors";
+		case WorkflowStatus.PAUSED:
+			return "View logs";
+		default:
+			return "View logs";
+	}
 };
 
 const CloseWorkflowButton = ({ workflow }: {workflow: Workflow}): React.ReactNode => {
@@ -247,7 +261,7 @@ const SteamingWorkflowEvents = ({ workflow }: { workflow: Workflow }): React.Rea
 	}, [session, projectId, workflow.workflowId]);
 
 	return (
-		<div className="max-w-7xl overflow-auto">
+		<div className="verflow-auto">
 			{result && (
 				<ResultViewer 
 					cacheId={workflow.workflowId}
