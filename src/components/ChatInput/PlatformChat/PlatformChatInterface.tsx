@@ -98,8 +98,7 @@ export default function PlatformChatInterface({
   }>({});
 
 	// Example prompts for empty state
-	const examplePrompts = [
-	];
+	const examplePrompts: string[] = [];
 
 	// Function to set chat input with an example prompt
 	const setExamplePrompt = (prompt: string) => {
@@ -610,7 +609,7 @@ export default function PlatformChatInterface({
 					</p>
 				</div>
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
-					{examplePrompts.map((prompt, index) => (
+					{examplePrompts.length > 0 && examplePrompts.map((prompt, index) => (
 						<Button
 							className="justify-start text-left bg-white border-slate-100 hover:bg-indigo-50 hover:border-indigo-100 transition-colors text-sm"
 							key={index}
