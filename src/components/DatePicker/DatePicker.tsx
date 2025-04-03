@@ -49,7 +49,7 @@ export default function CustomDatePicker({
 
 	return (
 		<div className="flex items-center space-x-2 bg-white z-20">
-			<span className="text-sm font-bold">Schedule on:</span>
+			<span className="text-sm font-bold">Tasks on:</span>
 			<Popover onOpenChange={setIsCalendarOpen} open={isCalendarOpen}>
 				<PopoverTrigger asChild>
 					<Button
