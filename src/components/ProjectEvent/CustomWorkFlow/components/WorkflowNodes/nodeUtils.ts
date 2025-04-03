@@ -62,7 +62,7 @@ export const nodeConfigs: Record<string, NodeConfig> = {
 	},
 	reportGeneration: {
 		value: "reportGeneration",
-		label: "Report Generation",
+		label: "📄 Write a report",
 		icon: "📄",
 		getDescription: (node) =>
 			`Generate report in ${
@@ -144,7 +144,7 @@ export const nodeConfigs: Record<string, NodeConfig> = {
 	},
 	user_input: {
 		value: "user_input",
-		label: "User Input",
+		label: "💬 Workflow instructions and files requirements",
 		icon: "💬",
 		getDescription: (node) =>
 			`Collect user input with prompt: ${
@@ -159,6 +159,12 @@ export const nodeConfigs: Record<string, NodeConfig> = {
 			`Compare documents${
 				node.config.analyze_implications ? " with implications analysis" : ""
 			}`,
+	},
+	document_search: {
+		value: "document_search",
+		label: "🔍 Document Search",
+		icon: "🔍",
+		getDescription: () => "Search in project documents",
 	},
 } as const;
 

@@ -29,7 +29,7 @@ export function useWorkflowForm({
 		timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 		accessBy: "project_access",
 		accessByKey: "",
-		triggerBy: "phone",
+		triggerBy: "ui",
 		triggerKeyword: "",
 		triggerByKey: "",
 		authorizedUsers: [],
@@ -49,15 +49,17 @@ export function useWorkflowForm({
 		switch (currentStep) {
 			case 0:
 				setIsFormValid(!!formData.name && !!formData.startTime);
-				break;
+				return !!formData.name && !!formData.startTime;
 			case 1:
-				setIsFormValid(validateTriggerStep());
-				break;
+				const hasValidTriggerKeyword = formData.triggerKeyword?.trim().length > 0;
+				setIsFormValid(hasValidTriggerKeyword && !!formData.triggerBy);
+				return hasValidTriggerKeyword && !!formData.triggerBy;
 			case 2:
 				setIsFormValid(formData.nodes.length > 0);
-				break;
+				return formData.nodes.length > 0;
 			default:
 				setIsFormValid(false);
+				return false;
 		}
 	};
 
@@ -89,15 +91,24 @@ export function useWorkflowForm({
 	});
 
 	const handleNext = () => {
-		//console.log("isFormValid", isFormValid);
-		if (currentStep < 2 && isFormValid) {
+		const formIsValid = validateForm();
+		if (!formIsValid) {
+			toast({
+				title: "Missing information !",
+				description: "Please fill in all fields.",
+			});
+			return;
+		}
+		if (currentStep < 2 && formIsValid) {
 			setCurrentStep(currentStep + 1);
+			validateForm();
 		}
 	};
 
 	const handleBack = () => {
 		if (currentStep > 0) {
 			setCurrentStep(currentStep - 1);
+			validateForm();
 		}
 	};
 

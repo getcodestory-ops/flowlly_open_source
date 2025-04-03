@@ -1,20 +1,54 @@
 "use client";
+import { useEffect } from "react";
 import { useWorkflowStack, Workflow } from "@/hooks/useWorkflowStack";
+import { useStore } from "@/utils/store";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, Loader2, Info, CheckCircle, AlertCircle, ChevronDown, ChevronRight, TriangleAlert, ExternalLink } from "lucide-react";
+import { X, Loader2, Info, CheckCircle, AlertCircle, ChevronDown, ChevronRight, TriangleAlert, ExternalLink, Pause } from "lucide-react";
 import { useState } from "react";
 import { WorkflowStatus } from "@/hooks/useWorkflowStack";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Progress } from "../ui/progress";
+import { getInProgressWorkflows } from "@/api/taskQueue";
+import { clearWorkflowProcess } from "@/api/taskQueue";
+import { getInprogressWorkflowResult } from "@/api/taskQueue";
+import { ResultViewer } from "../WorkflowComponents/ResultViewer";
+import { useToast } from "@/components/ui/use-toast";
+import type { EventResult } from "../WorkflowComponents/types";
 
 //Work in progress
 export const WorkflowStack = (): React.ReactNode => {
-	const { workflows } = useWorkflowStack();
+	const { toast } = useToast();
+	const { workflows, addWorkflow } = useWorkflowStack();
 	const [isCollapsed, setIsCollapsed] = useState(false);
+	const session = useStore((state) => state.session);
+	const projectId = useStore((state) => state.activeProject?.project_id);
+
+	useEffect(() => {
+		if (session && projectId) {
+			getInProgressWorkflows({ session, projectId }).then(
+				(data)=>{
+					if (data) {
+						data.forEach((workflow) => {
+							addWorkflow(workflow, session);
+						});
+					}
+					else {
+						toast({
+							title: "Error",
+							variant: "destructive",
+							description: "Something went wrong while fetching running workflows",
+						});
+					}
+				},
+			);
+		}
+	}, [session, projectId]);
 
 	const workflowKeys = Object.keys(workflows);
 	if (workflowKeys.length === 0) return null;
+
+
 
 	return (
 		<div className="fixed bottom-4 left-16 z-50 w-[360px] shadow-lg rounded-lg overflow-hidden">
@@ -26,17 +60,18 @@ export const WorkflowStack = (): React.ReactNode => {
 							const workflow = workflows[workflowId];
 							return (
                 				<Card
-                					className="p-2 flex items-center justify-between shadow-none rounded-none w-full gap-2"
+                					className="p-2 flex items-center justify-between shadow-none rounded-none w-full gap-1"
 									key={workflow.id}
                 				>
-                					<div className="flex items-center gap-1 flex-1 min-w-0">
-                						<StausIcon status={workflow.status} />
-                						<span className="text-sm flex-1 truncate overflow-hidden whitespace-nowrap">{workflow.name}</span>
-                					</div>
-                					<div className="flex items-center gap-1">
-                						<OpenWorkflowButton workflow={workflow} />
-                						<CloseWorkflowButton workflow={workflow} />
-                					</div>
+                					<StausIcon status={workflow.status} />
+									<div className="flex flex-col flex-1 min-w-0 gap-0">
+										<span className=" flex-1 min-w-0 group text-sm flex-1 truncate overflow-hidden whitespace-nowrap">{workflow.name}</span>
+										<div className="text-xs flex-1 truncate overflow-hidden whitespace-nowrap gap-1 flex items-center text-gray-500 px-0">{workflow.message}</div>
+									</div>
+									<div className="flex items-center">
+										<OpenWorkflowButton workflow={workflow} />
+										<CloseWorkflowButton workflow={workflow} />
+									</div>
                 				</Card>
                 	        );
 						})}
@@ -108,6 +143,8 @@ const StausIcon = ({ status }: {status: WorkflowStatus}):  React.ReactNode  => {
 			return <AlertCircle className="text-red-500 w-4 h-4 m-2" />;
 		case WorkflowStatus.SUCCESS:
 			return <CheckCircle className="text-green-500 w-4 h-4 m-2" />;
+		case WorkflowStatus.PAUSED:
+			return <Pause className="text-gray-500 w-4 h-4 m-2" />;
 		default:
 			return <Info className="text-gray-500 w-4 h-4 m-2" />;
 	}
@@ -115,22 +152,50 @@ const StausIcon = ({ status }: {status: WorkflowStatus}):  React.ReactNode  => {
 
 
 const OpenWorkflowButton = ({ workflow }: {workflow: Workflow}): React.ReactNode => {
-	return workflow.status === WorkflowStatus.PENDING ?
-		<Button size="sm" variant="outline">Add Input</Button>
-		:
-		<Button className="gap-1 flex items-center text-gray-500 px-0"
-			size="sm"
-			variant="link"
-		>
-			<span>View {workflow.status === WorkflowStatus.SUCCESS ? "Results" : workflow.status === WorkflowStatus.ERROR ? "Errors" : "logs"}</span> <ExternalLink className="w-3 h-3" />
-		</Button>;
+	return <Dialog>
+		<DialogTrigger asChild>
+			<div className="gap-1 flex items-center text-gray-500 px-0 py-0 hover:text-gray-700 cursor-pointer hover:underline text-xs">
+				<span>{openMessage(workflow.status)}</span> <ExternalLink className="w-3 h-3" />
+			</div>
+		</DialogTrigger>
+		<DialogContent className="max-w-4xl py-12">
+			<SteamingWorkflowEvents workflow={workflow} />
+		</DialogContent>
+	</Dialog>;
+};
+
+const openMessage = (status: WorkflowStatus): string => {
+	switch (status) {
+		case WorkflowStatus.RUNNING:
+			return "View logs";
+		case WorkflowStatus.PENDING:
+			return "Input required";
+		case WorkflowStatus.SUCCESS:
+			return "View results";
+		case WorkflowStatus.ERROR:
+			return "View errors";
+		case WorkflowStatus.PAUSED:
+			return "View logs";
+		default:
+			return "View logs";
+	}
 };
 
 const CloseWorkflowButton = ({ workflow }: {workflow: Workflow}): React.ReactNode => {
+	const session = useStore((state) => state.session);
+	const projectId = useStore((state) => state.activeProject?.project_id);
 	const { removeWorkflow } = useWorkflowStack();
+	const clearProcess = (	) : void=> {
+		if (session && projectId && workflow.workflowId) {
+			clearWorkflowProcess({ session, projectId, workflowId: workflow.workflowId }).then(() => {
+				removeWorkflow(workflow.id);
+			});
+		}
+	};
+	
 	return workflow.status === WorkflowStatus.SUCCESS || workflow.status === WorkflowStatus.ERROR ?  
 		<Button 
-			onClick={() => removeWorkflow(workflow.id)}
+			onClick={clearProcess}
 			size="icon"
 			variant="ghost"
 		>
@@ -142,7 +207,16 @@ const CloseWorkflowButton = ({ workflow }: {workflow: Workflow}): React.ReactNod
 const CloseButton = (): React.ReactNode => <X className="text-gray-500 w-4 h-4" />;
 
 const ConfirmCancelModal = ({ workflow }: {workflow: Workflow}): React.ReactNode => {
+	const session = useStore((state) => state.session);
+	const projectId = useStore((state) => state.activeProject?.project_id);
 	const { removeWorkflow } = useWorkflowStack();
+	const clearProcess = (	) : void=> {
+		if (session && projectId && workflow.workflowId) {
+			clearWorkflowProcess({ session, projectId, workflowId: workflow.workflowId }).then(() => {
+				removeWorkflow(workflow.id);
+			});
+		}
+	};
 	return (
 		<Dialog>
 			<DialogTrigger asChild>
@@ -156,10 +230,8 @@ const ConfirmCancelModal = ({ workflow }: {workflow: Workflow}): React.ReactNode
 					<DialogTitle>Are you sure you want to stop {workflow.name}?</DialogTitle>
 				</DialogHeader>
 				<DialogFooter>
-					<Button onClick={() => {
-						removeWorkflow(workflow.id);
-					}}
-					variant="destructive"
+					<Button onClick={clearProcess}
+						variant="destructive"
 					>Stop</Button>
 				</DialogFooter>
 			</DialogContent>
@@ -167,23 +239,38 @@ const ConfirmCancelModal = ({ workflow }: {workflow: Workflow}): React.ReactNode
 	);
 };
 
-export const TemporaryButtonForWorkflowStack = (): React.ReactNode => {
-	const { addWorkflow } = useWorkflowStack();
-	const workflowStatusList = [WorkflowStatus.RUNNING, WorkflowStatus.PENDING, WorkflowStatus.ERROR, WorkflowStatus.SUCCESS];
-	const [currentId, setCurrentId] = useState(5);
+const SteamingWorkflowEvents = ({ workflow }: { workflow: Workflow }): React.ReactNode => {
+	const { toast } = useToast();
+	const session = useStore((state) => state.session);
+	const projectId = useStore((state) => state.activeProject?.project_id);
+	const [result, setResult] = useState<EventResult | null>(null);
+	useEffect(() => {
+		if (session && projectId && workflow.workflowId) {
+			getInprogressWorkflowResult({ session, projectId, workflowId: workflow.workflowId }).then((result) => {
+				if (result) {
+					setResult(result);
+				}
+				else {
+					toast({
+						title: "Error",
+						variant: "destructive",
+						description: "Something went wrong while fetching in-progress workflow results!",
+					});
+				}
+			});	
+		}
+	}, [session, projectId, workflow.workflowId]);
+
 	return (
-		<div className="absolute top-64 left-4 z-10">
-			<Button onClick={() => {
-				const randomStatus = workflowStatusList[Math.floor(Math.random() * workflowStatusList.length)];
-				setCurrentId(currentId + 1);
-				addWorkflow({
-					id: currentId.toString(),
-					name: `Workflow ${currentId}`,
-					status: randomStatus,
-					requiresInput: true,
-				});
-			}}
-			>Add Workflow</Button>
+		<div className="verflow-auto">
+			{result && (
+				<ResultViewer 
+					cacheId={workflow.workflowId}
+					currentResult={result}
+					key={workflow.workflowId}
+				/>
+			)}
 		</div>
 	);
 };
+

@@ -44,15 +44,21 @@ export interface AgentMessage {
   role: string;
   function_call?: {
     name?: string;
-    arguments?: string;
+    args?: Record<string, string>;
   };
+  function_response?:{
+    name?: string;
+    args?: {
+      result?: string;
+    };
+  }
   files?: ProcessedFile[];
   response?: string;
   antartifact?: Antartifact;
   antithinking?: string;
   metadata?: any;
   child_task_id?: string;
-}
+} ; 
 
 export interface AgentChat {
   id: string;
