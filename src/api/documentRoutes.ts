@@ -181,3 +181,28 @@ export const updateStorageTextDocument = async(
 	);
 	return response.data;
 };
+
+
+export const updateDocumentName = async(
+	session: Session,
+	documentId: string,
+	newName: string,
+) : Promise<{message: string} | undefined> => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/document/${documentId}`;
+	try {
+		const response = await axios.put(url, {
+			title: newName,
+		}, {
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${session.access_token}`,
+			},
+		});
+		return response.data;
+	} catch (error) {
+		console.error(error);
+		return 	;
+	}
+};
+
+

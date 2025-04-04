@@ -11,9 +11,10 @@ import {
 	Settings,
 	Plus,
 	PenBox,
+	Pencil,
 } from "lucide-react";
 import { useStore } from "@/utils/store";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getPlatformChatEntities } from "@/api/agentRoutes";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -27,6 +28,15 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
+import { updateChatName } from "@/api/agentRoutes";
 const models = [
 	{ id: "gemini-2.0-flash", name: "Gemini Flash" },
 	{ id: "gemini-2.0-pro-exp-02-05", name: "Gemini Pro" },
@@ -124,6 +134,8 @@ const ChatSettings = ({
 	</div>
 );
 
+
+
 export default function PlatformChatComponent({
 	folderId,
 	folderName,
@@ -141,14 +153,13 @@ export default function PlatformChatComponent({
     | "folder";
   onContentUpdate?: (newContent: string) => void;
 }) {
-	const [sidebarOpen, setSidebarOpen] = useState(false);
-	const [activeTab, setActiveTab] = useState<"chat" | "history" | "settings">(
-		"chat",
-	);
-	// Add state for model and includeContext
-	const [selectedModel, setSelectedModel] =
-    useState<string>("gemini-2.0-flash");
+	const [sidebarOpen, setSidebarOpen] = useState(true);
+	const [activeTab, setActiveTab] = useState<"chat" | "settings">("chat");
+	const { toast } = useToast();
+	const [selectedModel, setSelectedModel] = useState<string>("gemini-2.0-flash");
 	const [includeContext, setIncludeContext] = useState<boolean>(false);
+	const [editingChatId, setEditingChatId] = useState<string | null>(null);
+	const [editedName, setEditedName] = useState<string>("");
 
 	// Get store data for chat entities
 	const {
@@ -187,9 +198,13 @@ export default function PlatformChatComponent({
 		setActiveChatEntity(null);
 	}, []);
 
+	// Inside the component, add queryClient
+	const queryClient = useQueryClient();
+
 	const handleCreateNewChat = () => {
 		setActiveChatEntity(null);
 		setLocalChats([]);
+		setActiveTab("chat");
 	};
 
 	const handleSelectChatEntity = (chatEntity: any) => {
@@ -197,41 +212,49 @@ export default function PlatformChatComponent({
 		setActiveTab("chat");
 	};
 
+	const handleTabClick = (tab: "settings") => {
+		setActiveTab(activeTab === tab ? "chat" : tab);
+	};
+
+	const handleEditSubmit = async() => {
+		try {
+			if (!editingChatId || !session) return;
+			await updateChatName(session, editingChatId, editedName);
+			
+			// Update the cache to reflect the new name
+			queryClient.setQueryData(
+				["documentChatEntityList", session, activeProject],
+				(oldData: any) => {
+					if (!oldData) return oldData;
+					return oldData.map((chat: any) => 
+						chat.id === editingChatId 
+							? { ...chat, chat_name: editedName }
+							: chat,
+					);
+				},
+			);
+
+			// If this was the active chat, update that too
+			if (activeChatEntity?.id === editingChatId) {
+				setActiveChatEntity({ ...activeChatEntity, chat_name: editedName });
+			}
+
+			setEditingChatId(null);
+			toast({
+				title: "Success",
+				description: "Chat name updated successfully",
+			});
+		} catch (error) {
+			toast({
+				title: "Error",
+				description: "Failed to update chat name",
+				variant: "destructive",
+			});
+		}
+	};
+
 	const renderMainContent = () => {
 		switch (activeTab) {
-			case "history":
-				return (
-					<div className="h-full flex flex-col">
-						<div className="p-3 flex justify-between items-center border-b">
-							<h3 className="font-medium">Chat History</h3>
-							<Button
-								className="text-xs  flex items-center"
-								onClick={handleCreateNewChat}
-								variant="outline"
-							>
-								<Plus className="mr-1" size={14} /> New Chat
-							</Button>
-						</div>
-						<ScrollArea className="flex-grow m-2 h-full">
-							{chatEntities && chatEntities.length > 0 ? (
-								chatEntities
-									.toReversed()
-									.map((chatEntity) => (
-										<HistoryItem
-											isActive={chatEntity.id === activeChatEntity?.id}
-											key={chatEntity.id}
-											onClick={() => handleSelectChatEntity(chatEntity)}
-											title={chatEntity.chat_name}
-										/>
-									))
-							) : (
-								<div className="p-4 text-center text-sm text-gray-500">
-									{chatsLoading ? "Loading chats..." : "No chat history found"}
-								</div>
-							)}
-						</ScrollArea>
-					</div>
-				);
 			case "settings":
 				return (
 					<ChatSettings
@@ -259,91 +282,218 @@ export default function PlatformChatComponent({
 		<div className="container mx-auto h-full">
 			<div className="flex h-[calc(100vh-20px)] bg-white rounded-xl shadow-sm overflow-hidden">
 				{/* Left sidebar for chat controls */}
-				<div
-					className={`flex flex-col border-r border-slate-200 transition-all duration-300 ${
-						sidebarOpen ? "w-60" : "w-12"
-					}`}
-				>
-					{/* Sidebar toggle button */}
-					<button
-						className="p-3 hover:bg-gray-100 text-gray-600 self-end rounded-lg mb-6"
-						onClick={() => setSidebarOpen(!sidebarOpen)}
-					>
-						{sidebarOpen ? (
-							<ChevronLeft size={16} />
-						) : (
-							<ChevronRight size={16} />
-						)}
-					</button>
-					{/* New Chat button at the top of sidebar */}
-					<Button
-						className={`p-2 mx-1 rounded-lg mb-4 text-white bg-indigo-600 hover:bg-indigo-700 flex items-center  ${
-							sidebarOpen ? "justify-start pl-4" : "justify-center"
+				<TooltipProvider delayDuration={0}>
+					<div
+						className={`flex flex-col border-r border-slate-200 transition-all duration-300 ${
+							sidebarOpen ? "w-60" : "w-16" // Adjusted width for collapsed state
 						}`}
-						onClick={handleCreateNewChat}
 					>
-						<PenBox size={16} />
-						{sidebarOpen && <span className="ml-2">New Chat</span>}
-					</Button>
-					{/* Sidebar tabs */}
-					<div className="flex flex-col items-center py-2 space-y-6 mx-1">
-						<Button
-							className={`p-2 rounded-lg ${
-								activeTab === "chat"
-									? "bg-indigo-100 text-indigo-600"
-									: "text-gray-500 hover:bg-gray-100"
-							} flex items-center w-full ${
-								sidebarOpen ? "justify-start pl-4" : "justify-center"
-							}`}
-							onClick={() => setActiveTab("chat")}
-							variant="ghost"
-						>
-							<MessageSquare size={20} />
-							{sidebarOpen && <span className="ml-2">Chat</span>}
-						</Button>
-						<Button
-							className={`p-2 rounded-lg ${
-								activeTab === "history"
-									? "bg-indigo-100 text-indigo-600"
-									: "text-gray-500 hover:bg-gray-100"
-							} flex items-center w-full ${
-								sidebarOpen ? "justify-start pl-4" : "justify-center"
-							}`}
-							onClick={() => setActiveTab("history")}
-							variant="ghost"
-						>
-							<History size={20} />
-							{sidebarOpen && <span className="ml-2">History</span>}
-						</Button>
-						<Button
-							className={`p-2 rounded-lg ${
-								activeTab === "settings"
-									? "bg-indigo-100 text-indigo-600"
-									: "text-gray-500 hover:bg-gray-100"
-							} flex items-center w-full ${
-								sidebarOpen ? "justify-start pl-4" : "justify-center"
-							}`}
-							onClick={() => setActiveTab("settings")}
-							variant="ghost"
-						>
-							<Settings size={20} />
-							{sidebarOpen && <span className="ml-2">Settings</span>}
-						</Button>
-					</div>
-					{/* Chat selector when sidebar is open */}
-					{sidebarOpen && (
-						<div className="mt-auto p-3 border-t border-slate-200">
-							<h3 className="text-sm font-medium text-gray-700 mb-2">
-								{titleMap[chatTarget]} {folderName}
-							</h3>
-						</div>
-					)}
-				</div>
-				{/* Main chat area */}
-				<div className="flex-grow overflow-hidden flex flex-col">
-					{/* Only show compact top bar when sidebar is collapsed */}
+						{/* Title area */}
+						{sidebarOpen ? (
+							<div className="p-3 flex justify-between items-center">
+								<h3 className="text-sm font-medium text-gray-700">
+									{titleMap[chatTarget]} {folderName}
+								</h3>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button
+											className="h-7 w-7 p-0"
+											onClick={handleCreateNewChat}
+											variant="ghost"
+										>
+											<PenBox className="h-4 w-4 text-gray-500" />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>New Chat</TooltipContent>
+								</Tooltip>
+							</div>
+						) : (
+							<div className="p-2">
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button
+											className="w-full h-7 p-0"
+											onClick={handleCreateNewChat}
+											variant="ghost"
+										>
+											<PenBox className="h-4 w-4 text-gray-500" />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent side="right">New Chat</TooltipContent>
+								</Tooltip>
+							</div>
+						)}
+						{sidebarOpen ? (
+							<ScrollArea className="flex-grow h-[calc(100vh-5000px)]">
+								<div className="px-2 py-2">
+									{chatEntities && [...chatEntities].reverse()
+										.map((chatEntity, index, array) => {
+											const isEditing = editingChatId === chatEntity.id;
 
-					{/* Dynamic content based on active tab */}
+											// Group chats by date
+											const date = new Date(chatEntity.created_at);
+											const today = new Date();
+											const yesterday = new Date(today);
+											yesterday.setDate(yesterday.getDate() - 1);
+									
+											let dateLabel = "";
+											if (index === 0 || (index > 0 && new Date(array[index - 1].created_at).toDateString() !== date.toDateString())) {
+												if (date.toDateString() === today.toDateString()) {
+													dateLabel = "Today";
+												} else if (date.toDateString() === yesterday.toDateString()) {
+													dateLabel = "Yesterday";
+												} else {
+													dateLabel = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+												}
+											}
+
+											const handleKeyDown = (e: React.KeyboardEvent) => {
+												if (e.key === "Enter") {
+													handleEditSubmit();
+												}
+												if (e.key === "Escape") {
+													setEditingChatId(null);
+													setEditedName(chatEntity.chat_name);
+												}
+											};
+
+											return (
+												<div key={chatEntity.id}>
+													{dateLabel && (
+														<div className="text-[10px] text-gray-400 pt-3 pb-1 px-2">
+															{dateLabel}
+														</div>
+													)}
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<button
+																className={`group w-full text-left py-1 px-2 mb-[2px] rounded transition-colors ${
+																	chatEntity.id === activeChatEntity?.id
+																		? "bg-gray-50 text-gray-900"
+																		: "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+																}`}
+																onClick={() => !isEditing && handleSelectChatEntity(chatEntity)}
+															>
+																<div className="flex items-center justify-between">
+																	{isEditing ? (
+																		<Input
+																			autoFocus
+																			className="h-6 text-xs"
+																			onBlur={handleEditSubmit}
+																			onChange={(e) => setEditedName(e.target.value)}
+																			onKeyDown={handleKeyDown}
+																			value={editedName}
+																		/>
+																	) : (
+																		<>
+																			<span className={`text-xs leading-tight truncate block ${!sidebarOpen && "w-12"}`}>
+																				{chatEntity.chat_name}
+																			</span>
+																			<Pencil 
+																				className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" 
+																				onClick={(e) => {
+																					e.stopPropagation();
+																					setEditingChatId(chatEntity.id);
+																					setEditedName(chatEntity.chat_name);
+																				}}
+																			/>
+																		</>
+																	)}
+																</div>
+															</button>
+														</TooltipTrigger>
+														{!sidebarOpen && !isEditing && (
+															<TooltipContent className="text-xs" side="right">
+																{chatEntity.chat_name}
+															</TooltipContent>
+														)}
+													</Tooltip>
+												</div>
+											);
+										})}
+									{chatEntities && chatEntities.length === 0 && (
+										<div className="text-center text-xs text-gray-400 p-2">
+											🤖 Ready to be your sidekick! Drop a message and let&apos;s make some magic happen ✨
+										</div>
+									)}
+									{chatsLoading && (
+										<div className="text-center text-xs text-gray-400 p-2">
+											Loading chats...
+										</div>
+									)}
+								</div>
+							</ScrollArea>
+						) : (
+							<div className="flex-grow" />
+						)}
+						<div className="border-t border-slate-200">
+							<div className="p-2 space-y-1">
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button
+											className={`w-full py-1 px-2 rounded flex items-center text-gray-400 hover:text-gray-600 hover:bg-gray-50 ${
+												sidebarOpen ? "justify-start" : "justify-center"
+											}`}
+											onClick={handleCreateNewChat}
+											variant="ghost"
+										>
+											<PenBox size={16} />
+											{sidebarOpen && <span className="ml-2 text-xs">New Chat</span>}
+										</Button>
+									</TooltipTrigger>
+									{!sidebarOpen && (
+										<TooltipContent side="right">New Chat</TooltipContent>
+									)}
+								</Tooltip>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button
+											className={`w-full py-1 px-2 rounded flex items-center ${
+												activeTab === "settings"
+													? "bg-gray-50 text-gray-900"
+													: "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+											} ${
+												sidebarOpen ? "justify-start" : "justify-center"
+											}`}
+											onClick={() => handleTabClick("settings")}
+											variant="ghost"
+										>
+											<Settings size={16} />
+											{sidebarOpen && <span className="ml-2 text-xs">Settings</span>}
+										</Button>
+									</TooltipTrigger>
+									{!sidebarOpen && (
+										<TooltipContent side="right">Settings</TooltipContent>
+									)}
+								</Tooltip>
+							</div>
+							<div className="border-t border-slate-200 p-2">
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button
+											className="w-full flex items-center text-gray-400 hover:bg-gray-50 hover:text-gray-600 p-2 rounded-lg"
+											onClick={() => setSidebarOpen(!sidebarOpen)}
+											variant="ghost"
+										>
+											{sidebarOpen ? (
+												<>
+													<ChevronLeft size={16} />
+													<span className="ml-2 text-xs">Collapse</span>
+												</>
+											) : (
+												<ChevronRight className="mx-auto" size={16} />
+											)}
+										</Button>
+									</TooltipTrigger>
+									{!sidebarOpen && (
+										<TooltipContent side="right">Expand sidebar</TooltipContent>
+									)}
+								</Tooltip>
+							</div>
+						</div>
+					</div>
+				</TooltipProvider>
+				<div className="flex-grow overflow-hidden flex flex-col">
 					<div className="flex-grow overflow-hidden">{renderMainContent()}</div>
 				</div>
 			</div>

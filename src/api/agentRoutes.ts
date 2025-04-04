@@ -323,3 +323,26 @@ export const deletePendingVoiceNote = async({
 
 	return response.data;
 };
+
+export const updateChatName = async(
+	session: Session,
+	chatId: string,
+	chatName: string,
+) => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat_entity/${chatId}`;
+	try {
+		const response = await axios.put(url, {}, {
+			params: {
+				chat_name: chatName,
+			},
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${session.access_token}`,
+			},
+		});
+
+		return response.data;
+	} catch (error) {
+		throw new Error("Network response was not ok");
+	}
+};
