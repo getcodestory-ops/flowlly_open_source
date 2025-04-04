@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ResourceTextViewer } from "../DocumentEditor/ResourceTextViewer";
+import Image from "next/image";
 
 function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
 	// Function to get appropriate file icon based on extension
@@ -78,7 +79,13 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
 			const getFunctionName = (name: string) => {
 				switch (name) {
 					case "run_workflow":
-						return <div className="text-green-500 text-sm ">Workflow started</div>;
+						return <> 
+							<Image alt="Workflow started !"
+								height={96}
+								src="/logos/imonitguy.jpg"
+								width={96}
+							/>
+						</>;
 					case "get_running_workflows":
 						return "Checking running workflows";
 					case "send_data_to_workflow":
