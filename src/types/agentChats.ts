@@ -88,4 +88,5 @@ export interface AgentChatEntity {
   chat_name: string;
   chat_details?: string;
   hidden?: boolean;
+  created_at: string;
 }

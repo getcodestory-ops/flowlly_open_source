@@ -20,6 +20,7 @@ interface EditorBlockProps {
   saveFunction?: (_: string) => void;
   documentType?: string;
   documentId?: string;
+  documentName?: string;
 }
 // TODO
 const ContentEditor = ({
@@ -28,6 +29,7 @@ const ContentEditor = ({
 	saveFunction,
 	documentType = "Minutes of the meeting",
 	documentId,
+	documentName,
 }: EditorBlockProps): React.ReactNode => {
 	const { setEditor, editor } = useEditorStore();
 	
@@ -109,6 +111,7 @@ const ContentEditor = ({
 				documentType={documentType}
 				onAIEditedContent={handleAIEditedContent}
 				saveFunction={saveFunction}
+				documentName={documentName}
 			/>
 			<div className="flex-grow bg-gray-50 overflow-auto rounded-b-lg border-none w-full" style={{ maxHeight: "calc(100% - 52px)" }}>
 				<div className="px-10 py-6 w-[768px] mx-auto bg-white my-0 border-l border-r border-gray-200">

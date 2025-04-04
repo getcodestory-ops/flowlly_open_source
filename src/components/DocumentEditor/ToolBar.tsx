@@ -33,7 +33,7 @@ import {
 	FaFileCsv,
 } from "react-icons/fa";
 import { RxTriangleDown } from "react-icons/rx";
-
+import { FaFileAlt } from "react-icons/fa";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { FaFileDownload } from "react-icons/fa";
@@ -66,6 +66,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useEditorStore } from "@/hooks/useEditorStore";
+import { updateDocumentName } from "@/api/documentRoutes";
 (pdfMake as any).vfs = pdfFonts.vfs;
 
 interface ToolbarProps {
@@ -73,6 +74,7 @@ interface ToolbarProps {
   saveFunction?: (_: string) => void;
   onAIEditedContent?: (_: string) => void;
   documentId?: string;
+  documentName?: string;
 }
 
 enum SaveStatus {
@@ -88,6 +90,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 	documentType,
 	onAIEditedContent,
 	documentId,
+	documentName,
 }) => {
 	const editor = useEditorStore((state) => state.editor);
 	const [saveStatus, setSaveStatus] = useState(SaveStatus.HIDDEN);
@@ -109,6 +112,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
 			}, 7000);
 		}, 3000); // Show "Saved" for 1 second
 	}, 10000);
+	const [fileName, setFileName] = useState<string | undefined>(documentName);
+	const [editingFileName, setEditingFileName] = useState<string | undefined>(documentName);
 
 	useEffect(() => {
 		if (editor) {
@@ -120,6 +125,36 @@ const Toolbar: React.FC<ToolbarProps> = ({
 			}
 		};
 	}, [editor, deBounceSave]);
+
+	const handleFileNameChange = async(newName: string) => {
+		if (!documentId) return;
+		if (!sessionToken) return;
+		const response = await updateDocumentName(sessionToken, documentId, newName);
+		if (response) {
+			toast({
+				title: "File name updated",
+				description: "File name updated to " + newName,
+			});
+			setFileName(newName);
+		} else {
+			toast({
+				title: "Error",
+				description: "Failed to update file name",
+				variant: "destructive",
+			});
+			setEditingFileName(fileName);
+		}
+	};
+
+
+	const handleFileNameInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+		const newName = e.target.value.trim();
+		if (newName && newName !== fileName) {
+			handleFileNameChange(newName);
+		} else {
+			setEditingFileName(fileName); // Reset to original name if empty or unchanged
+		}
+	};
 
 	const exportPdf = useCallback(() => {
 		if (editor) {
@@ -251,29 +286,12 @@ const Toolbar: React.FC<ToolbarProps> = ({
 		}
 	};
 
-	// const handleZoomIn = () => {
-	// 	const newZoom = Math.min(zoomLevel + 10, 200);
-	// 	setZoomLevel(newZoom);
-	// 	if (editor) {
-	// 		editor.commands.setTextSelection(editor.state.selection);
-	// 		editor.view.dom.style.fontSize = `${newZoom}%`;
-	// 	}
-	// };
-
-	// const handleZoomOut = () => {
-	// 	const newZoom = Math.max(zoomLevel - 10, 50);
-	// 	setZoomLevel(newZoom);
-	// 	if (editor) {
-	// 		editor.commands.setTextSelection(editor.state.selection);
-	// 		editor.view.dom.style.fontSize = `${newZoom}%`;
-	// 	}
-	// };
 
 	if (!editor) {
 		return null;
 	}
 	return (
-		<div className="flex top-0 sticky z-10 bg-white border-b w-full">
+		<div className="flex top-0 sticky z-10 bg-white border-b w-full ">
 			<div className="flex px-4 py-2 rounded-lg justify-between w-full">
 				<div className="flex items-center gap-1">
 					<Menubar className="bg-transparent border-none p-0 m-0 shadow-none">
@@ -596,6 +614,27 @@ const Toolbar: React.FC<ToolbarProps> = ({
 					)}
 				</div>
 			</div>
+			{fileName && (
+				<div className="absolute top-[53px] bg-white left-2">
+					<div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-b-md border-x border-b">
+						<FaFileAlt className="text-gray-500 h-3 w-3" />
+						<input 
+							className="text-xs text-gray-700 bg-transparent border-none outline-none hover:outline-none focus:outline-none hover:ring-1 hover:ring-gray-200 focus:ring-1 focus:ring-gray-300 rounded px-1 max-w-[200px] truncate"
+							onBlur={handleFileNameInputBlur}
+							onChange={(e) => setEditingFileName(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter") {
+									e.preventDefault();
+									e.currentTarget.blur();
+								}
+							}}
+							title={fileName}
+							type="text"
+							value={editingFileName}
+						/>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };

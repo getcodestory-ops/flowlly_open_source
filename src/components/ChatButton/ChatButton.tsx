@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, X } from "lucide-react";
+import { X } from "lucide-react";
+import Image from "next/image";
 
 interface ChatButtonProps {
   isOpen: boolean;
@@ -23,7 +24,11 @@ const ChatButton: React.FC<ChatButtonProps> = ({
 	onClick,
 	title = isOpen ? "Close chat assistant" : "Chat with Flowlly AI",
 	openText = "Chat",
-	icon = <MessageCircle className="h-5 w-5" />,
+	icon = <Image alt="Flowlly AI"
+		height={20}
+		src="/logos/FlowllyAgent.png"
+		width={20}
+	       />,
 	className = "",
 	fixed = true,
 	position = { bottom: "1rem", right: "1rem" },

@@ -27,6 +27,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { uploadFileInFolder } from "@/api/folderRoutes";
 import { getTaskStatus } from "@/api/schedule_routes";
 import { ProcessedFile } from "@/api/agentRoutes";
+import Image from "next/image";
 
 // Define models for the UI
 const models = [
@@ -599,13 +600,19 @@ export default function PlatformChatInterface({
 		<div className="flex flex-col items-center px-4 py-6">
 			<div className="max-w-md w-full bg-white rounded-xl p-6 mb-6 shadow-sm">
 				<div className="text-center mb-6">
-					<MessageCircleMore className="h-12 w-12 text-indigo-500 mx-auto mb-3" />
+					<Image 
+						alt="Flowlly AI" 
+						className="mx-auto mb-3" 
+						height={96} 
+						src="/logos/FlowllyGuy.png" 
+						width={96}
+					/>
 					<h3 className="text-lg font-medium text-indigo-900 mb-2">
-            Chat with Flowlly AI
+						Chat with Flowlly
 					</h3>
 					<p className="text-slate-500 text-sm mb-4">
-            Start a conversation to get assistance with your project tasks,
-            documents, and workflows.
+						🚀 Hey there! I&apos;m your AI assistant, ready to help with your 
+						project tasks, docs, and workflows. Lets build something awesome together! ✨
 					</p>
 				</div>
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
@@ -624,7 +631,7 @@ export default function PlatformChatInterface({
 			</div>
 			<div className="w-full relative overflow-hidden rounded-xl bg-white border border-slate-100 shadow-sm focus-within:ring-1 focus-within:ring-indigo-300 transition-shadow">
 				<Label className="sr-only" htmlFor="empty-message">
-          Message
+					Message
 				</Label>
 				<Textarea
 					className="min-h-20 resize-none border-0 p-4 shadow-none focus-visible:ring-0 text-slate-800"
@@ -647,8 +654,8 @@ export default function PlatformChatInterface({
 						className="ml-auto gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
 						disabled={
 							isPending ||
-              isWaitingForResponse ||
-              (!chatInput.trim() && uploadingFiles.length === 0)
+							isWaitingForResponse ||
+							(!chatInput.trim() && uploadingFiles.length === 0)
 						}
 						onClick={handleSubmit}
 						size="sm"
@@ -661,7 +668,7 @@ export default function PlatformChatInterface({
 							</>
 						) : (
 							<>
-                Send
+								Send
 								<CornerDownLeft className="h-3.5 w-3.5" />
 							</>
 						)}
@@ -776,20 +783,20 @@ export default function PlatformChatInterface({
 		<div className="px-4 py-2 flex flex-col justify-end">
 			<div className="relative overflow-hidden rounded-lg border border-black bg-background focus-within:ring-1 focus-within:ring-ring">
 				<Label className="sr-only" htmlFor="message">
-          Message
+					Message
 				</Label>
 				{/* Display selected model and context settings */}
 				<div className="absolute bottom-0 left-2 z-10">
 					<div className="flex items-center gap-2 py-1">
 						<span className="text-xs text-muted-foreground">
-              Model:{" "}
+							Model:{" "}
 							{models.find(
 								(m: { id: string; name: string }) => m.id === selectedModel,
 							)?.name || selectedModel}
 						</span>
 						{includeContext && (
 							<span className="text-xs text-muted-foreground">
-                Using context from project files
+								Using context from project files
 							</span>
 						)}
 					</div>
@@ -816,8 +823,8 @@ export default function PlatformChatInterface({
 						className="ml-auto gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
 						disabled={
 							isPending ||
-              isWaitingForResponse ||
-              (!chatInput.trim() && uploadingFiles.length === 0)
+							isWaitingForResponse ||
+							(!chatInput.trim() && uploadingFiles.length === 0)
 						}
 						onClick={handleSubmit}
 						size="sm"
@@ -830,7 +837,7 @@ export default function PlatformChatInterface({
 							</>
 						) : (
 							<>
-                Send
+								Send
 								<CornerDownLeft className="h-3.5 w-3.5" />
 							</>
 						)}
@@ -867,15 +874,10 @@ export default function PlatformChatInterface({
 								>
 									{history.sender.toLowerCase() !== "user" && (
 										<div className="text-xs text-slate-400 mb-1 pl-1">
-                      Flowlly AI
+											Flowlly AI
 										</div>
 									)}
 									<div
-										className={`${
-											history.sender.toLowerCase() === "user"
-												? "text-slate-800 prose prose-slate max-w-none"
-												: "text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-pre:my-2 prose-headings:text-indigo-900 prose-li:my-1"
-										}`}
 										ref={messageRefs.current[index] || null}
 									>
 										{history.message && (
@@ -905,12 +907,12 @@ export default function PlatformChatInterface({
 													{applyingChanges[index] ? (
 														<>
 															<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Applying...
+															Applying...
 														</>
 													) : (
 														<>
 															<Check className="mr-2 h-4 w-4" />
-                              Apply Changes
+															Apply Changes
 														</>
 													)}
 												</Button>
@@ -925,7 +927,7 @@ export default function PlatformChatInterface({
 							<div className="block w-full mb-4">
 								<div className="w-full bg-white py-3 px-2 border-b border-slate-100 min-h-[40px] transition-all duration-200">
 									<div className="text-xs text-slate-400 mb-1 pl-1">
-                    Flowlly AI
+										Flowlly AI
 									</div>
 									<div className="text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
 										<StreamComponent
