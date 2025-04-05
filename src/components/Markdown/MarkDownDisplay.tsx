@@ -110,11 +110,27 @@ const CustomViewer: React.FC<{ content: string }> = ({ content }) => {
 	);
 };
 
+// Add this constant with valid directive names
+const VALID_DIRECTIVES = [
+	"source",
+	"workflow",
+	"workflow-results",
+	"addition",
+	"deletion",
+	"document",
+	"read_file",
+	"execute_file_code",
+	"write_report",
+	"edit_report",
+	"complete_report",
+	"generate_chart",
+	"workflow_result",
+];
+
 // Custom directive plugin that transforms directives to custom components
 function remarkDirectiveComponents() {
 	return (tree: any) => {
 		visit(tree, (node) => {
-			// Handle text directives (inline elements like :source[text])
 			if (
 				(node.type === "textDirective" ||
 				node.type === "leafDirective" ||
@@ -122,6 +138,18 @@ function remarkDirectiveComponents() {
 			) {
 				const data = node.data || (node.data = {});
 				const hName = node.name;
+				
+				// Check if the directive name is valid
+				if (!VALID_DIRECTIVES.includes(hName)) {
+					// For invalid directives, render them as plain text
+					data.hName = "span";
+					data.hProperties = {
+						className: "invalid-directive",
+						style: "color: #666;",
+					};
+					return;
+				}
+
 				const attributes = node.attributes || {};
 				const id = attributes.id || "";
 				
