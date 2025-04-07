@@ -18,6 +18,7 @@ import {
 	X,
 	File,
 	Copy,
+	Brain,
 } from "lucide-react";
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -28,6 +29,9 @@ import { uploadFileInFolder } from "@/api/folderRoutes";
 import { getTaskStatus } from "@/api/schedule_routes";
 import { ProcessedFile } from "@/api/agentRoutes";
 import Image from "next/image";
+import FolderSelector from "@/components/ProjectEvent/FolderSelector";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import clsx from "clsx";
 
 // Define models for the UI
 const models = [
@@ -70,6 +74,10 @@ export default function PlatformChatInterface({
 	const chatContainerRef = useRef<HTMLDivElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const { toast } = useToast();
+	const [selectedContextFolder, setSelectedContextFolder] = useState<{id: string | null; name: string}>({
+		id: folderId,
+		name: "",
+	});
 
 	const {
 		chats,
@@ -84,9 +92,8 @@ export default function PlatformChatInterface({
 		session,
 		currentTaskId,
 		isWaitingForResponse,
-	} = usePlatformChat(folderId, chatTarget, selectedModel, includeContext);
+	} = usePlatformChat(folderId, chatTarget, selectedModel, includeContext, selectedContextFolder);
 
-	// State for file upload handling
 	const [uploadingFiles, setUploadingFiles] = useState<FileUploadStatus[]>([]);
 	const [showUploadProgress, setShowUploadProgress] = useState(false);
 	const [processedFiles, setProcessedFiles] = useState<ProcessedFile[]>([]);
@@ -100,6 +107,10 @@ export default function PlatformChatInterface({
 
 	// Example prompts for empty state
 	const examplePrompts: string[] = [];
+
+	// State for brain selector
+	const [showBrainSelector, setShowBrainSelector] = useState(false);
+
 
 	// Function to set chat input with an example prompt
 	const setExamplePrompt = (prompt: string) => {
@@ -543,21 +554,48 @@ export default function PlatformChatInterface({
 				ref={fileInputRef}
 				type="file"
 			/>
-			<Button
-				className="text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2"
-				disabled={isPending || isWaitingForResponse}
-				onClick={() => fileInputRef.current?.click()}
-				size="sm"
-				title="Upload files"
-				type="button"
-				variant="ghost"
-			>
-				{isPending || isWaitingForResponse ? (
-					<Loader2 className="h-5 w-5 animate-spin" />
-				) : (
-					<Paperclip className="h-5 w-5" />
-				)}
-			</Button>
+			<div className="flex gap-2">
+				<Dialog onOpenChange={setShowBrainSelector} open={showBrainSelector}>
+					<DialogTrigger asChild>
+						<Button
+							className={clsx(
+								"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
+								selectedContextFolder.id && "text-indigo-500 bg-indigo-50/50",
+							)}
+							disabled={isPending || isWaitingForResponse}
+							size="sm"
+							title={selectedContextFolder.id ? `Using context: ${selectedContextFolder.name}` : "Select context folder"}
+							type="button"
+							variant="ghost"
+						>
+							<Brain className="h-5 w-5" />
+						</Button>
+					</DialogTrigger>
+					<DialogContent className="sm:max-w-[600px]">
+						<div className="py-4">
+							<FolderSelector
+								onFolderSelect={handleFolderSelect}
+								selectedFolderId={selectedContextFolder.id}
+							/>
+						</div>
+					</DialogContent>
+				</Dialog>		
+				<Button
+					className="text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2"
+					disabled={isPending || isWaitingForResponse}
+					onClick={() => fileInputRef.current?.click()}
+					size="sm"
+					title="Upload files"
+					type="button"
+					variant="ghost"
+				>
+					{isPending || isWaitingForResponse ? (
+						<Loader2 className="h-5 w-5 animate-spin" />
+					) : (
+						<Paperclip className="h-5 w-5" />
+					)}
+				</Button>
+			</div>
 		</>
 	);
 
@@ -846,6 +884,12 @@ export default function PlatformChatInterface({
 			</div>
 		</div>
 	);
+
+	// Add this new handler
+	const handleFolderSelect = (newFolderId: string | null, folderName: string) => {
+		setSelectedContextFolder({ id: newFolderId, name: folderName });
+		setShowBrainSelector(false);
+	};
 
 	return (
 		<div className="flex flex-col h-full">
