@@ -262,7 +262,7 @@ export default function PlatformChatInterface({
 					session,
 					activeProject.project_id,
 					file,
-					folderId,
+					selectedContextFolder.id ?? folderId,
 					undefined,
 					(progress) => {
 						setUploadingFiles((prev) =>
