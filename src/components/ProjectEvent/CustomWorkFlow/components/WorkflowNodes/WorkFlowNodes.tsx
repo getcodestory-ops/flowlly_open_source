@@ -549,7 +549,7 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
 											<Button
 												className="border-green-500 text-green-700"
 												onClick={() => {
-													setCurrentNodeType("validate");
+													setCurrentNodeType("user_input");
 													setAddNodeContext({
 														parentId: nodeInfo.node.id,
 														condition: FlowCondition.SUCCESS,
@@ -564,7 +564,7 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
 											<Button
 												className="border-red-500 text-red-700"
 												onClick={() => {
-													setCurrentNodeType("validate");
+													setCurrentNodeType("user_input");
 													setAddNodeContext({
 														parentId: nodeInfo.node.id,
 														condition: FlowCondition.FAILURE,
@@ -623,7 +623,7 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
 					{!currentNodeType && formData.nodes.length === 0 && (
 						<Button
 							className="w-full mt-4"
-							onClick={() => setCurrentNodeType("validate")}
+							onClick={() => setCurrentNodeType("user_input")}
 							variant="outline"
 						>
 							<PlusCircle className="h-4 w-4 mr-2" />
