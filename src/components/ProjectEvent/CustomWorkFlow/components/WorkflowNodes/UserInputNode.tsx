@@ -31,6 +31,7 @@ export function UserInputNode({
 		next_steps: [],
 		retry_count: 0,
 		max_retries: 0,
+		multi_turn_data_collection: false,
 	});
 	useEffect(() => {
 		if (editingNode && editingNode.type === NodeType.USER_INPUT) {
@@ -58,28 +59,46 @@ export function UserInputNode({
 							checked={config.required}
 							id="required"
 							onCheckedChange={(checked) =>
-								setConfig((prev) => ({ ...prev, required: checked as boolean }))
+								setConfig((prev) => ({ ...prev, required: checked as boolean, multi_turn_data_collection: false  }))
 							}
 						/>
 						<Label htmlFor="required">Need instructions from user before starting the workflow</Label>
-					</div>					<div className="flex items-center space-x-2">
+					</div>
+					<div className="flex items-center space-x-2">
 						<Checkbox
 							checked={config.files_required}
 							id="files_required"
 							onCheckedChange={(checked) =>
-								setConfig((prev) => ({ ...prev, files_required: checked as boolean }))
+								setConfig((prev) => ({ ...prev, files_required: checked as boolean, multi_turn_data_collection: false  }))
 							}
 						/>
 						<Label htmlFor="files_required">Files are required to be included.</Label>
-					</div>					<div className="flex items-center space-x-2">
+					</div>
+					<div className="flex items-center space-x-2">
 						<Checkbox
 							checked={config.drawings_required}
 							id="drawings_required"
 							onCheckedChange={(checked) =>
-								setConfig((prev) => ({ ...prev, drawings_required: checked as boolean }))
+								setConfig((prev) => ({ ...prev, drawings_required: checked as boolean, multi_turn_data_collection: false  }))
 							}
 						/>
 						<Label htmlFor="drawings_required">Drawings are required to be included.</Label>
+					</div>
+					<div className="flex items-center space-x-2">
+						<Checkbox
+							checked={config.multi_turn_data_collection}
+							id="multi_turn_data_collection"
+							onCheckedChange={(checked) =>
+								setConfig((prev) => ({
+									...prev,
+									multi_turn_data_collection: checked as boolean,
+									required: checked ? false : prev.required,
+									files_required: checked ? false : prev.files_required,
+									drawings_required: checked ? false : prev.drawings_required,
+								}))
+							}
+						/>
+						<Label htmlFor="multi_turn_data_collection">Allow multiple turns for data collection, e.g. inspection report, daily report, etc.</Label>
 					</div>
 				</div>
 				<div className="flex justify-end space-x-2">

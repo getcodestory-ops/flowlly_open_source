@@ -32,7 +32,6 @@ import type { GraphData } from "./types";
 import ProjectEventCreationForm from "@/components/ProjectEvent/ProjectEventCreationForm";
 import DocumentWriterForm from "@/components/ProjectEvent/DocumentWriterForm";
 import CustomWorkflowForm from "@/components/ProjectEvent/CustomWorkFlow/CustomWorkflowForm";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
 	Card,
 	CardContent,
@@ -420,32 +419,36 @@ export const EventListViewer: React.FC = ({
 					</div>
 				</div>
 			)}
-			<Sheet onOpenChange={setIsDialogOpen} open={isDialogOpen}>
-				{selectedEventType === "meeting" && (  
-					<SheetContent className="w-[500px]" side="right">
-						<h2 className="text-lg font-semibold">Edit Meeting</h2>
-						<ProjectEventCreationForm
-							editData={selectedEventData!}
-							onClose={() => setIsDialogOpen(false)}
-						/>
-					</SheetContent>
-				)}
-				{selectedEventType === "document_writing" && (
-					<SheetContent className="w-[500px]" side="right">
-						<h2 className="text-lg font-semibold">Edit Document</h2>
-						<DocumentWriterForm
-							editData={selectedEventData!}
-							onClose={() => setIsDialogOpen(false)}
-						/>
-					</SheetContent>
-				)}
-				{selectedEventType === "custom" && (
-					<CustomWorkflowForm
-						editData={selectedEventData!}
-						onClose={() => setIsDialogOpen(false)}
-					/>
-				)}
-			</Sheet>
+			{isDialogOpen && (
+				<Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
+					<DialogContent className="max-w-[90vw]">
+						{selectedEventType === "meeting" && (
+							<>
+								<h2 className="text-lg font-semibold">Edit Meeting</h2>
+								<ProjectEventCreationForm
+									editData={selectedEventData!}
+									onClose={() => setIsDialogOpen(false)}
+								/>
+							</>
+						)}
+						{selectedEventType === "document_writing" && (
+							<>
+								<h2 className="text-lg font-semibold">Edit Document</h2>
+								<DocumentWriterForm
+									editData={selectedEventData!}
+									onClose={() => setIsDialogOpen(false)}
+								/>
+							</>
+						)}
+						{selectedEventType === "custom" && (
+							<CustomWorkflowForm
+								editData={selectedEventData!}
+								onClose={() => setIsDialogOpen(false)}
+							/>
+						)}
+					</DialogContent>
+				</Dialog>
+			)}
 		</div>
 	);
 };

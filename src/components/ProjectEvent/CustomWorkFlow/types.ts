@@ -169,6 +169,8 @@ export interface UserInputNodeConfig extends BaseNodeConfig {
   required: boolean;
   files_required: boolean;
   drawings_required: boolean;
+  multi_turn_data_collection: boolean;
+
 }
 export interface ProcoreProject {
   id: string;
