@@ -36,7 +36,7 @@ import { WorkflowFormData } from "./types";
 import { Loader2 } from "lucide-react";
 import { GraphData } from "../../WorkflowComponents/types";
 
-const convertGraphToWorkflow = (graphData: GraphData): WorkflowFormData => ({
+const convertGraphToWorkflow = (graphData: GraphData, accessByKey: string): WorkflowFormData => ({
 	id: graphData.id,
 	name: graphData.name,
 	workflowFor: graphData.description,
@@ -44,7 +44,7 @@ const convertGraphToWorkflow = (graphData: GraphData): WorkflowFormData => ({
 	startTime: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
 	timeZone: graphData.metadata.time_zone,
 	accessBy: "project_access",
-	accessByKey: "",
+	accessByKey: accessByKey,
 	triggerBy:
     (graphData.event_trigger?.[0]
     	?.trigger_by as WorkflowFormData["triggerBy"]) ?? "time",
@@ -103,8 +103,7 @@ export default function CustomWorkflowForm({
 
 	useEffect(() => {
 		if (editData) {
-			//console.log("editData", editData);
-			handleFormUpdate(convertGraphToWorkflow(editData));
+			handleFormUpdate(convertGraphToWorkflow(editData, activeProject?.project_id ?? ""));
 		}
 	}, [editData]);
 

@@ -458,7 +458,7 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
 
 	// Update the render function to show Add Step buttons in appropriate places
 	return (
-		<div className="grid grid-cols-3 gap-6 h-[calc(100vh-300px)]">
+		<div className="grid grid-cols-3 gap-6 h-[calc(100vh-300px)] w-[80vw]">
 			{/* Document Flow Builder */}
 			<ScrollArea className="border rounded-lg p-4 col-span-2">
 				<div className="space-y-4">
