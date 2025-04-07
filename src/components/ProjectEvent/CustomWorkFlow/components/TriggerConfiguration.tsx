@@ -40,7 +40,7 @@ export function TriggerConfiguration({
 					<Label htmlFor="triggerKeyword">
 						{formData.triggerBy === "email_subject"
 							? "Email Subject"
-							: "Describe in detail what tasks are accomplished by this workflow and what kind of input is required to run the workflow, e.g. files , instructions, etc."}
+							: "Describe in detail when this worklow should be started, e.g. use this workflow to start inspection."}
 					</Label>
 					<Textarea
 						id="startingPrompt"

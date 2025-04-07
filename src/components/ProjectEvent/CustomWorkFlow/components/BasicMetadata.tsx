@@ -26,7 +26,7 @@ export function BasicMetadata({ formData, onChange }: BasicMetadataProps) {
 					value={formData.name}
 				/>
 			</div>
-			<div className="space-y-2">
+			{/* <div className="space-y-2">
 				<Label htmlFor="workflowFor">What&apos;s this worker for?</Label>
 				<Input
 					id="workflowFor"
@@ -34,7 +34,7 @@ export function BasicMetadata({ formData, onChange }: BasicMetadataProps) {
 					required
 					value={formData.workflowFor}
 				/>
-			</div>
+			</div> */}
 			{/* <div className="space-y-2">
         <Label htmlFor="startTime">Start Time</Label>
         <Input
