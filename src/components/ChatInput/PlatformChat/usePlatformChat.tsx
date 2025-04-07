@@ -15,6 +15,7 @@ export function usePlatformChat(
 	chatTarget: string,
 	selectedModel: string = "gemini-2.0-flash",
 	includeContext: boolean = false,
+	selectedContextFolder: {id: string | null; name: string} = { id: null, name: "" },
 ) {
 	const { toast } = useToast();
 	const queryClient = useQueryClient();
@@ -249,7 +250,7 @@ export function usePlatformChat(
 		mutate({
 			session,
 			agentTask: message,
-			brainId: folderId ?? null,
+			brainId: selectedContextFolder.id ?? folderId ?? null,
 			chatId: currentActiveChatEntity.id,
 			projectId: activeProject?.project_id,
 			responseType: chatTarget ?? "folder",
