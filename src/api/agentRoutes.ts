@@ -30,6 +30,7 @@ export const talkToAgent = async({
 	model = "gemini-2.0-flash",
 	includeContext = false,
 	files = [],
+	googleSearch = false,
 }: {
   session: Session;
   agentTask: string;
@@ -40,6 +41,7 @@ export const talkToAgent = async({
   model?: string;
   includeContext?: boolean;
   files?: ProcessedFile[];
+  googleSearch?: boolean;
 }) => {
 	const agentTaskProps = {
 		task: agentTask,
@@ -50,6 +52,7 @@ export const talkToAgent = async({
 		model: model,
 		include_context: includeContext,
 		files: files,
+		google_search: googleSearch,
 	};
 
 	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat`;

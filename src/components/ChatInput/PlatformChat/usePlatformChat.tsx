@@ -22,7 +22,7 @@ export function usePlatformChat(
 	const [chatInput, setChatInput] = useState<string>("");
 	const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
 	const session = useStore((state) => state.session);
-
+	const [googleSearch, setGoogleSearch] = useState(false);
 	const activeProject = useStore((state) => state.activeProject);
 	const activeChatEntity = useStore((state) => state.activeChatEntity);
 	const appendChatEntity = useStore((state) => state.appendChatEntity);
@@ -257,6 +257,7 @@ export function usePlatformChat(
 			files: files,
 			model: selectedModel,
 			includeContext: includeContext,
+			googleSearch: googleSearch,
 		});
 	};
 
@@ -275,5 +276,7 @@ export function usePlatformChat(
 		isWaitingForResponse,
 		selectedModel,
 		includeContext,
+		googleSearch,
+		setGoogleSearch,
 	};
 }

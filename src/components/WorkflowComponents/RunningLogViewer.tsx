@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { getEventResource } from "@/api/eventResourceRoutes";
+import { getEventResourceRows } from "@/api/eventResourceRoutes";
 import { useStore } from "@/utils/store";
 
 interface RunningLogViewerProps {
@@ -36,13 +36,14 @@ const RunningLogViewer = ({ logId, body }: RunningLogViewerProps) : React.ReactN
 		}
 	}, [body]);
 
-	const fetchEventResource = async() => {
+	const fetchEventResource = ():void => {
 		if (!session) return;
-		const eventResource = await getEventResource(session, logId);
-		if (eventResource) {
-			setTableData(eventResource.map((entry) => entry.row));
-			setHeaders(Object.keys(eventResource[0].row));
-		}
+		getEventResourceRows(session, logId).then((eventResource) => {
+			if (eventResource) {
+				setTableData(eventResource.map((entry) => entry.row));
+				setHeaders(Object.keys(eventResource[0].row));
+			}
+		});
 	};
 
 	return (
@@ -69,7 +70,7 @@ const RunningLogViewer = ({ logId, body }: RunningLogViewerProps) : React.ReactN
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{body.entries.map((entry, index) => (
+							{tableData.map((row, index) => (
 								<TableRow 
 									className="hover:bg-gray-50 transition-colors"
 									key={`${logId}-${index}`}
@@ -79,9 +80,9 @@ const RunningLogViewer = ({ logId, body }: RunningLogViewerProps) : React.ReactN
 											className="py-2 px-4 text-xs text-gray-600 whitespace-pre-wrap break-words"
 											key={header}
 										>
-											{typeof entry.row[header] === "object" 
-												? JSON.stringify(entry.row[header], null, 2) 
-												: String(entry.row[header])}
+											{typeof row[header] === "object" 
+												? JSON.stringify(row[header], null, 2) 
+												: String(row[header])}
 										</TableCell>
 									))}
 								</TableRow>

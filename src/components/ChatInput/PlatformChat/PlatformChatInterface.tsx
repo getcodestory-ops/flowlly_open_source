@@ -11,7 +11,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
 	CornerDownLeft,
-	MessageCircleMore,
 	Check,
 	Loader2,
 	Paperclip,
@@ -19,6 +18,7 @@ import {
 	File,
 	Copy,
 	Brain,
+	Search,
 } from "lucide-react";
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -92,6 +92,8 @@ export default function PlatformChatInterface({
 		session,
 		currentTaskId,
 		isWaitingForResponse,
+		googleSearch,
+		setGoogleSearch,
 	} = usePlatformChat(folderId, chatTarget, selectedModel, includeContext, selectedContextFolder);
 
 	const [uploadingFiles, setUploadingFiles] = useState<FileUploadStatus[]>([]);
@@ -555,6 +557,19 @@ export default function PlatformChatInterface({
 				type="file"
 			/>
 			<div className="flex gap-2">
+				<Button
+					className={clsx(
+						"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
+						googleSearch && "text-indigo-500 bg-indigo-50/50",
+					)}
+					disabled={isPending || isWaitingForResponse}
+					onClick={() => setGoogleSearch(!googleSearch)}
+					size="sm"
+					type="button"
+					variant="ghost"
+				>
+					<Search className="h-4 w-4" />
+				</Button>
 				<Dialog onOpenChange={setShowBrainSelector} open={showBrainSelector}>
 					<DialogTrigger asChild>
 						<Button
@@ -568,7 +583,7 @@ export default function PlatformChatInterface({
 							type="button"
 							variant="ghost"
 						>
-							<Brain className="h-5 w-5" />
+							<Brain className="h-4 w-4" />
 						</Button>
 					</DialogTrigger>
 					<DialogContent className="sm:max-w-[600px]">
@@ -835,6 +850,11 @@ export default function PlatformChatInterface({
 						{includeContext && (
 							<span className="text-xs text-muted-foreground">
 								Using context from project files
+							</span>
+						)}
+						{googleSearch && (
+							<span className="text-xs text-muted-foreground">
+								Google search enabled (Disable google search to use flowlly tools)
 							</span>
 						)}
 					</div>
