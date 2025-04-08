@@ -13,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ResourceTextViewer } from "../DocumentEditor/ResourceTextViewer";
 import Image from "next/image";
+import RunningLogViewer from "../WorkflowComponents/RunningLogViewer";
 
 function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
 	// Function to get appropriate file icon based on extension
@@ -56,6 +57,9 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
 					if (result.resource_id)
 					{
 						return <ResourceTextViewer resource_id={result.resource_id} />;
+					}
+					if (result.log_id) {
+						return <RunningLogViewer body={result.body} logId={result.log_id} />;
 					}
 
 					if (result.body) {
