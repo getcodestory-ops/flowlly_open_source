@@ -76,7 +76,7 @@ const RunningLogViewer = ({ logId, body }: RunningLogViewerProps) : React.ReactN
 								>
 									{headers.map((header) => (
 										<TableCell 
-											className="py-2 px-4 text-sm text-gray-600 whitespace-pre-wrap break-words"
+											className="py-2 px-4 text-xs text-gray-600 whitespace-pre-wrap break-words"
 											key={header}
 										>
 											{typeof entry.row[header] === "object" 
