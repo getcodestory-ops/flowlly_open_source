@@ -1,4 +1,4 @@
-import { useState } from "react";
+
 import { StorageResourceEntity } from "@/types/document";
 import { FileText, Download } from "lucide-react";
 import ContentEditor from "@/components/DocumentEditor/ContentEditor";
@@ -16,19 +16,23 @@ interface MediaDialogContentProps {
   resource: StorageResourceEntity;
 }
 
-export const MediaDialogContent: React.FC<MediaDialogContentProps> = ({
+export const MediaDialogContent = ({
 	resource,
-}) => {
+}: MediaDialogContentProps) : React.ReactNode => {
 	const { file_name, metadata, url } = resource || {};
 	const description = metadata?.description;
 	const fileExt = metadata?.extension?.toLowerCase();
-	const { onSubmit, isPending } = useStorageTextFileSave(resource?.id);
+	const { onSubmit } = useStorageTextFileSave(resource?.id);
 
 	switch (fileExt) {
 		case ".jpg":
 		case ".jpeg":
 		case ".png":
 		case ".gif":
+		case "jpg":
+		case "jpeg":
+		case "png":
+		case "gif":
 			return (
 				<>
 					<img
@@ -41,6 +45,8 @@ export const MediaDialogContent: React.FC<MediaDialogContentProps> = ({
 			);
 		case ".mp4":
 		case ".webm":
+		case "mp4":
+		case "webm":
 			return (
 				<>
 					{/* <AspectRatio ratio={1}> */}
@@ -57,6 +63,9 @@ export const MediaDialogContent: React.FC<MediaDialogContentProps> = ({
 		case ".mp3":
 		case ".ogg":
 		case ".wav":
+		case "mp3":
+		case "ogg":
+		case "wav":
 			return (
 				<>
 					<div className="flex flex-col items-center justify-center  p-4">
@@ -74,10 +83,12 @@ export const MediaDialogContent: React.FC<MediaDialogContentProps> = ({
 				</>
 			);
 		case ".txt":
+		case "txt":
 			return (
 				<ContentEditor content={metadata?.content} saveFunction={onSubmit} />
 			);
 		case ".pdf":
+		case "pdf":
 			return (
 				<>
 					<div className="flex flex-col items-center justify-center p-4">
@@ -105,6 +116,7 @@ export const MediaDialogContent: React.FC<MediaDialogContentProps> = ({
 				</>
 			);
 		case ".csv":
+		case "csv":
 			return (
 				<>
 					<div className="flex flex-col items-center justify-center p-4">
@@ -142,7 +154,7 @@ export const MediaDialogContent: React.FC<MediaDialogContentProps> = ({
 	}
 };
 
-const DescriptionContent = ({ description }: { description: string }) => {
+const DescriptionContent = ({ description }: { description: string }): React.ReactNode => {
 	return (
 		<div className="rounded-lg p-2 bg-white max-h-96 overflow-auto">
 			<div className="space-y-1 text-sm">

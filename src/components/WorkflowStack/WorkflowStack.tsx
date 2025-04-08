@@ -158,7 +158,7 @@ const OpenWorkflowButton = ({ workflow }: {workflow: Workflow}): React.ReactNode
 				<span>{openMessage(workflow.status)}</span> <ExternalLink className="w-3 h-3" />
 			</div>
 		</DialogTrigger>
-		<DialogContent className="max-w-4xl py-12">
+		<DialogContent className="max-w-[90vw] py-12">
 			<SteamingWorkflowEvents workflow={workflow} />
 		</DialogContent>
 	</Dialog>;
@@ -262,7 +262,7 @@ const SteamingWorkflowEvents = ({ workflow }: { workflow: Workflow }): React.Rea
 	}, [session, projectId, workflow.workflowId]);
 
 	return (
-		<div className="verflow-auto">
+		<div className="overflow-auto h-[90vh] ">
 			{result && (
 				<ResultViewer 
 					cacheId={workflow.workflowId}
