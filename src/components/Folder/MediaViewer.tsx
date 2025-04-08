@@ -31,6 +31,9 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
 			case ".png":
 			case ".gif":
 			case "jpg":
+			case "jpeg":
+			case "png":
+			case "gif":
 				return (
 					<Dialog>
 						<DialogTrigger asChild>
@@ -49,6 +52,8 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
 				);
 			case ".mp4":
 			case ".webm":
+			case "mp4":
+			case "webm":
 				return (
 					<div className="overflow-auto">
 						<AspectRatio ratio={1}>
@@ -62,6 +67,9 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
 			case ".mp3":
 			case ".ogg":
 			case ".wav":
+			case "mp3":
+			case "ogg":
+			case "wav":
 				return (
 					<div className="flex flex-col items-center justify-center  p-4">
 						<div className="w-full min-w-[300px]">
@@ -77,6 +85,7 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
 				);
 
 			case ".txt":
+			case "txt":
 				return (
 					<Dialog>
 						<DialogTrigger asChild>
@@ -107,6 +116,7 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
 					</Dialog>
 				);
 			case ".pdf":
+			case "pdf":
 				return (
 					<Dialog>
 						<DialogTrigger asChild>

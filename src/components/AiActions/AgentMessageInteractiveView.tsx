@@ -18,13 +18,13 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
 	// Function to get appropriate file icon based on extension
 	const getFileIcon = (extension: string) => {
 		const ext = extension.toLowerCase();
-		if (["jpg", "jpeg", "png", "gif", "bmp", "svg", "webp"].includes(ext)) {
+		if (["jpg", "jpeg", "png", "gif", "bmp", "svg", "webp", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp"].includes(ext)) {
 			return <FileImage className="h-4 w-4 mr-1" />;
-		} else if (["doc", "docx", "txt", "rtf", "pdf"].includes(ext)) {
+		} else if (["doc", "docx", "txt", "rtf", "pdf", ".doc", ".docx", ".txt", ".rtf", ".pdf"].includes(ext)) {
 			return <FileText className="h-4 w-4 mr-1" />;
-		} else if (["xls", "xlsx", "csv"].includes(ext)) {
+		} else if (["xls", "xlsx", "csv", ".xls", ".xlsx", ".csv"].includes(ext)) {
 			return <FileSpreadsheet className="h-4 w-4 mr-1" />;
-		} else if (["zip", "rar", "7z", "tar", "gz"].includes(ext)) {
+		} else if (["zip", "rar", "7z", "tar", "gz", ".zip", ".rar", ".7z", ".tar", ".gz"].includes(ext)) {
 			return <FileArchive className="h-4 w-4 mr-1" />;
 		} else {
 			return <File className="h-4 w-4 mr-1" />;
@@ -89,7 +89,13 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
 					case "get_running_workflows":
 						return "Checking running workflows";
 					case "send_data_to_workflow":
-						return <div className="text-green-500 text-sm ">Continuing workflow with new data</div>;
+						return <> 
+							<Image alt="Workflow Continued !"
+								height={96}
+								src="/logos/continueworkguy.jpg"
+								width={96}
+							/>
+						</>;
 					case "update_schedule":
 						return <div className="text-green-500 text-sm ">Update Schedule</div>;
 					default:
