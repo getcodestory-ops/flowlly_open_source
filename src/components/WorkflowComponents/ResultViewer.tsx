@@ -41,6 +41,7 @@ interface ResultViewerProps {
   currentResult: EventResult;
   cacheId?: string;
 }
+import  RunningLogViewer  from "./RunningLogViewer";
 
 export const ResultViewer: React.FC<ResultViewerProps> = ({
 	currentResult,
@@ -221,70 +222,6 @@ const Timeline = ({ currentResult, isWorkflowRunning, setDetailView, detailView 
 		</div>
 	);
 };
-{/* <div className="mb-6 bg-white rounded-lg shadow-sm p-4 border">
-						<div className="flex items-center justify-between mb-2">
-							<div className="flex items-center gap-2">
-								<div className="bg-purple-100 p-2 rounded-full">
-									<FileText className="h-5 w-5 text-purple-800" />
-								</div>
-								<h2 className="text-xl font-semibold">
-									{currentResult.name || "Workflow Result"}
-								</h2>
-							</div>
-							<div className="flex items-center gap-3">
-								<Badge
-									className={cn(
-										"px-3 py-1 text-sm font-medium rounded-full",
-										isWorkflowRunning
-											? "bg-purple-100 text-purple-800 border-purple-200"
-											: "bg-green-100 text-green-800 border-green-200",
-									)}
-									variant="outline"
-								>
-									{isWorkflowRunning ? (
-										<span className="flex items-center gap-1.5">
-											<span className="relative flex h-2 w-2">
-												<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
-												<span className="relative inline-flex rounded-full h-2 w-2 bg-purple-600" />
-											</span>
-											Running
-										</span>
-									) : (
-										<span className="flex items-center gap-1.5">
-											<CheckCircle2 className="h-3.5 w-3.5" />
-											Completed
-										</span>
-									)}
-								</Badge>
-								<div className="text-sm">
-									{isWorkflowRunning ? (
-										<span className="text-gray-600">
-											{progressPercentage}% in progress
-										</span>
-									) : ((currentResult.status === "completed" || isImplicitlyCompleted) && (
-										<span className="text-green-600 font-medium">
-											100% complete
-										</span>
-									))}
-								</div>
-							</div>
-						</div>
-						<div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mt-4">
-							<div
-								className={`h-full ${
-									hasFailedNodes
-										? "bg-red-500"
-										: isWorkflowRunning
-											? "bg-blue-500"
-											: "bg-green-500"
-								}`}
-								style={{
-									width: `${isWorkflowRunning ? progressPercentage : 100}%`,
-									transition: "width 0.5s ease-in-out",
-								}}
-							/>
-						</div>
-					</div> */}
 
 interface TimelineNodeProps {
   node: NodeData;
@@ -538,8 +475,13 @@ const renderNodeContent = (node: NodeData): React.ReactNode => {
 					key={node.output?.report_path || node.output?.resource_id}
 					resource_id={node.output?.report_path || node.output?.resource_id}
 				/>
-			) : (
-				<div className="bg-gray-50">{renderJsonValue(node.output)}</div>
-			);
+			) :
+				node.output?.log_id && node.output.body ? (
+					<RunningLogViewer body={node.output.body} logId={node.output.log_id} />
+				) :
+			
+					(
+						<div className="bg-gray-50">{renderJsonValue(node.output)}</div>
+					);
 	}
 };
