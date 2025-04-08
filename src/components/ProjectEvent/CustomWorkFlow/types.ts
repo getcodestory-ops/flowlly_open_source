@@ -128,10 +128,21 @@ export interface ChatNodeConfig extends BaseNodeConfig {
   };
 }
 
+
+
 export interface RunningLogNodeConfig extends BaseNodeConfig {
   logName: string;
   systemPrompt: string;
-  description?: string;
+  logType: "sheet";
+  logRefreshFrequency: "daily" | "weekly" | "monthly" | "yearly" | "never";
+  logSchema: {
+    columns: {
+      name: string;
+      description: string;
+      dataType: "string" | "number" | "date" | "boolean" | "attachment";
+      required: boolean;
+    }[];
+  };
 }
 
 export interface OutlookAttachmentsNodeConfig extends BaseNodeConfig {
