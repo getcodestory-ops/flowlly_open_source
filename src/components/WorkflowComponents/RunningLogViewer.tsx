@@ -13,7 +13,7 @@ import { useStore } from "@/utils/store";
 
 interface RunningLogViewerProps {
 	logId: string;
-	body: {
+	body?: {
         entries: {
         id: string;
         row: Record<string, string | number | boolean | null>;
@@ -21,7 +21,7 @@ interface RunningLogViewerProps {
         hidden: boolean;
         event_resource_id: string;
     }[];
-    summary: string;
+    summary?: string;
 }
 }
 
@@ -30,9 +30,12 @@ const RunningLogViewer = ({ logId, body }: RunningLogViewerProps) : React.ReactN
 	const [headers, setHeaders] = useState<string[]>([]);
 	const session = useStore((state) => state.session);
 	useEffect(() => {
-		if (body.entries.length > 0) {
+		if (body && body.entries.length > 0) {
 			setTableData(body.entries.map((entry) => entry.row));
 			setHeaders(Object.keys(body.entries[0].row));
+		}
+		else{
+			fetchEventResource();
 		}
 	}, [body]);
 
@@ -89,18 +92,21 @@ const RunningLogViewer = ({ logId, body }: RunningLogViewerProps) : React.ReactN
 							))}
 						</TableBody>
 					</Table>
-					<div className="flex justify-end p-4 border-t border-gray-200 bg-gray-50">
-						<Button 
-							className="hover:bg-gray-100" 
-							onClick={fetchEventResource}
-							size="sm"
-							variant="outline"
-						>
-					        Show Complete Log
-						</Button>
-			    </div>
+					<div className="p-4 text-gray-500">
+						{body?.summary}
+					</div>
 				</>
 			)}
+			<div className="flex justify-end p-4 border-t border-gray-200 bg-gray-50">
+				<Button 
+					className="hover:bg-gray-100" 
+					onClick={fetchEventResource}
+					size="sm"
+					variant="outline"
+				>
+					        Show Complete Log
+				</Button>
+			    </div>
 		</div>
 	);
 };

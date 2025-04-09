@@ -15,7 +15,7 @@ import { ResourceTextViewer } from "../DocumentEditor/ResourceTextViewer";
 import Image from "next/image";
 import RunningLogViewer from "../WorkflowComponents/RunningLogViewer";
 
-function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
+function AgentMessageInteractiveView({ message }: { message: AgentMessage | string }) {
 	// Function to get appropriate file icon based on extension
 	const getFileIcon = (extension: string) => {
 		const ext = extension.toLowerCase();
@@ -119,8 +119,7 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage }) {
 	return (
 		<div className="flex flex-col">
 			{getMessageContent()}
-			{/* Display file attachments if present */}
-			{message.files && message.files.length > 0 && (
+			{typeof message !== "string" && message.files && message.files.length > 0 && (
 				<div className="mt-2 mb-2">
 					<div className="text-xs text-gray-500 mb-1">Attachments:</div>
 					<div className="flex flex-wrap gap-2">

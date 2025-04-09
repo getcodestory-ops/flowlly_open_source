@@ -66,7 +66,7 @@ export interface AgentChat {
   project_id: string;
   sender: string;
   receiver: string;
-  message: AgentMessage;
+  message: AgentMessage | string;
 }
 
 export interface ScheduleResponse {

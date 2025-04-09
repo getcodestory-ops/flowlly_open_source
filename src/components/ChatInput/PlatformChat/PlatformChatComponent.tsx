@@ -1,6 +1,4 @@
 "use client";
-
-import PlatformChatSelector from "./PlatformChatSelector";
 import PlatformChatInterface from "./PlatformChatInterface";
 import { useState, useEffect } from "react";
 import {
@@ -137,9 +135,9 @@ const ChatSettings = ({
 
 
 export default function PlatformChatComponent({
+	chatTarget,
 	folderId,
 	folderName,
-	chatTarget,
 	onContentUpdate,
 }: {
   folderId: string;

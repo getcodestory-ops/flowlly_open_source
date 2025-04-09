@@ -51,7 +51,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { uploadImageForEditor } from "@/api/folderRoutes";
 import { useToast } from "@/components/ui/use-toast";
-import PlatformChatComponent from "@/components/ChatInput/PlatformChat/PlatformChatComponent";
 import {
 	Dialog,
 	DialogContent,
@@ -65,16 +64,17 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { useEditorStore } from "@/hooks/useEditorStore";
 import { updateDocumentName } from "@/api/documentRoutes";
 (pdfMake as any).vfs = pdfFonts.vfs;
-
+import { type Editor } from "@tiptap/react";
+import AIEditorLayout from "./AIEditor.tsx/AIEditorLayout";
 interface ToolbarProps {
   documentType: string;
   saveFunction?: (_: string) => void;
   onAIEditedContent?: (_: string) => void;
   documentId?: string;
   documentName?: string;
+  editor: Editor;
 }
 
 enum SaveStatus {
@@ -91,8 +91,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
 	onAIEditedContent,
 	documentId,
 	documentName,
+	editor,
 }) => {
-	const editor = useEditorStore((state) => state.editor);
 	const [saveStatus, setSaveStatus] = useState(SaveStatus.HIDDEN);
 	const sessionToken = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
@@ -523,15 +523,14 @@ const Toolbar: React.FC<ToolbarProps> = ({
 									<FaMagic />
 								</ToolTipedButton>
 							</DialogTrigger>
-							<DialogContent className="sm:max-w-[90vw] sm:h-[100vh] flex flex-col">
+							<DialogContent className="sm:max-w-[99vw] sm:h-[100vh] flex flex-col">
 								<div className="flex-1 ">
-									<PlatformChatComponent
+									<AIEditorLayout
 										chatTarget="editor"
+										content={editor.getHTML()}
 										folderId={documentId}
 										folderName="Document Editor"
-										onContentUpdate={(newContent: string) => {
-											if (onAIEditedContent) onAIEditedContent(newContent);
-										}}
+										onContentUpdate={onAIEditedContent}
 									/>
 								</div>
 							</DialogContent>

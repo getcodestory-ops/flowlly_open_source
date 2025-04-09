@@ -1,3 +1,5 @@
+/* eslint-disable max-lines-per-function */
+/* eslint-disable max-lines */
 import React, {
 	useRef,
 	useEffect,
@@ -59,8 +61,8 @@ type FileUploadStatus = {
 };
 
 export default function PlatformChatInterface({
-	folderId,
 	chatTarget,
+	folderId,
 	onContentUpdate,
 	selectedModel,
 	includeContext,
@@ -337,14 +339,12 @@ export default function PlatformChatInterface({
 	const handleApplyChanges = (index: number) => {
 		if (chats && chats.length > 0) {
 			setApplyingChanges((prev) => ({ ...prev, [index]: true }));
-
+			
 			const lastChat = chats[chats.length - 1];
-			if (lastChat.sender !== "User" && lastChat.message.content) {
+			if (lastChat.sender !== "User" && lastChat.message) {
 				const documentID = `:::document{#${folderId}}`;
-				if (typeof lastChat.message.content === "string" && onContentUpdate) {
-					onContentUpdate(lastChat.message.content.replace(documentID, "").replace(":::", ""));
-
-					// Reset the state after a brief delay to show success
+				if (typeof lastChat.message === "string" && onContentUpdate) {
+					onContentUpdate(lastChat.message.replace(documentID, "").replace(":::", ""));
 					setTimeout(() => {
 						setApplyingChanges((prev) => ({ ...prev, [index]: false }));
 					}, 1000);
@@ -816,7 +816,7 @@ export default function PlatformChatInterface({
 			}
 		} else {
 			// If ref doesn't exist, fall back to original behavior
-			if (chats[index].message.content) {
+			if (typeof chats[index].message !== "string" && chats[index].message.content) {
 				const contentStr =
           typeof chats[index].message.content === "string"
           	? chats[index].message.content
@@ -950,7 +950,7 @@ export default function PlatformChatInterface({
 									</div>
 									{/* Improve the copy button UI and add proper spacing */}
 									{history.sender.toLowerCase() !== "user" && (
-										<div className="mt-1 flex justify-between items-center">
+										<div className="mt-1 flex justify-start items-center">
 											<Button
 												className="text-xs text-slate-400 hover:text-indigo-600 flex items-center gap-1 p-1 h-auto rounded-md opacity-60 hover:opacity-100 transition-opacity"
 												onClick={() => copyFormattedContent(index)}
@@ -962,11 +962,11 @@ export default function PlatformChatInterface({
 											</Button>
 											{chatTarget === "editor" && (
 												<Button
-													className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700"
+													className="text-xs text-slate-400 hover:text-indigo-600 flex items-center gap-1 p-1 h-auto rounded-md opacity-60 hover:opacity-100 transition-opacity"
 													disabled={applyingChanges[index]}
 													onClick={() => handleApplyChanges(index)}
 													size="sm"
-													variant="secondary"
+													variant="ghost"
 												>
 													{applyingChanges[index] ? (
 														<>

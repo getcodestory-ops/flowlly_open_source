@@ -4,6 +4,12 @@ import { Plugin, PluginKey } from "prosemirror-state";
 export const DiffStyleExtension = Mark.create({
 	name: "diffStyle",
 
+	addOptions() {
+		return {
+			showDiffButtons: false,
+		};
+	},
+
 	addGlobalAttributes() {
 		return [
 			{
@@ -27,6 +33,8 @@ export const DiffStyleExtension = Mark.create({
 	},
 
 	addProseMirrorPlugins() {
+		const { showDiffButtons } = this.options;
+		
 		return [
 			new Plugin({
 				key: new PluginKey("diffStyle"),
@@ -40,13 +48,17 @@ export const DiffStyleExtension = Mark.create({
             .ProseMirror .insert,
             .ProseMirror .delete {
               position: relative;
-              padding-left: 60px;  /* Increased padding for two buttons */
-            
+              box-sizing: border-box;
+              width: 750px;
+			  margin-left: -41px;
+			  padding-left: 41px;
+
             }
+			  
 
             .ProseMirror .original,
             .ProseMirror .delete {
-              background-color: rgba(255, 0, 0, 0.2);
+              background-color: rgba(255, 0, 0, 0.5);
             }
 
             .ProseMirror .updated {
@@ -62,15 +74,22 @@ export const DiffStyleExtension = Mark.create({
             .ProseMirror .updated::before,
             .ProseMirror .insert::before,
             .ProseMirror .delete::before {
-              content: '✓';
+              content: ${showDiffButtons ? "'Accept'" : "''"};
               position: absolute;
-              left: 5px;
-              top: 50%;
+              right: 52px;
+              top: calc(50%);
               transform: translateY(-50%);
               cursor: pointer;
-              font-size: 16px;
+              font-size: 10px;
               opacity: 0;
               transition: opacity 0.2s;
+              padding: 2px 6px;
+              border-radius: 0px 0px 12px 12px;
+              border: 1px solid #2da44e;
+              color: #2da44e;
+              background-color: rgba(45, 164, 78, 0.1);
+              z-index: 2;
+              pointer-events: ${showDiffButtons ? "auto" : "none"};
             }
 
             /* Reject button */
@@ -78,15 +97,40 @@ export const DiffStyleExtension = Mark.create({
             .ProseMirror .updated::after,
             .ProseMirror .insert::after,
             .ProseMirror .delete::after {
-              content: '❌';
+              content: ${showDiffButtons ? "'Reject'" : "''"};
               position: absolute;
-              left: 30px;
-              top: 50%;
+              right: 10px;
+              top: calc(50%);
               transform: translateY(-50%);
               cursor: pointer;
-              font-size: 16px;
+              font-size: 10px;
               opacity: 0;
               transition: opacity 0.2s;
+              padding: 2px 6px;
+              border-radius: 0px 0px 12px 12px;
+              border: 1px solid #cf222e;
+              color: #cf222e;
+              background-color: rgba(207, 34, 46, 0.1);
+              z-index: 2;
+              pointer-events: ${showDiffButtons ? "auto" : "none"};
+            }
+
+            /* Add a gradient background behind buttons */
+            .ProseMirror .original,
+            .ProseMirror .updated,
+            .ProseMirror .insert,
+            .ProseMirror .delete {
+              background-image: linear-gradient(to right, transparent 60%, rgba(255, 255, 255, 0.9) 75%);
+              background-size: 200% 100%;
+              background-position: left;
+              transition: background-position 0.2s;
+            }
+
+            .ProseMirror .original:hover,
+            .ProseMirror .updated:hover,
+            .ProseMirror .insert:hover,
+            .ProseMirror .delete:hover {
+              background-position: right;
             }
 
             .ProseMirror .original:hover::before,
@@ -97,42 +141,48 @@ export const DiffStyleExtension = Mark.create({
             .ProseMirror .insert:hover::after,
             .ProseMirror .delete:hover::before,
             .ProseMirror .delete:hover::after {
-              opacity: 1;
+              opacity: ${showDiffButtons ? "1" : "0"};
             }
 
             /* Action buttons container */
             .ProseMirror-diff-actions {
+              display: ${showDiffButtons ? "flex" : "none"};
               position: sticky;
-              top: 0;
-              background: white;
-              padding: 8px;
-              border-bottom: 1px solid #ddd;
-              z-index: 10;
-              display: flex;
-              gap: 8px;
+              top: 0px;
+              border-radius: 12px 12px 0 0;
+              z-index: 100;
+              background-color: white;
+            }
+
+            /* Make sure the parent container has a relative position */
+            .ProseMirror {
+              position: relative;
+              min-height: 100px; /* Ensure there's always space for the buttons */
             }
 
             .ProseMirror-diff-button {
-              padding: 6px 12px;
-              border: 1px solid #ddd;
-              border-radius: 4px;
+              padding: 2px 6px;
+              border-radius: 12px 12px 0 0;
               cursor: pointer;
-              background: white;
-              transition: background-color 0.2s;
+              transition: all 0.2s;
+              font-size: 10px;
             }
 
             .ProseMirror-diff-button:hover {
               background: #f0f0f0;
+              transform: translateY(-1px);
             }
 
             .ProseMirror-diff-accept-all {
               color: #2da44e;
               border-color: #2da44e;
+              background-color: rgba(45, 164, 78, 0.1);
             }
 
             .ProseMirror-diff-reject-all {
               color: #cf222e;
               border-color: #cf222e;
+              background-color: rgba(207, 34, 46, 0.1);
             }
           `;
 					document.head.appendChild(style);
@@ -140,15 +190,16 @@ export const DiffStyleExtension = Mark.create({
 					// Create action buttons
 					const actionsContainer = document.createElement("div");
 					actionsContainer.className = "ProseMirror-diff-actions";
+					actionsContainer.style.display = showDiffButtons ? "flex" : "none";
 
 					const acceptAllButton = document.createElement("button");
 					acceptAllButton.className =
-            "ProseMirror-diff-button ProseMirror-diff-accept-all";
+						"ProseMirror-diff-button ProseMirror-diff-accept-all";
 					acceptAllButton.textContent = "Accept All Changes";
 
 					const rejectAllButton = document.createElement("button");
 					rejectAllButton.className =
-            "ProseMirror-diff-button ProseMirror-diff-reject-all";
+						"ProseMirror-diff-button ProseMirror-diff-reject-all";
 					rejectAllButton.textContent = "Reject All Changes";
 
 					actionsContainer.appendChild(acceptAllButton);
@@ -163,7 +214,7 @@ export const DiffStyleExtension = Mark.create({
 						const hasChanges = editorView.dom.querySelector(
 							".original, .updated, .insert, .delete",
 						);
-						actionsContainer.style.display = hasChanges ? "flex" : "none";
+						actionsContainer.style.display = hasChanges && showDiffButtons ? "flex" : "none";
 					};
 
 					// Initial check
@@ -174,6 +225,8 @@ export const DiffStyleExtension = Mark.create({
 					editorView.dispatch(editorView.state.tr);
 
 					const handleBulkAction = (isAccept: boolean) => {
+						if (!showDiffButtons) return; // Don't handle actions if buttons are disabled
+
 						const diffElements = Array.from(
 							editorView.dom.querySelectorAll(
 								".original, .updated, .insert, .delete",
@@ -212,10 +265,10 @@ export const DiffStyleExtension = Mark.create({
 									case "insert":
 										// Replace with plain paragraph
 										const newNode =
-                      editorView.state.schema.nodes.paragraph.create(
-                      	null,
-                      	editorView.state.schema.text(content),
-                      );
+											editorView.state.schema.nodes.paragraph.create(
+												null,
+												editorView.state.schema.text(content),
+											);
 										tr = tr.replaceWith(start, end, newNode);
 										break;
 								}
@@ -226,10 +279,10 @@ export const DiffStyleExtension = Mark.create({
 									case "delete":
 										// Keep content as plain paragraph
 										const newNode =
-                      editorView.state.schema.nodes.paragraph.create(
-                      	null,
-                      	editorView.state.schema.text(content),
-                      );
+											editorView.state.schema.nodes.paragraph.create(
+												null,
+												editorView.state.schema.text(content),
+											);
 										tr = tr.replaceWith(start, end, newNode);
 										break;
 									case "updated":
@@ -260,15 +313,26 @@ export const DiffStyleExtension = Mark.create({
 							".original, .updated, .insert, .delete",
 						) as HTMLElement;
 
-						if (!paragraph || event.offsetX > 60) return; // Only handle clicks in button area
+						if (!paragraph) return;
+
+						// Calculate if click was on accept or reject button based on position
+						const rect = paragraph.getBoundingClientRect();
+						const rightOffset = rect.right - event.clientX;
+						
+						// Check if click is in the button area (top half of paragraph)
+						const isInButtonArea = rightOffset <= 100; // Area where buttons are visible
+						if (!isInButtonArea) return;
+
+						const isAcceptButton = rightOffset >= 35 && rightOffset <= 85; // Accept button area
+						const isRejectButton = rightOffset <= 35; // Reject button area
+						
+						if (!isAcceptButton && !isRejectButton) return;
 
 						const pos = editorView.posAtDOM(paragraph as Node, 0);
 						const resolvedPos = editorView.state.doc.resolve(pos);
 						const start = resolvedPos.before();
 						const end = resolvedPos.after();
 						const content = paragraph.textContent || "";
-
-						const isAcceptButton = event.offsetX <= 25; // First button (accept)
 						const type = paragraph.className;
 
 						let tr = editorView.state.tr;
