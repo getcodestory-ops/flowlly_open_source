@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { useChatStore } from "@/hooks/useChatStore";
 import { updateChatName } from "@/api/agentRoutes";
 const models = [
 	{ id: "gemini-2.0-flash", name: "Gemini Flash" },
@@ -49,30 +50,7 @@ const titleMap: Record<string, string> = {
 	workflow: " ",
 };
 
-// Simple history item component
-const HistoryItem = ({
-	title,
-	isActive = false,
-	onClick,
-}: {
-  title: string;
-  isActive?: boolean;
-  onClick: () => void;
-}) => (
-	<div
-		className={`p-3 border-b border-slate-100 cursor-pointer ${
-			isActive ? "bg-indigo-50" : "hover:bg-gray-50"
-		}`}
-		onClick={onClick}
-	>
-		<div className="flex items-center gap-2 ">
-			<MessageSquare className="h-4 w-4 text-slate-500" />
-			<h4 className={`text-sm ${isActive ? "font-medium" : ""} truncate`}>
-				{title}
-			</h4>
-		</div>
-	</div>
-);
+
 
 // Updated ChatSettings component to use state
 const ChatSettings = ({
@@ -151,7 +129,7 @@ export default function PlatformChatComponent({
     | "folder";
   onContentUpdate?: (newContent: string) => void;
 }) {
-	const [sidebarOpen, setSidebarOpen] = useState(true);
+	const { collapsed, setCollapsed, sidePanel } = useChatStore();
 	const [activeTab, setActiveTab] = useState<"chat" | "settings">("chat");
 	const { toast } = useToast();
 	const [selectedModel, setSelectedModel] = useState<string>("gemini-2.0-flash");
@@ -283,11 +261,11 @@ export default function PlatformChatComponent({
 				<TooltipProvider delayDuration={0}>
 					<div
 						className={`flex flex-col border-r border-slate-200 transition-all duration-300 ${
-							sidebarOpen ? "w-60" : "w-16" // Adjusted width for collapsed state
+							!collapsed ? "w-60" : "w-16" // Adjusted width for collapsed state
 						}`}
 					>
 						{/* Title area */}
-						{sidebarOpen ? (
+						{!collapsed ? (
 							<div className="p-3 flex justify-between items-center">
 								<h3 className="text-sm font-medium text-gray-700">
 									{titleMap[chatTarget]} {folderName}
@@ -321,7 +299,7 @@ export default function PlatformChatComponent({
 								</Tooltip>
 							</div>
 						)}
-						{sidebarOpen ? (
+						{!collapsed ? (
 							<ScrollArea className="flex-grow h-[calc(100vh-5000px)]">
 								<div className="px-2 py-2">
 									{chatEntities && [...chatEntities].reverse()
@@ -384,7 +362,7 @@ export default function PlatformChatComponent({
 																		/>
 																	) : (
 																		<>
-																			<span className={`text-xs leading-tight truncate block ${!sidebarOpen && "w-12"}`}>
+																			<span className={`text-xs leading-tight truncate block ${collapsed && "w-12"}`}>
 																				{chatEntity.chat_name}
 																			</span>
 																			<Pencil 
@@ -400,7 +378,7 @@ export default function PlatformChatComponent({
 																</div>
 															</button>
 														</TooltipTrigger>
-														{!sidebarOpen && !isEditing && (
+														{collapsed && !isEditing && (
 															<TooltipContent className="text-xs" side="right">
 																{chatEntity.chat_name}
 															</TooltipContent>
@@ -430,16 +408,16 @@ export default function PlatformChatComponent({
 									<TooltipTrigger asChild>
 										<Button
 											className={`w-full py-1 px-2 rounded flex items-center text-gray-400 hover:text-gray-600 hover:bg-gray-50 ${
-												sidebarOpen ? "justify-start" : "justify-center"
+												!collapsed ? "justify-start" : "justify-center"
 											}`}
 											onClick={handleCreateNewChat}
 											variant="ghost"
 										>
 											<PenBox size={16} />
-											{sidebarOpen && <span className="ml-2 text-xs">New Chat</span>}
+											{!collapsed && <span className="ml-2 text-xs">New Chat</span>}
 										</Button>
 									</TooltipTrigger>
-									{!sidebarOpen && (
+									{collapsed && (
 										<TooltipContent side="right">New Chat</TooltipContent>
 									)}
 								</Tooltip>
@@ -451,16 +429,16 @@ export default function PlatformChatComponent({
 													? "bg-gray-50 text-gray-900"
 													: "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
 											} ${
-												sidebarOpen ? "justify-start" : "justify-center"
+												!collapsed ? "justify-start" : "justify-center"
 											}`}
 											onClick={() => handleTabClick("settings")}
 											variant="ghost"
 										>
 											<Settings size={16} />
-											{sidebarOpen && <span className="ml-2 text-xs">Settings</span>}
+											{!collapsed && <span className="ml-2 text-xs">Settings</span>}
 										</Button>
 									</TooltipTrigger>
-									{!sidebarOpen && (
+									{collapsed && (
 										<TooltipContent side="right">Settings</TooltipContent>
 									)}
 								</Tooltip>
@@ -470,10 +448,10 @@ export default function PlatformChatComponent({
 									<TooltipTrigger asChild>
 										<Button
 											className="w-full flex items-center text-gray-400 hover:bg-gray-50 hover:text-gray-600 p-2 rounded-lg"
-											onClick={() => setSidebarOpen(!sidebarOpen)}
+											onClick={() => setCollapsed(!collapsed)}
 											variant="ghost"
 										>
-											{sidebarOpen ? (
+											{!collapsed ? (
 												<>
 													<ChevronLeft size={16} />
 													<span className="ml-2 text-xs">Collapse</span>
@@ -483,7 +461,7 @@ export default function PlatformChatComponent({
 											)}
 										</Button>
 									</TooltipTrigger>
-									{!sidebarOpen && (
+									{collapsed && (
 										<TooltipContent side="right">Expand sidebar</TooltipContent>
 									)}
 								</Tooltip>

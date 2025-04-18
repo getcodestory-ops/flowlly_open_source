@@ -6,29 +6,35 @@
 import PlatformChatComponent from "../ChatInput/PlatformChat/PlatformChatComponent";
 import { Toaster } from "@/components/ui/toaster";
 import { useStore } from "@/utils/store";
-export default function ChatComponent() {
+import { useChatStore } from "@/hooks/useChatStore";
+import { clsx } from "clsx";
+import InteractiveChatPanel from "@/components/ChatInput/PlatformChat/InteractiveChatPanel";
+
+export default function ChatComponent() : JSX.Element {
 	const activeProject = useStore((state) => state.activeProject);
+	const { sidePanel } = useChatStore();
 	return (
 		<div className="p-2">
 			<Toaster />
 			{activeProject && (
-				<PlatformChatComponent
-					chatTarget="agent"
-					folderId={activeProject?.project_id}
-					folderName="Agent"
-				/>
+				<div className={clsx("", sidePanel?.isOpen && "flex")}>
+					<div className={clsx("transition-all duration-500 ease-in-out", sidePanel?.isOpen ? "w-1/2" : "w-full")}>
+						<PlatformChatComponent
+							chatTarget="agent"
+							folderId={activeProject?.project_id}
+							folderName="Agent"
+						/>
+					</div>
+					<div className={clsx(
+						"transition-all duration-500 ease-in-out absolute right-0",
+						sidePanel?.isOpen ? "w-1/2 translate-x-0 opacity-100" : "w-1/2 translate-x-full opacity-0",
+					)}
+					>
+						<InteractiveChatPanel />
+					</div>
+				</div>
 			)}
-			{/* <Card className="h-full w-full rounded-2xl">
-        <CardHeader className="p-4 h-[50px]">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium">Chat</CardTitle>
-            <AssistantChatSelector />
-          </div>
-        </CardHeader>
-        <CardContent className="p-2 h-[calc(100vh-140px)]">
-          <AssistantChatInterface />
-        </CardContent>
-      </Card> */}
+
 		</div>
 	);
 }

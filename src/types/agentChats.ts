@@ -49,7 +49,15 @@ export interface AgentMessage {
   function_response?:{
     name?: string;
     args?: {
-      result?: string;
+      result?: string | {
+        body?: string| any;
+        query?: string;
+        workflowId?: string;
+        sources?: {
+          filename: string;
+          resource_id: string;
+        }[];
+      };
     };
   }
   files?: ProcessedFile[];

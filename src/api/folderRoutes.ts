@@ -347,3 +347,29 @@ const getUrlInput = (
 		},
 	};
 };
+
+
+export const getInlineFileUrl = async({
+	session,
+	projectId,
+	resourceId,
+}: {
+	session: Session;
+	projectId: string;
+	resourceId: string;
+}) : Promise<string | null> => {
+	const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/file/view/${projectId}/${resourceId}`;
+
+	try {
+		const response = await axios.get(baseUrl, {
+			headers: {
+				Authorization: `Bearer ${session.access_token}`,
+			},
+		});
+
+		return response.data;
+	} catch (error) {
+		console.error("Error getting inline file url:", error);
+		return null;
+	}
+};

@@ -23,7 +23,7 @@ export const DatabaseViewer = (): React.ReactNode => {
 						<ArrowLeft className="h-5 w-5" />
 					</Button>
 				</Tooltipped>
-				<h2 className="text-xl font-semibold"> Resource Logs </h2>
+				<h2 className="text-xl font-semibold"> Table </h2>
 			</div>
 			<div className="p-4 max-h-[calc(100vh-100px)] overflow-auto">
 				{selectedEventResourceId && (

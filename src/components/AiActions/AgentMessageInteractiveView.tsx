@@ -9,13 +9,20 @@ import {
 	FileText,
 	FileArchive,
 	FileSpreadsheet,
+	XIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ResourceTextViewer } from "../DocumentEditor/ResourceTextViewer";
 import Image from "next/image";
 import RunningLogViewer from "../WorkflowComponents/RunningLogViewer";
+import ContextSourceViewer from "../Folder/ContextSourceViewer";
+import { Button } from "@/components/ui/button";
+import { ExternalLinkIcon } from "@radix-ui/react-icons";
+import { useChatStore } from "@/hooks/useChatStore";
+
 
 function AgentMessageInteractiveView({ message }: { message: AgentMessage | string }) {
+	const { setSidePanel, setCollapsed, sidePanel } = useChatStore();
 	// Function to get appropriate file icon based on extension
 	const getFileIcon = (extension: string) => {
 		const ext = extension.toLowerCase();
@@ -30,6 +37,28 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage | stri
 		} else {
 			return <File className="h-4 w-4 mr-1" />;
 		}
+	};
+	const setEditorSidePanel = (resource_id: string, filename: string, type: "editor" | "sources" = "editor") => {
+		setSidePanel({
+			isOpen: true,
+			type: type,
+			resourceId: resource_id,
+			filename: filename,
+		});
+		setCollapsed(true);
+	};
+
+	const getSources = (sources: {filename: string, resource_id: string}[]) => {
+		return (
+			<div className="flex flex-col gap-2  w-1/2">
+				<div className="text-xs text-gray-500 mb-1">Sources:</div>
+				<div className="flex flex-wrap gap-2 ">
+					{sources.map((source) => (
+						<ContextSourceViewer key={source.resource_id} sources={source} />
+					))}
+				</div>
+			</div>
+		);
 	};
 
 	const getMessageContent = (): React.ReactNode => {
@@ -56,7 +85,40 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage | stri
 				if (typeof result === "object") {
 					if (result.resource_id)
 					{
-						return <ResourceTextViewer resource_id={result.resource_id} />;
+						return (
+							<>
+								{sidePanel?.type === "editor" && sidePanel?.resourceId === result.resource_id && (
+									<>
+										<Button onClick={() => {
+											setSidePanel(null);
+										}}
+										variant="outline"
+										>
+											<XIcon className="h-4 w-4" />
+											Close Document Panel
+										</Button>
+									</>
+								)}
+								{ sidePanel?.resourceId !== result.resource_id && (
+									<>
+										<div className="flex ">
+											<Button onClick={() => {
+												setEditorSidePanel(result.resource_id, result.resource_name);
+											}}
+											variant="outline"
+											>
+												Open in side panel
+												<ExternalLinkIcon className="h-4 w-4" />
+											</Button>
+										
+										</div>
+										<ResourceTextViewer resource_id={result.resource_id} />
+									</>
+								)}
+								
+								
+							</>
+						);
 					}
 					if (result.log_id) {
 						return <RunningLogViewer body={result.body} logId={result.log_id} />;
@@ -64,7 +126,12 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage | stri
 
 					if (result.body) {
 						if (typeof result.body === "string") {
-							return <MarkDownDisplay content={result.body} />;
+							return<>
+								<MarkDownDisplay content={result.body} />
+								<div className="flex justify-end">
+									{result.sources && getSources(result.sources)}
+								</div>
+							</>; 
 						}
 						if (typeof result.body === "object") {
 							return <MarkDownDisplay content={JSON.stringify(result.body)} />;
@@ -106,6 +173,9 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage | stri
 						return name;
 				}
 			};
+	
+
+
 			return (
 				<div className="flex flex-col tex">
 					{getFunctionName(message.function_call?.name || "")}
@@ -125,8 +195,11 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage | stri
 					<div className="flex flex-wrap gap-2">
 						{message.files.map((file, index) => (
 							<Badge
-								className="py-1 px-2 flex items-center"
+								className="py-1 px-2 flex items-center cursor-pointer"
 								key={index}
+								onClick={() => {
+									setEditorSidePanel(file.resource_id, file.resource_name, "editor");
+								}}
 								variant="secondary"
 							>
 								{getFileIcon(file.extension || "")}
