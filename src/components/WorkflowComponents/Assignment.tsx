@@ -23,6 +23,7 @@ import LoaderAnimation from "@/components/Animations/LoaderAnimation";
 import CreateJob from "./CreateJob";
 import { WorkflowViewer } from "./AssignmentComponents/WorkflowViewer";
 import { useWorkflow } from "@/hooks/useWorkflow";
+import { DatabaseViewer } from "./DatabaseViewer";
 
 export default function AssignmentHome(): React.ReactNode {
 	const {
@@ -34,6 +35,7 @@ export default function AssignmentHome(): React.ReactNode {
 		setGraphs,
 		currentGraph,
 		setCurrentGraph,
+		selectedEventResourceId,
 	} = useWorkflow();
 	const session = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
@@ -102,33 +104,39 @@ export default function AssignmentHome(): React.ReactNode {
 
 	return (
 		<div className="mx-auto h-[100vh] flex flex-col">
-			{!currentGraph ? (
-				<Card className="flex-1 border-0 shadow-none h-[100vh]">
-					<CardHeader className="px-6 pt-6 pb-2 sticky top-0 bg-white z-10">
-						<div className="flex flex-row justify-between">
-							<div className="">
-								<CardTitle className="flex  gap-8 text-2xl font-bold">
-									AI Workflows
-								</CardTitle>
-								<CardDescription>
-									<div className="flex justify-between items-start">
-										<div className="flex flex-col gap-2">
-											Manage and run AI workflows for your project
-										</div>
-									</div>
-								</CardDescription>
-							</div>
-							<div className="justify-end flex items-center h-full">
-								<CreateJob />
-							</div>
-						</div>
-					</CardHeader>
-					<CardContent className="px-6 flex-1 overflow-y-auto">
-						<EventListViewer />
-					</CardContent>
-				</Card>
+			{selectedEventResourceId ? (
+				<DatabaseViewer />		
 			) : (
-				<WorkflowViewer session={session} />
+				<>
+					{!currentGraph && !selectedEventResourceId ? (
+						<Card className="flex-1 border-0 shadow-none h-[100vh]">
+							<CardHeader className="px-6 pt-6 pb-2 sticky top-0 bg-white z-10">
+								<div className="flex flex-row justify-between">
+									<div className="">
+										<CardTitle className="flex  gap-8 text-2xl font-bold">
+									AI Workflows
+										</CardTitle>
+										<CardDescription>
+											<div className="flex justify-between items-start">
+												<div className="flex flex-col gap-2">
+											Manage and run AI workflows for your project
+												</div>
+											</div>
+										</CardDescription>
+									</div>
+									<div className="justify-end flex items-center h-full">
+										<CreateJob />
+									</div>
+								</div>
+							</CardHeader>
+							<CardContent className="px-6 flex-1 overflow-y-auto">
+								<EventListViewer />
+							</CardContent>
+						</Card>
+					) : (
+						<WorkflowViewer session={session} />
+					)}
+				</>
 			)}
 		</div>
 	);

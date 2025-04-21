@@ -4,6 +4,7 @@ import {
 	ArrowDown,
 	ArrowUp,
 	PencilIcon,
+	Database,
 	Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,7 @@ import { PlayIcon } from "lucide-react";
 
 export const EventListViewer: React.FC = ({
 }) => {
-	const { setCurrentGraphId, viewMode, graphs } = useWorkflow();
+	const { setCurrentGraphId, viewMode, graphs, setSelectedEventResourceId } = useWorkflow();
 	const onSelectGraph = (id: string): void => {
 		setCurrentGraphId(id);
 	};
@@ -320,6 +321,19 @@ export const EventListViewer: React.FC = ({
 													</span>
 												</div>
 												<div className="flex items-center gap-1">
+													{graph.event_resources && graph.event_resources.length > 0 &&
+													<Button
+														onClick={(e) => {
+															e.stopPropagation();
+															if(!graph.event_resources) return;
+															setSelectedEventResourceId(graph?.event_resources[0]?.id ?? null);
+														}}
+														size="icon"
+														variant="ghost"
+													>
+														<Database className="h-3 w-3" />
+													</Button>
+													}
 													<Button
 														onClick={(e) => {
 															e.stopPropagation();
