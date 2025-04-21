@@ -6,8 +6,13 @@ import remarkDirective from "remark-directive";
 import type { Components } from "react-markdown";
 import { Play, Info } from "lucide-react";
 import { visit } from "unist-util-visit";
-import ContentEditor from "../DocumentEditor/ContentEditor";
-
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import UnderLine from "@tiptap/extension-underline";
+import TextAlign from "@tiptap/extension-text-align";
+import { Markdown } from "tiptap-markdown";
+import { DiffStyleExtension } from "@/components/DocumentEditor/extensions/DiffStyleExtension";
+import EditorProvider from "../DocumentEditor/EditorProvider";
 interface MarkdownRendererProps {
   content: string;
   collapse?: boolean;
@@ -87,12 +92,37 @@ const DeletionHighlight: React.FC<{ children: React.ReactNode }> = ({ children }
 	);
 };
 
-// Component for rendering document references
+// Add this new component for document references
+const SimpleDocumentEditor: React.FC<{ content: string }> = ({ content }) => {
+	const editor = useEditor({
+		extensions: [
+			StarterKit,
+			Markdown.configure({
+				html: true,
+			}),
+			UnderLine,
+			TextAlign.configure({
+				types: ["heading", "paragraph"],
+			}),
+			DiffStyleExtension.configure({
+				showDiffButtons: true,
+			}),
+		],
+		content: content,
+		editable: false,
+	});
+
+	return (<>
+		{editor && <EditorProvider editor={editor} />}
+	</>
+	);
+};
+
+// Modify the DocumentReference component
 const DocumentReference: React.FC<{ documentId: string, content: string }> = ({ documentId, content }) => {
 	return (
-		<div className="flex items-center gap-1">
-		
-			<ContentEditor content={content} />
+		<div className="flex prose-p:text-sm h-[450px]">
+			<SimpleDocumentEditor content={content} />
 		</div>
 	);
 };

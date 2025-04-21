@@ -49,7 +49,15 @@ export interface AgentMessage {
   function_response?:{
     name?: string;
     args?: {
-      result?: string;
+      result?: string | {
+        body?: string| any;
+        query?: string;
+        workflowId?: string;
+        sources?: {
+          filename: string;
+          resource_id: string;
+        }[];
+      };
     };
   }
   files?: ProcessedFile[];
@@ -66,7 +74,7 @@ export interface AgentChat {
   project_id: string;
   sender: string;
   receiver: string;
-  message: AgentMessage;
+  message: AgentMessage | string;
 }
 
 export interface ScheduleResponse {

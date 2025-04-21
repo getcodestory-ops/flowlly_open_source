@@ -51,3 +51,22 @@ export const getEventResoucesByEventId = async(session: Session, eventId: string
 		return null;
 	}
 };
+
+export const getEventResourceDashboard = async(session: Session, projectId: string, eventResourceId: string) : Promise<string | null> => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/resource/dashboard/${projectId}`;
+	try {
+		const response = await axios.get(url, {
+			params: {
+				resource_id: eventResourceId,
+			},	
+			headers: {
+				Authorization: `Bearer ${session.access_token}`,
+			},
+		});
+		return response.data;
+	} catch (error) {
+		console.error("Error in getEventResourceDashboard", error);
+		return null;
+	}
+};
+

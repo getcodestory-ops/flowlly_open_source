@@ -23,6 +23,9 @@ interface WorkflowStore {
   viewMode: ViewMode;
   setViewMode: (_: ViewMode) => void;
 
+  selectedEventResourceId: string | null;
+  setSelectedEventResourceId: (_: string | null) => void;
+
   selectedWorkflowId: string | null;
   setSelectedWorkflowId: (_: string | null) => void;
 
@@ -53,6 +56,9 @@ export const useWorkflow = create<WorkflowStore>((set, get) => ({
 
 	viewMode: ViewMode.GRID,
 	setViewMode: (viewMode: ViewMode) => set({ viewMode }),
+
+	selectedEventResourceId: null,
+	setSelectedEventResourceId: (selectedEventResourceId: string | null ) => set({ selectedEventResourceId }),
 
 	selectedWorkflowId: null,
 	setSelectedWorkflowId: (selectedWorkflowId: string | null) => set({ selectedWorkflowId }),

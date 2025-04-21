@@ -15,7 +15,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { getNotifications } from "@/api/update_routes";
 import { Notification } from "@/types/notification";
-import ScheduleEditThroughNotification from "./ScheduleEditThroughNotification";
 
 export default function ScheduleNotifications() {
 	const session = useStore((state) => state.session);
@@ -36,11 +35,11 @@ export default function ScheduleNotifications() {
 
 	return (
 		<ScrollArea className="max-h-[calc(78vh-5rem)] w-full">
-			<ScheduleEditThroughNotification
+			{/* <ScheduleEditThroughNotification
 				isOpen={isOpen}
 				notification={activeNotification}
 				onClose={() => setIsOpen(false)}
-			/>
+			/> */}
 			<div className="space-y-4">
 				{notifications?.map((notification: Notification) => (
 					<div

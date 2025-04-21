@@ -63,6 +63,33 @@ export type GraphMetadata = {
   nodes?: WorkflowNode[];
 };
 
+export type EventResource = {
+  id: string;
+  created_at: string;
+  event_id: string;
+  metadata: {
+    name: string;
+    description: string;
+    type: string;
+  };
+  rows?: {
+    id: string;
+    created_at: string;
+    event_resource_id: string;
+    row: Record<string, string | number | boolean | null>;
+    hidden: boolean;
+    history: {
+      [date: string]: {
+        id: string;
+        created_at: string;
+        event_resource_id: string;
+        row: Record<string, string | number | boolean | null>;
+        hidden: boolean;
+      }[]
+    };
+  }
+};
+
 export type GraphData = {
   id: string;
   name: string;
@@ -74,6 +101,7 @@ export type GraphData = {
   event_type: string;
   event_schedule?: EventSchedule[];
   event_trigger?: EventTrigger[];
+  event_resources?: EventResource[];
 };
 
 // Event-related types
