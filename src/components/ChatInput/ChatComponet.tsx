@@ -1,8 +1,4 @@
 "use client";
-
-// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import AssistantChatInterface from "../Schedule/AssistantChatInterface";
-// import AssistantChatSelector from "../Schedule/AssistantChatSelector";
 import PlatformChatComponent from "../ChatInput/PlatformChat/PlatformChatComponent";
 import { Toaster } from "@/components/ui/toaster";
 import { useStore } from "@/utils/store";

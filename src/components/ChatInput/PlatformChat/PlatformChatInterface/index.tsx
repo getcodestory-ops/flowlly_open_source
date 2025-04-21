@@ -161,7 +161,9 @@ export default function PlatformChatInterface({
 			setApplyingChanges((prev) => ({ ...prev, [index]: true }));
 
 			const lastChat = chats[chats.length - 1];
-			if (lastChat.sender !== "User" && lastChat.message.content) {
+			if (typeof lastChat.message === "string") {
+				onContentUpdate?.(lastChat.message);
+			} else if (lastChat.sender !== "User" && lastChat.message.content) {
 				const documentID = `:::document{#${folderId}}`;
 				if (typeof lastChat.message.content === "string" && onContentUpdate) {
 					onContentUpdate(lastChat.message.content.replace(documentID, "").replace(":::", ""));
@@ -275,7 +277,13 @@ export default function PlatformChatInterface({
 			}
 		} else {
 			// If ref doesn't exist, fall back to original behavior
-			if (chats[index].message.content) {
+			if (typeof chats[index].message === "string") {
+				navigator.clipboard.writeText(chats[index].message);
+				toast({
+					title: "Copied to clipboard",
+					duration: 2000,
+				});
+			} else	 if (chats[index].message.content) {
 				const contentStr =
           typeof chats[index].message.content === "string"
           	? chats[index].message.content
