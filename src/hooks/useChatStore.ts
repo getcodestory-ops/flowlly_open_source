@@ -15,6 +15,9 @@ interface ChatStore {
         resourceId: string;
         filename?: string;
     } | null) => void;
+	documentDisplayMap: { [resourceId: string]: string };
+	setDocumentDisplayMap: (resourceId: string, chatId: string) => void;
+	clearDocumentDisplayMap: () => void;
 }
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -27,6 +30,15 @@ export const useChatStore = create<ChatStore>((set) => ({
 		filename: "",
 	},
 	setSidePanel: (sidePanel) => set({ sidePanel }),
+	documentDisplayMap: {},
+	setDocumentDisplayMap: (resourceId, chatId) => 
+		set((state) => ({
+			documentDisplayMap: {
+				...state.documentDisplayMap,
+				[resourceId]: chatId,
+			},
+		})),
+	clearDocumentDisplayMap: () => set({ documentDisplayMap: {} }),
 }));
 
 

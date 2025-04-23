@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { AgentMessage } from "@/types/agentChats";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
 // import ArtifactViewer from "./ArtifactViewer";
@@ -21,8 +21,31 @@ import { ExternalLinkIcon } from "@radix-ui/react-icons";
 import { useChatStore } from "@/hooks/useChatStore";
 
 
-function AgentMessageInteractiveView({ message }: { message: AgentMessage | string }) {
+function AgentMessageInteractiveView({ id, message }: { id?: string, message: AgentMessage | string }) : React.ReactNode {
 	const { setSidePanel, setCollapsed, sidePanel } = useChatStore();
+	const { setDocumentDisplayMap, documentDisplayMap } = useChatStore();
+	useEffect(() => {
+		if (!id)
+			return;
+		if (typeof message === "object" ) {
+			if ("function_response" in message) {
+				if (typeof message.function_response === "object") {
+					if (message.function_response.args) {
+						if (typeof message.function_response.args === "object") {	
+							if (message.function_response.args.result) {
+								if (typeof message.function_response.args.result === "object") {
+									if ("resource_id" in message.function_response.args.result) {
+										setDocumentDisplayMap(message.function_response.args.result.resource_id || "", id);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}, [message]);
+
 	// Function to get appropriate file icon based on extension
 	const getFileIcon = (extension: string) => {
 		const ext = extension.toLowerCase();
@@ -112,7 +135,9 @@ function AgentMessageInteractiveView({ message }: { message: AgentMessage | stri
 											</Button>
 										
 										</div>
-										<ResourceTextViewer resource_id={result.resource_id} />
+										{documentDisplayMap[result.resource_id] === id && (
+											<ResourceTextViewer resource_id={result.resource_id} />
+										)}
 									</>
 								)}
 								

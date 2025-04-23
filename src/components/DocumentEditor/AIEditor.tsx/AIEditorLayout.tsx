@@ -31,7 +31,9 @@ const AIEditorLayout = ({
 			TextAlign.configure({
 				types: ["heading", "paragraph"],
 			}),
-			DiffStyleExtension,
+			DiffStyleExtension.configure({
+				showDiffButtons: true,
+			}),
 		],
 		content: content,
 		editable: false,
