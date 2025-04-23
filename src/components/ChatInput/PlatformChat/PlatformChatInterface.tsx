@@ -945,7 +945,7 @@ export default function PlatformChatInterface({
 										ref={messageRefs.current[index] || null}
 									>
 										{history.message && (
-											<AgentMessageInteractiveView message={history.message} />
+											<AgentMessageInteractiveView id={history.id} message={history.message} />
 										)}
 									</div>
 									{/* Improve the copy button UI and add proper spacing */}
