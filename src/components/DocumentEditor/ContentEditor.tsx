@@ -23,7 +23,7 @@ interface EditorBlockProps {
   documentName?: string;
   includeToolbar?: boolean;
 }
-// TODO
+
 const ContentEditor = ({
 	content,
 	setContent,
