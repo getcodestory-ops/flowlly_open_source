@@ -11,7 +11,6 @@ import TableHeader from "@tiptap/extension-table-header";
 import Toolbar from "./ToolBar";
 import { HoverExtension } from "./extensions/HoverExtension";
 import { DiffStyleExtension } from "./extensions/DiffStyleExtension";
-import ReactChartDisplayExtension from "./extensions/ReactChartDisplayExtension";
 import Image from "@tiptap/extension-image";
 import EditorProvider from "./EditorProvider";
 interface EditorBlockProps {
@@ -22,6 +21,7 @@ interface EditorBlockProps {
   documentId?: string;
   documentName?: string;
   includeToolbar?: boolean;
+  showDiffButtons?: boolean;
 }
 // TODO
 const ContentEditor = ({
@@ -31,6 +31,7 @@ const ContentEditor = ({
 	documentType = "Minutes of the meeting",
 	documentId,
 	documentName,
+	showDiffButtons = true,
 }: EditorBlockProps): React.ReactNode => {
 	const editorInstance = useEditor({
 		extensions: [
@@ -53,7 +54,10 @@ const ContentEditor = ({
 			TableHeader,
 			TableCell,
 			HoverExtension,
-			DiffStyleExtension,
+			DiffStyleExtension.configure({
+				showDiffButtons: showDiffButtons,
+				multicolor: true,
+			}),
 		],
 		editorProps: {
 			attributes: {
@@ -62,7 +66,6 @@ const ContentEditor = ({
 		},
 		content: content || "",
 		immediatelyRender: false,
-
 	});
 
 	useEffect(() => {
@@ -92,4 +95,5 @@ const ContentEditor = ({
 		</>
 	);
 };
+
 export default ContentEditor;

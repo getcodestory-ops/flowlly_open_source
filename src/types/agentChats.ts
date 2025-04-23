@@ -57,6 +57,7 @@ export interface AgentMessage {
           filename: string;
           resource_id: string;
         }[];
+        resource_id?: string;
       };
     };
   }
