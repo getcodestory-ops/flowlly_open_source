@@ -1,4 +1,4 @@
-import { Mark, mergeAttributes } from "@tiptap/core";
+import { mergeAttributes } from "@tiptap/core";
 import { Plugin, PluginKey } from "prosemirror-state";
 import { Node } from "prosemirror-model";
 import { MarkType } from "prosemirror-model";
