@@ -7,7 +7,9 @@ import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { ResourceTextViewer } from "@/components/DocumentEditor/ResourceTextViewer";
 
-const InlineDocumentViewer = ({ resourceId }: {resourceId: string}) => {
+const imageExtensions = ["jpg", "jpeg", "png", "gif", "svg", "ico", "webp"];
+
+const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string, fileExtension: string}) => {
 	const { session } = useStore();
 	const { activeProject } = useStore();
 	const { data: url } = useQuery({
@@ -20,8 +22,15 @@ const InlineDocumentViewer = ({ resourceId }: {resourceId: string}) => {
 		},
 	});
 	return (
-		<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
-			{url && (
+		<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+			{url && imageExtensions.includes(fileExtension) && (
+				<img 
+					alt="Resource" 
+					className="max-w-full max-h-full object-contain" 
+					src={url}
+				/>
+			)}
+			{url && !imageExtensions.includes(fileExtension) && (
 				<iframe 
 					className="border-0"
 					height="100%"
@@ -68,7 +77,10 @@ const InteractiveChatPanel = () => {
                 (
                 	<>
                 		{  inLineViewableExtensions.includes(fileExtension) && (
-                			<InlineDocumentViewer resourceId={sidePanel.resourceId} />
+                			<InlineDocumentViewer 
+                				fileExtension={fileExtension} 
+                				resourceId={sidePanel.resourceId}
+                			/>
                 		)}
                 		{ fileExtension === "txt" && (
                 			<ResourceTextViewer resource_id={sidePanel.resourceId} />
