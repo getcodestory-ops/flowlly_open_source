@@ -13,7 +13,7 @@ import { AgentChat, AgentChatEntity } from "@/types/agentChats";
 export function usePlatformChat(
 	folderId: string,
 	chatTarget: string,
-	selectedModel: string = "gemini-2.0-flash",
+	selectedModel: string = "gemini-2.5-pro-preview-03-25",
 	includeContext: boolean = false,
 	selectedContextFolder: {id: string | null; name: string} = { id: null, name: "" },
 ) {
