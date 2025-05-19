@@ -192,14 +192,13 @@ export function usePlatformChat(
 				relation_type: chatTarget,
 			});
 
-			// Instead of invalidating the query, directly update the store
+
 			appendChatEntity(response);
 
-			// Also update the query cache directly
 			const queryKey = ["documentChatEntityList", session, activeProject];
 			const currentEntities =
         queryClient.getQueryData<AgentChatEntity[]>(queryKey) || [];
-			queryClient.setQueryData(queryKey, [...currentEntities, response]);
+			queryClient.setQueryData(queryKey, [response, ...currentEntities]);
 
 			// Set this as the active chat entity
 			useStore.setState({ activeChatEntity: response });
