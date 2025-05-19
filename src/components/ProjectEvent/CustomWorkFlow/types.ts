@@ -85,11 +85,11 @@ export interface TriggerNodeConfig extends BaseNodeConfig {
 }
 
 export interface ReportNodeConfig extends BaseNodeConfig {
-  folder_path: string;
-  file_name: string;
+  folder_path?: string;
+  file_name?: string;
   report_prompt: string;
-  generated_reports: any[];
-  folder_id: string;
+  generated_reports?: any[];
+  folder_id?: string;
 }
 
 export interface DocumentExtractionNodeConfig extends BaseNodeConfig {

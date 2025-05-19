@@ -35,9 +35,9 @@ export const WorkflowStack = (): React.ReactNode => {
 					}
 					else {
 						toast({
-							title: "Error",
-							variant: "destructive",
-							description: "Something went wrong while fetching running workflows",
+							title: "No running workflows found!",
+							variant: "default",
+							description: "No running workflows found",
 						});
 					}
 				},

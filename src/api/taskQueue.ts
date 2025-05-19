@@ -368,3 +368,27 @@ export const getEventsStatus = async({
 	return response.data;
 };
 
+export const deleteProjectEvent = async({
+	session,
+	projectId,
+	eventId,
+}: {
+	session: Session;
+	projectId: string;
+	eventId: string;
+}): Promise<Record<string, string>> => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/${projectId}/${eventId}`;
+	try {
+		const response = await axios.delete(url, {
+			headers: {
+				Authorization: `Bearer ${session.access_token}`,
+			},
+		});
+		return response.data;
+	} catch (error) {
+		console.error(error);
+		return { error: "Failed to delete project event!" };
+	}
+};
+
+

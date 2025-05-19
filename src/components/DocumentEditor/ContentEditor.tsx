@@ -13,6 +13,7 @@ import { HoverExtension } from "./extensions/HoverExtension";
 import { DiffStyleExtension } from "./extensions/DiffStyleExtension";
 import Image from "@tiptap/extension-image";
 import EditorProvider from "./EditorProvider";
+import CustomHighlight from "./extensions/CustomHighlight";
 interface EditorBlockProps {
   content: string | any;
   setContent?: (_: string) => void;
@@ -58,6 +59,7 @@ const ContentEditor = ({
 				showDiffButtons: showDiffButtons,
 				multicolor: true,
 			}),
+			CustomHighlight,
 		],
 		editorProps: {
 			attributes: {
@@ -66,6 +68,12 @@ const ContentEditor = ({
 		},
 		content: content || "",
 		immediatelyRender: false,
+		onUpdate: ({ editor }) => {
+			if (setContent) {
+				setContent(editor.storage.markdown.getMarkdown());
+			}
+		},
+
 	});
 
 	useEffect(() => {

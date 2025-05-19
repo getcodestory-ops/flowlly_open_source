@@ -38,7 +38,7 @@ import { getMembers } from "@/api/membersRoutes";
 import { getProjects } from "@/api/projectRoutes";
 import { RiTeamLine } from "react-icons/ri";
 import { MembersModal } from "@/components/MembersModal/MembersModal";
-import { getAgentChatEntities } from "@/api/agentRoutes";
+// import { getAgentChatEntities } from "@/api/agentRoutes";
 import { ProjectEntity } from "@/types/projects";
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
@@ -47,7 +47,7 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<
 
 interface TeamSwitcherProps extends PopoverTriggerProps {}
 
-export function ProjectSwitcher({ className }: TeamSwitcherProps) {
+export function ProjectSwitcher({ className }: TeamSwitcherProps) : JSX.Element {
 	const pathname = usePathname();
 	const router = useRouter();
 	const params = useParams();
@@ -126,28 +126,28 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
 		}
 	}, [data?.length, isSuccess, setUserProjects, data]);
 
-	const { data: chatEntitities, isLoading: chatsLoading } = useQuery({
-		queryKey: ["chatEntityList", session, activeProject],
-		queryFn: () => {
-			if (!session || !activeProject) {
-				return Promise.reject("No session or active project");
-			}
-			return getAgentChatEntities(session, activeProject.project_id);
-		},
-		enabled: !!session?.access_token,
-	});
+	// const { data: chatEntitities, isLoading: chatsLoading } = useQuery({
+	// 	queryKey: ["chatEntityList", session, activeProject],
+	// 	queryFn: () => {
+	// 		if (!session || !activeProject) {
+	// 			return Promise.reject("No session or active project");
+	// 		}
+	// 		return getAgentChatEntities(session, activeProject.project_id);
+	// 	},
+	// 	enabled: !!session?.access_token,
+	// });
 
-	useEffect(() => {
-		if (chatEntitities && chatEntitities.length > 0) {
-			setChatEntities(chatEntitities);
-			setActiveChatEntity(chatEntitities[chatEntitities.length - 1]);
-		} else {
-			setActiveChatEntity(null);
-			setChatEntities([]);
-		}
-	}, [chatEntitities, setActiveChatEntity]);
+	// useEffect(() => {
+	// 	if (chatEntitities && chatEntitities.length > 0) {
+	// 		setChatEntities(chatEntitities);
+	// 		setActiveChatEntity(chatEntitities[chatEntitities.length - 1]);
+	// 	} else {
+	// 		setActiveChatEntity(null);
+	// 		setChatEntities([]);
+	// 	}
+	// }, [chatEntitities, setActiveChatEntity]);
 
-	const switchProject = (project: ProjectEntity) => {
+	const switchProject = (project: ProjectEntity) :void => {
 		const projectId = params ? params?.projectId : null;
 
 		if (projectId && pathname && pathname.includes(`/${projectId}/`)) {
@@ -204,9 +204,6 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
 												key={project.project_id}
 												onSelect={() => {
 													switchProject(project);
-													// setActiveProject(project);
-
-													// setOpen(false);
 												}}
 											>
 												<div className="flex flex-row gap-2">
@@ -250,7 +247,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) {
 											}}
 										>
 											<PlusCircledIcon className="mr-2 h-5 w-5" />
-                      Create Project
+                      						Create Project
 										</CommandItem>
 									</AlertDialogTrigger>
 								</CommandGroup>

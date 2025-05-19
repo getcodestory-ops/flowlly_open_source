@@ -34,6 +34,11 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
 			case "jpeg":
 			case "png":
 			case "gif":
+			case "heic":
+			case "tiff":
+			case ".tiff":
+			case ".tif":
+			case "tif":
 				return (
 					<Dialog>
 						<DialogTrigger asChild>

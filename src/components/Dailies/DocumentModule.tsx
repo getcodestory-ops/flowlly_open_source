@@ -2,38 +2,17 @@
 
 import React from "react";
 import Link from "next/link";
-import { FileSearch } from "lucide-react";
-
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-
-//components
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-
 import {
 	fetchFolders,
 	fetchFiles,
-	createSubFolder,
 	GetFolderFileProp,
 	GetFolderSubFolderProp,
 } from "@/api/folderRoutes";
-import { AddNewFolderModal } from "../CreateNewFolderModal/CreateNewFolderModal";
 import { useQuery } from "@tanstack/react-query";
-import { Folder } from "lucide-react";
-
-//store zustang
 import { useStore } from "@/utils/store";
-
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -42,25 +21,26 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-
-import { Progress } from "@/components/ui/progress";
-
+import { useChatStore } from "@/hooks/useChatStore";
+import { clsx } from "clsx";
 import { FilesContent } from "../Folder/FilesTable";
+import InteractiveChatPanel from "../ChatInput/PlatformChat/InteractiveChatPanel";
 
-export const DocumentFolderModule = () => {
+export const DocumentFolderModule = () : React.ReactNode => {
 	return (
-		<div className="h-full container  p-4 rounded-lg flex items-start">
+		<div className="h-full p-4 rounded-lg flex items-start">
 			<DatabasePageLayout />
 		</div>
 	);
 };
 
-export function DatabasePageLayout() {
+export function DatabasePageLayout() : React.ReactNode {
 	const queryClient = useQueryClient();
 	const { session, activeProject } = useStore((state) => ({
 		session: state.session,
 		activeProject: state.activeProject,
 	}));
+	const { sidePanel } = useChatStore();
 	const [rootId, setRootId] = useState<string | null>(null);
 	const [isProjectWide, setIsProjectWide] = useState<boolean>(true);
 	const [currentFolderStructure, setCurrentFolderStructure] =
@@ -111,7 +91,7 @@ export function DatabasePageLayout() {
 	}
 	return (
 		<div className="flex flex-1 h-full">
-			<div className="flex-1 p-4 ">
+			<div className={clsx("transition-all duration-500 ease-out", sidePanel?.isOpen ? "w-1/2" : "w-full")}>
 				<div className="flex w-full flex-col">
 					<Tabs
 						className="pb-4"
@@ -145,6 +125,13 @@ export function DatabasePageLayout() {
 						</div>
 					)}
 				</div>
+			</div>
+			<div className={clsx(
+				"transition-all duration-500 ease-out absolute right-2",
+				sidePanel?.isOpen ? "w-1/2 translate-x-0 opacity-100" : "w-1/2 translate-x-full opacity-0",
+			)}
+			>
+				<InteractiveChatPanel />
 			</div>
 		</div>
 	);
@@ -311,58 +298,4 @@ const FolderDetails: React.FC<
 	);
 };
 
-const CategoryFolder = ({
-	categoryName,
-	onClick,
-	date,
-	depth,
-}: {
-  categoryName: string;
-  onClick: () => void;
-  date: string;
-  depth: number;
-}) => {
-	return (
-		<div className="rounded-lg shadow-md hover:shadow-lg transition-shadow w-full hover:cursor-pointer relative">
-			<Card
-				className="hover:bg-blue-100  hover:border-blue-500 h-auto p-0"
-				onClick={onClick}
-			>
-				<CardHeader>
-					<CardTitle className="max-h-full flex flex-row items-center gap-3 p-0">
-						<Folder className="w-4" />
-						<div className="text-lg max-h-full overflow-hidden text-ellipsis whitespace-nowrap flex-1">
-							{categoryName}
-						</div>
-					</CardTitle>
-				</CardHeader>
-			</Card>
-		</div>
-	);
-};
 
-function timeAgo(dateString: string): string {
-	const now = new Date();
-	const date = new Date(dateString);
-
-	const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-	const intervals = [
-		{ label: "y", seconds: 31536000 }, // 1 year = 365 * 24 * 60 * 60
-		{ label: "m", seconds: 2592000 }, // 1 month = 30 * 24 * 60 * 60
-		{ label: "wk", seconds: 604800 }, // 1 week = 7 * 24 * 60 * 60
-		{ label: "d", seconds: 86400 }, // 1 day = 24 * 60 * 60
-		{ label: "h", seconds: 3600 }, // 1 hour = 60 * 60
-		{ label: "m", seconds: 60 }, // 1 minute = 60
-		{ label: "s", seconds: 1 }, // 1 second
-	];
-
-	for (const interval of intervals) {
-		const count = Math.floor(seconds / interval.seconds);
-		if (count >= 1) {
-			return `Created ${count}${interval.label} ago`;
-		}
-	}
-
-	return "Created just now";
-}

@@ -35,7 +35,7 @@ export default function MessagePage({ params }: { params: { messageId: string } 
 	}, [messageId]);
 
 	return (
-		<div className="flex flex-col h-full">
+		<div className="flex flex-col h-full ">
 			<div className={clsx(
 				"transition-all duration-500 ease-in-out absolute right-0 z-10",
 				sidePanel?.isOpen ? "w-full translate-x-0 opacity-100" : "w-full translate-x-full opacity-0",

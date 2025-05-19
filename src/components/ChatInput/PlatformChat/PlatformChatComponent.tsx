@@ -302,7 +302,7 @@ export default function PlatformChatComponent({
 						{!collapsed ? (
 							<ScrollArea className="flex-grow h-[calc(100vh-5000px)]">
 								<div className="px-2 py-2">
-									{chatEntities && [...chatEntities].reverse()
+									{chatEntities && [...chatEntities]
 										.map((chatEntity, index, array) => {
 											const isEditing = editingChatId === chatEntity.id;
 

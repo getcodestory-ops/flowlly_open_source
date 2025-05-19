@@ -43,6 +43,7 @@ import { CreateEvent } from "@/types/projectEvents";
 import { createNewProjectEvent } from "@/api/taskQueue";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { GraphData } from "../WorkflowComponents/types";
+import MeetingDocumentEditor from "./MeetingDocumentEditor";
 
 interface Participant {
   id: string;
@@ -269,58 +270,11 @@ export default function ProjectEventCreationForm({
 		Intl.DateTimeFormat().resolvedOptions().timeZone,
 	);
 	const [isJoining, setIsJoining] = useState(false);
-
-	// Mock existing events (replace with actual data fetching in a real application)
-	const existingEvents: Event[] = [
-		// {
-		//   id: "1",
-		//   name: "Team Meeting",
-		//   participants: [
-		//     {
-		//       id: "101",
-		//       firstName: "John",
-		//       lastName: "Doe",
-		//       email: "john@example.com",
-		//     },
-		//     {
-		//       id: "102",
-		//       firstName: "Jane",
-		//       lastName: "Smith",
-		//       email: "jane@example.com",
-		//     },
-		//   ],
-		//   recurrence: "weekly",
-		//   startDate: "2023-06-15",
-		//   endDate: "2023-12-31",
-		//   startTime: "09:00",
-		//   duration: "60",
-		//   participationLink: "https://meet.example.com/team-meeting",
-		// },
-		// {
-		//   id: "2",
-		//   name: "Project Review",
-		//   participants: [
-		//     {
-		//       id: "103",
-		//       firstName: "Alice",
-		//       lastName: "Johnson",
-		//       email: "alice@example.com",
-		//     },
-		//     {
-		//       id: "104",
-		//       firstName: "Bob",
-		//       lastName: "Brown",
-		//       email: "bob@example.com",
-		//     },
-		//   ],
-		//   recurrence: "monthly",
-		//   startDate: "2023-06-20",
-		//   endDate: "2024-06-20",
-		//   startTime: "14:00",
-		//   duration: "90",
-		//   participationLink: "https://meet.example.com/project-review",
-		// },
-	];
+	const [showPostCreationOptions, setShowPostCreationOptions] = useState(false);
+	const [editingDocument, setEditingDocument] = useState<"agenda" | "template" | null>(null);
+	const [agendaContent, setAgendaContent] = useState("");
+	const [templateContent, setTemplateContent] = useState("");
+	const [eventId, setEventId] = useState<string | null>(null);
 
 	const { mutate, isPending } = useMutation({
 		mutationFn: createNewProjectEvent,
@@ -331,28 +285,8 @@ export default function ProjectEventCreationForm({
 				duration: 9000,
 			});
 			queryClient.invalidateQueries({ queryKey: ["projectEvents"] });
-			setMeetingName("");
-			setParticipants(
-				members.map((m) => ({
-					id: m.id,
-					firstName: m.first_name,
-					lastName: m.last_name,
-					email: m.email,
-				})),
-			);
-			setSelectedParticipants([]);
-			setRecurrence("once");
-			setStartDate(new Date());
-			setEndDate(undefined);
-			setStartTime(
-				format(roundToNearestMinutes(new Date(), { nearestTo: 30 }), "HH:mm"),
-			);
-			setDuration("60");
-			setParticipationLink("");
-			setParticipationOption("join");
-
-			// Close the form
-			onClose();
+			setShowPostCreationOptions(true);
+			setEventId(data.project_event.id);
 		},
 		onError: (error) => {
 			toast({
@@ -459,261 +393,313 @@ export default function ProjectEventCreationForm({
 		});
 	};
 
-	const handleStartParticipation = () => {
-		if (participationOption === "join") {
-			// Logic to start participation (e.g., redirect to meeting link)
-			window.open(participationLink, "_blank");
-		} else {
-			// Logic to start recording
-			//console.log("Starting audio recording...");
-		}
-	};
+
 
 	return (
 		<ScrollArea className="w-full h-full">
 			<div>
 				<Card className="w-full shadow-none">
-					<CardHeader>
-						<CardTitle>
-              Join meeting <br />
-							<span className="text-sm mt-2 font-thin">
-								{new Date().toLocaleTimeString()} {timeZone}
-							</span>
-						</CardTitle>
-					</CardHeader>
-					<form onSubmit={handleSubmit}>
-						<CardContent className="space-y-6">
-							<div className="space-y-2">
-								<Label htmlFor="meetingName">Meeting Name</Label>
-								<Input
-									id="meetingName"
-									name="meetingName"
-									onChange={(e) => setMeetingName(e.target.value)}
-									required
-									value={meetingName}
-								/>
-							</div>
-							<div className="space-y-2">
-								<ParticipantSelector
-									participants={participants}
-									selectedParticipants={selectedParticipants}
-									setParticipants={setParticipants}
-									setSelectedParticipants={setSelectedParticipants}
-								/>
-							</div>
-							<div className="space-y-2 p-2 bg-secondary rounded-lg">
-								<div className="space-y-2">
-									<Label htmlFor="recurrence">Repeat</Label>
-									<Select
-										defaultValue="once"
-										name="recurrence"
-										onValueChange={setRecurrence}
-										value={recurrence}
-									>
-										<SelectTrigger>
-											<SelectValue placeholder="Select repeat frequency" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="once">Does not repeat</SelectItem>
-											<SelectItem value="daily">Daily</SelectItem>
-											<SelectItem value="weekly">Weekly</SelectItem>
-											<SelectItem value="monthly">Monthly</SelectItem>
-											<SelectItem value="weekdays">Weekdays</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-								<div className="grid grid-cols-2 gap-4">
-									{recurrence === "weekly" && (
-										<div className="space-y-2 col-span-2">
-											<Label htmlFor="weeklyRecurrenceDay">On</Label>
+					{!showPostCreationOptions ? (
+						<>
+							<CardHeader>
+								<CardTitle>
+									Join meeting <br />
+									<span className="text-sm mt-2 font-thin">
+										{new Date().toLocaleTimeString()} {timeZone}
+									</span>
+								</CardTitle>
+							</CardHeader>
+							<form onSubmit={handleSubmit}>
+								<CardContent className="space-y-6">
+									<div className="space-y-2">
+										<Label htmlFor="meetingName">Meeting Name</Label>
+										<Input
+											id="meetingName"
+											name="meetingName"
+											onChange={(e) => setMeetingName(e.target.value)}
+											required
+											value={meetingName}
+										/>
+									</div>
+									<div className="space-y-2">
+										<ParticipantSelector
+											participants={participants}
+											selectedParticipants={selectedParticipants}
+											setParticipants={setParticipants}
+											setSelectedParticipants={setSelectedParticipants}
+										/>
+									</div>
+									<div className="space-y-2 p-2 bg-secondary rounded-lg">
+										<div className="space-y-2">
+											<Label htmlFor="recurrence">Repeat</Label>
 											<Select
-												onValueChange={setWeeklyRecurrenceDay}
-												value={weeklyRecurrenceDay}
+												defaultValue="once"
+												name="recurrence"
+												onValueChange={setRecurrence}
+												value={recurrence}
 											>
 												<SelectTrigger>
-													<SelectValue placeholder="Select day" />
+													<SelectValue placeholder="Select repeat frequency" />
 												</SelectTrigger>
 												<SelectContent>
-													{[
-														"Sunday",
-														"Monday",
-														"Tuesday",
-														"Wednesday",
-														"Thursday",
-														"Friday",
-														"Saturday",
-													].map((day) => (
-														<SelectItem key={day} value={day}>
-															{day}
-														</SelectItem>
-													))}
+													<SelectItem value="once">Does not repeat</SelectItem>
+													<SelectItem value="daily">Daily</SelectItem>
+													<SelectItem value="weekly">Weekly</SelectItem>
+													<SelectItem value="monthly">Monthly</SelectItem>
+													<SelectItem value="weekdays">Weekdays</SelectItem>
 												</SelectContent>
 											</Select>
 										</div>
-									)}
-									<div className="space-y-2 ">
-										<Label className="mr-2">
-											{recurrence === "once" ? "Date" : "Start Date"}{" "}
-										</Label>
-										<Popover>
-											<PopoverTrigger asChild>
-												<Button
-													className={!startDate ? "text-muted-foreground" : ""}
-													variant="outline"
-												>
-													{startDate ? format(startDate, "PPP") : "Pick a date"}
-													<CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
-												</Button>
-											</PopoverTrigger>
-											<PopoverContent align="start" className="w-auto p-0">
-												<Calendar
-													initialFocus
-													mode="single"
-													onSelect={(date) => setStartDate(date as Date)}
-													selected={startDate}
-												/>
-											</PopoverContent>
-										</Popover>
-									</div>
-									{recurrence !== "once" && (
-										<div className="space-y-2">
-											<Label className="mr-2">End Date </Label>
-											<Popover>
-												<PopoverTrigger asChild>
-													<Button
-														className={!endDate ? "text-muted-foreground" : ""}
-														variant="outline"
+										<div className="grid grid-cols-2 gap-4">
+											{recurrence === "weekly" && (
+												<div className="space-y-2 col-span-2">
+													<Label htmlFor="weeklyRecurrenceDay">On</Label>
+													<Select
+														onValueChange={setWeeklyRecurrenceDay}
+														value={weeklyRecurrenceDay}
 													>
-														{endDate ? format(endDate, "PPP") : "Pick a date"}
-														<CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
-													</Button>
-												</PopoverTrigger>
-												<PopoverContent align="start" className="w-auto p-0">
-													<Calendar
-														initialFocus
-														mode="single"
-														onSelect={(date) => setEndDate(date as Date)}
-														selected={endDate}
-													/>
-												</PopoverContent>
-											</Popover>
+														<SelectTrigger>
+															<SelectValue placeholder="Select day" />
+														</SelectTrigger>
+														<SelectContent>
+															{[
+																"Sunday",
+																"Monday",
+																"Tuesday",
+																"Wednesday",
+																"Thursday",
+																"Friday",
+																"Saturday",
+															].map((day) => (
+																<SelectItem key={day} value={day}>
+																	{day}
+																</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+												</div>
+											)}
+											<div className="space-y-2 ">
+												<Label className="mr-2">
+													{recurrence === "once" ? "Date" : "Start Date"}{" "}
+												</Label>
+												<Popover>
+													<PopoverTrigger asChild>
+														<Button
+															className={!startDate ? "text-muted-foreground" : ""}
+															variant="outline"
+														>
+															{startDate ? format(startDate, "PPP") : "Pick a date"}
+															<CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+														</Button>
+													</PopoverTrigger>
+													<PopoverContent align="start" className="w-auto p-0">
+														<Calendar
+															initialFocus
+															mode="single"
+															onSelect={(date) => setStartDate(date as Date)}
+															selected={startDate}
+														/>
+													</PopoverContent>
+												</Popover>
+											</div>
+											{recurrence !== "once" && (
+												<div className="space-y-2">
+													<Label className="mr-2">End Date </Label>
+													<Popover>
+														<PopoverTrigger asChild>
+															<Button
+																className={!endDate ? "text-muted-foreground" : ""}
+																variant="outline"
+															>
+																{endDate ? format(endDate, "PPP") : "Pick a date"}
+																<CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+															</Button>
+														</PopoverTrigger>
+														<PopoverContent align="start" className="w-auto p-0">
+															<Calendar
+																initialFocus
+																mode="single"
+																onSelect={(date) => setEndDate(date as Date)}
+																selected={endDate}
+															/>
+														</PopoverContent>
+													</Popover>
+												</div>
+											)}
 										</div>
-									)}
-								</div>
-							</div>
-							<div className="grid grid-cols-2 gap-4">
-								<div className="space-y-2">
-									<Label htmlFor="startTime">Time</Label>
-									<Select onValueChange={setStartTime} value={startTime}>
-										<SelectTrigger>
-											<SelectValue placeholder="Select time" />
-										</SelectTrigger>
-										<SelectContent>
-											{Array.from({ length: 96 }, (_, i) => {
-												const date = addMinutes(
-													new Date().setHours(0, 0, 0, 0),
-													i * 15,
-												);
-												return (
-													<SelectItem key={i} value={format(date, "HH:mm")}>
-														{format(date, "p")}
-													</SelectItem>
-												);
-											})}
-										</SelectContent>
-									</Select>
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="duration">Duration</Label>
-									<Select onValueChange={setDuration} value={duration}>
-										<SelectTrigger>
-											<SelectValue placeholder="Select duration" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="5">5 minutes</SelectItem>
-											<SelectItem value="30">30 minutes</SelectItem>
-											<SelectItem value="60">1 hour</SelectItem>
-											<SelectItem value="90">1.5 hours</SelectItem>
-											<SelectItem value="120">2 hours</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-							</div>
-							<div className="space-y-2">
-								<Label>Participation Option</Label>
-								<RadioGroup
-									onValueChange={(value) =>
-										setParticipationOption(value as "join" | "record")
-									}
-									value={participationOption}
-								>
-									<div className="flex items-center space-x-2">
-										<RadioGroupItem id="join" value="join" />
-										<Label htmlFor="join">Join using link</Label>
 									</div>
-									<div className="flex items-center space-x-2">
-										<RadioGroupItem id="record" value="record" />
-										<Label htmlFor="record">Audio recording</Label>
+									<div className="grid grid-cols-2 gap-4">
+										<div className="space-y-2">
+											<Label htmlFor="startTime">Time</Label>
+											<Select onValueChange={setStartTime} value={startTime}>
+												<SelectTrigger>
+													<SelectValue placeholder="Select time" />
+												</SelectTrigger>
+												<SelectContent>
+													{Array.from({ length: 96 }, (_, i) => {
+														const date = addMinutes(
+															new Date().setHours(0, 0, 0, 0),
+															i * 15,
+														);
+														return (
+															<SelectItem key={i} value={format(date, "HH:mm")}>
+																{format(date, "p")}
+															</SelectItem>
+														);
+													})}
+												</SelectContent>
+											</Select>
+										</div>
+										<div className="space-y-2">
+											<Label htmlFor="duration">Duration</Label>
+											<Select onValueChange={setDuration} value={duration}>
+												<SelectTrigger>
+													<SelectValue placeholder="Select duration" />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="5">5 minutes</SelectItem>
+													<SelectItem value="30">30 minutes</SelectItem>
+													<SelectItem value="60">1 hour</SelectItem>
+													<SelectItem value="90">1.5 hours</SelectItem>
+													<SelectItem value="120">2 hours</SelectItem>
+												</SelectContent>
+											</Select>
+										</div>
 									</div>
-								</RadioGroup>
-							</div>
-							{participationOption === "join" && (
-								<>
 									<div className="space-y-2">
-										<Label htmlFor="participationLink">
-                      Participation Link
-										</Label>
-										<Input
-											id="participationLink"
-											name="participationLink"
-											onChange={(e) => setParticipationLink(e.target.value)}
-											placeholder="https://meet.example.com/your-meeting"
-											value={participationLink}
-										/>
+										<Label>Participation Option</Label>
+										<RadioGroup
+											onValueChange={(value) =>
+												setParticipationOption(value as "join" | "record")
+											}
+											value={participationOption}
+										>
+											<div className="flex items-center space-x-2">
+												<RadioGroupItem id="join" value="join" />
+												<Label htmlFor="join">Join using link</Label>
+											</div>
+											<div className="flex items-center space-x-2">
+												<RadioGroupItem id="record" value="record" />
+												<Label htmlFor="record">Audio recording</Label>
+											</div>
+										</RadioGroup>
 									</div>
-									{recurrence !== "once" && (
-										<div className="flex items-center space-x-2">
-											<Checkbox
-												checked={autoJoin}
-												id="autoJoin"
-												onCheckedChange={(checked) =>
-													setAutoJoin(checked as boolean)
-												}
-											/>
-											<Label htmlFor="autoJoin">
+									{participationOption === "join" && (
+										<>
+											<div className="space-y-2">
+												<Label htmlFor="participationLink">
+                        Participation Link
+												</Label>
+												<Input
+													id="participationLink"
+													name="participationLink"
+													onChange={(e) => setParticipationLink(e.target.value)}
+													placeholder="https://meet.example.com/your-meeting"
+													value={participationLink}
+												/>
+											</div>
+											{recurrence !== "once" && (
+												<div className="flex items-center space-x-2">
+													<Checkbox
+														checked={autoJoin}
+														id="autoJoin"
+														onCheckedChange={(checked) =>
+															setAutoJoin(checked as boolean)
+														}
+													/>
+													<Label htmlFor="autoJoin">
                         Auto-join at corresponding times
-											</Label>
-										</div>
+													</Label>
+												</div>
+											)}
+										</>
 									)}
-								</>
-							)}
-							<div className="flex items-center space-x-2">
-								<Checkbox
-									checked={isJoining}
-									id="joinNow"
-									onCheckedChange={(checked) =>
-										setIsJoining(checked as boolean)
-									}
-								/>
-								<Label htmlFor="joinNow">Join Now</Label>
-							</div>
-						</CardContent>
-						<CardFooter>
-							<Button
-								className="w-full"
-								disabled={!isFormValid || isPending}
-								type="submit"
-							>
-								{isPending ? (
-									<span className="spinner">Loading...</span> // Add spinner here
-								) : editData ? (
-									"Update Event"
-								) : (
-									"Create Event"
-								)}
-							</Button>
-						</CardFooter>
-					</form>
+									<div className="flex items-center space-x-2">
+										<Checkbox
+											checked={isJoining}
+											id="joinNow"
+											onCheckedChange={(checked) =>
+												setIsJoining(checked as boolean)
+											}
+										/>
+										<Label htmlFor="joinNow">Join Now</Label>
+									</div>
+								</CardContent>
+								<CardFooter>
+									<Button
+										className="w-full"
+										disabled={!isFormValid || isPending}
+										type="submit"
+									>
+										{isPending ? (
+											<span className="spinner">Loading...</span>
+										) : editData ? (
+											"Update Event"
+										) : (
+											"Create Event"
+										)}
+									</Button>
+								</CardFooter>
+							</form>
+						</>
+					) : editingDocument ? (
+						<MeetingDocumentEditor
+							eventId={eventId || ""}
+							onClose={() => setEditingDocument(null)}
+							onSave={(content) => {
+								if (editingDocument === "agenda") {
+									setAgendaContent(content);
+								} else {
+									setTemplateContent(content);
+								}
+								setEditingDocument(null);
+							}}
+							type={editingDocument}
+						/>
+					) : (
+						<>
+							<CardHeader>
+								<CardTitle>Event Created Successfully!</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-6">
+								<div className="space-y-4">
+									<div className="space-y-2">
+										<h3 className="text-lg font-medium">Next Steps</h3>
+										<p className="text-sm text-muted-foreground">
+											Would you like to set up additional details for your meeting?
+										</p>
+									</div>
+									<div className="grid gap-4">
+										<Button
+											className="w-full"
+											onClick={() => setEditingDocument("agenda")}
+											variant="outline"
+										>
+											<PlusCircle className="mr-2 h-4 w-4" />
+											{agendaContent ? "Edit Meeting Agenda" : "Create Meeting Agenda"}
+										</Button>
+										<Button
+											className="w-full"
+											onClick={() => setEditingDocument("template")}
+											variant="outline"
+										>
+											<PlusCircle className="mr-2 h-4 w-4" />
+											{templateContent ? "Edit Meeting Template" : "Setup Meeting Template"}
+										</Button>
+									</div>
+								</div>
+							</CardContent>
+							<CardFooter className="flex justify-between">
+								<Button onClick={onClose} variant="outline">
+									Skip for now
+								</Button>
+								<Button onClick={onClose}>
+									Done
+								</Button>
+							</CardFooter>
+						</>
+					)}
 				</Card>
 			</div>
 		</ScrollArea>

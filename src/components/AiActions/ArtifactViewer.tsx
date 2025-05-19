@@ -53,7 +53,7 @@ function TaskResultDisplay({
   chidlTaskId: string;
   projectId: string;
   sessionToken: Session;
-}) {
+}) : JSX.Element {
 	switch (task_function) {
 		case "invoke_reference":
 			return (

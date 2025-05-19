@@ -19,8 +19,8 @@ import {
 	X,
 	File,
 	Copy,
-	Brain,
 	Search,
+	Folder,
 } from "lucide-react";
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -34,7 +34,7 @@ import Image from "next/image";
 import FolderSelector from "@/components/ProjectEvent/FolderSelector";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import clsx from "clsx";
-
+import AtSelectorComponent from "./components/AtSelectorComponent";
 // Define models for the UI
 const models = [
 	{ id: "gemini-2.5-pro-preview-03-25", name: "Gemini Pro 2.5 (latest)" },
@@ -575,7 +575,7 @@ export default function PlatformChatInterface({
 						<Button
 							className={clsx(
 								"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
-								selectedContextFolder.id && "text-indigo-500 bg-indigo-50/50",
+								selectedContextFolder.name && "text-indigo-500 bg-indigo-50/50",
 							)}
 							disabled={isPending || isWaitingForResponse}
 							size="sm"
@@ -583,7 +583,7 @@ export default function PlatformChatInterface({
 							type="button"
 							variant="ghost"
 						>
-							<Brain className="h-4 w-4" />
+							<Folder className="h-4 w-4" />
 						</Button>
 					</DialogTrigger>
 					<DialogContent className="sm:max-w-[600px]">
@@ -607,7 +607,7 @@ export default function PlatformChatInterface({
 					{isPending || isWaitingForResponse ? (
 						<Loader2 className="h-5 w-5 animate-spin" />
 					) : (
-						<Paperclip className="h-5 w-5" />
+						<Paperclip className="h-4 w-4" />
 					)}
 				</Button>
 			</div>
@@ -845,11 +845,11 @@ export default function PlatformChatInterface({
 							Model:{" "}
 							{models.find(
 								(m: { id: string; name: string }) => m.id === selectedModel,
-							)?.name || selectedModel}
+							)?.name || selectedModel} |
 						</span>
-						{includeContext && (
+						{selectedContextFolder.name && (
 							<span className="text-xs text-muted-foreground">
-								Using context from project files
+								New reports will be saved in {selectedContextFolder.name} folder | 
 							</span>
 						)}
 						{googleSearch && (
@@ -859,8 +859,11 @@ export default function PlatformChatInterface({
 						)}
 					</div>
 				</div>
+				<div className="absolute top-0 left-2 z-10">
+					<AtSelectorComponent />
+				</div>
 				<Textarea
-					className="min-h-12 resize-none border-0 p-3 pb-8 shadow-none focus-visible:ring-0"
+					className="min-h-10 resize-none border-0 p-3 pb-4 mt-4 shadow-none focus-visible:ring-0"
 					id="message"
 					onChange={(e) => setChatInput(e.target.value)}
 					onKeyDown={(e) => {
@@ -912,7 +915,7 @@ export default function PlatformChatInterface({
 	};
 
 	return (
-		<div className="flex flex-col h-full">
+		<div className="flex flex-col h-full max-w-4xl mx-auto">
 			{chats && chats.length > 0 ? (
 			// Regular chat view when there are messages
 				<ScrollArea
@@ -921,72 +924,54 @@ export default function PlatformChatInterface({
 				>
 					<div className="pt-2">
 						{chats.map((history, index) => (
-							<div
-								className={`${
-									history.sender.toLowerCase() === "user"
-										? "flex justify-end mb-4"
-										: "block w-full"
-								}`}
-								key={index}
-							>
-								<div
-									className={`${
-										history.sender.toLowerCase() === "user"
-											? "max-w-3xl bg-gray-50 border border-gray-100 rounded-xl p-2 shadow-sm mx-2"
-											: "w-full bg-white py-3 px-2 border-b border-slate-100 last:border-b-0 min-h-[40px] transition-all duration-200"
-									}`}
-								>
-									{history.sender.toLowerCase() !== "user" && (
-										<div className="text-xs text-slate-400 mb-1 pl-1">
-											Flowlly AI
-										</div>
-									)}
+							<div className="flex flex-col gap-2" key={index}>
+								{  (typeof history.message === "string" || (history.message.function_call?.name !== "run_workflow" && history.message.function_call?.name !== "send_data_to_workflow")) && (
 									<div
-										ref={messageRefs.current[index] || null}
+										className={`${
+											history.sender.toLowerCase() === "user"
+												? "flex justify-end mb-4"
+												: "block w-full"
+										}`}
 									>
-										{history.message && (
-											<AgentMessageInteractiveView id={history.id} message={history.message} />
-										)}
-									</div>
-									{/* Improve the copy button UI and add proper spacing */}
-									{history.sender.toLowerCase() !== "user" && (
-										<div className="mt-1 flex justify-start items-center">
-											<Button
-												className="text-xs text-slate-400 hover:text-indigo-600 flex items-center gap-1 p-1 h-auto rounded-md opacity-60 hover:opacity-100 transition-opacity"
-												onClick={() => copyFormattedContent(index)}
-												size="sm"
-												variant="ghost"
+										<div
+											className={`${
+												history.sender.toLowerCase() === "user"
+													? "max-w-3xl bg-gray-50 border border-gray-100 rounded-xl p-2 shadow-sm mx-2"
+													: "w-full bg-white py-3 px-2 border-b border-slate-100 last:border-b-0 min-h-[40px] transition-all duration-200"
+											}`}
+										>
+											{history.sender.toLowerCase() !== "user" && (
+												<div className="text-xs text-slate-400 mb-1 pl-1">
+											Flowlly AI
+												</div>
+											)}
+											<div
+												ref={messageRefs.current[index] || null}
 											>
-												<Copy className="w-3 h-3" />
-												<span>Copy</span>
-											</Button>
-											{chatTarget === "editor" && (
-												<Button
-													className="text-xs text-slate-400 hover:text-indigo-600 flex items-center gap-1 p-1 h-auto rounded-md opacity-60 hover:opacity-100 transition-opacity"
-													disabled={applyingChanges[index]}
-													onClick={() => handleApplyChanges(index)}
-													size="sm"
-													variant="ghost"
-												>
-													{applyingChanges[index] ? (
-														<>
-															<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-															Applying...
-														</>
-													) : (
-														<>
-															<Check className="mr-2 h-4 w-4" />
-															Apply Changes
-														</>
-													)}
-												</Button>
+												{history.message && (
+													<AgentMessageInteractiveView id={history.id} message={history.message} />
+												)}
+											</div>
+											{/* Improve the copy button UI and add proper spacing */}
+
+											{history.sender.toLowerCase() !== "user" &&  (
+												<div className="mt-1 flex justify-start items-center">
+													<Button
+														className="text-xs text-slate-400 hover:text-indigo-600 flex items-center gap-1 p-1 h-auto rounded-md opacity-60 hover:opacity-100 transition-opacity"
+														onClick={() => copyFormattedContent(index)}
+														size="sm"
+														variant="ghost"
+													>
+														<Copy className="w-3 h-3" />
+														<span>Copy</span>
+													</Button>
+												</div>
 											)}
 										</div>
-									)}
-								</div>
+									</div>
+								)}
 							</div>
 						))}
-						{/* Show streaming response in a separate message */}
 						{currentTaskId && session && (
 							<div className="block w-full mb-4">
 								<div className="w-full bg-white py-3 px-2 border-b border-slate-100 min-h-[40px] transition-all duration-200">

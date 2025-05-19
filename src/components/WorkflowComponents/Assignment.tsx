@@ -15,6 +15,7 @@ import { getProjectEvents } from "@/api/taskQueue";
 import { useStore } from "@/utils/store";
 import { EventListViewer } from "./EventListViewer";
 
+
 import type {
 	ProjectEvents,
 } from "./types";
@@ -40,6 +41,7 @@ export default function AssignmentHome(): React.ReactNode {
 	const session = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
 
+	
 	const { data, isLoading, isError } = useQuery({
 		queryKey: ["projectEvents"],
 		queryFn: async() => {
@@ -80,6 +82,8 @@ export default function AssignmentHome(): React.ReactNode {
 			setCurrentResult(null);
 		}
 	}, [currentGraphId, graphs, currentResult]);
+
+
 
 	if (isLoading) {
 		return <div className="flex flex-col items-center justify-center h-[100vh]"><LoaderAnimation /></div>;

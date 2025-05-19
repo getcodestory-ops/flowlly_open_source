@@ -4,14 +4,6 @@ import { FileText, Download } from "lucide-react";
 import ContentEditor from "@/components/DocumentEditor/ContentEditor";
 import { useStorageTextFileSave } from "@/components/DocumentEditor/useStorageTextSave";
 
-// Update the import for react-pdf
-// import { Document, Page, pdfjs } from "react-pdf";
-// import "react-pdf/dist/esm/Page/AnnotationLayer.css";
-// import "react-pdf/dist/esm/Page/TextLayer.css";
-
-// // Set up the worker
-// pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-
 interface MediaDialogContentProps {
   resource: StorageResourceEntity;
 }
@@ -33,6 +25,11 @@ export const MediaDialogContent = ({
 		case "jpeg":
 		case "png":
 		case "gif":
+		case "heic":
+		case "tiff":
+		case ".tiff":
+		case ".tif":
+		case "tif":
 			return (
 				<>
 					<img
@@ -53,7 +50,7 @@ export const MediaDialogContent = ({
 					<div className="max-h-96  overflow-auto">
 						<video controls>
 							<source src={url} type="video/mp4" />
-              Your browser does not support the video tag
+              					Your browser does not support the video tag
 						</video>
 					</div>
 					{/* </AspectRatio> */}
@@ -75,7 +72,7 @@ export const MediaDialogContent = ({
 								src={url}
 								style={{ width: "100%" }}
 							>
-                Your browser does not support the audio element.
+                				Your browser does not support the audio element.
 							</audio>
 						</div>
 					</div>
@@ -99,7 +96,7 @@ export const MediaDialogContent = ({
 							download={file_name}
 							href={url}
 						>
-              Download PDF
+              				Download PDF
 							<Download className="ml-2 h-4 w-4" />
 						</a>
 						<div className="w-full max-w-3xl h-96 border border-gray-300 rounded">
@@ -127,7 +124,7 @@ export const MediaDialogContent = ({
 							download={file_name}
 							href={url}
 						>
-              Download CSV
+              				Download CSV
 							<Download className="ml-2 h-4 w-4" />
 						</a>
 						<div className="w-full max-w-3xl h-96 border border-gray-300 rounded">
@@ -147,7 +144,7 @@ export const MediaDialogContent = ({
 			return (
 				<>
 					<FileText className="text-4xl" />
-          Sorry No Preview Available
+          				Sorry No Preview Available
 					<DescriptionContent description={description} />
 				</>
 			);
