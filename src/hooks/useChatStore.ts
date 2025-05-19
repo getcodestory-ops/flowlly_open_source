@@ -5,19 +5,35 @@ interface ChatStore {
 	setCollapsed: (collapsed: boolean) => void;
     sidePanel: {
         isOpen: boolean;
-        type: "sources" | "editor" | "pdfViewer";
+        type: "sources" | "editor" | "pdfViewer" | "log";
         resourceId: string;
         filename?: string;
     } | null;
     setSidePanel: (sidePanel: {
         isOpen: boolean;
-        type: "sources" | "editor" | "pdfViewer";
+        type: "sources" | "editor" | "pdfViewer" | "log";
         resourceId: string;
         filename?: string;
     } | null) => void;
 	documentDisplayMap: { [resourceId: string]: string };
 	setDocumentDisplayMap: (resourceId: string, chatId: string) => void;
 	clearDocumentDisplayMap: () => void;
+	selectedContexts: {
+		chatId: string;
+		selectedContexts: {
+			id: string;
+			name: string;
+			extension: string;
+		}[];
+	} | null;
+	setSelectedContexts: (selectedContextFolder: {
+		chatId: string;
+		selectedContexts: {
+			id: string;
+			name: string;
+			extension: string;
+		}[];
+	} | null) => void;
 }
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -39,6 +55,8 @@ export const useChatStore = create<ChatStore>((set) => ({
 			},
 		})),
 	clearDocumentDisplayMap: () => set({ documentDisplayMap: {} }),
+	selectedContexts: null,
+	setSelectedContexts: (selectedContexts) => set({ selectedContexts }),
 }));
 
 

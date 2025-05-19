@@ -9,6 +9,7 @@ import { isTokenExpired } from "@/utils/isTokenExpired";
 import { useToast } from "@/components/ui/use-toast";
 import { createPlatformChatEntity } from "@/api/agentRoutes";
 import { AgentChat, AgentChatEntity } from "@/types/agentChats";
+import { useChatStore } from "@/hooks/useChatStore";
 
 export function usePlatformChat(
 	folderId: string,
@@ -26,6 +27,7 @@ export function usePlatformChat(
 	const activeProject = useStore((state) => state.activeProject);
 	const activeChatEntity = useStore((state) => state.activeChatEntity);
 	const appendChatEntity = useStore((state) => state.appendChatEntity);
+	const selectedContexts = useChatStore((state) => state.selectedContexts);
 
 	// Use localChats from the store instead of local state
 	const localChats = useStore((state) => state.localChats);
@@ -245,6 +247,17 @@ export function usePlatformChat(
 				variant: "destructive",
 			});
 			return;
+		}
+		const currentContexts = selectedContexts?.chatId === currentActiveChatEntity.id 
+			? selectedContexts?.selectedContexts ?? []
+			: [];
+		if (currentContexts.length > 0) {
+			const attachmentsJson = JSON.stringify(currentContexts.map((ctx) => ({
+				name: ctx.name,
+				uuid: ctx.id,
+				type: ctx.extension,
+			})));
+			message = message + "\n\n::attachments[" + attachmentsJson + "]\n";
 		}
 
 		mutate({

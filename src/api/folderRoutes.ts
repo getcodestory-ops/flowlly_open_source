@@ -52,6 +52,22 @@ export const fetchResource = async(
 	return response.data;
 };
 
+
+export const fetchAtSelector = async(
+	session: Session,
+	projectId: string,
+) => {
+	const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/all/${projectId}`;
+
+	const response = await axios.get(baseUrl, {
+		headers: {
+			Authorization: `Bearer ${session.access_token}`,
+		},
+	});
+
+	return response.data;
+};
+
 export const fetchFolders = async(
 	session: Session,
 	projectId: string,
@@ -237,6 +253,30 @@ export const createDocumentInFolder = async(
 	return response.data;
 };
 
+export const saveDocumentAs = async(
+	session: Session,
+	projectId: string,
+	documentId: string,
+	folderId: string,
+) : Promise<StorageResourceEntity | undefined> => {
+	try {
+		const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/folder/saveasdocument/${projectId}`;
+		const response = await axios.put(baseUrl, {
+			document_id: documentId,
+			folder_id: folderId,
+		}, {
+			headers: {
+				Authorization: `Bearer ${session.access_token}`,
+			},
+		});
+
+		return response.data;
+	} catch (error) {
+		console.error("Error saving document as:", error);
+		return undefined;
+	}
+};
+
 export const deleteFolder = async(
 	session: Session,
 	projectId: string,
@@ -349,7 +389,7 @@ const getUrlInput = (
 };
 
 
-export const getInlineFileUrl = async({
+export const getInlineDocument = async({
 	session,
 	projectId,
 	resourceId,
@@ -357,7 +397,7 @@ export const getInlineFileUrl = async({
 	session: Session;
 	projectId: string;
 	resourceId: string;
-}) : Promise<string | null> => {
+}) : Promise<StorageResourceEntity | null> => {
 	const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/file/view/${projectId}/${resourceId}`;
 
 	try {

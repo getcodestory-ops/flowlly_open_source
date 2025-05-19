@@ -91,7 +91,7 @@ export default function FolderSelector({
 	return (
 		<div className="space-y-4">
 			<Label className="text-sm font-semibold">
-        Select Context Folder
+			Select working Folder, all files will be saved in this folder
 			</Label>
 			<Card className="border">
 				<CardHeader className="flex justify-between items-center">

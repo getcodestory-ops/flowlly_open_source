@@ -45,7 +45,6 @@ import {
 } from "@/api/folderRoutes";
 import { getTaskStatus } from "@/api/schedule_routes";
 import { useToast } from "@/components/ui/use-toast";
-import { MediaViewer } from "../Folder/MediaViewer";
 import { FileMediaIcon } from "./FileMediaIcon";
 import { deleteFile } from "@/api/folderRoutes";
 import { formatDate } from "@/utils/calculations";
@@ -60,6 +59,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { AddNewFolderModal } from "../CreateNewFolderModal/CreateNewFolderModal";
 import { Tooltipped } from "../Common/Tooltiped";
+import { useChatStore } from "@/hooks/useChatStore";
 
 type SortField = "file_name" | "extension" | "created_at";
 type SortDirection = "asc" | "desc";
@@ -208,27 +208,6 @@ export const FilesContent = ({
 
 	const chatRef = useRef<HTMLDivElement>(null);
 
-	// useEffect(() => {
-	//   const handleClickOutside = (event: MouseEvent) => {
-	//     if (
-	//       chatRef.current &&
-	//       !chatRef.current.contains(event.target as Node) &&
-	//       isChatOpen &&
-	//       !isClosing
-	//     ) {
-	//       setIsClosing(true);
-	//       setTimeout(() => {
-	//         setIsChatOpen(false);
-	//         setIsClosing(false);
-	//       }, 300); // Match this with the CSS transition duration
-	//     }
-	//   };
-
-	//   document.addEventListener("mousedown", handleClickOutside);
-	//   return () => {
-	//     document.removeEventListener("mousedown", handleClickOutside);
-	//   };
-	// }, [isChatOpen, isClosing]);
 
 	return (
 		<div className="relative">
@@ -385,54 +364,6 @@ export const FilesContent = ({
 	);
 };
 
-const FilePreviewCard = ({
-	resource,
-}: {
-  resource: StorageResourceEntity | null;
-}) => {
-	return (
-		<Card className="sticky top-4 self-start">
-			<CardHeader className="flex flex-row items-center">
-				<div className="grid gap-2">
-					<CardTitle>Preview</CardTitle>
-					<CardDescription>Preview the hovered file</CardDescription>
-				</div>
-				{resource && (
-					<Dialog>
-						<DialogTrigger asChild>
-							<Button className="ml-auto gap-1" variant="ghost">
-								<Maximize size={16} />
-							</Button>
-						</DialogTrigger>
-						<DialogContent
-							aria-describedby="file viewer"
-							className="max-w-6xl flex flex-col items-center justify-center"
-						>
-							<MediaDialogContent resource={resource} />
-						</DialogContent>
-					</Dialog>
-				)}
-			</CardHeader>
-			<CardContent>
-				{resource && (
-					<div className="flex flex-col items-center justify-center">
-						<div className="flex flex-row w-full">
-							<div
-								className="font-medium flex-1
-                overflow-hidden whitespace-nowrap overflow-ellipsis
-              "
-							>
-								{resource.file_name}
-							</div>
-							<Badge variant="secondary">{resource.metadata.extension}</Badge>
-						</div>
-						<MediaViewer resource={resource} />
-					</div>
-				)}
-			</CardContent>
-		</Card>
-	);
-};
 
 const FilesHeader = ({
 	sortField,
@@ -513,6 +444,7 @@ const FileRow = ({
 }) => {
 	const queryClient = useQueryClient();
 	const { toast } = useToast();
+	const { setSidePanel } = useChatStore();
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
 	const { mutate } = useMutation({
@@ -546,39 +478,46 @@ const FileRow = ({
 			className={`hover:bg-blue-100  ${
 				currentFile?.id === resource.id ? "bg-blue-100" : ""
 			}`}
+			onClick={(e) => {
+				e.stopPropagation();
+				setSidePanel({
+					isOpen: true,
+					type: "sources",
+					resourceId: resource.id,
+					filename: `${resource.file_name}${resource.metadata.extension ? "." + resource.metadata.extension : ""}`,
+				});}}
 			onMouseEnter={() => setCurrentFile(resource)}
 		>
-			<Dialog>
-				<DialogTrigger asChild>
-					<TableCell className="cursor-pointer">
-						<div className="flex flex-row justify-start gap-4">
-							<FileMediaIcon fileExt={resource.metadata.extension + ""} />
-							<div className="font-medium">{resource.file_name}</div>
-						</div>
-					</TableCell>
-				</DialogTrigger>
-				<DialogContent
-					aria-describedby="file viewer"
-					className="max-w-6xl flex-1 flex flex-col items-center justify-center overflow-y-auto"
-					style={{ maxHeight: "calc(100% - 100px)" }}
-				>
-					<DialogTitle className="w-full flex-start">{resource.file_name}{resource.metadata.extension}</DialogTitle>
-					<div className="flex-1 flex flex-col items-center justify-center overflow-y-auto w-full border rounded-sm" style={{ width: "100%" }}>
-						<MediaDialogContent resource={resource} />
-					</div>
-				</DialogContent>
-			</Dialog>
+			{/* <Dialog>
+				<DialogTrigger asChild> */}
+			<TableCell className="cursor-pointer">
+				<div className="flex flex-row justify-start gap-4">
+					<FileMediaIcon fileExt={resource.metadata.extension + ""} />
+					<div className="font-medium">{resource.file_name}</div>
+				</div>
+			</TableCell>
 			<TableCell className="hidden sm:table-cell">
 				<Badge variant="secondary">{resource.metadata.extension}</Badge>
 			</TableCell>
 			<TableCell className="hidden md:table-cell">
 				{formatDate(resource.created_at)}
 			</TableCell>
-			<TableCell className="cursor-pointer hidden md:table-cell">
+			<TableCell className="cursor-pointer hidden md:table-cell"
+				onClick={(e) => {
+					e.stopPropagation();
+				}}
+			>
 				<Dialog onOpenChange={setShowDeleteDialog} open={showDeleteDialog}>
 					<DialogTrigger asChild>
 						<Tooltipped tooltip={`Delete ${resource.file_name}`}>
-							<Trash className="text-red-400" size={16} />
+							<Trash 
+								className="text-red-400" 
+								onClick={(e) => {
+									e.stopPropagation();
+									setShowDeleteDialog(true);
+								}}
+								size={16}
+							/>
 						</Tooltipped>
 					</DialogTrigger>
 					<DialogContent className="sm:max-w-[425px]">
@@ -913,7 +852,7 @@ const AddFileInFolderButton = ({
 	return (
 		<div className="ml-auto flex gap-2">
 			<input
-				accept=".bmp,.csv,.doc,.docx,.eml,.epub,.heic,.html,.jpeg,.png,.md,.msg,.odt,.org,.p7s,.pdf,.png,.ppt,.pptx,.rst,.rtf,.tiff,.txt,.tsv,.xls,.xlsx,.xml"
+				accept=".bmp,.csv,.doc,.docx,.eml,.epub,.heic,.html,.jpeg,.png,.md,.msg,.odt,.org,.p7s,.pdf,.png,.ppt,.pptx,.rst,.rtf,.tiff,.txt,.tsv,.xls,.xlsx,.xml,.tif"
 				multiple
 				onChange={handleFileUpload}
 				ref={fileInputRef}

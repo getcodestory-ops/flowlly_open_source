@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
 	AlertCircle,
 	ChevronLeft,
@@ -177,6 +177,7 @@ const WorkflowSidebar = (): React.ReactNode => {
 
 const WorkflowContent = (): React.ReactNode => {
 	const { currentResult, isLoadingResult } = useWorkflow();
+
 	return (
 		<>
 			{currentResult ? (

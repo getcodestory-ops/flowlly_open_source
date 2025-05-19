@@ -559,7 +559,7 @@ export function WorkflowNodes({ formData, onChange }: WorkflowNodesProps) {
 												variant="outline"
 											>
 												<PlusCircle className="h-4 w-4 mr-2" />
-                        What to do if successful
+                        					What to do if successful
 											</Button>
 											<Button
 												className="border-red-500 text-red-700"

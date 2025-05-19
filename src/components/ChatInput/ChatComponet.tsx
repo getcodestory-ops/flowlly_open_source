@@ -22,7 +22,7 @@ export default function ChatComponent() : JSX.Element {
 						/>
 					</div>
 					<div className={clsx(
-						"transition-all duration-500 ease-in-out absolute right-0",
+						"transition-all duration-500 ease-in-out absolute right-2",
 						sidePanel?.isOpen ? "w-1/2 translate-x-0 opacity-100" : "w-1/2 translate-x-full opacity-0",
 					)}
 					>

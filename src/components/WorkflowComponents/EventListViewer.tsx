@@ -6,6 +6,7 @@ import {
 	PencilIcon,
 	Database,
 	Calendar,
+	Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +53,11 @@ import {
 	DialogContent,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/components/ui/use-toast";
+import { useStore } from "@/utils/store";
+import { deleteProjectEvent } from "@/api/taskQueue";
+
 const localeText = {
 	searchWorkflows: "Filter workflows by name or type...",
 };
@@ -70,6 +76,24 @@ export const EventListViewer: React.FC = ({
 	const [selectedEventType, setSelectedEventType] = useState<string | null>( null );
 	const [selectedEventData, setSelectedEventData] = useState<GraphData | null>( null );
 	const [isTriggerDialogOpen, setIsTriggerDialogOpen] = useState(false);
+	const queryClient = useQueryClient();
+	const { toast } = useToast();
+	const { session, activeProject } = useStore();
+
+	const { mutate: deleteProjectEventMutation } = useMutation({
+		mutationFn: async(eventId: string) => {
+			if (!session || !activeProject?.project_id) return;
+
+			await deleteProjectEvent({ session, projectId: activeProject.project_id, eventId });
+		},
+		onSuccess: () => {
+			toast({
+				title: "Event deleted successfully",
+				description: "The event has been deleted from the project",
+			});
+			queryClient.invalidateQueries({ queryKey: ["projectEvents"] });
+		},
+	});
 
 	const onClickEdit = (info: GraphData) => {
 		const eventType = info.event_type;
@@ -77,6 +101,7 @@ export const EventListViewer: React.FC = ({
 		setSelectedEventData(info);
 		setIsDialogOpen(true);
 	};
+
 
 	const columns = useMemo<ColumnDef<GraphData>[]>(
 		() => [
@@ -344,6 +369,16 @@ export const EventListViewer: React.FC = ({
 													>
 														<PencilIcon className="h-3 w-3" />
 													</Button>
+													<Button
+														onClick={(e) => {
+															e.stopPropagation();
+															deleteProjectEventMutation(graph.id);
+														}}
+														size="icon"
+														variant="ghost"
+													>
+														<Trash2 className="h-3 w-3" />
+													</Button>
 													<div onClick={(e) => {
 														e.stopPropagation();
 													}}
@@ -411,16 +446,29 @@ export const EventListViewer: React.FC = ({
 														{formatTimeAgo(convertIsoToTimeAgo(graph.created_at) ?? "")}
 													</span>
 												</div>
-												<Button
-													onClick={(e) => {
-														e.stopPropagation();
-														onClickEdit(graph);
-													}}
-													size="icon"
-													variant="ghost"
-												>
-													<PencilIcon className="h-3 w-3" />
-												</Button>
+												<div className="flex items-center gap-1">
+													<Button
+														onClick={(e) => {
+															e.stopPropagation();
+															onClickEdit(graph);
+														}}
+														size="icon"
+														variant="ghost"
+													>
+														<PencilIcon className="h-3 w-3" />
+													
+													</Button>
+													<Button
+														onClick={(e) => {
+															e.stopPropagation();
+															deleteProjectEventMutation(graph.id);
+														}}
+														size="icon"
+														variant="ghost"
+													>
+														<Trash2 className="h-3 w-3" />
+													</Button>
+												</div>
 											</CardFooter>
 										</Card>
 									))

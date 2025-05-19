@@ -31,9 +31,12 @@ import {
 	FaImage,
 	FaMagic,
 	FaFileCsv,
+	FaStrikethrough,
+	FaHighlighter
 } from "react-icons/fa";
 import { RxTriangleDown } from "react-icons/rx";
 import { FaFileAlt } from "react-icons/fa";
+import { MdHighlight } from "react-icons/md";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { FaFileDownload } from "react-icons/fa";
@@ -68,21 +71,23 @@ import { updateDocumentName } from "@/api/documentRoutes";
 (pdfMake as any).vfs = pdfFonts.vfs;
 import { type Editor } from "@tiptap/react";
 import AIEditorLayout from "./AIEditor.tsx/AIEditorLayout";
+import FolderSelector from "@/components/ProjectEvent/FolderSelector";
+import { saveDocumentAs } from "@/api/folderRoutes";
 interface ToolbarProps {
-  documentType: string;
-  saveFunction?: (_: string) => void;
-  onAIEditedContent?: (_: string) => void;
-  documentId?: string;
-  documentName?: string;
-  editor: Editor;
+	documentType: string;
+	saveFunction?: (_: string) => void;
+	onAIEditedContent?: (_: string) => void;
+	documentId?: string;
+	documentName?: string;
+	editor: Editor;
 }
 
 enum SaveStatus {
-  SAVED = "Saved",
-  SAVING = "Saving",
-  HIDDEN = "Hidden",
-  UNSAVED = "Unsaved",
-  ERROR = "Error",
+	SAVED = "Saved",
+	SAVING = "Saving",
+	HIDDEN = "Hidden",
+	UNSAVED = "Unsaved",
+	ERROR = "Error",
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
@@ -114,6 +119,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
 	}, 10000);
 	const [fileName, setFileName] = useState<string | undefined>(documentName);
 	const [editingFileName, setEditingFileName] = useState<string | undefined>(documentName);
+	const [showSaveAsDialog, setShowSaveAsDialog] = useState(false);
+	const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+	const [selectedFolderName, setSelectedFolderName] = useState<string>("");
 
 	useEffect(() => {
 		if (editor) {
@@ -286,6 +294,30 @@ const Toolbar: React.FC<ToolbarProps> = ({
 		}
 	};
 
+	const setSaveAsFolder = (folderId: string | null, folderName: string): void => {
+		setSelectedFolderId(folderId);
+		setSelectedFolderName(folderName);
+	};
+
+	const handleSaveAs = async(): Promise<void> => {
+		if (!selectedFolderId || !documentId || !sessionToken || !activeProject?.project_id) return;
+		const response = await saveDocumentAs(sessionToken, activeProject?.project_id, documentId, selectedFolderId);
+		if (response) {
+			setShowSaveAsDialog(false);
+			toast({
+				title: "Success",
+				description: "Document saved successfully in " + selectedFolderName,
+			});
+		} else {
+			setShowSaveAsDialog(false);
+			toast({
+				title: "Error",
+				description: "Failed to save document",
+				variant: "destructive",
+			});
+		}
+	};
+
 
 	if (!editor) {
 		return null;
@@ -318,6 +350,15 @@ const Toolbar: React.FC<ToolbarProps> = ({
 											</MenubarShortcut>
 										</>
 									)}
+								</MenubarItem>
+								<MenubarItem 
+									className="cursor-pointer"
+									onClick={() => setShowSaveAsDialog(true)}
+								>
+									Save As
+									<MenubarShortcut>
+										<FaFileAlt className="h-4 w-4" />
+									</MenubarShortcut>
 								</MenubarItem>
 								{/* <MenubarItem className="cursor-pointer"
 									disabled={isExporting}
@@ -369,6 +410,15 @@ const Toolbar: React.FC<ToolbarProps> = ({
 					</ToolTipedButton>
 					<Select
 						onValueChange={(value) => {
+							// Skip if the same style is already applied
+							if (value === "p" && editor.isActive("paragraph")) {
+								return;
+							}
+							if (value !== "p" && editor.isActive("heading", { level: parseInt(value.charAt(1)) })) {
+								return;
+							}
+							
+							// Apply the style
 							if (value === "p") {
 								editor.chain().focus()
 									.setParagraph()
@@ -381,6 +431,15 @@ const Toolbar: React.FC<ToolbarProps> = ({
 									.run();
 							}
 						}}
+						value={
+							editor.isActive("heading", { level: 1 }) 
+								? "h1" 
+								: editor.isActive("heading", { level: 2 }) 
+									? "h2" 
+									: editor.isActive("heading", { level: 3 }) 
+										? "h3" 
+										: "p"
+						}
 					>
 						<SelectTrigger className="w-48">
 							<SelectValue placeholder="Select heading level" />
@@ -420,6 +479,24 @@ const Toolbar: React.FC<ToolbarProps> = ({
 						variant={editor.isActive("underline") ? "secondary" : "ghost"}
 					>
 						<FaUnderline className={`${editor.isActive("underline") ? "text-indigo-600" : ""}`} />
+					</ToolTipedButton>
+					<ToolTipedButton
+						onClick={() => editor.chain().focus()
+							.toggleMark("strike")
+							.run()}
+						tooltip="Strikethrough"
+						variant={editor.isActive("strike") ? "secondary" : "ghost"}
+					>
+						<FaStrikethrough className={`${editor.isActive("strike") ? "text-indigo-600" : ""}`} />
+					</ToolTipedButton>
+					<ToolTipedButton
+						onClick={() => editor.chain().focus()
+							.toggleMark("highlight")
+							.run()}
+						tooltip="Highlight"
+						variant={editor.isActive("highlight") ? "secondary" : "ghost"}
+					>
+						<FaHighlighter className={`${editor.isActive("highlight") ? "text-indigo-600" : ""}`} />
 					</ToolTipedButton>
 					<ToolTipedButton
 						onClick={() => editor.chain().focus()
@@ -634,13 +711,33 @@ const Toolbar: React.FC<ToolbarProps> = ({
 					</div>
 				</div>
 			)}
+			<Dialog onOpenChange={setShowSaveAsDialog} open={showSaveAsDialog}>
+				<DialogContent className="sm:max-w-[500px]">
+					<h2 className="text-xl font-semibold mb-4">Save Document As</h2>
+					<FolderSelector 
+						onFolderSelect={setSaveAsFolder}
+						selectedFolderId={selectedFolderId}
+					/>
+					<div className="flex justify-end gap-2 mt-4">
+						<Button onClick={() => setShowSaveAsDialog(false)} variant="outline">
+							Cancel
+						</Button>
+						<Button 
+							disabled={!selectedFolderId} 
+							onClick={handleSaveAs}
+						>
+							Save
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 };
 
 type ToolTipedButtonProps = {
-  children: React.ReactNode;
-  tooltip: string;
+	children: React.ReactNode;
+	tooltip: string;
 } & ButtonProps;
 
 export const ToolTipedButton = ({

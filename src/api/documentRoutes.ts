@@ -170,7 +170,7 @@ export const updateStorageTextDocument = async(
 		url,
 		{
 			resource_id: resourceId,
-			content: { extension: ".txt", content: contentData },
+			content: {  content: contentData },
 		},
 		{
 			headers: {
