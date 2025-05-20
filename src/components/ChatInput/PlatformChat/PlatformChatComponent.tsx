@@ -130,6 +130,7 @@ export default function PlatformChatComponent({
   onContentUpdate?: (newContent: string) => void;
 }) {
 	const { collapsed, setCollapsed, sidePanel } = useChatStore();
+	const { setSelectedContexts } = useChatStore();
 	const [activeTab, setActiveTab] = useState<"chat" | "settings">("chat");
 	const { toast } = useToast();
 	const [selectedModel, setSelectedModel] = useState<string>("gemini-2.5-pro-preview-03-25");
@@ -180,6 +181,7 @@ export default function PlatformChatComponent({
 	const handleCreateNewChat = () => {
 		setActiveChatEntity(null);
 		setLocalChats([]);
+		setSelectedContexts("untitled", []);
 		setActiveTab("chat");
 	};
 

@@ -28,6 +28,7 @@ export function usePlatformChat(
 	const activeChatEntity = useStore((state) => state.activeChatEntity);
 	const appendChatEntity = useStore((state) => state.appendChatEntity);
 	const selectedContexts = useChatStore((state) => state.selectedContexts);
+	const setSelectedContexts = useChatStore((state) => state.setSelectedContexts);
 
 	// Use localChats from the store instead of local state
 	const localChats = useStore((state) => state.localChats);
@@ -186,7 +187,7 @@ export function usePlatformChat(
 
 			const response = await createPlatformChatEntity(session, {
 				project_id: activeProject.project_id,
-				chat_name: "Flowlly Automated",
+				chat_name: "untitled",
 				chat_details: chatInput,
 				relation_id: folderId,
 				relation_type: chatTarget,
@@ -202,7 +203,6 @@ export function usePlatformChat(
 
 			// Set this as the active chat entity
 			useStore.setState({ activeChatEntity: response });
-
 			return response;
 		},
 		onError: (error) => {
@@ -231,7 +231,18 @@ export function usePlatformChat(
 			return;
 		}
 
-		if (!activeChatEntity?.id) {
+		let chatEntityId: string = activeChatEntity?.id || "untitled";
+		const currentContexts = selectedContexts[chatEntityId] || [];
+		if (currentContexts.length > 0) {
+			const attachmentsJson = JSON.stringify(currentContexts.map((ctx) => ({
+				name: ctx.name,
+				uuid: ctx.id,
+				type: ctx.extension,
+			})));
+			message = message + "\n\n::attachments[" + attachmentsJson + "]\n";
+		}
+
+		if (chatEntityId === "untitled") {
 			// Create a new chat entity before submitting the chat
 			await createChatEntityMutation.mutateAsync();
 		}
@@ -247,17 +258,8 @@ export function usePlatformChat(
 			});
 			return;
 		}
-		const currentContexts = selectedContexts?.chatId === currentActiveChatEntity.id 
-			? selectedContexts?.selectedContexts ?? []
-			: [];
-		if (currentContexts.length > 0) {
-			const attachmentsJson = JSON.stringify(currentContexts.map((ctx) => ({
-				name: ctx.name,
-				uuid: ctx.id,
-				type: ctx.extension,
-			})));
-			message = message + "\n\n::attachments[" + attachmentsJson + "]\n";
-		}
+
+
 
 		mutate({
 			session,

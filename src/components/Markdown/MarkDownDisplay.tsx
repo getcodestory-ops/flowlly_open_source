@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkDirective from "remark-directive";
 import type { Components } from "react-markdown";
-import { Play, Info, Eye, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs } from "lucide-react";
+import { Play, Info, Eye, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch } from "lucide-react";
 import { visit } from "unist-util-visit";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -172,6 +172,7 @@ const VALID_DIRECTIVES = [
 	"start_writing_or_editing_report",
 	"edit_report",
 	"attachments",
+	"extract_file_insights",
 ];
 
 // Add Attachment interface
@@ -380,7 +381,12 @@ function remarkDirectiveComponents() {
 							attachments: node.children?.[0]?.value || "[]",
 						};
 						break;
-
+					case "extract_file_insights":
+						data.hName = "custom-extract-file-insights";
+						data.hProperties = {
+							content: "Extracting file insights",
+						};
+						break;
 					default:
 						// Use the directive name directly if not mapped
 						data.hName = `custom-${hName}`;
@@ -441,6 +447,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
 		"custom-follow-up-started": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Loader2 className="w-4 h-4 animate-spin" />} />,
 		"custom-look-up-project-schedule": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Calendar className="w-4 h-4" />} />,
 		"custom-start-writing-or-editing-report": ({ content }: { content: string }) => <CustomViewer content={content} icon={<NotebookTabs className="w-4 h-4" />} />,
+		"custom-extract-file-insights": ({ content }: { content: string }) => <CustomViewer content={content} icon={<TextSearch className="w-4 h-4" />} />,
 		"custom-document-reference": ({ documentId, position }: { documentId: string, position: any }) => {
 			let documentContent = "";
 			if (position && position.start && position.end) {
