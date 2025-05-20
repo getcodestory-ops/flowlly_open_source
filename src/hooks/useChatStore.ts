@@ -19,21 +19,18 @@ interface ChatStore {
 	setDocumentDisplayMap: (resourceId: string, chatId: string) => void;
 	clearDocumentDisplayMap: () => void;
 	selectedContexts: {
-		chatId: string;
-		selectedContexts: {
+		[chatId: string]: {
 			id: string;
 			name: string;
 			extension: string;
 		}[];
-	} | null;
-	setSelectedContexts: (selectedContextFolder: {
-		chatId: string;
-		selectedContexts: {
-			id: string;
-			name: string;
-			extension: string;
-		}[];
-	} | null) => void;
+	};
+	setSelectedContexts: (chatId: string, contexts: {
+		id: string;
+		name: string;
+		extension: string;
+	}[]) => void;
+	replaceUntitledChatId: (newChatId: string) => void;
 }
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -55,8 +52,26 @@ export const useChatStore = create<ChatStore>((set) => ({
 			},
 		})),
 	clearDocumentDisplayMap: () => set({ documentDisplayMap: {} }),
-	selectedContexts: null,
-	setSelectedContexts: (selectedContexts) => set({ selectedContexts }),
+	selectedContexts: {},
+	setSelectedContexts: (chatId, contexts) => 
+		set((state) => ({
+			selectedContexts: {
+				...state.selectedContexts,
+				[chatId]: contexts,
+			},
+		})),
+	replaceUntitledChatId: (newChatId: string) => set((state) => {
+		const untitledContexts = state.selectedContexts["untitled"];
+		if (!untitledContexts) return state;
+
+		const { ["untitled"]: _, ...restContexts } = state.selectedContexts;
+		return {
+			selectedContexts: {
+				...restContexts,
+				[newChatId]: untitledContexts,
+			},
+		};
+	}),
 }));
 
 

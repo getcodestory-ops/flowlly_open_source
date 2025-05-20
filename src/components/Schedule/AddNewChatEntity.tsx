@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
+import { useChatStore } from "@/hooks/useChatStore";
 import { createChatEntity } from "@/api/agentRoutes";
 
 function AddNewChatEntity({ onComplete }: { onComplete?: () => void }) {
@@ -23,6 +24,7 @@ function AddNewChatEntity({ onComplete }: { onComplete?: () => void }) {
 	const [chatName, setChatName] = useState("");
 	const [chatDescription, setChatDescription] = useState("");
 	const queryClient = useQueryClient();
+	const { setSelectedContexts } = useChatStore();
 
 	const mutation = useMutation({
 		mutationFn: () => {
@@ -59,6 +61,7 @@ function AddNewChatEntity({ onComplete }: { onComplete?: () => void }) {
 		<Button
 			onClick={() => {
 				setActiveChatEntity(null);
+				setSelectedContexts("untitled", []);
 				if (onComplete) {
 					onComplete();
 				}

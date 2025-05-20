@@ -28,6 +28,7 @@ type Option = {
 export default function AtSelectorComponent() : JSX.Element {
 	const { session, activeProject, activeChatEntity } = useStore();
 	const { setSidePanel, setSelectedContexts, selectedContexts } = useChatStore();
+	const currentChatId = activeChatEntity?.id || "untitled";
 
 	const [open, setOpen] = useState(false);
 	const [options, setOptions] = useState<Option[]>([]);
@@ -63,7 +64,7 @@ export default function AtSelectorComponent() : JSX.Element {
 	};
 
 	// This function will be called when the popover opens
-	const fetchOptions = async()  => {
+	const fetchOptions = async() => {
 		setIsLoading(true);
 		try {
 			if (!session || !activeProject) {
@@ -92,43 +93,29 @@ export default function AtSelectorComponent() : JSX.Element {
 	}, [open, session, activeProject]);
 
 	const toggleOption = (id: string) => {
-		if (!activeChatEntity?.id) return;
+		if (!currentChatId) return;
 
 		const option = options.find((opt) => opt.id === id);
 		if (!option) return;
 
-		// If selectedContexts is null or for a different chat, initialize it
-		if (!selectedContexts || selectedContexts.chatId !== activeChatEntity.id) {
-			setSelectedContexts({
-				chatId: activeChatEntity.id,
-				selectedContexts: [{ id, name: option.name, extension: option.extension }],
-			});
-		} else {
-			// Check if the option is already selected
-			const isSelected = selectedContexts.selectedContexts.some((ctx) => ctx.id === id);
-			
-			// Update the selected contexts
-			const newContexts = isSelected
-				? selectedContexts.selectedContexts.filter((ctx) => ctx.id !== id)
-				: [...selectedContexts.selectedContexts, { id, name: option.name, extension: option.extension }];
+		const currentContexts = selectedContexts[currentChatId] || [];
+		const isSelected = currentContexts.some((ctx) => ctx.id === id);
+		
+		const newContexts = isSelected
+			? currentContexts.filter((ctx) => ctx.id !== id)
+			: [...currentContexts, { id, name: option.name, extension: option.extension }];
 
-			setSelectedContexts({
-				chatId: activeChatEntity.id,
-				selectedContexts: newContexts,
-			});
-		}
+		setSelectedContexts(currentChatId, newContexts);
 		setOpen(false);
 	};
 
 	const removeOption = (id: string, e: React.MouseEvent) => {
 		e.stopPropagation();
-		if (!activeChatEntity?.id || !selectedContexts) return;
+		if (!currentChatId) return;
 
-		const newContexts = selectedContexts.selectedContexts.filter((ctx) => ctx.id !== id);
-		setSelectedContexts({
-			chatId: activeChatEntity.id,
-			selectedContexts: newContexts,
-		});
+		const currentContexts = selectedContexts[currentChatId] || [];
+		const newContexts = currentContexts.filter((ctx) => ctx.id !== id);
+		setSelectedContexts(currentChatId, newContexts);
 	};
 
 	return (
@@ -157,8 +144,8 @@ export default function AtSelectorComponent() : JSX.Element {
 									<CommandGroup>
 										{options.map((option) => {
 											const Icon = getIconForExtension(option.extension);
-											const isSelected = selectedContexts?.chatId === activeChatEntity?.id && 
-												selectedContexts?.selectedContexts.some((ctx) => ctx.id === option.id);
+											const currentContexts = selectedContexts[currentChatId] || [];
+											const isSelected = currentContexts.some((ctx) => ctx.id === option.id);
 											return (
 												<CommandItem
 													className="cursor-pointer font-medium text-gray-500 group"
@@ -187,9 +174,9 @@ export default function AtSelectorComponent() : JSX.Element {
 					</Command>
 				</PopoverContent>
 			</Popover>
-			{selectedContexts && selectedContexts.chatId === activeChatEntity?.id && selectedContexts.selectedContexts?.length > 0 && (
+			{selectedContexts[currentChatId]?.length > 0 && (
 				<div className="flex gap-1">
-					{selectedContexts.selectedContexts.map((context) => {
+					{selectedContexts[currentChatId].map((context) => {
 						const option = options.find((opt) => opt.id === context.id);
 						if (!option) return null;
 						const Icon = getIconForExtension(option.extension);

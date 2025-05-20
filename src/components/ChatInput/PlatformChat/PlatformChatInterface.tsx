@@ -683,15 +683,14 @@ export default function PlatformChatInterface({
 				</div>
 			</div>
 			<div className="w-full relative overflow-hidden rounded-xl bg-white border border-slate-100 shadow-sm focus-within:ring-1 focus-within:ring-indigo-300 transition-shadow">
-			
 				<Label className="sr-only" htmlFor="empty-message">
 					Message
 				</Label>
-				<div className="absolute top-0 left-2 z-10">
+				<div className="absolute top-0 left-2 z-10 pt-2">
 					<AtSelectorComponent />
 				</div>
 				<Textarea
-					className="min-h-20 resize-none border-0 p-4 mt-4 shadow-none focus-visible:ring-0 text-slate-800"
+					className="min-h-20 resize-none border-0 p-4 pl-12 mt-4 shadow-none focus-visible:ring-0 text-slate-800"
 					disabled={isPending || isWaitingForResponse}
 					id="empty-message"
 					onChange={(e) => setChatInput(e.target.value)}
