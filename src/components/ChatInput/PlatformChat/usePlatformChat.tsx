@@ -231,6 +231,9 @@ export function usePlatformChat(
 			return;
 		}
 
+		// Reset currentTaskId before submitting a new chat request
+		setCurrentTaskId(null);
+
 		let chatEntityId: string = activeChatEntity?.id || "untitled";
 		const currentContexts = selectedContexts[chatEntityId] || [];
 		if (currentContexts.length > 0) {
@@ -258,8 +261,6 @@ export function usePlatformChat(
 			});
 			return;
 		}
-
-
 
 		mutate({
 			session,
