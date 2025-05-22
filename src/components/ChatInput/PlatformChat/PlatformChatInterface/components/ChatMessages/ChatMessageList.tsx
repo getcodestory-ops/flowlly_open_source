@@ -1,4 +1,4 @@
-import React, { createRef, useEffect } from "react";
+import React, { createRef, useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ChatMessage from "./ChatMessage";
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
@@ -39,6 +39,19 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
 		}
 	}, [chats, messageRefs]);
 
+	// Keep track of the previously seen task ID to prevent duplicates
+	const prevTaskIdRef = useRef<string | null>(null);
+	
+	// Only show streaming component if the task ID has changed
+	const shouldShowStream = currentTaskId && currentTaskId !== prevTaskIdRef.current;
+	
+	// Update the ref when the task ID changes
+	useEffect(() => {
+		if (currentTaskId) {
+			prevTaskIdRef.current = currentTaskId;
+		}
+	}, [currentTaskId]);
+
 	return (
 		<ScrollArea className="flex-grow px-1 sm:px-3 pb-4" ref={chatContainerRef}>
 			<div className="pt-2">
@@ -55,7 +68,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
 						sender={chat.sender}
 					/>
 				))}
-				{currentTaskId && session && (
+				{shouldShowStream && session && (
 					<div className="block w-full mb-4">
 						<div className="w-full bg-white py-3 px-2 border-b border-slate-100 min-h-[40px] transition-all duration-200">
 							<div className="text-xs text-slate-400 mb-1 pl-1">
@@ -65,7 +78,10 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
 								<StreamComponent
 									authToken={session.access_token}
 									key={currentTaskId}
-									onStreamComplete={() => {}}
+									onStreamComplete={(content) => {
+										// Reset the prevTaskIdRef when stream is complete
+										prevTaskIdRef.current = null;
+									}}
 									streamingKey={currentTaskId}
 								/>
 							</div>

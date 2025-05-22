@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
 import { CircleIcon } from "lucide-react";
 
@@ -18,11 +18,24 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	const [displayValue, setDisplayValue] = useState<string>("");
 	const [isPending, setIsPending] = useState(true);
 	const [streamComplete, setStreamComplete] = useState(false);
+	const eventSourceRef = useRef<EventSource | null>(null);
 
+	// Reset state when streamingKey changes
 	useEffect(() => {
+		setDisplayValue("");
+		setIsPending(true);
+		setStreamComplete(false);
+		
+		// Clean up previous EventSource if it exists
+		if (eventSourceRef.current) {
+			eventSourceRef.current.close();
+		}
+		
+		// Create new EventSource connection
 		const eventSource = new EventSource(
 			`${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/stream/${streamingKey}`,
 		);
+		eventSourceRef.current = eventSource;
 
 		eventSource.onopen = () => {
 			//console.log("Connection opened");
@@ -57,6 +70,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			setIsPending(false);
 			setStreamComplete(true);
 			eventSource.close();
+			eventSourceRef.current = null;
 
 			// Instead of invalidating queries, use the callback if provided
 			if (onStreamComplete && displayValue) {
@@ -75,12 +89,14 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			}
 
 			eventSource.close();
+			eventSourceRef.current = null;
 		});
 
 		// Clean up function
 		return () => {
 			//console.log("Closing connection");
 			eventSource.close();
+			eventSourceRef.current = null;
 		};
 	}, [streamingKey, authToken, onStreamComplete]);
 
