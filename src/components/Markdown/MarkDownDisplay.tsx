@@ -173,6 +173,7 @@ const VALID_DIRECTIVES = [
 	"edit_report",
 	"attachments",
 	"extract_file_insights",
+	"get_report_template",
 ];
 
 // Add Attachment interface
@@ -387,6 +388,12 @@ function remarkDirectiveComponents() {
 							content: "Extracting file insights",
 						};
 						break;
+					case "get_report_template":
+						data.hName = "custom-get-report-template";
+						data.hProperties = {
+							content: "Getting report template",
+						};
+						break;
 					default:
 						// Use the directive name directly if not mapped
 						data.hName = `custom-${hName}`;
@@ -419,6 +426,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
 			content={content}
 			icon={<Pencil className="w-4 h-4" />}
 		                                                           />,
+		"custom-get-report-template": ({ content }: { content: string }) => <CustomViewer content={content} icon={<NotebookTabs className="w-4 h-4" />} />,
 		"custom-edit-report": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Pencil className="w-4 h-4" />} />,
 		"custom-complete-report": ({ content }: { content: string }) => <CustomViewer className="text-green-500"
 			content={content}
