@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkDirective from "remark-directive";
 import type { Components } from "react-markdown";
-import { Play, Info, Eye, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch } from "lucide-react";
+import { Play, Info, Eye, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch, NotebookPen } from "lucide-react";
 import { visit } from "unist-util-visit";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -174,6 +174,7 @@ const VALID_DIRECTIVES = [
 	"attachments",
 	"extract_file_insights",
 	"get_report_template",
+	"get_task_guidelines",
 ];
 
 // Add Attachment interface
@@ -367,7 +368,7 @@ function remarkDirectiveComponents() {
 					case "start_writing_or_editing_report":
 						data.hName = "custom-start-writing-or-editing-report";
 						data.hProperties = {
-							content: "Selecting report template",
+							content: "Setting editor ",
 						};
 						break;
 					case "edit_report":
@@ -388,10 +389,10 @@ function remarkDirectiveComponents() {
 							content: "Extracting file insights",
 						};
 						break;
-					case "get_report_template":
-						data.hName = "custom-get-report-template";
+					case "get_task_guidelines":
+						data.hName = "custom-get-task-guidelines";
 						data.hProperties = {
-							content: "Getting report template",
+							content: "Checking if there are any existing guidelines to follow",
 						};
 						break;
 					default:
@@ -454,7 +455,8 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
 		"custom-project-document-search": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FolderSearch2 className="w-4 h-4" />} />,
 		"custom-follow-up-started": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Loader2 className="w-4 h-4 animate-spin" />} />,
 		"custom-look-up-project-schedule": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Calendar className="w-4 h-4" />} />,
-		"custom-start-writing-or-editing-report": ({ content }: { content: string }) => <CustomViewer content={content} icon={<NotebookTabs className="w-4 h-4" />} />,
+		"custom-start-writing-or-editing-report": ({ content }: { content: string }) => <CustomViewer content={content} icon={<NotebookPen className="w-4 h-4" />} />,
+		"custom-get-task-guidelines": ({ content }: { content: string }) => <CustomViewer content={content} icon={<TextSearch className="w-4 h-4" />} />,
 		"custom-extract-file-insights": ({ content }: { content: string }) => <CustomViewer content={content} icon={<TextSearch className="w-4 h-4" />} />,
 		"custom-document-reference": ({ documentId, position }: { documentId: string, position: any }) => {
 			let documentContent = "";
