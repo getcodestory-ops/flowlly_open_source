@@ -15,7 +15,7 @@ import Image from "@tiptap/extension-image";
 import EditorProvider from "./EditorProvider";
 import ReactChartDisplayExtension from "./extensions/ReactChartDisplayExtension";
 import { ChartDirectiveExtension } from "./extensions/ChartDirectiveExtension";
-import { convertDirectivesToHTML, convertHTMLToDirectives } from "@/utils/chartDirectiveProcessor";
+// import { convertDirectivesToHTML, convertHTMLToDirectives } from "@/utils/chartDirectiveProcessor";
 // import CustomHighlight from "./extensions/CustomHighlight";
 
 interface EditorBlockProps {
@@ -72,7 +72,7 @@ const ContentEditor = ({
 				class: "focus:outline-none",
 			},
 		},
-		content: content ? convertDirectivesToHTML(content) : "",
+		content: content ||"",
 		immediatelyRender: false,
 		onUpdate: ({ editor }) => {
 			if (setContent) {
@@ -86,22 +86,14 @@ const ContentEditor = ({
 
 	useEffect(() => {
 		if (editorInstance && content !== undefined) {
-			// Convert chart directives to HTML before setting content
-			const processedContent = convertDirectivesToHTML(content);
-			editorInstance.commands.setContent(processedContent);
+			editorInstance.commands.setContent(content);
 		}
 	}, [content, editorInstance]);
 
 	const handleAIEditedContent = (newAIContent: string): void => {
 		if (editorInstance) {
-			// Convert chart directives to HTML before setting content
-			const processedContent = convertDirectivesToHTML(newAIContent);
-			editorInstance.commands.setContent(processedContent);
-			if (setContent) {
-				// Convert back to directives for the callback
-				const contentWithDirectives = convertHTMLToDirectives(newAIContent);
-				setContent(contentWithDirectives);
-			}
+			editorInstance.commands.setContent(newAIContent);
+			if (setContent) setContent(newAIContent);
 		}
 	};
 
