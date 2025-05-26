@@ -13,7 +13,9 @@ import { HoverExtension } from "./extensions/HoverExtension";
 import { DiffStyleExtension } from "./extensions/DiffStyleExtension";
 import Image from "@tiptap/extension-image";
 import EditorProvider from "./EditorProvider";
+import ReactChartDisplayExtension from "./extensions/ReactChartDisplayExtension";
 // import CustomHighlight from "./extensions/CustomHighlight";
+
 interface EditorBlockProps {
   content: string | any;
   setContent?: (_: string) => void;
@@ -59,6 +61,7 @@ const ContentEditor = ({
 				showDiffButtons: showDiffButtons,
 				multicolor: true,
 			}),
+			ReactChartDisplayExtension,
 			// CustomHighlight,
 		],
 		editorProps: {

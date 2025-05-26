@@ -12,15 +12,31 @@ export default Node.create({
 
 	addAttributes() {
 		return {
-		
-			jsx: {
-				default: "",
+			data: {
+				default: "{}",
 				parseHTML: (element) => {
+					// First try to get the data attribute directly
+					const dataAttr = element.getAttribute("data");
+					if (dataAttr) {
+						return dataAttr;
+					}
+					
+					// Fallback to innerHTML content (for backward compatibility)
 					const content = element.innerHTML.trim();
-					return content || element.getAttribute("jsx") || "";
+					return content || "{}";
 				},
 				renderHTML: (attributes) => {
-					return { jsx: attributes.jsx };
+					return { data: attributes.data };
+				},
+			},
+			id: {
+				default: null,
+				parseHTML: (element) => element.getAttribute("id"),
+				renderHTML: (attributes) => {
+					if (!attributes.id) {
+						return {};
+					}
+					return { id: attributes.id };
 				},
 			},
 		};
@@ -30,7 +46,9 @@ export default Node.create({
 		return [
 			{
 				tag: "chart",
-		
+			},
+			{
+				tag: "Chart", // Also support capitalized version
 			},
 		];
 	},

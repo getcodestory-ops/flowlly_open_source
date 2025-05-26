@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, Loader2 } from "lucide-react";
 import AgentMessageInteractiveView from "@/components/AiActions/AgentMessageInteractiveView";
@@ -14,7 +15,7 @@ interface ChatMessageProps {
   messageRef: React.RefObject<HTMLDivElement>;
 }
 
-export const ChatMessage: React.FC<ChatMessageProps> = ({
+export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({
 	message,
 	sender,
 	index,
@@ -86,6 +87,21 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 			</div>
 		</div>
 	);
+});
+
+// Add PropTypes validation
+ChatMessage.propTypes = {
+	message: PropTypes.any.isRequired,
+	sender: PropTypes.string.isRequired,
+	index: PropTypes.number.isRequired,
+	onCopy: PropTypes.func.isRequired,
+	chatTarget: PropTypes.string.isRequired,
+	applyingChanges: PropTypes.any.isRequired,
+	onApplyChanges: PropTypes.func.isRequired,
+	messageRef: PropTypes.any.isRequired,
 };
+
+// Add display name for better debugging
+ChatMessage.displayName = "ChatMessage";
 
 export default ChatMessage; 

@@ -1,4 +1,5 @@
 import React, { createRef, useEffect, useRef } from "react";
+import PropTypes from "prop-types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ChatMessage from "./ChatMessage";
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
@@ -17,7 +18,7 @@ interface ChatMessageListProps {
   session: any;
 }
 
-export const ChatMessageList: React.FC<ChatMessageListProps> = ({
+export const ChatMessageList: React.FC<ChatMessageListProps> = React.memo(({
 	chats,
 	chatContainerRef,
 	messageRefs,
@@ -91,6 +92,22 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
 			</div>
 		</ScrollArea>
 	);
+});
+
+// Add PropTypes validation
+ChatMessageList.propTypes = {
+	chats: PropTypes.array.isRequired,
+	chatContainerRef: PropTypes.any.isRequired,
+	messageRefs: PropTypes.any.isRequired,
+	onCopyContent: PropTypes.func.isRequired,
+	chatTarget: PropTypes.string.isRequired,
+	applyingChanges: PropTypes.any.isRequired,
+	onApplyChanges: PropTypes.func.isRequired,
+	currentTaskId: PropTypes.string,
+	session: PropTypes.any,
 };
+
+// Add display name for better debugging
+ChatMessageList.displayName = "ChatMessageList";
 
 export default ChatMessageList; 

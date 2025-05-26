@@ -242,4 +242,9 @@ function AgentMessageInteractiveView({ id, message }: { id?: string, message: Ag
 	);
 }
 
-export default AgentMessageInteractiveView;
+const MemoizedAgentMessageInteractiveView = React.memo(AgentMessageInteractiveView);
+
+// Add display name for better debugging
+MemoizedAgentMessageInteractiveView.displayName = "AgentMessageInteractiveView";
+
+export default MemoizedAgentMessageInteractiveView;

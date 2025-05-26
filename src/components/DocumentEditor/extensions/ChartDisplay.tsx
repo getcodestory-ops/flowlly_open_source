@@ -1,44 +1,40 @@
 import { NodeViewWrapper } from "@tiptap/react";
 import React, { useMemo } from "react";
-import { renderJsxString } from "@/utils/jsxStringRenderer";
-
-
-const decodeBase64 = (base64String: string): string => {
-	try {
-		return atob(base64String);
-	} catch (error) {
-		console.error("Error decoding base64:", error);
-		return "<p>Error decoding chart data</p>";
-	}
-};
-
-
+import ChartComponent from "@/components/Markdown/chart/ChartComponent";
 
 export const ChartDisplay = (props: any) => {
-	const chart_id = props.node.attrs.chart_id;
-	const jsxEncoded = props.node.attrs.jsx || "<p>No chart data available</p>";
+	const chartData = props.node.attrs.data || "{}";
 
-	// Use useMemo to render the component only when chart_id or jsx_string changes
+	// Use useMemo to render the component only when chartData changes
 	const renderedComponent = useMemo(() => {
-		// Check if the jsx is base64 encoded and decode it if needed
-		let jsxDecoded = "";
-		
-		
-		
-		// Simple check if the string looks like it's base64 encoded
-		if (jsxEncoded.match(/^[A-Za-z0-9+/=]+$/)) {
-			try {
-				jsxDecoded = decodeBase64(jsxEncoded).replace("{/*", "")
-					.replace("*/}", "");
-			} catch (error) {
-				console.error("Failed to decode JSX:", error);
-			}
+		// Check if we have valid chart data
+		if (!chartData || chartData === "{}") {
+			return (
+				<div className="bg-gray-100 border border-gray-200 rounded-lg p-4 my-4">
+					<p className="text-gray-600 text-center">No chart data available</p>
+				</div>
+			);
 		}
-		// Use our utility function to render the JSX string as a component
-		const component = renderJsxString(jsxDecoded, chart_id);
 
-		return component;
-	}, [chart_id, jsxEncoded]);
+		try {
+			// Validate that the data is valid JSON
+			JSON.parse(chartData);
+			return <ChartComponent data={chartData} />;
+		} catch (error) {
+			console.error("Invalid chart data:", error);
+			return (
+				<div className="bg-red-100 border border-red-200 rounded-lg p-4 my-4">
+					<p className="text-red-700 font-semibold">Error parsing chart data</p>
+					<p className="text-red-600 text-sm mt-1">
+						Please check that the JSON data is properly formatted.
+					</p>
+					<pre className="text-xs mt-2 text-red-500 bg-red-50 p-2 rounded">
+						{chartData}
+					</pre>
+				</div>
+			);
+		}
+	}, [chartData]);
 
 	return (
 		<NodeViewWrapper className="chart">
