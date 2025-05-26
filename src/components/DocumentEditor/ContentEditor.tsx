@@ -14,7 +14,7 @@ import { DiffStyleExtension } from "./extensions/DiffStyleExtension";
 import Image from "@tiptap/extension-image";
 import EditorProvider from "./EditorProvider";
 import ReactChartDisplayExtension from "./extensions/ReactChartDisplayExtension";
-import { ChartDirectiveExtension } from "./extensions/ChartDirectiveExtension";
+// import { ChartDirectiveExtension } from "./extensions/ChartDirectiveExtension";
 // import { convertDirectivesToHTML, convertHTMLToDirectives } from "@/utils/chartDirectiveProcessor";
 // import CustomHighlight from "./extensions/CustomHighlight";
 
@@ -64,7 +64,7 @@ const ContentEditor = ({
 				multicolor: true,
 			}),
 			ReactChartDisplayExtension,
-			ChartDirectiveExtension,
+			// ChartDirectiveExtension,
 			// CustomHighlight,
 		],
 		editorProps: {
