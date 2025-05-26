@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkDirective from "remark-directive";
 import type { Components } from "react-markdown";
-import { Play, Info, Eye, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch, NotebookPen } from "lucide-react";
+import { Play, Info, Eye, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch, NotebookPen, FileOutput, FileInput, FilePlus, Terminal, Database, Network, FolderOpen, BookOpen, Brain } from "lucide-react";
 import { visit } from "unist-util-visit";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -14,6 +14,7 @@ import { Markdown } from "tiptap-markdown";
 import { DiffStyleExtension } from "@/components/DocumentEditor/extensions/DiffStyleExtension";
 import EditorProvider from "../DocumentEditor/EditorProvider";
 import AttachmentViewer from "../AiActions/AttachmentViewer";
+import  ChartComponent  from "./chart/ChartComponent";
 
 interface MarkdownRendererProps {
   content: string;
@@ -175,6 +176,21 @@ const VALID_DIRECTIVES = [
 	"extract_file_insights",
 	"get_report_template",
 	"get_task_guidelines",
+	"chart",
+	"write_project_document_to_sandbox",
+	"read_complete_project_document",
+	"read_project_document_summary",
+	"copy_file_from_sandbox_to_project_document",
+	"read_file_from_sandbox",
+	"get_all_files_in_sandbox",
+	"execute_code_in_jupyter_notebook",
+	"run_command_in_sandbox",
+	"create_new_file_in_sandbox",
+	"update_file_in_sandbox",
+	"append_to_file_in_sandbox",
+	"expose_sandbox_port",
+	"mark_task_complete",
+	"programming_expert",
 ];
 
 // Add Attachment interface
@@ -395,6 +411,96 @@ function remarkDirectiveComponents() {
 							content: "Checking if there are any existing guidelines to follow",
 						};
 						break;
+					case "chart":
+						data.hName = "custom-chart";
+						data.hProperties = {
+							data: node.children?.[0]?.children[0]?.value || "{}",
+						};
+						break;
+					case "write_project_document_to_sandbox":
+						data.hName = "custom-write-project-document-to-sandbox";
+						data.hProperties = {
+							content: "Writing Project Document to Sandbox",
+						};
+						break;
+					case "read_complete_project_document":
+						data.hName = "custom-read-complete-project-document";
+						data.hProperties = {
+							content: "Reading Complete Project Document",
+						};
+						break;
+					case "read_project_document_summary":
+						data.hName = "custom-read-project-document-summary";
+						data.hProperties = {
+							content: "Reading Project Document Summary",
+						};
+						break;
+					case "copy_file_from_sandbox_to_project_document":
+						data.hName = "custom-copy-file-from-sandbox-to-project-document";
+						data.hProperties = {
+							content: "Copying File from Sandbox to Project",
+						};
+						break;
+					case "read_file_from_sandbox":
+						data.hName = "custom-read-file-from-sandbox";
+						data.hProperties = {
+							content: "Reading File from Sandbox",
+						};
+						break;
+					case "get_all_files_in_sandbox":
+						data.hName = "custom-get-all-files-in-sandbox";
+						data.hProperties = {
+							content: "Getting All Files in Sandbox",
+						};
+						break;
+					case "execute_code_in_jupyter_notebook":
+						data.hName = "custom-execute-code-in-jupyter-notebook";
+						data.hProperties = {
+							content: "Executing Code in Jupyter Notebook",
+						};
+						break;
+					case "run_command_in_sandbox":
+						data.hName = "custom-run-command-in-sandbox";
+						data.hProperties = {
+							content: "Running Command in Sandbox",
+						};
+						break;
+					case "create_new_file_in_sandbox":
+						data.hName = "custom-create-new-file-in-sandbox";
+						data.hProperties = {
+							content: "Creating New File in Sandbox",
+						};
+						break;
+					case "update_file_in_sandbox":
+						data.hName = "custom-update-file-in-sandbox";
+						data.hProperties = {
+							content: "Updating File in Sandbox",
+						};
+						break;
+					case "append_to_file_in_sandbox":
+						data.hName = "custom-append-to-file-in-sandbox";
+						data.hProperties = {
+							content: "Appending to File in Sandbox",
+						};
+						break;
+					case "expose_sandbox_port":
+						data.hName = "custom-expose-sandbox-port";
+						data.hProperties = {
+							content: "Exposing Sandbox Port",
+						};
+						break;
+					case "mark_task_complete":
+						data.hName = "custom-mark-task-complete";
+						data.hProperties = {
+							content: "Marking Task as Complete",
+						};
+						break;
+					case "programming_expert":
+						data.hName = "custom-programming-expert";
+						data.hProperties = {
+							content: "Programming Expert",
+						};
+						break;
 					default:
 						// Use the directive name directly if not mapped
 						data.hName = `custom-${hName}`;
@@ -411,7 +517,7 @@ type CustomMarkdownComponents = Components & {
 	[key: string]: React.ComponentType<any>;
 };
 
-const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
+const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 	content,
 }) => {
 	// Custom components for ReactMarkdown
@@ -458,24 +564,21 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
 		"custom-start-writing-or-editing-report": ({ content }: { content: string }) => <CustomViewer content={content} icon={<NotebookPen className="w-4 h-4" />} />,
 		"custom-get-task-guidelines": ({ content }: { content: string }) => <CustomViewer content={content} icon={<TextSearch className="w-4 h-4" />} />,
 		"custom-extract-file-insights": ({ content }: { content: string }) => <CustomViewer content={content} icon={<TextSearch className="w-4 h-4" />} />,
-		"custom-document-reference": ({ documentId, position }: { documentId: string, position: any }) => {
-			let documentContent = "";
-			if (position && position.start && position.end) {
-				const fullContent = content.substring(
-					position.start.offset, 
-					position.end.offset,
-				);
-				
-				const startMarker = `:::document{#${documentId}}`;
-				const endMarker = ":::";
-				
-				documentContent = fullContent
-					.substring(startMarker.length, fullContent.length - endMarker.length)
-					.trim();
-			}
-			
-			return <DocumentReference content={documentContent} documentId={documentId} />;
-		},
+		"custom-chart": ({ data }: { data: string }) => <ChartComponent data={data} />,
+		"custom-write-project-document-to-sandbox": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FileOutput className="w-4 h-4" />} />,
+		"custom-read-complete-project-document": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FileInput className="w-4 h-4" />} />,
+		"custom-read-project-document-summary": ({ content }: { content: string }) => <CustomViewer content={content} icon={<TextSearch className="w-4 h-4" />} />,
+		"custom-copy-file-from-sandbox-to-project-document": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FilePlus className="w-4 h-4" />} />,
+		"custom-read-file-from-sandbox": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FileText className="w-4 h-4" />} />,
+		"custom-get-all-files-in-sandbox": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FolderSearch2 className="w-4 h-4" />} />,
+		"custom-execute-code-in-jupyter-notebook": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Code className="w-4 h-4" />} />,
+		"custom-run-command-in-sandbox": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Terminal className="w-4 h-4" />} />,
+		"custom-create-new-file-in-sandbox": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FilePlus className="w-4 h-4" />} />,
+		"custom-update-file-in-sandbox": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Pencil className="w-4 h-4" />} />,
+		"custom-append-to-file-in-sandbox": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FilePlus className="w-4 h-4" />} />,
+		"custom-expose-sandbox-port": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Network className="w-4 h-4" />} />,
+		"custom-mark-task-complete": ({ content }: { content: string }) => <CustomViewer content={content} icon={<CheckCircle className="w-4 h-4" />} />,
+		"custom-programming-expert": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Brain className="w-4 h-4" />} />,
 		// Use a normal paragraph component for li elements
 		li: ({ children, ...props }: any) => {
 			return <li {...props}>{children}</li>;
@@ -505,6 +608,9 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = ({
 			</ReactMarkdown>
 		</div>
 	);
-};
+});
+
+// Add display name for better debugging
+MarkDownDisplay.displayName = "MarkDownDisplay";
 
 export default MarkDownDisplay;
