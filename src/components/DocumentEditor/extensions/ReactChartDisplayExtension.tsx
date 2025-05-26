@@ -54,7 +54,7 @@ export default Node.create({
 	},
 
 	renderHTML({ HTMLAttributes }) {
-		return ["div", mergeAttributes(HTMLAttributes)];
+		return ["chart", mergeAttributes(HTMLAttributes)];
 	},
 
 	addNodeView() {
