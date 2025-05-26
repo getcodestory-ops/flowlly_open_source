@@ -14,6 +14,8 @@ import { DiffStyleExtension } from "./extensions/DiffStyleExtension";
 import Image from "@tiptap/extension-image";
 import EditorProvider from "./EditorProvider";
 import ReactChartDisplayExtension from "./extensions/ReactChartDisplayExtension";
+// import { ChartDirectiveExtension } from "./extensions/ChartDirectiveExtension";
+// import { convertDirectivesToHTML, convertHTMLToDirectives } from "@/utils/chartDirectiveProcessor";
 // import CustomHighlight from "./extensions/CustomHighlight";
 
 interface EditorBlockProps {
@@ -62,6 +64,7 @@ const ContentEditor = ({
 				multicolor: true,
 			}),
 			ReactChartDisplayExtension,
+			// ChartDirectiveExtension,
 			// CustomHighlight,
 		],
 		editorProps: {
@@ -69,11 +72,13 @@ const ContentEditor = ({
 				class: "focus:outline-none",
 			},
 		},
-		content: content || "",
+		content: content ||"",
 		immediatelyRender: false,
 		onUpdate: ({ editor }) => {
 			if (setContent) {
-				setContent(editor.storage.markdown.getMarkdown());
+				// Convert HTML back to markdown with chart directives
+				const markdownContent = editor.storage.markdown.getMarkdown();
+				setContent(markdownContent);
 			}
 		},
 

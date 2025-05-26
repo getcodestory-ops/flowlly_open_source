@@ -32,7 +32,8 @@ import {
 	FaMagic,
 	FaFileCsv,
 	FaStrikethrough,
-	FaHighlighter
+	FaHighlighter,
+	FaChartBar
 } from "react-icons/fa";
 import { RxTriangleDown } from "react-icons/rx";
 import { FaFileAlt } from "react-icons/fa";
