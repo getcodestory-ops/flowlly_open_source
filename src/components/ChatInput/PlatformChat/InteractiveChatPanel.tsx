@@ -10,6 +10,7 @@ import RunningLogViewer from "@/components/WorkflowComponents/RunningLogViewer";
 
 const imageExtensions = ["jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff"];
 const tifExtensions = ["tif", "tiff"];
+const htmlExtensions = ["html", "htm"];
 
 const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string, fileExtension: string}) : React.ReactNode => {
 	const { session } = useStore();
@@ -45,7 +46,18 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 					</a>
 				</div>
 			)}
-			{resource && !imageExtensions.includes(fileExtension) && (
+			{resource && htmlExtensions.includes(fileExtension) && (
+				<iframe 
+					className="border-0 bg-white"
+					height="100%"
+					sandbox="allow-scripts allow-same-origin allow-forms"
+					src={resource?.url}
+					title="HTML Document"
+					width="100%"
+				/>
+			)}
+			{resource && !imageExtensions.includes(fileExtension) && !htmlExtensions.includes(fileExtension) && (
+				
 				<iframe 
 					className="border-0"
 					height="100%"
@@ -61,7 +73,7 @@ const getFileIcon = (extension: string) : React.ReactNode => {
 	const imageExts = ["jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff"];
 	const audioExts = ["mp3", "wav", "ogg", "oga"];
 	const videoExts = ["mp4", "webm"];
-	const codeExts = ["js", "ts", "jsx", "tsx", "html", "css", "json", "md"];
+	const codeExts = ["js", "ts", "jsx", "tsx", "html", "htm", "css", "json", "md"];
 
 	if (imageExts.includes(extension)) return <FileImage className="h-4 w-4" />;
 	if (audioExts.includes(extension)) return <FileAudio className="h-4 w-4" />;
@@ -84,7 +96,7 @@ const InteractiveChatPanel = () : React.ReactNode => {
 		}
 	}, [sidePanel]);
     
-	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "wav", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv"];
+	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "wav", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", ".xlsx"];
 
 	return (
         
