@@ -11,6 +11,7 @@ import RunningLogViewer from "@/components/WorkflowComponents/RunningLogViewer";
 const imageExtensions = ["jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff"];
 const tifExtensions = ["tif", "tiff"];
 const htmlExtensions = ["html", "htm"];
+const docExtensions = ["doc", "docx"];
 
 const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string, fileExtension: string}) : React.ReactNode => {
 	const { session } = useStore();
@@ -46,6 +47,17 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 					</a>
 				</div>
 			)}
+			{resource && docExtensions.includes(fileExtension) && (
+				<div className="h-full w-full">
+					<iframe 
+						className="border-0 bg-white"
+						height="100%"
+						src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(resource?.url)}`}
+						title="Word Document"
+						width="100%"
+					/>
+				</div>
+			)}
 			{resource && htmlExtensions.includes(fileExtension) && (
 				<iframe 
 					className="border-0 bg-white"
@@ -56,7 +68,7 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 					width="100%"
 				/>
 			)}
-			{resource && !imageExtensions.includes(fileExtension) && !htmlExtensions.includes(fileExtension) && (
+			{resource && !imageExtensions.includes(fileExtension) && !htmlExtensions.includes(fileExtension) && !docExtensions.includes(fileExtension) && (
 				
 				<iframe 
 					className="border-0"
@@ -74,12 +86,13 @@ const getFileIcon = (extension: string) : React.ReactNode => {
 	const audioExts = ["mp3", "wav", "ogg", "oga"];
 	const videoExts = ["mp4", "webm"];
 	const codeExts = ["js", "ts", "jsx", "tsx", "html", "htm", "css", "json", "md"];
+	const documentExts = ["pdf", "doc", "docx"];
 
 	if (imageExts.includes(extension)) return <FileImage className="h-4 w-4" />;
 	if (audioExts.includes(extension)) return <FileAudio className="h-4 w-4" />;
 	if (videoExts.includes(extension)) return <FileVideo className="h-4 w-4" />;
 	if (codeExts.includes(extension)) return <FileCode className="h-4 w-4" />;
-	if (extension === "pdf") return <FileText className="h-4 w-4" />;
+	if (documentExts.includes(extension)) return <FileText className="h-4 w-4" />;
 	return <File className="h-4 w-4" />;
 };
 
@@ -96,7 +109,7 @@ const InteractiveChatPanel = () : React.ReactNode => {
 		}
 	}, [sidePanel]);
     
-	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "wav", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", ".xlsx"];
+	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "wav", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", ".xlsx", ".docx", ".doc"];
 
 	return (
         
