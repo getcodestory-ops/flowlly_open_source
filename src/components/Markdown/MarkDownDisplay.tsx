@@ -191,7 +191,7 @@ const VALID_DIRECTIVES = [
 	"expose_sandbox_port",
 	"mark_task_complete",
 	"programming_expert",
-];
+	"visually_examine_project_document_file"];
 
 // Add Attachment interface
 interface Attachment {
@@ -501,6 +501,12 @@ function remarkDirectiveComponents() {
 							content: "Programming Expert",
 						};
 						break;
+					case "visually_examine_project_document_file":
+						data.hName = "custom-visually-examine-project-document-file";
+						data.hProperties = {
+							content: "Visually Examining Project Document File",
+						};
+						break;
 					default:
 						// Use the directive name directly if not mapped
 						data.hName = `custom-${hName}`;
@@ -565,6 +571,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 		"custom-get-task-guidelines": ({ content }: { content: string }) => <CustomViewer content={content} icon={<TextSearch className="w-4 h-4" />} />,
 		"custom-extract-file-insights": ({ content }: { content: string }) => <CustomViewer content={content} icon={<TextSearch className="w-4 h-4" />} />,
 		"custom-chart": ({ data }: { data: string }) => <ChartComponent data={data} />,
+		"custom-visually-examine-project-document-file": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Eye className="w-4 h-4" />} />,
 		"custom-write-project-document-to-sandbox": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FileOutput className="w-4 h-4" />} />,
 		"custom-read-complete-project-document": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FileInput className="w-4 h-4" />} />,
 		"custom-read-project-document-summary": ({ content }: { content: string }) => <CustomViewer content={content} icon={<TextSearch className="w-4 h-4" />} />,
