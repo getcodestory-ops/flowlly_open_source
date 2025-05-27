@@ -62,7 +62,7 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 				<iframe 
 					className="border-0 bg-white"
 					height="100%"
-					sandbox="allow-scripts allow-same-origin allow-forms"
+					sandbox="allow-scripts allow-same-origin allow-forms allow-modals"
 					src={resource?.url}
 					title="HTML Document"
 					width="100%"
