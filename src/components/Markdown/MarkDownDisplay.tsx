@@ -191,7 +191,9 @@ const VALID_DIRECTIVES = [
 	"expose_sandbox_port",
 	"mark_task_complete",
 	"programming_expert",
-	"visually_examine_project_document_file"];
+	"visually_examine_project_document_file",
+	"visually_examine_file_from_sandbox",
+	"uuid"];
 
 // Add Attachment interface
 interface Attachment {
@@ -507,6 +509,18 @@ function remarkDirectiveComponents() {
 							content: "Visually Examining Project Document File",
 						};
 						break;
+					case "visually_examine_file_from_sandbox":
+						data.hName = "custom-visually-examine-file-from-sandbox";
+						data.hProperties = {
+							content: "Visually Examining File from Sandbox",
+						};
+						break;
+					case "uuid":
+						data.hName = "custom-uuid";
+						data.hProperties = {
+							content: node.children?.[0]?.value || "",
+						};
+						break;
 					default:
 						// Use the directive name directly if not mapped
 						data.hName = `custom-${hName}`;
@@ -572,6 +586,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 		"custom-extract-file-insights": ({ content }: { content: string }) => <CustomViewer content={content} icon={<TextSearch className="w-4 h-4" />} />,
 		"custom-chart": ({ data }: { data: string }) => <ChartComponent data={data} />,
 		"custom-visually-examine-project-document-file": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Eye className="w-4 h-4" />} />,
+		"custom-visually-examine-file-from-sandbox": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Eye className="w-4 h-4" />} />,
 		"custom-write-project-document-to-sandbox": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FileOutput className="w-4 h-4" />} />,
 		"custom-read-complete-project-document": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FileInput className="w-4 h-4" />} />,
 		"custom-read-project-document-summary": ({ content }: { content: string }) => <CustomViewer content={content} icon={<TextSearch className="w-4 h-4" />} />,
@@ -586,6 +601,11 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 		"custom-expose-sandbox-port": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Network className="w-4 h-4" />} />,
 		"custom-mark-task-complete": ({ content }: { content: string }) => <CustomViewer content={content} icon={<CheckCircle className="w-4 h-4" />} />,
 		"custom-programming-expert": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Brain className="w-4 h-4" />} />,
+		"custom-uuid": ({ content }: { content: string }) => (
+			<div className="inline-block text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded border">
+				{content}
+			</div>
+		),
 		// Use a normal paragraph component for li elements
 		li: ({ children, ...props }: any) => {
 			return <li {...props}>{children}</li>;
