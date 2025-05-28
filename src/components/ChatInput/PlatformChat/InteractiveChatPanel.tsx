@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { getInlineDocument } from "@/api/folderRoutes";
 import { useStore } from "@/utils/store";
 import { useQuery } from "@tanstack/react-query";
-import { X, FileText, FileImage, FileAudio, FileVideo, FileCode, File, Pencil } from "lucide-react";
+import { X, FileText, FileImage, FileAudio, FileVideo, FileCode, File, Pencil, Download } from "lucide-react";
 import { ResourceTextViewer } from "@/components/DocumentEditor/ResourceTextViewer";
 import RunningLogViewer from "@/components/WorkflowComponents/RunningLogViewer";
 
@@ -100,6 +100,31 @@ const InteractiveChatPanel = () : React.ReactNode => {
 	const { setSidePanel, sidePanel } = useChatStore();
 	const [fileExtension, setFileExtension] = useState<string>("");
 	const [viewMode, setViewMode] = useState<"original" | "text">("original");
+	const { session } = useStore();
+	const { activeProject } = useStore();
+
+	// Query to get resource data for download functionality
+	const { data: downloadResource } = useQuery({
+		queryKey: ["downloadResource", session, activeProject, sidePanel?.resourceId],
+		queryFn: () => {
+			if (!session || !activeProject?.project_id || !sidePanel?.resourceId) {
+				return Promise.reject("No session, active project, or resource ID");
+			}
+			return getInlineDocument({ session, projectId: activeProject.project_id, resourceId: sidePanel.resourceId });
+		},
+		enabled: !!session && !!activeProject?.project_id && !!sidePanel?.resourceId,
+	});
+
+	const handleDownload = () => {
+		if (downloadResource?.url && sidePanel?.filename) {
+			const link = document.createElement("a");
+			link.href = downloadResource.url;
+			link.download = sidePanel.filename;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		}
+	};
 
 	useEffect(() => {
 		if (sidePanel?.filename) {
@@ -126,6 +151,15 @@ const InteractiveChatPanel = () : React.ReactNode => {
 				{getFileIcon(fileExtension)}
 				<span className="text-sm font-medium">{sidePanel?.filename}</span>
 				<div className="flex-1" />
+				<Button 
+					className="gap-2"
+					disabled={!downloadResource?.url}
+					onClick={handleDownload}
+					variant="ghost"
+				>
+					<Download className="h-4 w-4" />
+					Download
+				</Button>
 				<Button 
 					className="gap-2"
 					onClick={() => setViewMode(viewMode === "original" ? "text" : "original")}
