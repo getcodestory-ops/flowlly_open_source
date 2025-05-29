@@ -852,7 +852,7 @@ const AddFileInFolderButton = ({
 	return (
 		<div className="ml-auto flex gap-2">
 			<input
-				accept=".bmp,.csv,.doc,.docx,.eml,.epub,.heic,.html,.jpeg,.png,.md,.msg,.odt,.org,.p7s,.pdf,.png,.ppt,.pptx,.rst,.rtf,.tiff,.txt,.tsv,.xls,.xlsx,.xml,.tif"
+				accept=".bmp,.csv,.doc,.docx,.eml,.epub,.heic,.html,.jpeg,.png,.md,.msg,.odt,.org,.p7s,.pdf,.png,.ppt,.pptx,.rst,.rtf,.tiff,.txt,.tsv,.xls,.xlsx,.xml,.tif,.mp3"
 				multiple
 				onChange={handleFileUpload}
 				ref={fileInputRef}

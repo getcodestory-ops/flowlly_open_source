@@ -193,6 +193,9 @@ const VALID_DIRECTIVES = [
 	"programming_expert",
 	"visually_examine_project_document_file",
 	"visually_examine_file_from_sandbox",
+	"edit_project_document",
+	"append_to_project_document",
+	"create_new_project_document",
 	"uuid"];
 
 // Add Attachment interface
@@ -521,6 +524,26 @@ function remarkDirectiveComponents() {
 							content: node.children?.[0]?.value || "",
 						};
 						break;
+					case "edit_project_document":
+						data.hName = "custom-edit-project-document";
+						data.hProperties = {
+							content: "Editing Project Document",
+						};
+						break;
+					case "append_to_project_document":
+						data.hName = "custom-append-to-project-document";
+						data.hProperties = {
+							content: "Appending to Project Document",
+						};
+						break;
+					case "create_new_project_document":
+						data.hName = "custom-create-new-project-document";
+						data.hProperties = {
+							content: "Creating New Project Document",
+						};
+						break;
+						
+						
 					default:
 						// Use the directive name directly if not mapped
 						data.hName = `custom-${hName}`;
@@ -591,6 +614,9 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 		"custom-read-complete-project-document": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FileInput className="w-4 h-4" />} />,
 		"custom-read-project-document-summary": ({ content }: { content: string }) => <CustomViewer content={content} icon={<TextSearch className="w-4 h-4" />} />,
 		"custom-copy-file-from-sandbox-to-project-document": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FilePlus className="w-4 h-4" />} />,
+		"custom-edit-project-document": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Pencil className="w-4 h-4" />} />,
+		"custom-append-to-project-document": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FilePlus className="w-4 h-4" />} />,
+		"custom-create-new-project-document": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FilePlus className="w-4 h-4" />} />,
 		"custom-read-file-from-sandbox": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FileText className="w-4 h-4" />} />,
 		"custom-get-all-files-in-sandbox": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FolderSearch2 className="w-4 h-4" />} />,
 		"custom-execute-code-in-jupyter-notebook": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Code className="w-4 h-4" />} />,
