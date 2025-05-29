@@ -30,7 +30,7 @@ export const FileInput: React.FC<FileInputProps> = ({
 	return (
 		<>
 			<input
-				accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif"
+				accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.mp3"
 				className="hidden"
 				disabled={isPending || isWaitingForResponse}
 				multiple

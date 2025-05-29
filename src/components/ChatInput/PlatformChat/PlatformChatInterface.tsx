@@ -548,7 +548,7 @@ export default function PlatformChatInterface({
 	const renderFileInput = () => (
 		<>
 			<input
-				accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif"
+				accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.mp3"
 				className="hidden"
 				disabled={isPending || isWaitingForResponse}
 				multiple
