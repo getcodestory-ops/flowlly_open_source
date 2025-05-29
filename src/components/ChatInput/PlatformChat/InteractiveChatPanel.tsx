@@ -11,7 +11,7 @@ import RunningLogViewer from "@/components/WorkflowComponents/RunningLogViewer";
 const imageExtensions = ["jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff"];
 const tifExtensions = ["tif", "tiff"];
 const htmlExtensions = ["html", "htm"];
-const docExtensions = ["doc", "docx"];
+const microsoftExtensions = ["doc", "docx", "xlsx", "xls", "ppt", "pptx"];
 
 const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string, fileExtension: string}) : React.ReactNode => {
 	const { session } = useStore();
@@ -47,7 +47,7 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 					</a>
 				</div>
 			)}
-			{resource && docExtensions.includes(fileExtension) && (
+			{resource && microsoftExtensions.includes(fileExtension) && (
 				<div className="h-full w-full">
 					<iframe 
 						className="border-0 bg-white"
@@ -68,7 +68,7 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 					width="100%"
 				/>
 			)}
-			{resource && !imageExtensions.includes(fileExtension) && !htmlExtensions.includes(fileExtension) && !docExtensions.includes(fileExtension) && (
+			{resource && !imageExtensions.includes(fileExtension) && !htmlExtensions.includes(fileExtension) && !microsoftExtensions.includes(fileExtension) && (
 				
 				<iframe 
 					className="border-0"
@@ -134,7 +134,7 @@ const InteractiveChatPanel = () : React.ReactNode => {
 		}
 	}, [sidePanel]);
     
-	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "wav", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", ".xlsx", ".docx", ".doc"];
+	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "wav", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", ".xlsx", ".docx", ".doc", "docx", "doc", "xlsx"];
 
 	return (
         
