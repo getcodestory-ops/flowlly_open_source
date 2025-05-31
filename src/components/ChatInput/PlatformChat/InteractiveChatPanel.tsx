@@ -2,11 +2,15 @@ import { useEffect, useState } from "react";
 import { useChatStore } from "@/hooks/useChatStore";
 import { Button } from "@/components/ui/button";
 import { getInlineDocument } from "@/api/folderRoutes";
+import { updateDocumentName } from "@/api/documentRoutes";
 import { useStore } from "@/utils/store";
 import { useQuery } from "@tanstack/react-query";
-import { X, FileText, FileImage, FileAudio, FileVideo, FileCode, File, Pencil, Download } from "lucide-react";
+import { X, FileText, FileImage, FileAudio, FileVideo, FileCode, File, Pencil, Download, Folder, Plus } from "lucide-react";
 import { ResourceTextViewer } from "@/components/DocumentEditor/ResourceTextViewer";
 import RunningLogViewer from "@/components/WorkflowComponents/RunningLogViewer";
+import DocumentSelector from "@/components/ProjectEvent/DocumentSelector";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/components/ui/use-toast";
 
 const imageExtensions = ["jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff"];
 const tifExtensions = ["tif", "tiff"];
@@ -97,105 +101,260 @@ const getFileIcon = (extension: string) : React.ReactNode => {
 };
 
 const InteractiveChatPanel = () : React.ReactNode => {
-	const { setSidePanel, sidePanel } = useChatStore();
-	const [fileExtension, setFileExtension] = useState<string>("");
-	const [viewMode, setViewMode] = useState<"original" | "text">("original");
+	const { tabs, activeTabId, setActiveTab, removeTab, clearAllTabs } = useChatStore();
+	const [viewModes, setViewModes] = useState<{[tabId: string]: "original" | "text"}>({});
+	const [editingTabId, setEditingTabId] = useState<string | null>(null);
+	const [editedName, setEditedName] = useState<string>("");
 	const { session } = useStore();
 	const { activeProject } = useStore();
+	const { toast } = useToast();
+
+	const activeTab = tabs.find((tab) => tab.id === activeTabId);
 
 	// Query to get resource data for download functionality
 	const { data: downloadResource } = useQuery({
-		queryKey: ["downloadResource", session, activeProject, sidePanel?.resourceId],
+		queryKey: ["downloadResource", session, activeProject, activeTab?.resourceId],
 		queryFn: () => {
-			if (!session || !activeProject?.project_id || !sidePanel?.resourceId) {
+			if (!session || !activeProject?.project_id || !activeTab?.resourceId) {
 				return Promise.reject("No session, active project, or resource ID");
 			}
-			return getInlineDocument({ session, projectId: activeProject.project_id, resourceId: sidePanel.resourceId });
+			return getInlineDocument({ session, projectId: activeProject.project_id, resourceId: activeTab.resourceId });
 		},
-		enabled: !!session && !!activeProject?.project_id && !!sidePanel?.resourceId,
+		enabled: !!session && !!activeProject?.project_id && !!activeTab?.resourceId,
 	});
 
 	const handleDownload = () => {
-		if (downloadResource?.url && sidePanel?.filename) {
+		if (downloadResource?.url && activeTab?.filename) {
 			const link = document.createElement("a");
 			link.href = downloadResource.url;
-			link.download = sidePanel.filename;
+			link.download = activeTab.filename;
 			document.body.appendChild(link);
 			link.click();
 			document.body.removeChild(link);
 		}
 	};
 
-	useEffect(() => {
-		if (sidePanel?.filename) {
-			const parts = sidePanel.filename.split(".");
-			// If there's no extension (parts.length === 1) or the last part is empty, set default to "txt"
-			setFileExtension(parts.length > 1 && parts[parts.length - 1] ? parts[parts.length - 1] : "txt");
-		}
-	}, [sidePanel]);
-    
+	const getFileExtension = (filename?: string) => {
+		if (!filename) return "txt";
+		const parts = filename.split(".");
+		return parts.length > 1 && parts[parts.length - 1] ? parts[parts.length - 1] : "txt";
+	};
+
+	const getCurrentViewMode = (tabId: string) => viewModes[tabId] || "original";
+	
+	const setCurrentViewMode = (tabId: string, mode: "original" | "text") => {
+		setViewModes((prev) => ({ ...prev, [tabId]: mode }));
+	};
+
+	const handleTabClose = (tabId: string, e: React.MouseEvent) => {
+		e.stopPropagation();
+		removeTab(tabId);
+	};
+
 	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "wav", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", ".xlsx", ".docx", ".doc", "docx", "doc", "xlsx"];
 
+	const handleFileNameEdit = async(tabId: string, newName: string) => {
+		if (!session || !activeProject) return;
+		
+		const tab = tabs.find((t) => t.id === tabId);
+		if (!tab || tab.type !== "sources") return;
+
+		try {
+			const response = await updateDocumentName(session, tab.resourceId, newName);
+			if (response) {
+				toast({
+					title: "File name updated",
+					description: `File name updated to ${newName}`,
+				});
+				
+				// Update the tab title in the store (we'll need to add this function)
+				// For now, we can update local state and it will refresh on next load
+			} else {
+				toast({
+					title: "Error",
+					description: "Failed to update file name",
+					variant: "destructive",
+				});
+			}
+		} catch (error) {
+			toast({
+				title: "Error",
+				description: "Failed to update file name",
+				variant: "destructive",
+			});
+		}
+		
+		setEditingTabId(null);
+	};
+
+	const handleFileNameDoubleClick = (tab: any) => {
+		if (tab.type === "sources") {
+			setEditingTabId(tab.id);
+			setEditedName(tab.filename || tab.title || "");
+		}
+	};
+
+	const handleFileNameInputBlur = (tabId: string) => {
+		const newName = editedName.trim();
+		if (newName && newName !== tabs.find((t) => t.id === tabId)?.filename) {
+			handleFileNameEdit(tabId, newName);
+		} else {
+			setEditingTabId(null);
+		}
+	};
+
+	const handleFileNameKeyDown = (e: React.KeyboardEvent, tabId: string) => {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			handleFileNameInputBlur(tabId);
+		} else if (e.key === "Escape") {
+			setEditingTabId(null);
+		}
+	};
+
+	// Return null if no tabs (component should not render)
+	if (tabs.length === 0) {
+		return null;
+	}
+
 	return (
-        
-		<div className="h-[calc(100vh-20px)] flex flex-col bg-gray-50 rounded-lg  border border-gray-200 ">
-			<div className="flex items-center gap-2 p-2 bg-white rounded-t-lg px-4">	
-				<Button 
-					className="h-8 w-8 hover:bg-gray-100"
-					onClick={() => setSidePanel(null)}
-					size="icon"
-					variant="ghost"
-				>
-					<X className="h-4 w-4" />
-				</Button>
-				{getFileIcon(fileExtension)}
-				<span className="text-sm font-medium">{sidePanel?.filename}</span>
-				<div className="flex-1" />
-				<Button 
-					className="gap-2"
-					disabled={!downloadResource?.url}
-					onClick={handleDownload}
-					variant="ghost"
-				>
-					<Download className="h-4 w-4" />
-					Download
-				</Button>
-				<Button 
-					className="gap-2"
-					onClick={() => setViewMode(viewMode === "original" ? "text" : "original")}
-					variant="ghost"
-				>
-					{viewMode === "original" ? <Pencil className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-					{viewMode === "original" ? "View and Edit File Content" : "View Original"}
-				</Button>
+		<div className="h-[calc(100vh-20px)] flex flex-col bg-gray-50 rounded-lg border border-gray-200">
+			{/* Tab Bar */}
+			<div className="flex items-center bg-white border-b border-gray-200 rounded-t-lg">
+				<ScrollArea className="flex-1">
+					<div className="flex items-center">
+						{tabs.map((tab) => {
+							const isActive = tab.id === activeTabId;
+							const fileExtension = getFileExtension(tab.filename);
+							
+							return (
+								<button
+									className={`flex items-center gap-2 px-3 py-2 text-sm border-r border-gray-200 hover:bg-gray-50 min-w-0 max-w-48 ${
+										isActive ? "bg-gray-50 border-b-2 border-b-blue-500" : ""
+									}`}
+									key={tab.id}
+									onClick={() => setActiveTab(tab.id)}
+								>
+									{tab.type === "folder" ? (
+										<Folder className="h-4 w-4 text-blue-500 flex-shrink-0" />
+									) : (
+										<div className="flex-shrink-0">{getFileIcon(fileExtension)}</div>
+									)}
+									<span className="truncate" title={tab.title}>
+										{tab.title}
+									</span>
+									<Button
+										className="h-4 w-4 p-0 hover:bg-gray-200 flex-shrink-0 ml-1"
+										onClick={(e) => handleTabClose(tab.id, e)}
+										size="icon"
+										variant="ghost"
+									>
+										<X className="h-3 w-3" />
+									</Button>
+								</button>
+							);
+						})}
+					</div>
+				</ScrollArea>
+				<div className="flex items-center gap-1 px-2">
+					<Button
+						className="h-6 w-6 p-0"
+						onClick={clearAllTabs}
+						size="icon"
+						title="Close All Tabs"
+						variant="ghost"
+					>
+						<X className="h-4 w-4" />
+					</Button>
+				</div>
 			</div>
+			{/* Active Tab Header */}
+			{activeTab && (
+				<div className="flex items-center gap-2 p-2 bg-white border-b border-gray-200">
+					{activeTab.type === "folder" ? (
+						<>
+							<Folder className="h-4 w-4 text-blue-500" />
+							<span className="text-sm font-medium">Select Files and Folders</span>
+						</>
+					) : (
+						<>
+							{getFileIcon(getFileExtension(activeTab.filename))}
+							{editingTabId === activeTab.id ? (
+								<input
+									autoFocus
+									className="text-sm font-medium bg-transparent border border-gray-300 rounded px-2 py-1 min-w-0 max-w-[300px] focus:outline-none focus:ring-1 focus:ring-blue-500"
+									onBlur={() => handleFileNameInputBlur(activeTab.id)}
+									onChange={(e) => setEditedName(e.target.value)}
+									onKeyDown={(e) => handleFileNameKeyDown(e, activeTab.id)}
+									value={editedName}
+								/>
+							) : (
+								<span 
+									className="text-sm font-medium cursor-pointer hover:bg-gray-50 px-2 py-1 rounded transition-colors"
+									onDoubleClick={() => handleFileNameDoubleClick(activeTab)}
+									title="Double-click to edit filename"
+								>
+									{activeTab.filename}
+								</span>
+							)}
+						</>
+					)}
+					<div className="flex-1" />
+					{activeTab.type !== "folder" && (
+						<>
+							<Button 
+								className="gap-2"
+								disabled={!downloadResource?.url}
+								onClick={handleDownload}
+								variant="ghost"
+							>
+								<Download className="h-4 w-4" />
+								Download
+							</Button>
+							<Button 
+								className="gap-2"
+								onClick={() => {
+									const currentMode = getCurrentViewMode(activeTab.id);
+									setCurrentViewMode(activeTab.id, currentMode === "original" ? "text" : "original");
+								}}
+								variant="ghost"
+							>
+								{getCurrentViewMode(activeTab.id) === "original" ? <Pencil className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+								{getCurrentViewMode(activeTab.id) === "original" ? "View and Edit File Content" : "View Original"}
+							</Button>
+						</>
+					)}
+				</div>
+			)}
+			{/* Tab Content */}
 			<div className="flex-1 p-4 overflow-auto">
-				{sidePanel && sidePanel?.type === "sources" && 
-                
-                (
-                	<>
-                		{  inLineViewableExtensions.includes(fileExtension) && (
-                			<>
-                				{viewMode === "original" ? (
-                					<InlineDocumentViewer 
-                						fileExtension={fileExtension} 
-                						resourceId={sidePanel.resourceId}
-                					/>
-                				) : (
-                					<ResourceTextViewer resource_id={sidePanel.resourceId} />
-                				)}
-                			</>
-                		)}
-                		{ fileExtension === "txt" && (
-                			<ResourceTextViewer resource_id={sidePanel.resourceId} />
-                		)}
-                	</>
-                )}
-				{sidePanel && sidePanel?.type === "editor" && (
-					<ResourceTextViewer resource_id={sidePanel.resourceId} /> 
+				{activeTab && activeTab.type === "folder" && (
+					<DocumentSelector useChatContext />
 				)}
-				{sidePanel && sidePanel?.type === "log" && (
-					<RunningLogViewer logId={sidePanel.resourceId} />
+				{activeTab && activeTab.type === "sources" && (
+					<>
+						{inLineViewableExtensions.includes(getFileExtension(activeTab.filename)) && (
+							<>
+								{getCurrentViewMode(activeTab.id) === "original" ? (
+									<InlineDocumentViewer 
+										fileExtension={getFileExtension(activeTab.filename)} 
+										resourceId={activeTab.resourceId}
+									/>
+								) : (
+									<ResourceTextViewer resource_id={activeTab.resourceId} />
+								)}
+							</>
+						)}
+						{getFileExtension(activeTab.filename) === "txt" && (
+							<ResourceTextViewer resource_id={activeTab.resourceId} />
+						)}
+					</>
+				)}
+				{activeTab && activeTab.type === "editor" && (
+					<ResourceTextViewer resource_id={activeTab.resourceId} /> 
+				)}
+				{activeTab && activeTab.type === "log" && (
+					<RunningLogViewer logId={activeTab.resourceId} />
 				)}
 			</div>
 		</div>

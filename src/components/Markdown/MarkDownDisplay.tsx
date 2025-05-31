@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkDirective from "remark-directive";
 import type { Components } from "react-markdown";
-import { Play, Info, Eye, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch, NotebookPen, FileOutput, FileInput, FilePlus, Terminal, Database, Network, FolderOpen, BookOpen, Brain } from "lucide-react";
+import { Play, Info, Eye, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch, NotebookPen, FileOutput, FileInput, FilePlus, Terminal, Database, Network, FolderOpen, BookOpen, Brain, File, ExternalLink } from "lucide-react";
 import { visit } from "unist-util-visit";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -15,6 +15,7 @@ import { DiffStyleExtension } from "@/components/DocumentEditor/extensions/DiffS
 import EditorProvider from "../DocumentEditor/EditorProvider";
 import AttachmentViewer from "../AiActions/AttachmentViewer";
 import  ChartComponent  from "./chart/ChartComponent";
+import { useChatStore } from "@/hooks/useChatStore";
 
 interface MarkdownRendererProps {
   content: string;
@@ -142,6 +143,27 @@ const CustomViewer: React.FC<{ content: string; icon?: React.ReactNode; classNam
           			{content}
 				</div>
 			</div>
+		</div>
+	);
+};
+
+const UUIDViewer: React.FC<{ content: string }> = ({ content }) => {
+	const { setSidePanel } = useChatStore();
+
+	const handleClick = () => {
+		setSidePanel({
+			isOpen: true,
+			type: "sources",
+			resourceId: content,
+			filename: "",
+		});
+	};
+
+	return (
+		<div className="inline-block text-xs text-gray-500 font-mono cursor-pointer"
+			onClick={handleClick}
+		>
+			<ExternalLink className="w-3 h-3" />
 		</div>
 	);
 };
@@ -628,9 +650,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 		"custom-mark-task-complete": ({ content }: { content: string }) => <CustomViewer content={content} icon={<CheckCircle className="w-4 h-4" />} />,
 		"custom-programming-expert": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Brain className="w-4 h-4" />} />,
 		"custom-uuid": ({ content }: { content: string }) => (
-			<div className="inline-block text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded border">
-				{content}
-			</div>
+			<UUIDViewer content={content} />
 		),
 		// Use a normal paragraph component for li elements
 		li: ({ children, ...props }: any) => {

@@ -8,29 +8,28 @@ import InteractiveChatPanel from "@/components/ChatInput/PlatformChat/Interactiv
 
 export default function ChatComponent() : JSX.Element {
 	const activeProject = useStore((state) => state.activeProject);
-	const { sidePanel } = useChatStore();
+	const { tabs } = useChatStore();
+	const hasOpenTabs = tabs.length > 0;
+	
 	return (
 		<div className="p-2">
 			<Toaster />
 			{activeProject && (
-				<div className={clsx("", sidePanel?.isOpen && "flex")}>
-					<div className={clsx("transition-all duration-500 ease-in-out", sidePanel?.isOpen ? "w-1/2" : "w-full")}>
+				<div className={clsx("", hasOpenTabs && "flex")}>
+					<div className={clsx("transition-all duration-500 ease-in-out", hasOpenTabs ? "w-1/2" : "w-full")}>
 						<PlatformChatComponent
 							chatTarget="agent"
 							folderId={activeProject?.project_id}
 							folderName="Agent"
 						/>
 					</div>
-					<div className={clsx(
-						"transition-all duration-500 ease-in-out absolute right-2",
-						sidePanel?.isOpen ? "w-1/2 translate-x-0 opacity-100" : "w-1/2 translate-x-full opacity-0",
+					{hasOpenTabs && (
+						<div className="transition-all duration-500 ease-in-out w-1/2 absolute right-2">
+							<InteractiveChatPanel />
+						</div>
 					)}
-					>
-						<InteractiveChatPanel />
-					</div>
 				</div>
 			)}
-
 		</div>
 	);
 }
