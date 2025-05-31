@@ -1,16 +1,21 @@
 import { useEffect, useState } from "react";
 import { useChatStore } from "@/hooks/useChatStore";
 import { Button } from "@/components/ui/button";
-import { getInlineDocument } from "@/api/folderRoutes";
+import { getInlineDocument, saveDocumentAs } from "@/api/folderRoutes";
 import { updateDocumentName } from "@/api/documentRoutes";
 import { useStore } from "@/utils/store";
 import { useQuery } from "@tanstack/react-query";
-import { X, FileText, FileImage, FileAudio, FileVideo, FileCode, File, Pencil, Download, Folder, Plus } from "lucide-react";
+import { X, FileText, FileImage, FileAudio, FileVideo, FileCode, File, Pencil, Download, Folder, Plus, Save } from "lucide-react";
 import { ResourceTextViewer } from "@/components/DocumentEditor/ResourceTextViewer";
 import RunningLogViewer from "@/components/WorkflowComponents/RunningLogViewer";
 import DocumentSelector from "@/components/ProjectEvent/DocumentSelector";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
+import {
+	Dialog,
+	DialogContent,
+} from "@/components/ui/dialog";
+import FolderSelector from "@/components/ProjectEvent/FolderSelector";
 
 const imageExtensions = ["jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff"];
 const tifExtensions = ["tif", "tiff"];
@@ -101,10 +106,13 @@ const getFileIcon = (extension: string) : React.ReactNode => {
 };
 
 const InteractiveChatPanel = () : React.ReactNode => {
-	const { tabs, activeTabId, setActiveTab, removeTab, clearAllTabs } = useChatStore();
+	const { tabs, activeTabId, setActiveTab, removeTab, clearAllTabs, addTab } = useChatStore();
 	const [viewModes, setViewModes] = useState<{[tabId: string]: "original" | "text"}>({});
 	const [editingTabId, setEditingTabId] = useState<string | null>(null);
 	const [editedName, setEditedName] = useState<string>("");
+	const [showSaveAsDialog, setShowSaveAsDialog] = useState(false);
+	const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+	const [selectedFolderName, setSelectedFolderName] = useState<string>("");
 	const { session } = useStore();
 	const { activeProject } = useStore();
 	const { toast } = useToast();
@@ -212,62 +220,124 @@ const InteractiveChatPanel = () : React.ReactNode => {
 		}
 	};
 
-	// Return null if no tabs (component should not render)
-	if (tabs.length === 0) {
-		return null;
-	}
+	const setSaveAsFolder = (folderId: string | null, folderName: string): void => {
+		setSelectedFolderId(folderId);
+		setSelectedFolderName(folderName);
+	};
+
+	const handleSaveAs = async(): Promise<void> => {
+		if (!selectedFolderId || !activeTab?.resourceId || !session || !activeProject?.project_id) return;
+		
+		try {
+			const response = await saveDocumentAs(session, activeProject.project_id, activeTab.resourceId, selectedFolderId);
+			if (response) {
+				setShowSaveAsDialog(false);
+				toast({
+					title: "Success",
+					description: "Document saved successfully in " + selectedFolderName,
+				});
+			} else {
+				setShowSaveAsDialog(false);
+				toast({
+					title: "Error",
+					description: "Failed to save document",
+					variant: "destructive",
+				});
+			}
+		} catch (error) {
+			setShowSaveAsDialog(false);
+			toast({
+				title: "Error",
+				description: "Failed to save document",
+				variant: "destructive",
+			});
+		}
+	};
+
+	const handleAddFolderSelector = () => {
+		addTab({
+			isOpen: true,
+			type: "folder",
+			resourceId: "folder-selector",
+			title: "Select Files and Folders",
+		});
+	};
 
 	return (
 		<div className="h-[calc(100vh-20px)] flex flex-col bg-gray-50 rounded-lg border border-gray-200">
-			{/* Tab Bar */}
-			<div className="flex items-center bg-white border-b border-gray-200 rounded-t-lg">
-				<ScrollArea className="flex-1">
-					<div className="flex items-center">
-						{tabs.map((tab) => {
-							const isActive = tab.id === activeTabId;
-							const fileExtension = getFileExtension(tab.filename);
-							
-							return (
-								<button
-									className={`flex items-center gap-2 px-3 py-2 text-sm border-r border-gray-200 hover:bg-gray-50 min-w-0 max-w-48 ${
-										isActive ? "bg-gray-50 border-b-2 border-b-blue-500" : ""
-									}`}
-									key={tab.id}
-									onClick={() => setActiveTab(tab.id)}
-								>
-									{tab.type === "folder" ? (
-										<Folder className="h-4 w-4 text-blue-500 flex-shrink-0" />
-									) : (
-										<div className="flex-shrink-0">{getFileIcon(fileExtension)}</div>
-									)}
-									<span className="truncate" title={tab.title}>
-										{tab.title}
-									</span>
-									<Button
-										className="h-4 w-4 p-0 hover:bg-gray-200 flex-shrink-0 ml-1"
-										onClick={(e) => handleTabClose(tab.id, e)}
-										size="icon"
-										variant="ghost"
-									>
-										<X className="h-3 w-3" />
-									</Button>
-								</button>
-							);
-						})}
-					</div>
-				</ScrollArea>
-				<div className="flex items-center gap-1 px-2">
+			{/* Header with Select Files and Folders button */}
+			{tabs.length === 0 && (
+				<div className="flex items-center justify-center p-4 bg-white border-b border-gray-200 rounded-t-lg">
 					<Button
-						className="h-6 w-6 p-0"
-						onClick={clearAllTabs}
-						size="icon"
-						title="Close All Tabs"
-						variant="ghost"
+						className="gap-2"
+						onClick={handleAddFolderSelector}
+						variant="default"
 					>
-						<X className="h-4 w-4" />
+						<Plus className="h-4 w-4" />
+						Select Files and Folders
 					</Button>
 				</div>
-			</div>
+			)}
+			{/* Tab Bar */}
+			{tabs.length > 0 && (
+				<div className="flex items-center bg-white border-b border-gray-200 rounded-t-lg">
+					<ScrollArea className="flex-1">
+						<div className="flex items-center">
+							{tabs.map((tab) => {
+								const isActive = tab.id === activeTabId;
+								const fileExtension = getFileExtension(tab.filename);
+								
+								return (
+									<button
+										className={`flex items-center gap-2 px-3 py-2 text-sm border-r border-gray-200 hover:bg-gray-50 min-w-0 max-w-48 ${
+											isActive ? "bg-gray-50 border-b-2 border-b-blue-500" : ""
+										}`}
+										key={tab.id}
+										onClick={() => setActiveTab(tab.id)}
+									>
+										{tab.type === "folder" ? (
+											<Folder className="h-4 w-4 text-blue-500 flex-shrink-0" />
+										) : (
+											<div className="flex-shrink-0">{getFileIcon(fileExtension)}</div>
+										)}
+										<span className="truncate" title={tab.title}>
+											{tab.title}
+										</span>
+										<Button
+											className="h-4 w-4 p-0 hover:bg-gray-200 flex-shrink-0 ml-1"
+											onClick={(e) => handleTabClose(tab.id, e)}
+											size="icon"
+											variant="ghost"
+										>
+											<X className="h-3 w-3" />
+										</Button>
+									</button>
+								);
+							})}
+						</div>
+					</ScrollArea>
+					<div className="flex items-center gap-1 px-2">
+						<Button
+							className="gap-2"
+							onClick={handleAddFolderSelector}
+							size="sm"
+							title="Add Files and Folders"
+							variant="ghost"
+						>
+							<Folder className="h-4 w-4" />Drive 
+						</Button>
+						<Button
+							className="h-6 w-6 p-0"
+							onClick={clearAllTabs}
+							size="icon"
+							title="Close All Tabs"
+							variant="ghost"
+						>
+							<X className="h-4 w-4" />
+						</Button>
+					</div>
+				</div>
+			)}
 			{/* Active Tab Header */}
 			{activeTab && (
 				<div className="flex items-center gap-2 p-2 bg-white border-b border-gray-200">
@@ -306,6 +376,7 @@ const InteractiveChatPanel = () : React.ReactNode => {
 								className="gap-2"
 								disabled={!downloadResource?.url}
 								onClick={handleDownload}
+								size="sm"
 								variant="ghost"
 							>
 								<Download className="h-4 w-4" />
@@ -313,10 +384,20 @@ const InteractiveChatPanel = () : React.ReactNode => {
 							</Button>
 							<Button 
 								className="gap-2"
+								onClick={() => setShowSaveAsDialog(true)}
+								size="sm"
+								variant="ghost"
+							>
+								<Save className="h-4 w-4" />
+								Save As
+							</Button>
+							<Button 
+								className="gap-2"
 								onClick={() => {
 									const currentMode = getCurrentViewMode(activeTab.id);
 									setCurrentViewMode(activeTab.id, currentMode === "original" ? "text" : "original");
 								}}
+								size="sm"
 								variant="ghost"
 							>
 								{getCurrentViewMode(activeTab.id) === "original" ? <Pencil className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
@@ -328,6 +409,15 @@ const InteractiveChatPanel = () : React.ReactNode => {
 			)}
 			{/* Tab Content */}
 			<div className="flex-1 p-4 overflow-auto">
+				{tabs.length === 0 && (
+					<div className="flex items-center justify-center h-full text-gray-500">
+						<div className="text-center">
+							<Folder className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+							<p className="text-lg font-medium mb-2">No files or folders selected</p>
+							<p className="text-sm">Click &ldquo;Select Files and Folders&rdquo; to get started</p>
+						</div>
+					</div>
+				)}
 				{activeTab && activeTab.type === "folder" && (
 					<DocumentSelector useChatContext />
 				)}
@@ -357,6 +447,27 @@ const InteractiveChatPanel = () : React.ReactNode => {
 					<RunningLogViewer logId={activeTab.resourceId} />
 				)}
 			</div>
+			{/* Save As Dialog */}
+			<Dialog onOpenChange={setShowSaveAsDialog} open={showSaveAsDialog}>
+				<DialogContent className="sm:max-w-[500px]">
+					<h2 className="text-xl font-semibold mb-4">Save Document As</h2>
+					<FolderSelector 
+						onFolderSelect={setSaveAsFolder}
+						selectedFolderId={selectedFolderId}
+					/>
+					<div className="flex justify-end gap-2 mt-4">
+						<Button onClick={() => setShowSaveAsDialog(false)} variant="outline">
+							Cancel
+						</Button>
+						<Button 
+							disabled={!selectedFolderId} 
+							onClick={handleSaveAs}
+						>
+							Save
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 };

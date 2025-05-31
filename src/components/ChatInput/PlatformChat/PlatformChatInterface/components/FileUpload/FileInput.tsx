@@ -63,7 +63,7 @@ export const FileInput: React.FC<FileInputProps> = ({
 							title={
 								selectedContextFolder.id
 									? `Using context: ${selectedContextFolder.name}`
-									: "Select context folder"
+									: "Add contexts for the agent"
 							}
 							type="button"
 							variant="ghost"

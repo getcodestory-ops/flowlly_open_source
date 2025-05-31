@@ -661,9 +661,7 @@ export default function DocumentSelector({
 	return (
 		<>
 			<div className="space-y-4">
-				<Label className="text-sm font-semibold">
-          Select Files and Folders
-				</Label>
+
 				<Card className="border">
 					<CardHeader className="flex justify-between items-center">
 						<div className="flex items-center gap-2 w-full">

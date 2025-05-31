@@ -555,7 +555,7 @@ export default function PlatformChatInterface({
 				type="file"
 			/>
 			<div className="flex gap-2">
-				<Button
+				{/* <Button
 					className={clsx(
 						"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
 						googleSearch && "text-indigo-500 bg-indigo-50/50",
@@ -567,7 +567,7 @@ export default function PlatformChatInterface({
 					variant="ghost"
 				>
 					<Search className="h-4 w-4" />
-				</Button>
+				</Button> */}
 				<Button
 					className={clsx(
 						"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
@@ -583,7 +583,7 @@ export default function PlatformChatInterface({
 						});
 					}}
 					size="sm"
-					title={contextFolder.id ? `Using context: ${contextFolder.name}` : "Select context folder"}
+					title={contextFolder.id ? `Using context: ${contextFolder.name}` : "Add context "}
 					type="button"
 					variant="ghost"
 				>
