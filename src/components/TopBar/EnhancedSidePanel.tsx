@@ -289,7 +289,7 @@ export function EnhancedSidePanel(): React.ReactNode {
 			</div>
 			{/* User controls at bottom */}
 			<div className="flex flex-col items-center gap-2 py-4 border-t border-gray-200">
-				<HeaderNotification />
+				{/* <HeaderNotification /> */}
 				<UserNav email="" />
 			</div>
 			<SetUseStoreData />
