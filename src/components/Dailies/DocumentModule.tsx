@@ -40,7 +40,8 @@ export function DatabasePageLayout() : React.ReactNode {
 		session: state.session,
 		activeProject: state.activeProject,
 	}));
-	const { sidePanel } = useChatStore();
+	const { tabs } = useChatStore();
+	const hasOpenTabs = tabs.length > 0;
 	const [rootId, setRootId] = useState<string | null>(null);
 	const [isProjectWide, setIsProjectWide] = useState<boolean>(true);
 	const [currentFolderStructure, setCurrentFolderStructure] =
@@ -91,7 +92,7 @@ export function DatabasePageLayout() : React.ReactNode {
 	}
 	return (
 		<div className="flex flex-1 h-full">
-			<div className={clsx("transition-all duration-500 ease-out", sidePanel?.isOpen ? "w-1/2" : "w-full")}>
+			<div className={clsx("transition-all duration-500 ease-out", hasOpenTabs ? "w-1/2" : "w-full")}>
 				<div className="flex w-full flex-col">
 					<Tabs
 						className="pb-4"
@@ -126,13 +127,11 @@ export function DatabasePageLayout() : React.ReactNode {
 					)}
 				</div>
 			</div>
-			<div className={clsx(
-				"transition-all duration-500 ease-out absolute right-2",
-				sidePanel?.isOpen ? "w-1/2 translate-x-0 opacity-100" : "w-1/2 translate-x-full opacity-0",
+			{hasOpenTabs && (
+				<div className="transition-all duration-500 ease-out w-1/2 absolute right-2">
+					<InteractiveChatPanel />
+				</div>
 			)}
-			>
-				<InteractiveChatPanel />
-			</div>
 		</div>
 	);
 }

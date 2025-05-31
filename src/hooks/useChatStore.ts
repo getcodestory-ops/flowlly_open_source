@@ -1,20 +1,27 @@
 import { create } from "zustand";
 
+interface SidePanel {
+	id: string;
+	isOpen: boolean;
+	type: "sources" | "editor" | "pdfViewer" | "log" | "folder";
+	resourceId: string;
+	filename?: string;
+	title?: string;
+}
+
 interface ChatStore {
 	collapsed: boolean;
 	setCollapsed: (collapsed: boolean) => void;
-    sidePanel: {
-        isOpen: boolean;
-        type: "sources" | "editor" | "pdfViewer" | "log";
-        resourceId: string;
-        filename?: string;
-    } | null;
-    setSidePanel: (sidePanel: {
-        isOpen: boolean;
-        type: "sources" | "editor" | "pdfViewer" | "log";
-        resourceId: string;
-        filename?: string;
-    } | null) => void;
+	// Legacy single panel support for backward compatibility
+	sidePanel: SidePanel | null;
+	setSidePanel: (sidePanel: Omit<SidePanel, "id"> | null) => void;
+	// New multi-tab support
+	tabs: SidePanel[];
+	activeTabId: string | null;
+	addTab: (tab: Omit<SidePanel, "id">) => void;
+	removeTab: (tabId: string) => void;
+	setActiveTab: (tabId: string) => void;
+	clearAllTabs: () => void;
 	documentDisplayMap: { [resourceId: string]: string };
 	setDocumentDisplayMap: (resourceId: string, chatId: string) => void;
 	clearDocumentDisplayMap: () => void;
@@ -31,18 +38,88 @@ interface ChatStore {
 		extension: string;
 	}[]) => void;
 	replaceUntitledChatId: (newChatId: string) => void;
+	// Context folder for chat
+	contextFolder: {
+		id: string | null;
+		name: string;
+	};
+	setContextFolder: (folderId: string | null, folderName: string) => void;
 }
 
-export const useChatStore = create<ChatStore>((set) => ({
+const generateTabId = () => `tab_${Date.now()}_${Math.random().toString(36)
+	.substr(2, 9)}`;
+
+export const useChatStore = create<ChatStore>((set, get) => ({
 	collapsed: false,
 	setCollapsed: (collapsed) => set({ collapsed }),
-	sidePanel: {
-		isOpen: false,
-		type: "sources",
-		resourceId: "",
-		filename: "",
+	sidePanel: null,
+	setSidePanel: (sidePanel) => {
+		if (sidePanel === null) {
+			set({ sidePanel: null });
+			return;
+		}
+		
+		const tabWithId = {
+			...sidePanel,
+			id: generateTabId(),
+		};
+		
+		set({ sidePanel: tabWithId });
+		
+		// Also add to tabs for the new interface
+		const { tabs, addTab } = get();
+		addTab(sidePanel);
 	},
-	setSidePanel: (sidePanel) => set({ sidePanel }),
+	tabs: [],
+	activeTabId: null,
+	addTab: (tab) => set((state) => {
+		const tabId = generateTabId();
+		const newTab = {
+			...tab,
+			id: tabId,
+			title: tab.title || tab.filename || `${tab.type} ${tab.resourceId.slice(0, 8)}`,
+		};
+		
+		// Check if a tab with the same resourceId and type already exists
+		const existingTab = state.tabs.find(
+			(t) => t.resourceId === tab.resourceId && t.type === tab.type,
+		);
+		
+		if (existingTab) {
+			// If it exists, just make it active
+			return {
+				activeTabId: existingTab.id,
+			};
+		}
+		
+		// Add new tab and make it active
+		return {
+			tabs: [...state.tabs, newTab],
+			activeTabId: tabId,
+		};
+	}),
+	removeTab: (tabId) => set((state) => {
+		const newTabs = state.tabs.filter((tab) => tab.id !== tabId);
+		let newActiveTabId = state.activeTabId;
+		
+		// If we're removing the active tab, switch to another tab
+		if (state.activeTabId === tabId) {
+			if (newTabs.length > 0) {
+				// Switch to the last tab or the one before the removed tab
+				const removedIndex = state.tabs.findIndex((tab) => tab.id === tabId);
+				newActiveTabId = newTabs[Math.min(removedIndex, newTabs.length - 1)]?.id || null;
+			} else {
+				newActiveTabId = null;
+			}
+		}
+		
+		return {
+			tabs: newTabs,
+			activeTabId: newActiveTabId,
+		};
+	}),
+	setActiveTab: (tabId) => set({ activeTabId: tabId }),
+	clearAllTabs: () => set({ tabs: [], activeTabId: null }),
 	documentDisplayMap: {},
 	setDocumentDisplayMap: (resourceId, chatId) => 
 		set((state) => ({
@@ -72,6 +149,11 @@ export const useChatStore = create<ChatStore>((set) => ({
 			},
 		};
 	}),
+	contextFolder: {
+		id: null,
+		name: "",
+	},
+	setContextFolder: (folderId, folderName) => set({ contextFolder: { id: folderId, name: folderName } }),
 }));
 
 

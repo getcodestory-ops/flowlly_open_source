@@ -27,7 +27,7 @@ type Option = {
 
 export default function AtSelectorComponent() : JSX.Element {
 	const { session, activeProject, activeChatEntity } = useStore();
-	const { setSidePanel, setSelectedContexts, selectedContexts } = useChatStore();
+	const { addTab, setSelectedContexts, selectedContexts } = useChatStore();
 	const currentChatId = activeChatEntity?.id || "untitled";
 
 	const [open, setOpen] = useState(false);
@@ -55,7 +55,7 @@ export default function AtSelectorComponent() : JSX.Element {
 	// Function to open file in side panel
 	const openInSidePanel = (option: Option, e: React.MouseEvent) => {
 		e.stopPropagation();
-		setSidePanel({
+		addTab({
 			isOpen: true,
 			type: "sources",
 			resourceId: option.id,
@@ -85,12 +85,12 @@ export default function AtSelectorComponent() : JSX.Element {
 		}
 	};
 
-	// Fetch options when popover opens
+	// Fetch options when popover opens OR on component mount if there are selected contexts
 	useEffect(() => {
-		if (open) {
+		if (open || (selectedContexts[currentChatId]?.length > 0 && options.length === 0)) {
 			fetchOptions();
 		}
-	}, [open, session, activeProject]);
+	}, [open, session, activeProject, selectedContexts, currentChatId]);
 
 	const toggleOption = (id: string) => {
 		if (!currentChatId) return;
@@ -177,9 +177,9 @@ export default function AtSelectorComponent() : JSX.Element {
 			{selectedContexts[currentChatId]?.length > 0 && (
 				<div className="flex gap-1">
 					{selectedContexts[currentChatId].map((context) => {
+						// Use context data directly from selectedContexts, fall back to options if available
 						const option = options.find((opt) => opt.id === context.id);
-						if (!option) return null;
-						const Icon = getIconForExtension(option.extension);
+						const Icon = getIconForExtension(context.extension);
 						return (
 							<Badge 
 								className="h-5 px-2 text-xs font-medium bg-gray-50 text-gray-500 hover:bg-gray-100 flex items-center gap-1 cursor-pointer max-w-[200px] group"
@@ -190,7 +190,7 @@ export default function AtSelectorComponent() : JSX.Element {
 								<X className="h-3 w-3 text-gray-500 flex-shrink-0" />
 								<Icon className="h-3 w-3 text-gray-500 flex-shrink-0" />
 								<span className="truncate" title={context.name}>{context.name}</span>
-								{isFile(option.extension) && (
+								{isFile(context.extension) && option && (
 									<Button
 										className="h-3 w-3 ml-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
 										onClick={(e) => openInSidePanel(option, e)}

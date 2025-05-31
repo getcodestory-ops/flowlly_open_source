@@ -35,6 +35,7 @@ import FolderSelector from "@/components/ProjectEvent/FolderSelector";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import clsx from "clsx";
 import AtSelectorComponent from "./components/AtSelectorComponent";
+import { useChatStore } from "@/hooks/useChatStore";
 // Define models for the UI
 const models = [
 	{ id: "gemini-2.5-pro-preview-03-25", name: "Gemini Pro 2.5 (latest)" },
@@ -76,10 +77,6 @@ export default function PlatformChatInterface({
 	const chatContainerRef = useRef<HTMLDivElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const { toast } = useToast();
-	const [selectedContextFolder, setSelectedContextFolder] = useState<{id: string | null; name: string}>({
-		id: folderId,
-		name: "",
-	});
 
 	const {
 		chats,
@@ -96,7 +93,8 @@ export default function PlatformChatInterface({
 		isWaitingForResponse,
 		googleSearch,
 		setGoogleSearch,
-	} = usePlatformChat(folderId, chatTarget, selectedModel, includeContext, selectedContextFolder);
+	} = usePlatformChat(folderId, chatTarget, selectedModel, includeContext);
+	const { setSidePanel, setCollapsed, contextFolder } = useChatStore();
 
 	const [uploadingFiles, setUploadingFiles] = useState<FileUploadStatus[]>([]);
 	const [showUploadProgress, setShowUploadProgress] = useState(false);
@@ -266,7 +264,7 @@ export default function PlatformChatInterface({
 					session,
 					activeProject.project_id,
 					file,
-					selectedContextFolder.id ?? folderId,
+					contextFolder.id ?? folderId,
 					undefined,
 					(progress) => {
 						setUploadingFiles((prev) =>
@@ -557,7 +555,7 @@ export default function PlatformChatInterface({
 				type="file"
 			/>
 			<div className="flex gap-2">
-				<Button
+				{/* <Button
 					className={clsx(
 						"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
 						googleSearch && "text-indigo-500 bg-indigo-50/50",
@@ -569,33 +567,29 @@ export default function PlatformChatInterface({
 					variant="ghost"
 				>
 					<Search className="h-4 w-4" />
-				</Button>
-				<Dialog onOpenChange={setShowBrainSelector} open={showBrainSelector}>
-					<DialogTrigger asChild>
-						<Button
-							className={clsx(
-								"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
-								selectedContextFolder.name && "text-indigo-500 bg-indigo-50/50",
-							)}
-							disabled={isPending || isWaitingForResponse}
-							size="sm"
-							title={selectedContextFolder.id ? `Using context: ${selectedContextFolder.name}` : "Select context folder"}
-							type="button"
-							variant="ghost"
-						>
-							<Folder className="h-4 w-4" />
-						</Button>
-					</DialogTrigger>
-					<DialogContent className="sm:max-w-[600px]">
-						<div className="py-4">
-							<FolderSelector
-								onFolderSelect={handleFolderSelect}
-								selectedFolderId={selectedContextFolder.id}
-							/>
-						</div>
-					</DialogContent>
-				</Dialog>		
+				</Button> */}
 				<Button
+					className={clsx(
+						"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
+						contextFolder.name && "text-indigo-500 bg-indigo-50/50",
+					)}
+					disabled={isPending || isWaitingForResponse}
+					onClick={() => {
+						setCollapsed(true);
+						setSidePanel({
+							isOpen: true,
+							type: "folder",
+							resourceId:  folderId,
+						});
+					}}
+					size="sm"
+					title={contextFolder.id ? `Using context: ${contextFolder.name}` : "Add context "}
+					type="button"
+					variant="ghost"
+				>
+					<Paperclip className="h-4 w-4" />
+				</Button>		
+				{/* <Button
 					className="text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2"
 					disabled={isPending || isWaitingForResponse}
 					onClick={() => fileInputRef.current?.click()}
@@ -609,7 +603,7 @@ export default function PlatformChatInterface({
 					) : (
 						<Paperclip className="h-4 w-4" />
 					)}
-				</Button>
+				</Button> */}
 			</div>
 		</>
 	);
@@ -850,9 +844,9 @@ export default function PlatformChatInterface({
 								(m: { id: string; name: string }) => m.id === selectedModel,
 							)?.name || selectedModel} |
 						</span>
-						{selectedContextFolder.name && (
+						{contextFolder.name && (
 							<span className="text-xs text-muted-foreground">
-								New reports will be saved in {selectedContextFolder.name} folder | 
+								New reports will be saved in {contextFolder.name} folder | 
 							</span>
 						)}
 						{googleSearch && (
@@ -910,12 +904,6 @@ export default function PlatformChatInterface({
 			</div>
 		</div>
 	);
-
-	// Add this new handler
-	const handleFolderSelect = (newFolderId: string | null, folderName: string) => {
-		setSelectedContextFolder({ id: newFolderId, name: folderName });
-		setShowBrainSelector(false);
-	};
 
 	return (
 		<div className="flex flex-col h-full max-w-4xl mx-auto">

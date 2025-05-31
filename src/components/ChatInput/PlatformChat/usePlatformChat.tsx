@@ -16,7 +16,6 @@ export function usePlatformChat(
 	chatTarget: string,
 	selectedModel: string = "gemini-2.5-pro-preview-03-25",
 	includeContext: boolean = false,
-	selectedContextFolder: {id: string | null; name: string} = { id: null, name: "" },
 ) {
 	const { toast } = useToast();
 	const queryClient = useQueryClient();
@@ -29,6 +28,7 @@ export function usePlatformChat(
 	const appendChatEntity = useStore((state) => state.appendChatEntity);
 	const selectedContexts = useChatStore((state) => state.selectedContexts);
 	const setSelectedContexts = useChatStore((state) => state.setSelectedContexts);
+	const contextFolder = useChatStore((state) => state.contextFolder);
 
 	// Use localChats from the store instead of local state
 	const localChats = useStore((state) => state.localChats);
@@ -265,7 +265,7 @@ export function usePlatformChat(
 		mutate({
 			session,
 			agentTask: message,
-			brainId: selectedContextFolder.id ?? folderId ?? null,
+			brainId: contextFolder.id ?? folderId ?? null,
 			chatId: currentActiveChatEntity.id,
 			projectId: activeProject?.project_id,
 			responseType: chatTarget ?? "folder",
