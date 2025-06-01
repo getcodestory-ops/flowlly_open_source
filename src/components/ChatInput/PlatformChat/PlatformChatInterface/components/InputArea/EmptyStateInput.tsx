@@ -82,13 +82,15 @@ export const EmptyStateInput: React.FC<EmptyStateInputProps> = ({
 				</Label>
 				<Textarea
 					className="min-h-20 resize-none border-0 p-4 shadow-none focus-visible:ring-0 text-slate-800"
-					disabled={isPending || isWaitingForResponse}
+					disabled={isPending}
 					id="empty-message"
 					onChange={(e) => setChatInput(e.target.value)}
 					onKeyDown={(e) => {
 						if (e.key === "Enter" && !e.shiftKey) {
 							e.preventDefault();
-							onSubmit();
+							if (!isPending) {
+								onSubmit();
+							}
 						}
 					}}
 					placeholder="Type your message here..."
@@ -114,17 +116,21 @@ export const EmptyStateInput: React.FC<EmptyStateInputProps> = ({
 						className="ml-auto gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
 						disabled={
 							isPending ||
-              isWaitingForResponse ||
               (!chatInput.trim() && uploadingFiles.length === 0)
 						}
 						onClick={onSubmit}
 						size="sm"
 						type="submit"
 					>
-						{isPending || isWaitingForResponse ? (
+						{isPending ? (
 							<>
 								<Loader2 className="h-3.5 w-3.5 animate-spin" />
-								{isWaitingForResponse ? "Processing..." : "Sending..."}
+								Sending...
+							</>
+						) : isWaitingForResponse ? (
+							<>
+								Send Next
+								<CornerDownLeft className="h-3.5 w-3.5" />
 							</>
 						) : (
 							<>

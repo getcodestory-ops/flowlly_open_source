@@ -93,6 +93,8 @@ export default function PlatformChatInterface({
 		isWaitingForResponse,
 		googleSearch,
 		setGoogleSearch,
+		setCurrentTaskId,
+		setIsWaitingForResponse,
 	} = usePlatformChat(folderId, chatTarget, selectedModel, includeContext);
 	const { setSidePanel, setCollapsed, contextFolder } = useChatStore();
 
@@ -548,7 +550,7 @@ export default function PlatformChatInterface({
 			<input
 				accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.mp3"
 				className="hidden"
-				disabled={isPending || isWaitingForResponse}
+				disabled={isPending}
 				multiple
 				onChange={handleFileSelect}
 				ref={fileInputRef}
@@ -573,7 +575,7 @@ export default function PlatformChatInterface({
 						"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
 						contextFolder.name && "text-indigo-500 bg-indigo-50/50",
 					)}
-					disabled={isPending || isWaitingForResponse}
+					disabled={false}
 					onClick={() => {
 						setCollapsed(true);
 						setSidePanel({
@@ -685,7 +687,7 @@ export default function PlatformChatInterface({
 				</div>
 				<Textarea
 					className="min-h-20 resize-none border-0 p-4 pl-12 mt-4 shadow-none focus-visible:ring-0 text-slate-800"
-					disabled={isPending || isWaitingForResponse}
+					disabled={isPending}
 					id="empty-message"
 					onChange={(e) => setChatInput(e.target.value)}
 					onKeyDown={(e) => {
@@ -704,17 +706,21 @@ export default function PlatformChatInterface({
 						className="ml-auto gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
 						disabled={
 							isPending ||
-							isWaitingForResponse ||
 							(!chatInput.trim() && uploadingFiles.length === 0)
 						}
 						onClick={handleSubmit}
 						size="sm"
 						type="submit"
 					>
-						{isPending || isWaitingForResponse ? (
+						{isPending ? (
 							<>
 								<Loader2 className="h-3.5 w-3.5 animate-spin" />
-								{isWaitingForResponse ? "Processing..." : "Sending..."}
+								Sending...
+							</>
+						) : isWaitingForResponse ? (
+							<>
+								Send Next
+								<CornerDownLeft className="h-3.5 w-3.5" />
 							</>
 						) : (
 							<>
@@ -861,12 +867,13 @@ export default function PlatformChatInterface({
 				</div>
 				<Textarea
 					className="min-h-10 resize-none border-0 p-3 pb-4 mt-4 shadow-none focus-visible:ring-0"
+					disabled={isPending}
 					id="message"
 					onChange={(e) => setChatInput(e.target.value)}
 					onKeyDown={(e) => {
 						if (e.key === "Enter" && !e.shiftKey) {
 							e.preventDefault();
-							if (chatInput.trim()) {
+							if (chatInput.trim() && !isPending) {
 								handleSubmit();
 							}
 						}
@@ -881,17 +888,21 @@ export default function PlatformChatInterface({
 						className="ml-auto gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
 						disabled={
 							isPending ||
-							isWaitingForResponse ||
 							(!chatInput.trim() && uploadingFiles.length === 0)
 						}
 						onClick={handleSubmit}
 						size="sm"
 						type="submit"
 					>
-						{isPending || isWaitingForResponse ? (
+						{isPending ? (
 							<>
 								<Loader2 className="h-3.5 w-3.5 animate-spin" />
-								{isWaitingForResponse ? "Processing..." : "Sending..."}
+								Sending...
+							</>
+						) : isWaitingForResponse ? (
+							<>
+								Send Next
+								<CornerDownLeft className="h-3.5 w-3.5" />
 							</>
 						) : (
 							<>
