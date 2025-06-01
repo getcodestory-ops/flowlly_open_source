@@ -67,6 +67,8 @@ export interface AgentMessage {
   antithinking?: string;
   metadata?: any;
   child_task_id?: string;
+  type?: "stream";
+  streaming_key?: string;
 } ; 
 
 export interface AgentChat {

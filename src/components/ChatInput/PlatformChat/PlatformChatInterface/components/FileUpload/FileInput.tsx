@@ -32,7 +32,7 @@ export const FileInput: React.FC<FileInputProps> = ({
 			<input
 				accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.mp3"
 				className="hidden"
-				disabled={isPending || isWaitingForResponse}
+				disabled={isPending}
 				multiple
 				ref={fileInputRef}
 				type="file"
@@ -43,7 +43,7 @@ export const FileInput: React.FC<FileInputProps> = ({
 						"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
 						googleSearch && "text-indigo-500 bg-indigo-50/50",
 					)}
-					disabled={isPending || isWaitingForResponse}
+					disabled={false}
 					onClick={() => setGoogleSearch(!googleSearch)}
 					size="sm"
 					type="button"
@@ -58,7 +58,7 @@ export const FileInput: React.FC<FileInputProps> = ({
 								"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
 								selectedContextFolder.id && "text-indigo-500 bg-indigo-50/50",
 							)}
-							disabled={isPending || isWaitingForResponse}
+							disabled={false}
 							size="sm"
 							title={
 								selectedContextFolder.id
@@ -74,14 +74,14 @@ export const FileInput: React.FC<FileInputProps> = ({
 				</Dialog>
 				<Button
 					className="text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2"
-					disabled={isPending || isWaitingForResponse}
+					disabled={isPending}
 					onClick={onFileClick}
 					size="sm"
 					title="Upload files"
 					type="button"
 					variant="ghost"
 				>
-					{isPending || isWaitingForResponse ? (
+					{isPending ? (
 						<Loader2 className="h-5 w-5 animate-spin" />
 					) : (
 						<Paperclip className="h-5 w-5" />

@@ -71,12 +71,13 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
 				</div>
 				<Textarea
 					className="min-h-12 resize-none border-0 p-3 pb-8 shadow-none focus-visible:ring-0"
+					disabled={isPending}
 					id="message"
 					onChange={(e) => setChatInput(e.target.value)}
 					onKeyDown={(e) => {
 						if (e.key === "Enter" && !e.shiftKey) {
 							e.preventDefault();
-							if (chatInput.trim()) {
+							if (chatInput.trim() && !isPending) {
 								onSubmit();
 							}
 						}
@@ -104,17 +105,21 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
 						className="ml-auto gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
 						disabled={
 							isPending ||
-              isWaitingForResponse ||
               (!chatInput.trim() && uploadingFiles.length === 0)
 						}
 						onClick={onSubmit}
 						size="sm"
 						type="submit"
 					>
-						{isPending || isWaitingForResponse ? (
+						{isPending ? (
 							<>
 								<Loader2 className="h-3.5 w-3.5 animate-spin" />
-								{isWaitingForResponse ? "Processing..." : "Sending..."}
+								Sending...
+							</>
+						) : isWaitingForResponse ? (
+							<>
+								Send Next
+								<CornerDownLeft className="h-3.5 w-3.5" />
 							</>
 						) : (
 							<>

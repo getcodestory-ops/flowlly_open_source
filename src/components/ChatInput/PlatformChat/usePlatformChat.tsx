@@ -51,7 +51,7 @@ export function usePlatformChat(
 			});
 			setIsWaitingForResponse(false);
 		},
-		onSuccess: (data) => {
+		onSuccess: (data, variables) => {
 			// Add the user message to local chats
 			const userMessage: AgentChat = {
 				id: Date.now().toString(), // Use a temporary ID
@@ -59,7 +59,7 @@ export function usePlatformChat(
 				receiver: "Flowlly",
 				project_id: activeProject?.project_id || "",
 				message: {
-					content: chatInput,
+					content: variables.agentTask,
 					role: "user",
 				},
 				created_at: new Date().toISOString(),
@@ -88,11 +88,20 @@ export function usePlatformChat(
 
 	// Initialize local chats from server data only on initial load or chat entity change
 	useEffect(() => {
-		if (serverChats && isServerChatsSuccess && !isWaitingForResponse) {
-			// If we're not waiting for a response, it's safe to update from server
+		if (serverChats && isServerChatsSuccess) {
+			// Always allow loading chats when switching to a different chat entity
+			// The streaming state should only affect the specific chat entity that's streaming
 			setLocalChats(serverChats);
 		}
-	}, [serverChats, isServerChatsSuccess, isWaitingForResponse, setLocalChats]);
+	}, [serverChats, isServerChatsSuccess, setLocalChats]);
+
+	// Reset streaming state when switching to a different chat entity
+	useEffect(() => {
+		// When activeChatEntity changes, reset the streaming state for the new chat
+		// This ensures that switching chats during streaming works smoothly
+		setIsWaitingForResponse(false);
+		setCurrentTaskId(null);
+	}, [activeChatEntity?.id]);
 
 	// Check task status periodically to know when to update
 	useEffect(() => {
@@ -107,34 +116,23 @@ export function usePlatformChat(
 				if (isUnmounted) return;
 
 				if (response.status === "completed" && response.result) {
-					// Add the agent response to local chats
-					// const agentMessage: AgentChat = {
-					// 	id: Date.now().toString(),
-					// 	sender: "Flowlly",
-					// 	receiver: "User",
-					// 	project_id: activeProject?.project_id || "",
-					// 	message: {
-					// 		content: response.result,
-					// 		role: "assistant",
-					// 	},
-					// 	created_at: new Date().toISOString(),
-					// };
-
-					// We need a slight delay before updating the state to ensure a smooth transition
-					// from the streaming component to the final message
 					setTimeout(() => {
-						// Get the latest state from the store
-						const currentLocalChats = useStore.getState().localChats;
-						const updatedChats = [...currentLocalChats, ...response.result];
+						// Only update if we're still on the same chat entity that was streaming
+						const currentActiveChatEntity = useStore.getState().activeChatEntity;
+						if (currentActiveChatEntity?.id === activeChatEntity?.id) {
+							// Get the latest state from the store
+							const currentLocalChats = useStore.getState().localChats;
+							const updatedChats = [...currentLocalChats, ...response.result];
 
-						// Update the store with the new chats
-						setLocalChats(updatedChats);
+							// Update the store with the new chats
+							setLocalChats(updatedChats);
 
-						// Quietly sync with server in the background
-						queryClient.setQueryData(
-							["agentChats", activeChatEntity?.id],
-							() => updatedChats,
-						);
+							// Quietly sync with server in the background
+							queryClient.setQueryData(
+								["agentChats", activeChatEntity?.id],
+								() => updatedChats,
+							);
+						}
 
 						setCurrentTaskId(null);
 						// Reset waiting state after response is received
@@ -177,7 +175,32 @@ export function usePlatformChat(
 		queryClient,
 		activeProject?.project_id,
 		setLocalChats,
+		toast,
 	]);
+
+	// Check for ongoing streams and refresh chat data periodically
+	useEffect(() => {
+		if (!localChats || localChats.length === 0) return;
+		
+		// Only check the LAST message for streaming state to avoid issues with stale stream messages
+		const lastMessage = localChats[localChats.length - 1];
+		const isLastMessageStreaming = lastMessage && 
+			typeof lastMessage.message === "object" && 
+			lastMessage.message !== null && 
+			"type" in lastMessage.message && 
+			lastMessage.message.type === "stream";
+		
+		if (isLastMessageStreaming && session && activeChatEntity?.id) {
+			// Set up periodic refresh to check for stream completion
+			const refreshInterval = setInterval(() => {
+				queryClient.invalidateQueries({
+					queryKey: ["agentChats", activeChatEntity.id],
+				});
+			}, 3000); // Check every 3 seconds
+			
+			return () => clearInterval(refreshInterval);
+		}
+	}, [localChats, session, activeChatEntity?.id, queryClient]);
 
 	const createChatEntityMutation = useMutation({
 		mutationFn: async() => {
@@ -293,5 +316,7 @@ export function usePlatformChat(
 		includeContext,
 		googleSearch,
 		setGoogleSearch,
+		setCurrentTaskId,
+		setIsWaitingForResponse,
 	};
 }

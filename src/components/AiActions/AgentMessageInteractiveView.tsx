@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { AgentMessage } from "@/types/agentChats";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
+import StreamComponent from "../StreamResponse/StreamAgentChat";
 
 import {
 	FileText,
@@ -15,11 +16,18 @@ import ContextSourceViewer from "../Folder/ContextSourceViewer";
 import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/hooks/useChatStore";
 import AttachmentViewer from "./AttachmentViewer";
+import { useStore } from "@/utils/store";
 
 
 function AgentMessageInteractiveView({ id, message }: { id?: string, message: AgentMessage | string }) : React.ReactNode {
 	const { setSidePanel, setCollapsed, sidePanel } = useChatStore();
 	const { setDocumentDisplayMap, documentDisplayMap } = useChatStore();
+	const localChats = useStore((state) => state.localChats);
+	
+	// Check if this is the last message in the chat
+	const isLastMessage = localChats && localChats.length > 0 && 
+		localChats[localChats.length - 1].id === id;
+
 	useEffect(() => {
 		if (!id || typeof message !== "object" || !("function_response" in message) ||
         !message.function_response || typeof message.function_response !== "object" ||
@@ -69,6 +77,39 @@ function AgentMessageInteractiveView({ id, message }: { id?: string, message: Ag
 	const getMessageContent = (): React.ReactNode => {
 		if (typeof message === "string") {
 			return <MarkDownDisplay content={message} />;
+		}
+
+		// Handle special streaming message type - only for the last message
+		if (typeof message === "object" && message.type === "stream" && message.streaming_key && isLastMessage) {
+			const session = useStore.getState().session;
+			
+			return (
+				<div className="w-full">
+					<div className="text-xs text-slate-400 mb-1 pl-1">
+						Continuing response...
+					</div>
+					<div className="text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
+						{session && (
+							<StreamComponent
+								authToken={session.access_token}
+								key={message.streaming_key}
+								streamingKey={message.streaming_key}
+							/>
+						)}
+					</div>
+				</div>
+			);
+		}
+
+		// If it's a streaming message but not the last one, show a placeholder
+		if (typeof message === "object" && message.type === "stream" && message.streaming_key && !isLastMessage) {
+			return (
+				<div className="w-full">
+					<div className="text-xs text-slate-400 mb-1 pl-1 italic">
+						Response was streaming here (completed)
+					</div>
+				</div>
+			);
 		}
 
 		if (message.response) {
