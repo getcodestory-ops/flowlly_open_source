@@ -100,7 +100,7 @@ export function usePlatformChat(
 		enabled: !!session && !!activeChatEntity?.id,
 	});
 
-	// Initialize local chats from server data only on initial load or chat entity change
+
 	useEffect(() => {
 		if (serverChats && isServerChatsSuccess) {
 			// Only load server chats if we're not actively submitting a new message
@@ -112,13 +112,12 @@ export function usePlatformChat(
 				if (serverChats.length > 0) {
 					const lastMessage = serverChats[serverChats.length - 1];
 					
-					// Check if last message is from agent and has a task ID as the message ID
-					if (lastMessage.sender !== "User" && lastMessage.id) {
-						// If the message ID looks like a task ID, it might be a streaming message
-						const taskIdPattern = /^task_[a-zA-Z0-9-]+$/;
-						if (taskIdPattern.test(lastMessage.id)) {
+					// Check if last message is from agent and is a streaming message
+					if (lastMessage.sender !== "User" && typeof lastMessage.message === "object" && lastMessage.message !== null) {
+						// Check if it's a streaming message with proper type and streaming_key
+						if (lastMessage.message.type === "stream" && lastMessage.message.streaming_key) {
 							// Set this as the current task ID to resume streaming/polling
-							setCurrentTaskId(lastMessage.id);
+							setCurrentTaskId(lastMessage.message.streaming_key);
 							setIsWaitingForResponse(true);
 						}
 					}

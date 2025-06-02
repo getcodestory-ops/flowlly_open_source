@@ -36,6 +36,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import clsx from "clsx";
 import AtSelectorComponent from "./components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
+import { useQueryClient } from "@tanstack/react-query";
 // Define models for the UI
 const models = [
 	{ id: "gemini-2.5-pro-preview-03-25", name: "Gemini Pro 2.5 (latest)" },
@@ -101,7 +102,7 @@ export default function PlatformChatInterface({
 	const [uploadingFiles, setUploadingFiles] = useState<FileUploadStatus[]>([]);
 	const [showUploadProgress, setShowUploadProgress] = useState(false);
 	const [processedFiles, setProcessedFiles] = useState<ProcessedFile[]>([]);
-
+	const queryClient = useQueryClient();
 	// Ref to store the index of the last message we processed
 	const lastChatIndexRef = useRef<number>(-1);
 
@@ -1051,9 +1052,7 @@ export default function PlatformChatInterface({
 											authToken={session.access_token}
 											key={currentTaskId}
 											onStreamComplete={(content) => {
-												// We don't need to do additional processing here as the
-												// usePlatformChat hook already handles updating the messages
-												// Any manipulation here could cause race conditions
+												
 											}}
 											streamingKey={currentTaskId}
 										/>
