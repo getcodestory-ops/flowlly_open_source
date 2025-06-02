@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useStore } from "@/utils/store";
 import { getTaskStatus } from "@/api/schedule_routes";
 import { talkToAgent, ProcessedFile } from "@/api/agentRoutes";
@@ -36,6 +36,9 @@ export function usePlatformChat(
 
 	// Track if we're waiting for an AI response
 	const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+	
+	// Track when we're actively submitting to prevent server data overwrites
+	const isActivelySubmittingRef = useRef(false);
 
 	const [isOpen, setIsOpen] = useState(false);
 	const onClose = () => setIsOpen(false);
@@ -52,6 +55,7 @@ export function usePlatformChat(
 			});
 			setIsWaitingForResponse(false);
 			setCurrentTaskId(null);
+			isActivelySubmittingRef.current = false;
 			
 			// Remove the last user message if API call failed
 			if (localChats.length > 0 && localChats[localChats.length - 1].sender === "User") {
@@ -59,6 +63,9 @@ export function usePlatformChat(
 			}
 		},
 		onSuccess: (data, variables) => {
+			// Clear the active submission flag since API call succeeded
+			isActivelySubmittingRef.current = false;
+			
 			// Validate the response data
 			if (!data || !data.agent_response) {
 				console.error("Invalid response from talkToAgent:", data);
@@ -93,19 +100,37 @@ export function usePlatformChat(
 		enabled: !!session && !!activeChatEntity?.id,
 	});
 
-	// Initialize local chats from server data only on initial load or chat entity change
+
 	useEffect(() => {
 		if (serverChats && isServerChatsSuccess) {
-			// Always allow loading chats when switching to a different chat entity
-			// The streaming state should only affect the specific chat entity that's streaming
-			setLocalChats(serverChats);
+			// Only load server chats if we're not actively submitting a new message
+			// This prevents server data from overwriting our manually managed local state
+			if (!isActivelySubmittingRef.current && !isWaitingForResponse && !currentTaskId) {
+				setLocalChats(serverChats);
+				
+				// Check if the last message appears to be a streaming message that we should resume
+				if (serverChats.length > 0) {
+					const lastMessage = serverChats[serverChats.length - 1];
+					
+					// Check if last message is from agent and is a streaming message
+					if (lastMessage.sender !== "User" && typeof lastMessage.message === "object" && lastMessage.message !== null) {
+						// Check if it's a streaming message with proper type and streaming_key
+						if (lastMessage.message.type === "stream" && lastMessage.message.streaming_key) {
+							// Set this as the current task ID to resume streaming/polling
+							setCurrentTaskId(lastMessage.message.streaming_key);
+							setIsWaitingForResponse(true);
+						}
+					}
+				}
+			}
 		}
-	}, [serverChats, isServerChatsSuccess, setLocalChats]);
+	}, [serverChats, isServerChatsSuccess, setLocalChats, isWaitingForResponse, currentTaskId]);
 
 	// Reset streaming state when switching to a different chat entity
 	useEffect(() => {
-		// When activeChatEntity changes, reset the streaming state for the new chat
-		// This ensures that switching chats during streaming works smoothly
+		// When activeChatEntity changes, only reset streaming state if we're switching to a different chat
+		// and not returning to the same chat entity
+		// This preserves streaming state when switching between chats
 		setIsWaitingForResponse(false);
 		setCurrentTaskId(null);
 	}, [activeChatEntity?.id]);
@@ -163,12 +188,13 @@ export function usePlatformChat(
 						if (currentActiveChatEntity?.id === activeChatEntity?.id) {
 							// Get the latest state from the store
 							const currentLocalChats = useStore.getState().localChats;
+							
 							const updatedChats = [...currentLocalChats, ...response.result];
 
-							// Update the store with the new chats
+							// Update the store with the properly formatted chats from task result
 							setLocalChats(updatedChats);
 
-							// Quietly sync with server in the background
+							// Sync with server query cache to keep it consistent
 							queryClient.setQueryData(
 								["agentChats", activeChatEntity?.id],
 								() => updatedChats,
@@ -244,32 +270,8 @@ export function usePlatformChat(
 		toast,
 	]);
 
-	// Check for ongoing streams and refresh chat data periodically
-	useEffect(() => {
-		if (!localChats || localChats.length === 0) return;
-		
-		// Only check the LAST message for streaming state to avoid issues with stale stream messages
-		const lastMessage = localChats[localChats.length - 1];
-		const isLastMessageStreaming = lastMessage && 
-			typeof lastMessage.message === "object" && 
-			lastMessage.message !== null && 
-			"type" in lastMessage.message && 
-			lastMessage.message.type === "stream";
-		
-		if (isLastMessageStreaming && session && activeChatEntity?.id) {
-			// Set up periodic refresh to check for stream completion
-			const refreshInterval = setInterval(() => {
-				queryClient.invalidateQueries({
-					queryKey: ["agentChats", activeChatEntity.id],
-				});
-			}, 3000); // Check every 3 seconds
-			
-			return () => clearInterval(refreshInterval);
-		}
-	}, [localChats, session, activeChatEntity?.id, queryClient]);
-
 	const createChatEntityMutation = useMutation({
-		mutationFn: async() => {
+		mutationFn: async(messageContent: string) => {
 			if (!session || !activeProject) {
 				throw new Error("No session or active project");
 			}
@@ -277,11 +279,10 @@ export function usePlatformChat(
 			const response = await createPlatformChatEntity(session, {
 				project_id: activeProject.project_id,
 				chat_name: "untitled",
-				chat_details: chatInput,
+				chat_details: messageContent,
 				relation_id: folderId,
 				relation_type: chatTarget,
 			});
-
 
 			appendChatEntity(response);
 
@@ -326,6 +327,9 @@ export function usePlatformChat(
 			return;
 		}
 
+		// Mark as actively submitting to prevent server data overwrites
+		isActivelySubmittingRef.current = true;
+
 		// Reset currentTaskId before submitting a new chat request
 		setCurrentTaskId(null);
 		setIsWaitingForResponse(false);
@@ -363,11 +367,12 @@ export function usePlatformChat(
 		if (chatEntityId === "untitled") {
 			// Create a new chat entity before submitting the chat
 			try {
-				await createChatEntityMutation.mutateAsync();
+				await createChatEntityMutation.mutateAsync(message);
 			} catch (error) {
 				console.error("Failed to create chat entity:", error);
 				// Remove the user message if chat entity creation fails
 				setLocalChats(localChats);
+				isActivelySubmittingRef.current = false;
 				return;
 			}
 		}
@@ -383,6 +388,7 @@ export function usePlatformChat(
 			});
 			// Remove the user message if no chat entity
 			setLocalChats(localChats);
+			isActivelySubmittingRef.current = false;
 			return;
 		}
 
