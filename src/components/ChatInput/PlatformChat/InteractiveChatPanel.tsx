@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { useChatStore } from "@/hooks/useChatStore";
 import { Button } from "@/components/ui/button";
 import { getInlineDocument, saveDocumentAs } from "@/api/folderRoutes";
@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { X, FileText, FileImage, FileAudio, FileVideo, FileCode, File, Pencil, Download, Folder, Plus, Save } from "lucide-react";
 import { ResourceTextViewer } from "@/components/DocumentEditor/ResourceTextViewer";
 import RunningLogViewer from "@/components/WorkflowComponents/RunningLogViewer";
-import DocumentSelector from "@/components/ProjectEvent/DocumentSelector";
+import { DocumentSelector } from "@/components/DocumentSelector";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 import {

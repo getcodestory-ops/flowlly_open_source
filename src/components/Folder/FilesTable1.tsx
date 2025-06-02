@@ -792,8 +792,6 @@ const AddFileInFolderButton = ({
 								: item,
 						),
 					);
-
-					// Start polling for task status
 					pollTaskStatus(data.task_id, 0);
 				} else {
 					// Update status to success if no processing needed

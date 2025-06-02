@@ -148,10 +148,51 @@ export default function PlatformChatInterface({
 	}, [chats]);
 
 	// Function to poll for task status
-	const pollTaskStatus = async(taskId: string, fileIndex: number) => {
+	const pollTaskStatus = async(taskId: string, fileIndex: number, pollCount = 0) => {
+		const MAX_POLL_ATTEMPTS = 60; // 5 minutes at 5-second intervals
+		
 		try {
+			// Prevent infinite polling
+			if (pollCount >= MAX_POLL_ATTEMPTS) {
+				console.warn(`File polling timeout for task ${taskId} after ${MAX_POLL_ATTEMPTS} attempts`);
+				setUploadingFiles((prev) =>
+					prev.map((item, index) =>
+						index === fileIndex
+							? {
+								...item,
+								status: "error",
+								error: "Processing timeout",
+							}
+							: item,
+					),
+				);
+				toast({
+					title: "File Processing Timeout",
+					description: `${uploadingFiles[fileIndex]?.file.name} processing timed out`,
+					variant: "destructive",
+				});
+				return;
+			}
+
 			if (!session) return;
 			const response = await getTaskStatus(session, taskId);
+
+			// Validate response structure
+			if (!response || typeof response.status !== "string") {
+				console.error("Invalid response structure from getTaskStatus:", response);
+				setUploadingFiles((prev) =>
+					prev.map((item, index) =>
+						index === fileIndex
+							? {
+								...item,
+								status: "error",
+								error: "Invalid server response",
+							}
+							: item,
+					),
+				);
+				return;
+			}
 
 			if (response.status === "completed" && response.result) {
 				// Update uploadingFiles status
@@ -179,9 +220,9 @@ export default function PlatformChatInterface({
 				response.status === "pending" ||
         response.status === "processing"
 			) {
-				// Continue polling
-				setTimeout(() => pollTaskStatus(taskId, fileIndex), 5000);
-			} else {
+				// Continue polling with incremented count
+				setTimeout(() => pollTaskStatus(taskId, fileIndex, pollCount + 1), 5000);
+			} else if (response.status === "failed" || response.status === "error") {
 				// Handle error
 				setUploadingFiles((prev) =>
 					prev.map((item, index) =>
@@ -200,20 +241,45 @@ export default function PlatformChatInterface({
 					description: `Failed to process ${uploadingFiles[fileIndex]?.file.name}`,
 					variant: "destructive",
 				});
+			} else {
+				// Handle unknown status
+				console.warn(`Unknown file processing status: ${response.status}`);
+				setUploadingFiles((prev) =>
+					prev.map((item, index) =>
+						index === fileIndex
+							? {
+								...item,
+								status: "error",
+								error: `Unknown status: ${response.status}`,
+							}
+							: item,
+					),
+				);
 			}
 		} catch (error) {
 			console.error(`Error checking task status for ${taskId}:`, error);
-			setUploadingFiles((prev) =>
-				prev.map((item, index) =>
-					index === fileIndex
-						? {
-							...item,
-							status: "error",
-							error: "Failed to check processing status",
-						}
-						: item,
-				),
-			);
+			
+			// Don't immediately fail on network errors, but limit retries
+			if (pollCount < 3) {
+				setTimeout(() => pollTaskStatus(taskId, fileIndex, pollCount + 1), 10000); // Longer delay on errors
+			} else {
+				setUploadingFiles((prev) =>
+					prev.map((item, index) =>
+						index === fileIndex
+							? {
+								...item,
+								status: "error",
+								error: "Failed to check processing status",
+							}
+							: item,
+					),
+				);
+				toast({
+					title: "File Processing Error",
+					description: `Network error while checking ${uploadingFiles[fileIndex]?.file.name} status`,
+					variant: "destructive",
+				});
+			}
 		}
 	};
 

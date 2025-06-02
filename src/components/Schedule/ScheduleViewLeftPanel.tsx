@@ -14,9 +14,10 @@ import { X } from "lucide-react";
 import { useStore } from "@/utils/store";
 import { useViewStore } from "@/utils/store";
 import PlatformChatComponent from "../ChatInput/PlatformChat/PlatformChatComponent";
-import { MessageCircle } from "lucide-react";
-import Draggable from "react-draggable";
-import ChatButton from "../ChatButton";
+import { useQuery } from "@tanstack/react-query";
+import { getActivities } from "@/api/activity_routes";
+import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
+
 
 function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
 	const { scheduleView, setScheduleView } = useViewStore();
@@ -53,6 +54,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
 
 	return (
 		<div className="w-full h-full flex flex-col  pt-2 ">
+			<SetUseStoreData />
 			<AddNewActivityModal isOpen={isOpen} onClose={onClose} />
 			<div className=" flex  justify-end gap-8 items-center absolute right-8 z-50  px-2  rounded-lg">
 				<div>
@@ -178,3 +180,53 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
 }
 
 export default ScheduleUiView;
+
+
+const SetUseStoreData = (): React.ReactNode => {
+	const {
+		session,
+		activeProject,
+		scheduleDate,
+		scheduleProbability,
+		setUserActivities,
+	} = useStore((state) => ({
+		session: state.session,
+		activeProject: state.activeProject,
+		scheduleDate: state.scheduleDate,
+		scheduleProbability: state.scheduleProbability,
+		setUserActivities: state.setUserActivities,
+	}));
+
+	const { data: activities, isSuccess } = useQuery({
+		queryKey: [
+			"activityList",
+			session,
+			activeProject,
+			scheduleDate,
+			scheduleProbability,
+		],
+		queryFn: () => {
+			if (!session || !activeProject) {
+				return Promise.reject("Set session first !");
+			}
+			const date = getCurrentDateFormatted(scheduleDate || new Date());
+			return getActivities(
+				session,
+				activeProject.project_id,
+				date,
+				scheduleProbability,
+			);
+		},
+		enabled: !!session?.access_token && !!activeProject?.project_id,
+	});
+
+	useEffect(() => {
+		if (isSuccess && activities && activities.length > 0) {
+			setUserActivities(activities);
+		} else if (isSuccess && activities && activities.length === 0) {
+			setUserActivities([]);
+		}
+	}, [activities, isSuccess, setUserActivities]);
+
+	return <></>;
+};

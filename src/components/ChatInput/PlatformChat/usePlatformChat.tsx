@@ -44,14 +44,28 @@ export function usePlatformChat(
 	const { mutate, isPending, data } = useMutation({
 		mutationFn: talkToAgent,
 		onError: (error) => {
+			console.error("Chat submission error:", error);
 			toast({
 				title: "Error",
-				description: error.message,
+				description: error.message || "Failed to send message. Please try again.",
 				variant: "destructive",
 			});
 			setIsWaitingForResponse(false);
+			setCurrentTaskId(null);
 		},
 		onSuccess: (data, variables) => {
+			// Validate the response data
+			if (!data || !data.agent_response) {
+				console.error("Invalid response from talkToAgent:", data);
+				toast({
+					title: "Error",
+					description: "Invalid response from server. Please try again.",
+					variant: "destructive",
+				});
+				setIsWaitingForResponse(false);
+				return;
+			}
+
 			// Add the user message to local chats
 			const userMessage: AgentChat = {
 				id: Date.now().toString(), // Use a temporary ID
@@ -108,12 +122,46 @@ export function usePlatformChat(
 		if (!currentTaskId || !session) return;
 
 		let isUnmounted = false;
+		let pollCount = 0;
+		const MAX_POLL_ATTEMPTS = 150; // 5 minutes at 2-second intervals
+		let timeoutId: NodeJS.Timeout;
 
 		const checkTaskStatus = async() => {
 			try {
+				// Prevent infinite polling
+				if (pollCount >= MAX_POLL_ATTEMPTS) {
+					console.warn(`Polling timeout for task ${currentTaskId} after ${MAX_POLL_ATTEMPTS} attempts`);
+					if (!isUnmounted) {
+						setCurrentTaskId(null);
+						setIsWaitingForResponse(false);
+						toast({
+							title: "Request Timeout",
+							description: "The request is taking longer than expected. Please try again.",
+							variant: "destructive",
+						});
+					}
+					return;
+				}
+
+				pollCount++;
 				const response = await getTaskStatus(session, currentTaskId);
 
 				if (isUnmounted) return;
+
+				// Validate response structure
+				if (!response || typeof response.status !== "string") {
+					console.error("Invalid response structure from getTaskStatus:", response);
+					if (!isUnmounted) {
+						setCurrentTaskId(null);
+						setIsWaitingForResponse(false);
+						toast({
+							title: "Error",
+							description: "Invalid response from server",
+							variant: "destructive",
+						});
+					}
+					return;
+				}
 
 				if (response.status === "completed" && response.result) {
 					setTimeout(() => {
@@ -140,11 +188,11 @@ export function usePlatformChat(
 					}, 300); // Small delay to ensure smooth transition
 				} else if (
 					response.status === "pending" ||
-          response.status === "processing"
+					response.status === "processing"
 				) {
 					// Continue polling if still in progress
-					setTimeout(checkTaskStatus, 2000);
-				} else if (response.status === "failed") {
+					timeoutId = setTimeout(checkTaskStatus, 2000);
+				} else if (response.status === "failed" || response.status === "error") {
 					// Handle failure
 					toast({
 						title: "Error",
@@ -153,12 +201,34 @@ export function usePlatformChat(
 					});
 					setCurrentTaskId(null);
 					setIsWaitingForResponse(false);
+				} else {
+					// Handle unknown status
+					console.warn(`Unknown task status: ${response.status}`);
+					if (!isUnmounted) {
+						setCurrentTaskId(null);
+						setIsWaitingForResponse(false);
+						toast({
+							title: "Error",
+							description: `Unknown status: ${response.status}`,
+							variant: "destructive",
+						});
+					}
 				}
 			} catch (error) {
 				console.error("Error checking task status:", error);
 				if (!isUnmounted) {
-					setCurrentTaskId(null);
-					setIsWaitingForResponse(false);
+					// Don't immediately fail on network errors, but limit retries
+					if (pollCount < 3) {
+						timeoutId = setTimeout(checkTaskStatus, 5000); // Longer delay on errors
+					} else {
+						setCurrentTaskId(null);
+						setIsWaitingForResponse(false);
+						toast({
+							title: "Network Error",
+							description: "Failed to check task status. Please try again.",
+							variant: "destructive",
+						});
+					}
 				}
 			}
 		};
@@ -167,6 +237,9 @@ export function usePlatformChat(
 
 		return () => {
 			isUnmounted = true;
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+			}
 		};
 	}, [
 		currentTaskId,
@@ -254,8 +327,15 @@ export function usePlatformChat(
 			return;
 		}
 
+		// Prevent multiple simultaneous submissions
+		if (isPending || isWaitingForResponse) {
+			console.warn("Chat submission blocked - already processing");
+			return;
+		}
+
 		// Reset currentTaskId before submitting a new chat request
 		setCurrentTaskId(null);
+		setIsWaitingForResponse(false);
 
 		let chatEntityId: string = activeChatEntity?.id || "untitled";
 		const currentContexts = selectedContexts[chatEntityId] || [];
@@ -270,7 +350,12 @@ export function usePlatformChat(
 
 		if (chatEntityId === "untitled") {
 			// Create a new chat entity before submitting the chat
-			await createChatEntityMutation.mutateAsync();
+			try {
+				await createChatEntityMutation.mutateAsync();
+			} catch (error) {
+				console.error("Failed to create chat entity:", error);
+				return;
+			}
 		}
 
 		// Ensure we have an active chat entity after potential creation
