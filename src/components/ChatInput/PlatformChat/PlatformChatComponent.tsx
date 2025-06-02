@@ -2,8 +2,6 @@
 import PlatformChatInterface from "./PlatformChatInterface";
 import { useState, useEffect } from "react";
 import {
-	ChevronLeft,
-	ChevronRight,
 	MessageSquare,
 	History,
 	Settings,
@@ -129,7 +127,7 @@ export default function PlatformChatComponent({
     | "folder";
   onContentUpdate?: (newContent: string) => void;
 }) {
-	const { collapsed, setCollapsed, sidePanel } = useChatStore();
+	const { sidePanel } = useChatStore();
 	const { setSelectedContexts } = useChatStore();
 	const [activeTab, setActiveTab] = useState<"chat" | "settings">("chat");
 	const { toast } = useToast();
@@ -137,6 +135,7 @@ export default function PlatformChatComponent({
 	const [includeContext, setIncludeContext] = useState<boolean>(false);
 	const [editingChatId, setEditingChatId] = useState<string | null>(null);
 	const [editedName, setEditedName] = useState<string>("");
+	const [isHovered, setIsHovered] = useState<boolean>(false);
 
 	// Get store data for chat entities
 	const {
@@ -169,10 +168,13 @@ export default function PlatformChatComponent({
 		},
 	});
 
-	// Set first chat entity as active on initial load
+	// Set first chat entity as active on initial load, but preserve existing active chat
 	useEffect(() => {
-		setLocalChats([]);
-		setActiveChatEntity(null);
+		// Only reset if there's no active chat entity already selected
+		if (!activeChatEntity) {
+			setLocalChats([]);
+			// Don't automatically set to null if we already have an active chat
+		}
 	}, []);
 
 	// Inside the component, add queryClient
@@ -262,30 +264,13 @@ export default function PlatformChatComponent({
 				{/* Left sidebar for chat controls */}
 				<TooltipProvider delayDuration={0}>
 					<div
-						className={`flex flex-col border-r border-slate-200 transition-all duration-300 ${
-							!collapsed ? "w-60" : "w-16" // Adjusted width for collapsed state
-						}`}
+						className="flex flex-col border-r border-slate-200 transition-all duration-300 relative"
+						onMouseEnter={() => setIsHovered(true)}
+						onMouseLeave={() => setIsHovered(false)}
 					>
-						{/* Title area */}
-						{!collapsed ? (
-							<div className="p-3 flex justify-between items-center">
-								<h3 className="text-sm font-medium text-gray-700">
-									{titleMap[chatTarget]} {folderName}
-								</h3>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Button
-											className="h-7 w-7 p-0"
-											onClick={handleCreateNewChat}
-											variant="ghost"
-										>
-											<PenBox className="h-4 w-4 text-gray-500" />
-										</Button>
-									</TooltipTrigger>
-									<TooltipContent>New Chat</TooltipContent>
-								</Tooltip>
-							</div>
-						) : (
+						{/* Always collapsed base sidebar */}
+						<div className="w-16 h-full flex flex-col">
+							{/* Title area - collapsed version */}
 							<div className="p-2">
 								<Tooltip>
 									<TooltipTrigger asChild>
@@ -300,12 +285,63 @@ export default function PlatformChatComponent({
 									<TooltipContent side="right">New Chat</TooltipContent>
 								</Tooltip>
 							</div>
-						)}
-						{!collapsed ? (
-							<ScrollArea className="flex-grow h-[calc(100vh-5000px)]">
-								<div className="px-2 py-2">
-									{chatEntities && [...chatEntities]
-										.map((chatEntity, index, array) => {
+							<div className="flex-grow" />
+							<div className="border-t border-slate-200">
+								<div className="p-2 space-y-1">
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<Button
+												className="w-full py-1 px-2 rounded flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+												onClick={handleCreateNewChat}
+												variant="ghost"
+											>
+												<PenBox size={16} />
+											</Button>
+										</TooltipTrigger>
+										<TooltipContent side="right">New Chat</TooltipContent>
+									</Tooltip>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<Button
+												className={`w-full py-1 px-2 rounded flex items-center justify-center ${
+													activeTab === "settings"
+														? "bg-gray-50 text-gray-900"
+														: "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+												}`}
+												onClick={() => handleTabClick("settings")}
+												variant="ghost"
+											>
+												<Settings size={16} />
+											</Button>
+										</TooltipTrigger>
+										<TooltipContent side="right">Settings</TooltipContent>
+									</Tooltip>
+								</div>
+							</div>
+						</div>
+						{isHovered && (
+							<div className="absolute left-0 top-0 w-60 h-full bg-white border-r border-slate-200 shadow-lg z-50 flex flex-col">
+								{/* Title area - expanded version */}
+								<div className="p-3 flex justify-between items-center">
+									<h3 className="text-sm font-medium text-gray-700">
+										{titleMap[chatTarget]} {folderName}
+									</h3>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<Button
+												className="h-7 w-7 p-0"
+												onClick={handleCreateNewChat}
+												variant="ghost"
+											>
+												<PenBox className="h-4 w-4 text-gray-500" />
+											</Button>
+										</TooltipTrigger>
+										<TooltipContent>New Chat</TooltipContent>
+									</Tooltip>
+								</div>
+								<ScrollArea className="flex-grow h-[calc(100vh-5000px)]">
+									<div className="px-2 py-2">
+										{chatEntities && [...chatEntities].map((chatEntity, index, array) => {
 											const isEditing = editingChatId === chatEntity.id;
 
 											// Group chats by date
@@ -364,7 +400,7 @@ export default function PlatformChatComponent({
 																		/>
 																	) : (
 																		<>
-																			<span className={`text-xs leading-tight truncate block ${collapsed && "w-12"}`}>
+																			<span className="text-xs leading-tight truncate block">
 																				{chatEntity.chat_name}
 																			</span>
 																			<Pencil 
@@ -380,95 +416,56 @@ export default function PlatformChatComponent({
 																</div>
 															</button>
 														</TooltipTrigger>
-														{collapsed && !isEditing && (
-															<TooltipContent className="text-xs" side="right">
-																{chatEntity.chat_name}
-															</TooltipContent>
-														)}
 													</Tooltip>
 												</div>
 											);
 										})}
-									{chatEntities && chatEntities.length === 0 && (
-										<div className="text-center text-xs text-gray-400 p-2">
-											🤖 Ready to be your sidekick! Drop a message and let&apos;s make some magic happen ✨
-										</div>
-									)}
-									{chatsLoading && (
-										<div className="text-center text-xs text-gray-400 p-2">
-											Loading chats...
-										</div>
-									)}
+										{chatEntities && chatEntities.length === 0 && (
+											<div className="text-center text-xs text-gray-400 p-2">
+												🤖 Ready to be your sidekick! Drop a message and let&apos;s make some magic happen ✨
+											</div>
+										)}
+										{chatsLoading && (
+											<div className="text-center text-xs text-gray-400 p-2">
+												Loading chats...
+											</div>
+										)}
+									</div>
+								</ScrollArea>
+								<div className="border-t border-slate-200">
+									<div className="p-2 space-y-1">
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Button
+													className="w-full py-1 px-2 rounded flex items-center justify-start text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+													onClick={handleCreateNewChat}
+													variant="ghost"
+												>
+													<PenBox size={16} />
+													<span className="ml-2 text-xs">New Chat</span>
+												</Button>
+											</TooltipTrigger>
+										</Tooltip>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Button
+													className={`w-full py-1 px-2 rounded flex items-center justify-start ${
+														activeTab === "settings"
+															? "bg-gray-50 text-gray-900"
+															: "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+													}`}
+													onClick={() => handleTabClick("settings")}
+													variant="ghost"
+												>
+													<Settings size={16} />
+													<span className="ml-2 text-xs">Settings</span>
+												</Button>
+											</TooltipTrigger>
+										</Tooltip>
+									</div>
 								</div>
-							</ScrollArea>
-						) : (
-							<div className="flex-grow" />
+							</div>
 						)}
-						<div className="border-t border-slate-200">
-							<div className="p-2 space-y-1">
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Button
-											className={`w-full py-1 px-2 rounded flex items-center text-gray-400 hover:text-gray-600 hover:bg-gray-50 ${
-												!collapsed ? "justify-start" : "justify-center"
-											}`}
-											onClick={handleCreateNewChat}
-											variant="ghost"
-										>
-											<PenBox size={16} />
-											{!collapsed && <span className="ml-2 text-xs">New Chat</span>}
-										</Button>
-									</TooltipTrigger>
-									{collapsed && (
-										<TooltipContent side="right">New Chat</TooltipContent>
-									)}
-								</Tooltip>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Button
-											className={`w-full py-1 px-2 rounded flex items-center ${
-												activeTab === "settings"
-													? "bg-gray-50 text-gray-900"
-													: "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
-											} ${
-												!collapsed ? "justify-start" : "justify-center"
-											}`}
-											onClick={() => handleTabClick("settings")}
-											variant="ghost"
-										>
-											<Settings size={16} />
-											{!collapsed && <span className="ml-2 text-xs">Settings</span>}
-										</Button>
-									</TooltipTrigger>
-									{collapsed && (
-										<TooltipContent side="right">Settings</TooltipContent>
-									)}
-								</Tooltip>
-							</div>
-							<div className="border-t border-slate-200 p-2">
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Button
-											className="w-full flex items-center text-gray-400 hover:bg-gray-50 hover:text-gray-600 p-2 rounded-lg"
-											onClick={() => setCollapsed(!collapsed)}
-											variant="ghost"
-										>
-											{!collapsed ? (
-												<>
-													<ChevronLeft size={16} />
-													<span className="ml-2 text-xs">Collapse</span>
-												</>
-											) : (
-												<ChevronRight className="mx-auto" size={16} />
-											)}
-										</Button>
-									</TooltipTrigger>
-									{collapsed && (
-										<TooltipContent side="right">Expand sidebar</TooltipContent>
-									)}
-								</Tooltip>
-							</div>
-						</div>
 					</div>
 				</TooltipProvider>
 				<div className="flex-grow overflow-hidden flex flex-col">

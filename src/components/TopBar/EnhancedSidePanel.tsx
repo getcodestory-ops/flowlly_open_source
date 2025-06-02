@@ -107,46 +107,46 @@ export function EnhancedSidePanel(): React.ReactNode {
 	}, [userProjects.length, userProjects, setActiveProject, params?.projectId]);
 
 	// Fetch members for active project
-	const { data: membersData } = useQuery({
-		queryKey: ["memberList", session, activeProject],
-		queryFn: async() => {
-			if (!session || !activeProject) {
-				return Promise.reject("No session or active project");
-			}
-			return getMembers(session, activeProject.project_id);
-		},
-		enabled: !!session?.access_token && !!activeProject?.project_id,
-	});
+	// const { data: membersData } = useQuery({
+	// 	queryKey: ["memberList", session, activeProject],
+	// 	queryFn: async() => {
+	// 		if (!session || !activeProject) {
+	// 			return Promise.reject("No session or active project");
+	// 		}
+	// 		return getMembers(session, activeProject.project_id);
+	// 	},
+	// 	enabled: !!session?.access_token && !!activeProject?.project_id,
+	// });
 
 	// Set members when data is loaded
-	useEffect(() => {
-		if (membersData && membersData.data.length > 0) {
-			setMembers(membersData.data);
-		}
-	}, [membersData, setMembers]);
+	// useEffect(() => {
+	// 	if (membersData && membersData.data.length > 0) {
+	// 		setMembers(membersData.data);
+	// 	}
+	// }, [membersData, setMembers]);
 
 	// Fetch chat entities for active project
-	const { data: chatEntitities } = useQuery({
-		queryKey: ["chatEntityList", session, activeProject],
-		queryFn: () => {
-			if (!session || !activeProject) {
-				return Promise.reject("No session or active project");
-			}
-			return getAgentChatEntities(session, activeProject.project_id);
-		},
-		enabled: !!session?.access_token && !!activeProject?.project_id,
-	});
+	// const { data: chatEntitities } = useQuery({
+	// 	queryKey: ["chatEntityList", session, activeProject],
+	// 	queryFn: () => {
+	// 		if (!session || !activeProject) {
+	// 			return Promise.reject("No session or active project");
+	// 		}
+	// 		return getAgentChatEntities(session, activeProject.project_id);
+	// 	},
+	// 	enabled: !!session?.access_token && !!activeProject?.project_id,
+	// });
 
 	// Set chat entities when data is loaded
-	useEffect(() => {
-		if (chatEntitities && chatEntitities.length > 0) {
-			setChatEntities(chatEntitities);
-			setActiveChatEntity(chatEntitities[chatEntitities.length - 1]);
-		} else {
-			setActiveChatEntity(null);
-			setChatEntities([]);
-		}
-	}, [chatEntitities, setActiveChatEntity, setChatEntities]);
+	// useEffect(() => {
+	// 	if (chatEntitities && chatEntitities.length > 0) {
+	// 		setChatEntities(chatEntitities);
+	// 		setActiveChatEntity(chatEntitities[chatEntitities.length - 1]);
+	// 	} else {
+	// 		setActiveChatEntity(null);
+	// 		setChatEntities([]);
+	// 	}
+	// }, [chatEntitities, setActiveChatEntity, setChatEntities]);
 
 	// Handle click outside to close project switcher
 	useEffect(() => {
@@ -292,7 +292,7 @@ export function EnhancedSidePanel(): React.ReactNode {
 				{/* <HeaderNotification /> */}
 				<UserNav email="" />
 			</div>
-			<SetUseStoreData />
+			{/* <SetUseStoreData /> */}
 		</div>
 	);
 }
@@ -435,51 +435,4 @@ const MenuButton = ({
 	);
 };
 
-const SetUseStoreData = (): React.ReactNode => {
-	const {
-		session,
-		activeProject,
-		scheduleDate,
-		scheduleProbability,
-		setUserActivities,
-	} = useStore((state) => ({
-		session: state.session,
-		activeProject: state.activeProject,
-		scheduleDate: state.scheduleDate,
-		scheduleProbability: state.scheduleProbability,
-		setUserActivities: state.setUserActivities,
-	}));
 
-	const { data: activities, isSuccess } = useQuery({
-		queryKey: [
-			"activityList",
-			session,
-			activeProject,
-			scheduleDate,
-			scheduleProbability,
-		],
-		queryFn: () => {
-			if (!session || !activeProject) {
-				return Promise.reject("Set session first !");
-			}
-			const date = getCurrentDateFormatted(scheduleDate || new Date());
-			return getActivities(
-				session,
-				activeProject.project_id,
-				date,
-				scheduleProbability,
-			);
-		},
-		enabled: !!session?.access_token && !!activeProject?.project_id,
-	});
-
-	useEffect(() => {
-		if (isSuccess && activities && activities.length > 0) {
-			setUserActivities(activities);
-		} else if (isSuccess && activities && activities.length === 0) {
-			setUserActivities([]);
-		}
-	}, [activities, isSuccess, setUserActivities]);
-
-	return <></>;
-};
