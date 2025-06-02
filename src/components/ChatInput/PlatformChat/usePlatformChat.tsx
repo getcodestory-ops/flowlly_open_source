@@ -52,6 +52,11 @@ export function usePlatformChat(
 			});
 			setIsWaitingForResponse(false);
 			setCurrentTaskId(null);
+			
+			// Remove the last user message if API call failed
+			if (localChats.length > 0 && localChats[localChats.length - 1].sender === "User") {
+				setLocalChats(localChats.slice(0, -1));
+			}
 		},
 		onSuccess: (data, variables) => {
 			// Validate the response data
@@ -63,28 +68,16 @@ export function usePlatformChat(
 					variant: "destructive",
 				});
 				setIsWaitingForResponse(false);
+				
+				// Remove the last user message if invalid response
+				if (localChats.length > 0 && localChats[localChats.length - 1].sender === "User") {
+					setLocalChats(localChats.slice(0, -1));
+				}
 				return;
 			}
 
-			// Add the user message to local chats
-			const userMessage: AgentChat = {
-				id: Date.now().toString(), // Use a temporary ID
-				sender: "User",
-				receiver: "Flowlly",
-				project_id: activeProject?.project_id || "",
-				message: {
-					content: variables.agentTask,
-					role: "user",
-				},
-				created_at: new Date().toISOString(),
-			};
-
 			// Set waiting state to true when we're expecting a response
 			setIsWaitingForResponse(true);
-
-			// Update local chats with the user message
-			setLocalChats([...localChats, userMessage]);
-			setChatInput("");
 			setCurrentTaskId(data.agent_response);
 		},
 	});
@@ -337,6 +330,25 @@ export function usePlatformChat(
 		setCurrentTaskId(null);
 		setIsWaitingForResponse(false);
 
+		// Add the user message to local chats immediately for better UX
+		const userMessage: AgentChat = {
+			id: Date.now().toString(), // Use a temporary ID
+			sender: "User",
+			receiver: "Flowlly",
+			project_id: activeProject?.project_id || "",
+			message: {
+				content: message,
+				role: "user",
+			},
+			created_at: new Date().toISOString(),
+		};
+
+		// Update local chats with the user message immediately
+		setLocalChats([...localChats, userMessage]);
+
+		// Clear the input immediately for better UX
+		setChatInput("");
+
 		let chatEntityId: string = activeChatEntity?.id || "untitled";
 		const currentContexts = selectedContexts[chatEntityId] || [];
 		if (currentContexts.length > 0) {
@@ -354,6 +366,8 @@ export function usePlatformChat(
 				await createChatEntityMutation.mutateAsync();
 			} catch (error) {
 				console.error("Failed to create chat entity:", error);
+				// Remove the user message if chat entity creation fails
+				setLocalChats(localChats);
 				return;
 			}
 		}
@@ -367,6 +381,8 @@ export function usePlatformChat(
 				description: "Failed to create or retrieve chat entity",
 				variant: "destructive",
 			});
+			// Remove the user message if no chat entity
+			setLocalChats(localChats);
 			return;
 		}
 
