@@ -54,6 +54,7 @@ export default function PlatformChatInterface({
 		chatInput,
 		session,
 		isWaitingForResponse,
+		setIsWaitingForResponse,
 	} = usePlatformChat(folderId, chatTarget, selectedModel, includeContext);
 	const { setSidePanel, setCollapsed, contextFolder } = useChatStore();
 
@@ -204,22 +205,16 @@ export default function PlatformChatInterface({
 					<Button
 						className="ml-auto gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
 						disabled={
-							isPending ||
+							isWaitingForResponse ||
 							(!chatInput.trim())
 						}
 						onClick={handleSubmit}
 						size="sm"
 						type="submit"
 					>
-						{isPending ? (
+						{isWaitingForResponse ? (
 							<>
 								<Loader2 className="h-3.5 w-3.5 animate-spin" />
-								Sending...
-							</>
-						) : isWaitingForResponse ? (
-							<>
-								Send Next
-								<CornerDownLeft className="h-3.5 w-3.5" />
 							</>
 						) : (
 							<>
@@ -380,22 +375,16 @@ export default function PlatformChatInterface({
 					<Button
 						className="ml-auto gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
 						disabled={
-							isPending ||
+							isWaitingForResponse ||
 							(!chatInput.trim() )
 						}
 						onClick={handleSubmit}
 						size="sm"
 						type="submit"
 					>
-						{isPending ? (
+						{isWaitingForResponse ? (
 							<>
 								<Loader2 className="h-3.5 w-3.5 animate-spin" />
-								Sending...
-							</>
-						) : isWaitingForResponse ? (
-							<>
-								Send Next
-								<CornerDownLeft className="h-3.5 w-3.5" />
 							</>
 						) : (
 							<>
@@ -444,7 +433,10 @@ export default function PlatformChatInterface({
 												ref={messageRefs.current[index] || null}
 											>
 												{history.message && (
-													<AgentMessageInteractiveView id={history.id} message={history.message} />
+													<AgentMessageInteractiveView id={history.id}
+														message={history.message}
+														setIsWaitingForResponse={setIsWaitingForResponse}
+													/>
 												)}
 											</div>
 											{/* Improve the copy button UI and add proper spacing */}

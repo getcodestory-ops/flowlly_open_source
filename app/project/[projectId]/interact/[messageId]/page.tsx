@@ -6,7 +6,6 @@ import supabase from "@/utils/supabaseClient";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useChatStore } from "@/hooks/useChatStore";
-import { useStore } from "@/utils/store";
 import InteractiveChatPanel from "@/components/ChatInput/PlatformChat/InteractiveChatPanel";
 import { clsx } from "clsx";
 
@@ -14,7 +13,7 @@ export default function MessagePage({ params }: { params: { messageId: string } 
 	const router = useRouter();
 	const { messageId } = params;
 	const [message, setMessage] = useState<AgentMessage | string | null>(null);
-	const { tabs } = useChatStore();
+	const { tabs,  setIsWaitingForResponse } = useChatStore();
 	const hasOpenTabs = tabs.length > 0;
 	const [panelWidth, setPanelWidth] = useState(50); // Percentage width for the chat panel
 	const [isDragging, setIsDragging] = useState(false);
@@ -84,7 +83,7 @@ export default function MessagePage({ params }: { params: { messageId: string } 
 	if (!hasOpenTabs) {
 		return (
 			<div className="flex flex-col h-full">
-				{message && <AgentMessageInteractiveView message={message} />}
+				{message && <AgentMessageInteractiveView message={message} setIsWaitingForResponse={setIsWaitingForResponse} />}
 			</div>
 		);
 	}
@@ -119,7 +118,7 @@ export default function MessagePage({ params }: { params: { messageId: string } 
 				)}
 				style={{ width: `${100 - panelWidth}%` }}
 			>
-				{message && <AgentMessageInteractiveView message={message} />}
+				{message && <AgentMessageInteractiveView message={message} setIsWaitingForResponse={setIsWaitingForResponse} />}
 			</div>
 		</div>
 	);

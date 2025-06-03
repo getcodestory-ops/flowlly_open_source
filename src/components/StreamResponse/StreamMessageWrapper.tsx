@@ -10,12 +10,14 @@ interface StreamMessageWrapperProps {
   streamingKey: string;
   authToken: string;
   messageId: string;
+  setIsWaitingForResponse: (value: boolean) => void;
 }
 
 const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 	streamingKey,
 	authToken,
 	messageId,
+	setIsWaitingForResponse,
 }) => {
 	const { toast } = useToast();
 	const queryClient = useQueryClient();
@@ -66,45 +68,35 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 				}
 
 				if (response.status === "completed" && response.result) {
-					// Replace the streaming message with the completed response
 					setTimeout(() => {
-						// Only update if we're still on the same chat entity that was streaming
 						const currentActiveChatEntity = useStore.getState().activeChatEntity;
 						if (currentActiveChatEntity?.id === activeChatEntity?.id) {
-							// Get the latest state from the store
 							const currentLocalChats = useStore.getState().localChats;
-              
-							// Find the streaming message and replace it with the completed response
 							const updatedChats = currentLocalChats.map((chat) => {
 								if (chat.id === messageId) {
-									// Replace the streaming message with the first result (which should be the AI response)
 									if (response.result && response.result.length > 0) {
 										return response.result[0];
 									}
 								}
 								return chat;
 							});
-
-							// If there are additional messages in the result, append them
 							if (response.result && response.result.length > 1) {
 								const additionalMessages = response.result.slice(1);
 								updatedChats.push(...additionalMessages);
 							}
-
-							// Update the store with the properly formatted chats from task result
 							setLocalChats(updatedChats);
-
-							// Sync with server query cache to keep it consistent
 							queryClient.setQueryData(
 								["agentChats", activeChatEntity?.id],
 								() => updatedChats,
 							);
+							setIsWaitingForResponse(false);
 						}
-					}, 300); // Small delay to ensure smooth transition
+					}, 300); 
 				} else if (
 					response.status === "pending" ||
           response.status === "processing"
 				) {
+					setIsWaitingForResponse(true);
 					// Continue polling if still in progress
 					timeoutId = setTimeout(checkTaskStatus, 2000);
 				} else if (response.status === "failed" || response.status === "error") {
@@ -147,6 +139,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 					if (pollCount < 3) {
 						timeoutId = setTimeout(checkTaskStatus, 5000); // Longer delay on errors
 					} else {
+						setIsWaitingForResponse(false);
 						toast({
 							title: "Network Error",
 							description: "Failed to check task status. Please try again.",
@@ -169,9 +162,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 
 	return (
 		<div className="w-full">
-			<div className="text-xs text-slate-400 mb-1 pl-1">
-        Continuing response...
-			</div>
 			<div className="text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
 				<StreamComponent
 					authToken={authToken}

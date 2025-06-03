@@ -115,8 +115,8 @@ export const EmptyStateInput: React.FC<EmptyStateInputProps> = ({
 					<Button
 						className="ml-auto gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
 						disabled={
-							isPending ||
-              (!chatInput.trim() && uploadingFiles.length === 0)
+							isWaitingForResponse ||
+              (!chatInput.trim() )
 						}
 						onClick={onSubmit}
 						size="sm"
@@ -125,12 +125,6 @@ export const EmptyStateInput: React.FC<EmptyStateInputProps> = ({
 						{isPending ? (
 							<>
 								<Loader2 className="h-3.5 w-3.5 animate-spin" />
-								Sending...
-							</>
-						) : isWaitingForResponse ? (
-							<>
-								Send Next
-								<CornerDownLeft className="h-3.5 w-3.5" />
 							</>
 						) : (
 							<>
