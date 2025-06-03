@@ -22,7 +22,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useChatStore } from "@/hooks/useChatStore";
 import { updateChatName } from "@/api/agentRoutes";
 const models = [
-	{ id: "gemini-2.5-pro-preview-03-25", name: "Gemini Pro 2.5 (latest)" },
+	{ id: "gemini-2.5-pro-preview-05-06", name: "Gemini Pro 2.5 (latest)" },
 	{ id: "gemini-2.0-flash", name: "Gemini Flash" },
 	{ id: "claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
 	{ id: "gpt-4o", name: "GPT-4.0" },
@@ -60,7 +60,7 @@ export default function PlatformChatComponent({
 	const { setIsWaitingForResponse } = useChatStore();
 	const [activeTab, setActiveTab] = useState<"chat" | "settings">("chat");
 	const { toast } = useToast();
-	const [selectedModel, setSelectedModel] = useState<string>("gemini-2.5-pro-preview-03-25");
+	const [selectedModel, setSelectedModel] = useState<string>("gemini-2.5-pro-preview-05-06");
 	const [includeContext, setIncludeContext] = useState<boolean>(false);
 	const [editingChatId, setEditingChatId] = useState<string | null>(null);
 	const [editedName, setEditedName] = useState<string>("");

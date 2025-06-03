@@ -218,6 +218,7 @@ const VALID_DIRECTIVES = [
 	"edit_project_document",
 	"append_to_project_document",
 	"create_new_project_document",
+	"programming_assistant",
 	"uuid"];
 
 // Add Attachment interface
@@ -564,6 +565,12 @@ function remarkDirectiveComponents() {
 							content: "Creating New Project Document",
 						};
 						break;
+					case "programming_assistant":
+						data.hName = "custom-programming-assistant";
+						data.hProperties = {
+							content: "Assistant",
+						};
+						break;
 						
 						
 					default:
@@ -615,6 +622,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 			icon={<Search className="w-4 h-4" />}
 		                                                              />,
 		"custom-workflow-started": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Loader2 className="w-4 h-4 animate-spin" />} />,
+		"custom-programming-assistant": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Brain className="w-4 h-4" />} />,
 		"custom-attachments": ({ attachments }: { attachments: string }) => (
 			<AttachmentsComponent attachments={attachments} />
 		),
