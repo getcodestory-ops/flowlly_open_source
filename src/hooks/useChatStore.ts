@@ -18,6 +18,8 @@ interface ChatStore {
 	// New multi-tab support
 	tabs: SidePanel[];
 	activeTabId: string | null;
+	isWaitingForResponse: boolean;
+	setIsWaitingForResponse: (isWaitingForResponse: boolean) => void;	
 	addTab: (tab: Omit<SidePanel, "id">) => void;
 	removeTab: (tabId: string) => void;
 	setActiveTab: (tabId: string) => void;
@@ -72,6 +74,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	},
 	tabs: [],
 	activeTabId: null,
+	isWaitingForResponse: false,
+	setIsWaitingForResponse: (isWaitingForResponse) => set({ isWaitingForResponse }),
 	addTab: (tab) => set((state) => {
 		const tabId = generateTabId();
 		const newTab = {

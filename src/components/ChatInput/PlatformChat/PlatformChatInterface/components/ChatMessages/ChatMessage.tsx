@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, Loader2 } from "lucide-react";
 import AgentMessageInteractiveView from "@/components/AiActions/AgentMessageInteractiveView";
+import { useChatStore } from "@/hooks/useChatStore";
 
 interface ChatMessageProps {
   message: any;
@@ -28,6 +29,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({
 	chatId,
 }) => {
 	const isUserMessage = sender.toLowerCase() === "user";
+	const { setIsWaitingForResponse } = useChatStore();
 
 	return (
 		<div
@@ -50,7 +52,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({
 					</div>
 				)}
 				<div ref={messageRef}>
-					{message && <AgentMessageInteractiveView id={chatId} message={message} />}
+					{message && <AgentMessageInteractiveView id={chatId}
+						message={message}
+						setIsWaitingForResponse={setIsWaitingForResponse}
+					            />}
 				</div>
 				{!isUserMessage && (
 					<div className="mt-1 flex justify-between items-center">

@@ -57,6 +57,7 @@ export default function PlatformChatComponent({
 }) {
 	const { sidePanel } = useChatStore();
 	const { setSelectedContexts } = useChatStore();
+	const { setIsWaitingForResponse } = useChatStore();
 	const [activeTab, setActiveTab] = useState<"chat" | "settings">("chat");
 	const { toast } = useToast();
 	const [selectedModel, setSelectedModel] = useState<string>("gemini-2.5-pro-preview-03-25");
@@ -79,6 +80,7 @@ export default function PlatformChatComponent({
 		session: state.session,
 		setLocalChats: state.setLocalChats,
 	}));
+
 
 	// Query chat entities
 	const { data: chatEntities, isLoading: chatsLoading } = useQuery({
@@ -116,13 +118,11 @@ export default function PlatformChatComponent({
 	};
 
 	const handleSelectChatEntity = (chatEntity: any) => {
+		setIsWaitingForResponse(false);
 		setActiveChatEntity(chatEntity);
 		setActiveTab("chat");
 	};
 
-	const handleTabClick = (tab: "settings") => {
-		setActiveTab(activeTab === tab ? "chat" : tab);
-	};
 
 	const handleEditSubmit = async() => {
 		try {

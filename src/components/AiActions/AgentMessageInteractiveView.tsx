@@ -19,7 +19,7 @@ import AttachmentViewer from "./AttachmentViewer";
 import { useStore } from "@/utils/store";
 
 
-function AgentMessageInteractiveView({ id, message }: { id?: string, message: AgentMessage | string }) : React.ReactNode {
+function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: { id?: string, message: AgentMessage | string, setIsWaitingForResponse: (value: boolean) => void }) : React.ReactNode {
 	const { setSidePanel, setCollapsed, sidePanel } = useChatStore();
 	const { setDocumentDisplayMap, documentDisplayMap } = useChatStore();
 	const localChats = useStore((state) => state.localChats);
@@ -87,6 +87,7 @@ function AgentMessageInteractiveView({ id, message }: { id?: string, message: Ag
 				<StreamMessageWrapper
 					authToken={session.access_token}
 					messageId={id || ""}
+					setIsWaitingForResponse={setIsWaitingForResponse}
 					streamingKey={message.streaming_key}
 				/>
 			) : null;
