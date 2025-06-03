@@ -46,6 +46,8 @@ interface ChatStore {
 		name: string;
 	};
 	setContextFolder: (folderId: string | null, folderName: string) => void;
+	chatInput: string;
+	setChatInput: (input: string) => void;
 }
 
 const generateTabId = () => `tab_${Date.now()}_${Math.random().toString(36)
@@ -158,6 +160,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		name: "",
 	},
 	setContextFolder: (folderId, folderName) => set({ contextFolder: { id: folderId, name: folderName } }),
+	chatInput: "",
+	setChatInput: (input) => set({ chatInput: input }),
 }));
 
 

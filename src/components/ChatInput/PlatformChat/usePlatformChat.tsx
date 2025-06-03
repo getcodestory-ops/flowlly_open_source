@@ -17,7 +17,8 @@ export function usePlatformChat(
 ) {
 	const { toast } = useToast();
 	const queryClient = useQueryClient();
-	const [chatInput, setChatInput] = useState<string>("");
+	const chatInput = useChatStore((state) => state.chatInput);
+	const setChatInput = useChatStore((state) => state.setChatInput);
 	const session = useStore((state) => state.session);
 	const [googleSearch, setGoogleSearch] = useState(false);
 	const activeProject = useStore((state) => state.activeProject);
