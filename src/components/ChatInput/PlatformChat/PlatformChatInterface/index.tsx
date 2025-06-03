@@ -32,7 +32,6 @@ export default function PlatformChatInterface({
 		setChatInput,
 		chatInput,
 		session,
-		currentTaskId,
 		isWaitingForResponse,
 		googleSearch,
 		setGoogleSearch,
@@ -314,11 +313,9 @@ export default function PlatformChatInterface({
 						chatContainerRef={chatContainerRef}
 						chatTarget={chatTarget}
 						chats={chats}
-						currentTaskId={currentTaskId}
 						messageRefs={messageRefs}
 						onApplyChanges={handleApplyChanges}
 						onCopyContent={copyFormattedContent}
-						session={session}
 					/>
 					<div className="sticky bottom-0 px-4 py-3 bg-white border-t border-slate-100 backdrop-blur-sm">
 						{activeProject && (

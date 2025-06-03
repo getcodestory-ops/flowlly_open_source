@@ -159,7 +159,7 @@ const InteractiveChatPanel = () : React.ReactNode => {
 		removeTab(tabId);
 	};
 
-	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "wav", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", ".xlsx", ".docx", ".doc", "docx", "doc", "xlsx"];
+	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "wav", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", ".xlsx", ".docx", ".doc", "docx", "doc", "xlsx", "md"];
 
 	const handleFileNameEdit = async(tabId: string, newName: string) => {
 		if (!session || !activeProject) return;
@@ -426,10 +426,14 @@ const InteractiveChatPanel = () : React.ReactNode => {
 						{inLineViewableExtensions.includes(getFileExtension(activeTab.filename)) && (
 							<>
 								{getCurrentViewMode(activeTab.id) === "original" ? (
-									<InlineDocumentViewer 
-										fileExtension={getFileExtension(activeTab.filename)} 
-										resourceId={activeTab.resourceId}
-									/>
+									getFileExtension(activeTab.filename) === "md" ? (
+										<ResourceTextViewer resource_id={activeTab.resourceId} />
+									) : (
+										<InlineDocumentViewer 
+											fileExtension={getFileExtension(activeTab.filename)} 
+											resourceId={activeTab.resourceId}
+										/>
+									)
 								) : (
 									<ResourceTextViewer resource_id={activeTab.resourceId} />
 								)}

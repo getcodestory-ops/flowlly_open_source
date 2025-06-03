@@ -2,10 +2,7 @@
 import PlatformChatInterface from "./PlatformChatInterface";
 import { useState, useEffect } from "react";
 import {
-	MessageSquare,
-	History,
-	Settings,
-	Plus,
+	PanelRight,
 	PenBox,
 	Pencil,
 } from "lucide-react";
@@ -14,16 +11,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getPlatformChatEntities } from "@/api/agentRoutes";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Slider } from "@/components/ui/slider";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import {
 	Tooltip,
 	TooltipContent,
@@ -48,65 +35,6 @@ const titleMap: Record<string, string> = {
 	workflow: " ",
 };
 
-
-
-// Updated ChatSettings component to use state
-const ChatSettings = ({
-	selectedModel,
-	setSelectedModel,
-	includeContext,
-	setIncludeContext,
-}: {
-  selectedModel: string;
-  setSelectedModel: (model: string) => void;
-  includeContext: boolean;
-  setIncludeContext: (include: boolean) => void;
-}) => (
-	<div className="p-4">
-		<h3 className="text-md font-medium mb-4">Chat Settings</h3>
-		<div className="space-y-4">
-			<div>
-				<Label className="block text-sm font-medium mb-1">Model</Label>
-				<Select
-					onValueChange={(value) => setSelectedModel(value)}
-					value={selectedModel}
-				>
-					<SelectTrigger>
-						<SelectValue placeholder="Select a model" />
-					</SelectTrigger>
-					<SelectContent>
-						{models.map((model) => (
-							<SelectItem key={model.id} value={model.id}>
-								{model.name}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-			</div>
-			<div>
-				<Label className="block text-sm font-medium mb-1">Temperature</Label>
-				<Slider
-					className="w-full"
-					defaultValue={[0.7]}
-					max={1}
-					min={0}
-					step={0.1}
-				/>
-			</div>
-			<div className="flex items-center">
-				<Checkbox
-					checked={includeContext}
-					className="mr-2"
-					id="memory"
-					onCheckedChange={(checked) => setIncludeContext(checked as boolean)}
-				/>
-				<Label className="text-sm" htmlFor="memory">
-          Include project context
-				</Label>
-			</div>
-		</div>
-	</div>
-);
 
 
 
@@ -235,15 +163,6 @@ export default function PlatformChatComponent({
 
 	const renderMainContent = () => {
 		switch (activeTab) {
-			case "settings":
-				return (
-					<ChatSettings
-						includeContext={includeContext}
-						selectedModel={selectedModel}
-						setIncludeContext={setIncludeContext}
-						setSelectedModel={setSelectedModel}
-					/>
-				);
 			case "chat":
 			default:
 				return (
@@ -299,22 +218,6 @@ export default function PlatformChatComponent({
 											</Button>
 										</TooltipTrigger>
 										<TooltipContent side="right">New Chat</TooltipContent>
-									</Tooltip>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<Button
-												className={`w-full py-1 px-2 rounded flex items-center justify-center ${
-													activeTab === "settings"
-														? "bg-gray-50 text-gray-900"
-														: "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
-												}`}
-												onClick={() => handleTabClick("settings")}
-												variant="ghost"
-											>
-												<Settings size={16} />
-											</Button>
-										</TooltipTrigger>
-										<TooltipContent side="right">Settings</TooltipContent>
 									</Tooltip>
 								</div>
 							</div>
@@ -443,22 +346,6 @@ export default function PlatformChatComponent({
 												>
 													<PenBox size={16} />
 													<span className="ml-2 text-xs">New Chat</span>
-												</Button>
-											</TooltipTrigger>
-										</Tooltip>
-										<Tooltip>
-											<TooltipTrigger asChild>
-												<Button
-													className={`w-full py-1 px-2 rounded flex items-center justify-start ${
-														activeTab === "settings"
-															? "bg-gray-50 text-gray-900"
-															: "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
-													}`}
-													onClick={() => handleTabClick("settings")}
-													variant="ghost"
-												>
-													<Settings size={16} />
-													<span className="ml-2 text-xs">Settings</span>
 												</Button>
 											</TooltipTrigger>
 										</Tooltip>

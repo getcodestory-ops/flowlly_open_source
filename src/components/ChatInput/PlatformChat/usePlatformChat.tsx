@@ -54,7 +54,6 @@ export function usePlatformChat(
 				variant: "destructive",
 			});
 			setIsWaitingForResponse(false);
-			setCurrentTaskId(null);
 			isActivelySubmittingRef.current = false;
 			
 			// Remove the last user message if API call failed
@@ -83,9 +82,23 @@ export function usePlatformChat(
 				return;
 			}
 
-			// Set waiting state to true when we're expecting a response
+			// Add a stream message to the chat instead of managing currentTaskId
+			const streamMessage: AgentChat = {
+				id: (Date.now() + 1).toString(), // Use a different timestamp to avoid conflicts
+				sender: "Flowlly",
+				receiver: "User",
+				project_id: activeProject?.project_id || "",
+				message: {
+					type: "stream",
+					streaming_key: data.agent_response,
+					role: "assistant",
+				},
+				created_at: new Date().toISOString(),
+			};
+
+			// Add the stream message to local chats
+			setLocalChats([...localChats, streamMessage]);
 			setIsWaitingForResponse(true);
-			setCurrentTaskId(data.agent_response);
 		},
 	});
 
@@ -100,175 +113,32 @@ export function usePlatformChat(
 		enabled: !!session && !!activeChatEntity?.id,
 	});
 
-
 	useEffect(() => {
 		if (serverChats && isServerChatsSuccess) {
 			// Only load server chats if we're not actively submitting a new message
 			// This prevents server data from overwriting our manually managed local state
-			if (!isActivelySubmittingRef.current && !isWaitingForResponse && !currentTaskId) {
+			if (!isActivelySubmittingRef.current && !isWaitingForResponse) {
 				setLocalChats(serverChats);
 				
-				// Check if the last message appears to be a streaming message that we should resume
+				// Check if the last message is a streaming message that we should resume
 				if (serverChats.length > 0) {
 					const lastMessage = serverChats[serverChats.length - 1];
 					
 					// Check if last message is from agent and is a streaming message
 					if (lastMessage.sender !== "User" && typeof lastMessage.message === "object" && lastMessage.message !== null) {
-						// Check if it's a streaming message with proper type and streaming_key
 						if (lastMessage.message.type === "stream" && lastMessage.message.streaming_key) {
-							// Set this as the current task ID to resume streaming/polling
-							setCurrentTaskId(lastMessage.message.streaming_key);
 							setIsWaitingForResponse(true);
 						}
 					}
 				}
 			}
 		}
-	}, [serverChats, isServerChatsSuccess, setLocalChats, isWaitingForResponse, currentTaskId]);
+	}, [serverChats, isServerChatsSuccess, setLocalChats, isWaitingForResponse]);
 
 	// Reset streaming state when switching to a different chat entity
 	useEffect(() => {
-		// When activeChatEntity changes, only reset streaming state if we're switching to a different chat
-		// and not returning to the same chat entity
-		// This preserves streaming state when switching between chats
 		setIsWaitingForResponse(false);
-		setCurrentTaskId(null);
 	}, [activeChatEntity?.id]);
-
-	// Check task status periodically to know when to update
-	useEffect(() => {
-		if (!currentTaskId || !session) return;
-
-		let isUnmounted = false;
-		let pollCount = 0;
-		const MAX_POLL_ATTEMPTS = 150; // 5 minutes at 2-second intervals
-		let timeoutId: NodeJS.Timeout;
-
-		const checkTaskStatus = async() => {
-			try {
-				// Prevent infinite polling
-				if (pollCount >= MAX_POLL_ATTEMPTS) {
-					console.warn(`Polling timeout for task ${currentTaskId} after ${MAX_POLL_ATTEMPTS} attempts`);
-					if (!isUnmounted) {
-						setCurrentTaskId(null);
-						setIsWaitingForResponse(false);
-						toast({
-							title: "Request Timeout",
-							description: "The request is taking longer than expected. Please try again.",
-							variant: "destructive",
-						});
-					}
-					return;
-				}
-
-				pollCount++;
-				const response = await getTaskStatus(session, currentTaskId);
-
-				if (isUnmounted) return;
-
-				// Validate response structure
-				if (!response || typeof response.status !== "string") {
-					console.error("Invalid response structure from getTaskStatus:", response);
-					if (!isUnmounted) {
-						setCurrentTaskId(null);
-						setIsWaitingForResponse(false);
-						toast({
-							title: "Error",
-							description: "Invalid response from server",
-							variant: "destructive",
-						});
-					}
-					return;
-				}
-
-				if (response.status === "completed" && response.result) {
-					setTimeout(() => {
-						// Only update if we're still on the same chat entity that was streaming
-						const currentActiveChatEntity = useStore.getState().activeChatEntity;
-						if (currentActiveChatEntity?.id === activeChatEntity?.id) {
-							// Get the latest state from the store
-							const currentLocalChats = useStore.getState().localChats;
-							
-							const updatedChats = [...currentLocalChats, ...response.result];
-
-							// Update the store with the properly formatted chats from task result
-							setLocalChats(updatedChats);
-
-							// Sync with server query cache to keep it consistent
-							queryClient.setQueryData(
-								["agentChats", activeChatEntity?.id],
-								() => updatedChats,
-							);
-						}
-
-						setCurrentTaskId(null);
-						// Reset waiting state after response is received
-						setIsWaitingForResponse(false);
-					}, 300); // Small delay to ensure smooth transition
-				} else if (
-					response.status === "pending" ||
-					response.status === "processing"
-				) {
-					// Continue polling if still in progress
-					timeoutId = setTimeout(checkTaskStatus, 2000);
-				} else if (response.status === "failed" || response.status === "error") {
-					// Handle failure
-					toast({
-						title: "Error",
-						description: "Failed to process your request",
-						variant: "destructive",
-					});
-					setCurrentTaskId(null);
-					setIsWaitingForResponse(false);
-				} else {
-					// Handle unknown status
-					console.warn(`Unknown task status: ${response.status}`);
-					if (!isUnmounted) {
-						setCurrentTaskId(null);
-						setIsWaitingForResponse(false);
-						toast({
-							title: "Error",
-							description: `Unknown status: ${response.status}`,
-							variant: "destructive",
-						});
-					}
-				}
-			} catch (error) {
-				console.error("Error checking task status:", error);
-				if (!isUnmounted) {
-					// Don't immediately fail on network errors, but limit retries
-					if (pollCount < 3) {
-						timeoutId = setTimeout(checkTaskStatus, 5000); // Longer delay on errors
-					} else {
-						setCurrentTaskId(null);
-						setIsWaitingForResponse(false);
-						toast({
-							title: "Network Error",
-							description: "Failed to check task status. Please try again.",
-							variant: "destructive",
-						});
-					}
-				}
-			}
-		};
-
-		checkTaskStatus();
-
-		return () => {
-			isUnmounted = true;
-			if (timeoutId) {
-				clearTimeout(timeoutId);
-			}
-		};
-	}, [
-		currentTaskId,
-		session,
-		activeChatEntity?.id,
-		queryClient,
-		activeProject?.project_id,
-		setLocalChats,
-		toast,
-	]);
 
 	const createChatEntityMutation = useMutation({
 		mutationFn: async(messageContent: string) => {
@@ -330,8 +200,7 @@ export function usePlatformChat(
 		// Mark as actively submitting to prevent server data overwrites
 		isActivelySubmittingRef.current = true;
 
-		// Reset currentTaskId before submitting a new chat request
-		setCurrentTaskId(null);
+		// Reset waiting state before submitting a new chat request
 		setIsWaitingForResponse(false);
 
 		// Add the user message to local chats immediately for better UX
@@ -417,13 +286,11 @@ export function usePlatformChat(
 		chatInput,
 		onOpen,
 		session,
-		currentTaskId,
 		isWaitingForResponse,
 		selectedModel,
 		includeContext,
 		googleSearch,
 		setGoogleSearch,
-		setCurrentTaskId,
 		setIsWaitingForResponse,
 	};
 }
