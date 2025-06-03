@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { AgentMessage } from "@/types/agentChats";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
-import StreamComponent from "../StreamResponse/StreamAgentChat";
+import StreamMessageWrapper from "../StreamResponse/StreamMessageWrapper";
 
 import {
 	FileText,
@@ -83,32 +83,19 @@ function AgentMessageInteractiveView({ id, message }: { id?: string, message: Ag
 		if (typeof message === "object" && message.type === "stream" && message.streaming_key && isLastMessage) {
 			const session = useStore.getState().session;
 			
-			return (
-				<div className="w-full">
-					<div className="text-xs text-slate-400 mb-1 pl-1">
-						Continuing response...
-					</div>
-					<div className="text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
-						{session && (
-							<StreamComponent
-								authToken={session.access_token}
-								key={message.streaming_key}
-								streamingKey={message.streaming_key}
-							/>
-						)}
-					</div>
-				</div>
-			);
+			return session ? (
+				<StreamMessageWrapper
+					authToken={session.access_token}
+					messageId={id || ""}
+					streamingKey={message.streaming_key}
+				/>
+			) : null;
 		}
 
 		// If it's a streaming message but not the last one, show a placeholder
 		if (typeof message === "object" && message.type === "stream" && message.streaming_key && !isLastMessage) {
 			return (
-				<div className="w-full">
-					<div className="text-xs text-slate-400 mb-1 pl-1 italic">
-						Response was streaming here (completed)
-					</div>
-				</div>
+				<></>
 			);
 		}
 

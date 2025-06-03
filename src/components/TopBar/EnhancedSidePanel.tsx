@@ -107,23 +107,23 @@ export function EnhancedSidePanel(): React.ReactNode {
 	}, [userProjects.length, userProjects, setActiveProject, params?.projectId]);
 
 	// Fetch members for active project
-	// const { data: membersData } = useQuery({
-	// 	queryKey: ["memberList", session, activeProject],
-	// 	queryFn: async() => {
-	// 		if (!session || !activeProject) {
-	// 			return Promise.reject("No session or active project");
-	// 		}
-	// 		return getMembers(session, activeProject.project_id);
-	// 	},
-	// 	enabled: !!session?.access_token && !!activeProject?.project_id,
-	// });
+	const { data: membersData } = useQuery({
+		queryKey: ["memberList", session, activeProject],
+		queryFn: async() => {
+			if (!session || !activeProject) {
+				return Promise.reject("No session or active project");
+			}
+			return getMembers(session, activeProject.project_id);
+		},
+		enabled: !!session?.access_token && !!activeProject?.project_id,
+	});
 
 	// Set members when data is loaded
-	// useEffect(() => {
-	// 	if (membersData && membersData.data.length > 0) {
-	// 		setMembers(membersData.data);
-	// 	}
-	// }, [membersData, setMembers]);
+	useEffect(() => {
+		if (membersData && membersData.data.length > 0) {
+			setMembers(membersData.data);
+		}
+	}, [membersData, setMembers]);
 
 	// Fetch chat entities for active project
 	// const { data: chatEntitities } = useQuery({

@@ -13,6 +13,7 @@ interface ChatMessageProps {
   applyingChanges: { [key: number]: boolean };
   onApplyChanges: (index: number) => void;
   messageRef: React.RefObject<HTMLDivElement>;
+  chatId?: string;
 }
 
 export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({
@@ -24,6 +25,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({
 	applyingChanges,
 	onApplyChanges,
 	messageRef,
+	chatId,
 }) => {
 	const isUserMessage = sender.toLowerCase() === "user";
 
@@ -48,7 +50,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({
 					</div>
 				)}
 				<div ref={messageRef}>
-					{message && <AgentMessageInteractiveView message={message} />}
+					{message && <AgentMessageInteractiveView id={chatId} message={message} />}
 				</div>
 				{!isUserMessage && (
 					<div className="mt-1 flex justify-between items-center">
@@ -99,6 +101,7 @@ ChatMessage.propTypes = {
 	applyingChanges: PropTypes.any.isRequired,
 	onApplyChanges: PropTypes.func.isRequired,
 	messageRef: PropTypes.any.isRequired,
+	chatId: PropTypes.string,
 };
 
 // Add display name for better debugging

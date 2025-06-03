@@ -2,7 +2,6 @@ import React, { createRef, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ChatMessage from "./ChatMessage";
-import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 
 interface ChatMessageListProps {
   chats: any[];
@@ -14,8 +13,6 @@ interface ChatMessageListProps {
   chatTarget: string;
   applyingChanges: { [key: number]: boolean };
   onApplyChanges: (index: number) => void;
-  currentTaskId: string | null;
-  session: any;
 }
 
 export const ChatMessageList: React.FC<ChatMessageListProps> = React.memo(({
@@ -26,8 +23,6 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = React.memo(({
 	chatTarget,
 	applyingChanges,
 	onApplyChanges,
-	currentTaskId,
-	session,
 }) => {
 	// Ensure refs are created for each message
 	useEffect(() => {
@@ -40,25 +35,13 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = React.memo(({
 		}
 	}, [chats, messageRefs]);
 
-	// Keep track of the previously seen task ID to prevent duplicates
-	const prevTaskIdRef = useRef<string | null>(null);
-	
-	// Only show streaming component if the task ID has changed
-	const shouldShowStream = currentTaskId && currentTaskId !== prevTaskIdRef.current;
-	
-	// Update the ref when the task ID changes
-	useEffect(() => {
-		if (currentTaskId) {
-			prevTaskIdRef.current = currentTaskId;
-		}
-	}, [currentTaskId]);
-
 	return (
 		<ScrollArea className="flex-grow px-1 sm:px-3 pb-4" ref={chatContainerRef}>
 			<div className="pt-2">
 				{chats.map((chat, index) => (
 					<ChatMessage
 						applyingChanges={applyingChanges}
+						chatId={chat.id}
 						chatTarget={chatTarget}
 						index={index}
 						key={index}
@@ -69,26 +52,6 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = React.memo(({
 						sender={chat.sender}
 					/>
 				))}
-				{shouldShowStream && session && (
-					<div className="block w-full mb-4">
-						<div className="w-full bg-white py-3 px-2 border-b border-slate-100 min-h-[40px] transition-all duration-200">
-							<div className="text-xs text-slate-400 mb-1 pl-1">
-                Flowlly AI
-							</div>
-							<div className="text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
-								<StreamComponent
-									authToken={session.access_token}
-									key={currentTaskId}
-									onStreamComplete={(content) => {
-										// Reset the prevTaskIdRef when stream is complete
-										prevTaskIdRef.current = null;
-									}}
-									streamingKey={currentTaskId}
-								/>
-							</div>
-						</div>
-					</div>
-				)}
 			</div>
 		</ScrollArea>
 	);
@@ -103,8 +66,6 @@ ChatMessageList.propTypes = {
 	chatTarget: PropTypes.string.isRequired,
 	applyingChanges: PropTypes.any.isRequired,
 	onApplyChanges: PropTypes.func.isRequired,
-	currentTaskId: PropTypes.string,
-	session: PropTypes.any,
 };
 
 // Add display name for better debugging
