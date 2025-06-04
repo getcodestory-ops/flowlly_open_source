@@ -61,6 +61,7 @@ export const talkToAgent = async({
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${session.access_token}`,
 		},
+		timeout: 5000,
 	});
 	return response.data;
 };

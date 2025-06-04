@@ -41,6 +41,7 @@ export function usePlatformChat(
 
 	const { mutate, isPending, data } = useMutation({
 		mutationFn: talkToAgent,
+		retry: 2,
 		onError: (error) => {
 			console.error("Chat submission error:", error);
 			toast({
@@ -50,7 +51,6 @@ export function usePlatformChat(
 			});
 			setIsWaitingForResponse(false);
 			
-			// Remove the last user message if API call failed
 			if (localChats.length > 0 && localChats[localChats.length - 1].sender === "User") {
 				setLocalChats(localChats.slice(0, -1));
 			}
@@ -63,7 +63,7 @@ export function usePlatformChat(
 					description: "Invalid response from server. Please try again.",
 					variant: "destructive",
 				});
-				setIsWaitingForResponse(false);
+				
 				
 				const ErrorMessage: AgentChat = {
 					id: (Date.now() + 1).toString(), 
@@ -74,6 +74,7 @@ export function usePlatformChat(
 					created_at: new Date().toISOString(),
 				};
 				setLocalChats([...localChats, ErrorMessage]);
+				setIsWaitingForResponse(false);
 				return;
 			}
 
@@ -98,14 +99,13 @@ export function usePlatformChat(
 	const { data: serverChats, isSuccess: isServerChatsSuccess } = useQuery({
 		queryKey: ["agentChats", activeChatEntity?.id, isWaitingForResponse],
 		queryFn: async() => {
-			if (isWaitingForResponse) return localChats;
 			if (!session || !activeChatEntity?.id) return [];
 			if (isTokenExpired(session)) return [];
 			const response = await getAgentChats(session, activeChatEntity.id);
 			setLocalChats(response);
 			return response;
 		},
-		enabled: !!session && !!activeChatEntity?.id,
+		enabled: !!session && !!activeChatEntity?.id && !isWaitingForResponse,
 	});
 
 
