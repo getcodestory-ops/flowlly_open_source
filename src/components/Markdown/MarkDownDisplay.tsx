@@ -219,6 +219,7 @@ const VALID_DIRECTIVES = [
 	"append_to_project_document",
 	"create_new_project_document",
 	"programming_assistant",
+	"save_checkpoint",
 	"uuid"];
 
 // Add Attachment interface
@@ -571,6 +572,12 @@ function remarkDirectiveComponents() {
 							content: "Assistant",
 						};
 						break;
+					case "save_checkpoint":
+						data.hName = "custom-save-checkpoint";
+						data.hProperties = {
+							content: "Saving Checkpoint",
+						};
+						break;
 						
 						
 					default:
@@ -660,6 +667,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 		"custom-uuid": ({ content }: { content: string }) => (
 			<UUIDViewer content={content} />
 		),
+		"custom-save-checkpoint": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Save className="w-4 h-4" />} />,
 		// Use a normal paragraph component for li elements
 		li: ({ children, ...props }: any) => {
 			return <li {...props}>{children}</li>;
