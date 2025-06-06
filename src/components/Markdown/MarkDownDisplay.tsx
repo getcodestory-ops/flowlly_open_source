@@ -213,8 +213,8 @@ const VALID_DIRECTIVES = [
 	"expose_sandbox_port",
 	"mark_task_complete",
 	"programming_expert",
-	"visually_examine_project_document_file",
-	"visually_examine_file_from_sandbox",
+	"examine_project_document_file",
+	"examine_file_from_sandbox",
 	"edit_project_document",
 	"append_to_project_document",
 	"create_new_project_document",
@@ -530,13 +530,13 @@ function remarkDirectiveComponents() {
 							content: "Programming Expert",
 						};
 						break;
-					case "visually_examine_project_document_file":
+					case "examine_project_document_file":
 						data.hName = "custom-visually-examine-project-document-file";
 						data.hProperties = {
 							content: "Visually Examining Project Document File",
 						};
 						break;
-					case "visually_examine_file_from_sandbox":
+					case "examine_file_from_sandbox":
 						data.hName = "custom-visually-examine-file-from-sandbox";
 						data.hProperties = {
 							content: "Visually Examining File from Sandbox",

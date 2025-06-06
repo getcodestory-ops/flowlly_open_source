@@ -56,8 +56,8 @@ export default function PlatformChatComponent({
   onContentUpdate?: (newContent: string) => void;
 }) {
 	const { sidePanel } = useChatStore();
-	const { setSelectedContexts } = useChatStore();
 	const { setIsWaitingForResponse } = useChatStore();
+	const { setSelectedContexts } = useChatStore();
 	const [activeTab, setActiveTab] = useState<"chat" | "settings">("chat");
 	const { toast } = useToast();
 	const [selectedModel, setSelectedModel] = useState<string>("gemini-2.5-pro-preview-05-06");
@@ -115,6 +115,7 @@ export default function PlatformChatComponent({
 		setLocalChats([]);
 		setSelectedContexts("untitled", []);
 		setActiveTab("chat");
+		setIsWaitingForResponse(false);
 	};
 
 	const handleSelectChatEntity = (chatEntity: any) => {
