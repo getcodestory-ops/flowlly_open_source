@@ -168,6 +168,19 @@ export function usePlatformChat(
 		setIsWaitingForResponse(true);
 
 
+
+
+		let chatEntityId: string = activeChatEntity?.id || "untitled";
+		const currentContexts = selectedContexts[chatEntityId] || [];
+		if (currentContexts.length > 0) {
+			const attachmentsJson = JSON.stringify(currentContexts.map((ctx) => ({
+				name: ctx.name,
+				uuid: ctx.id,
+				type: ctx.extension,
+			})));
+			message = message + "\n\n::attachments[" + attachmentsJson + "]\n";
+		}
+
 		const userMessage: AgentChat = {
 			id: Date.now().toString(), // Use a temporary ID
 			sender: "User",
@@ -183,17 +196,6 @@ export function usePlatformChat(
 		setLocalChats([...localChats, userMessage]);
 
 		setChatInput("");
-
-		let chatEntityId: string = activeChatEntity?.id || "untitled";
-		const currentContexts = selectedContexts[chatEntityId] || [];
-		if (currentContexts.length > 0) {
-			const attachmentsJson = JSON.stringify(currentContexts.map((ctx) => ({
-				name: ctx.name,
-				uuid: ctx.id,
-				type: ctx.extension,
-			})));
-			message = message + "\n\n::attachments[" + attachmentsJson + "]\n";
-		}
 
 		if (chatEntityId === "untitled") {
 			try {
