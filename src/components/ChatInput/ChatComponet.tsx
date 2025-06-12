@@ -9,17 +9,17 @@ import { useEffect, useState } from "react";
 
 export default function ChatComponent() : JSX.Element {
 	const activeProject = useStore((state) => state.activeProject);
-	const { tabs } = useChatStore();
+	const { tabs, chatDirectiveType, setChatDirectiveType } = useChatStore();
 	const hasOpenTabs = tabs.length > 0;
 	const [panelWidth, setPanelWidth] = useState(50); // Percentage width for the chat panel
 	const [isDragging, setIsDragging] = useState(false);
 
-	const handleMouseDown = (e: React.MouseEvent) => {
+	const handleMouseDown = (e: React.MouseEvent): void => {
 		e.preventDefault();
 		setIsDragging(true);
 	};
 
-	const handleMouseMove = (e: MouseEvent) => {
+	const handleMouseMove = (e: MouseEvent): void => {
 		if (!isDragging) return;
 		
 		const container = document.querySelector(".resizable-container") as HTMLElement;
@@ -33,7 +33,7 @@ export default function ChatComponent() : JSX.Element {
 		setPanelWidth(constrainedWidth);
 	};
 
-	const handleMouseUp = () => {
+	const handleMouseUp = (): void => {
 		setIsDragging(false);
 	};
 

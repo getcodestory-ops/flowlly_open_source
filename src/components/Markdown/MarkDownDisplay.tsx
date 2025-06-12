@@ -1,10 +1,10 @@
 // MarkdownRenderer.tsx
-import React, { useRef } from "react";
+import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkDirective from "remark-directive";
 import type { Components } from "react-markdown";
-import { Play, Info, Eye, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch, NotebookPen, FileOutput, FileInput, FilePlus, Terminal, Database, Network, FolderOpen, BookOpen, Brain, File, ExternalLink } from "lucide-react";
+import { Play, Info, Eye, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch, NotebookPen, FileOutput, FileInput, FilePlus, Terminal, Database, Network, FolderOpen, BookOpen, Brain, File, ExternalLink, Paperclip, ListTodo } from "lucide-react";
 import { visit } from "unist-util-visit";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -220,7 +220,9 @@ const VALID_DIRECTIVES = [
 	"create_new_project_document",
 	"programming_assistant",
 	"save_checkpoint",
-	"uuid"];
+	"instructions",
+	"uuid",
+	"form"];
 
 // Add Attachment interface
 interface Attachment {
@@ -578,8 +580,18 @@ function remarkDirectiveComponents() {
 							content: "Saving Checkpoint",
 						};
 						break;
-						
-						
+					case "form":
+						data.hName = "custom-form";
+						data.hProperties = {
+							content: node.children?.[0]?.value || JSON.stringify(node.attributes || {}),
+						};
+						break;
+					case "instructions":
+						data.hName = "custom-instructions";
+						data.hProperties = {
+							content: node.children?.[0]?.value || "",
+						};
+						break;
 					default:
 						// Use the directive name directly if not mapped
 						data.hName = `custom-${hName}`;
@@ -594,6 +606,81 @@ function remarkDirectiveComponents() {
 // Extend the Components type to allow our custom components
 type CustomMarkdownComponents = Components & {
 	[key: string]: React.ComponentType<any>;
+};
+
+// Custom component for form display
+interface FormProps {
+	type: "input" | "textarea" | "static" | "attachments";
+	label: string;
+	visibility: "hidden" | "show";
+}
+
+const FormComponent: React.FC<{ config: string }> = ({ config }) => {
+	try {
+		const formConfig: FormProps = JSON.parse(config);
+		const { type, label, visibility } = formConfig;
+
+		if (visibility === "hidden") {
+			return null;
+		}
+
+		const renderFormElement = () => {
+			switch (type) {
+				case "input":
+					return (
+						<input
+							className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+							placeholder="Enter text..."
+							type="text"
+						/>
+					);
+				case "textarea":
+					return (
+						<textarea
+							className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
+							placeholder="Enter text..."
+							rows={4}
+						/>
+					);
+				case "static":
+					return (
+						<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-700">
+							{label}
+						</div>
+					);
+				case "attachments":
+					return (
+						<div className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50">
+							<Paperclip className="w-4 h-4 text-gray-500" />
+							<span className="text-gray-600">Click to attach files</span>
+						</div>
+					);
+				default:
+					return (
+						<div className="px-3 py-2 bg-red-50 border border-red-200 rounded-md text-red-700">
+							Invalid form type: {type}
+						</div>
+					);
+			}
+		};
+
+		return (
+			<div className="my-3 w-full max-w-md">
+				{type !== "static" && (
+					<label className="block text-sm font-medium text-gray-700 mb-2">
+						{label}
+					</label>
+				)}
+				{renderFormElement()}
+			</div>
+		);
+	} catch (error) {
+		return (
+			<div className="my-3 px-3 py-2 bg-red-50 border border-red-200 rounded-md text-red-700">
+				Invalid form configuration: {config}
+			</div>
+		);
+	}
 };
 
 const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
@@ -668,6 +755,8 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 			<UUIDViewer content={content} />
 		),
 		"custom-save-checkpoint": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Save className="w-4 h-4" />} />,
+		"custom-form": ({ content }: { content: string }) => <FormComponent config={content} />,
+		"custom-instructions": ({ content }: { content: string }) => <CustomViewer content={content} icon={<ListTodo className="w-4 h-4" />} />,
 		// Use a normal paragraph component for li elements
 		li: ({ children, ...props }: any) => {
 			return <li {...props}>{children}</li>;

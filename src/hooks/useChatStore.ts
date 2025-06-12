@@ -48,6 +48,8 @@ interface ChatStore {
 	setContextFolder: (folderId: string | null, folderName: string) => void;
 	chatInput: string;
 	setChatInput: (input: string) => void;
+	chatDirectiveType: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "none";
+	setChatDirectiveType: (directiveType: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "none") => void;
 }
 
 const generateTabId = () => `tab_${Date.now()}_${Math.random().toString(36)
@@ -162,6 +164,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	setContextFolder: (folderId, folderName) => set({ contextFolder: { id: folderId, name: folderName } }),
 	chatInput: "",
 	setChatInput: (input) => set({ chatInput: input }),
+	chatDirectiveType: "chat",
+	setChatDirectiveType: (directiveType) => set({ chatDirectiveType: directiveType }),
 }));
 
 
