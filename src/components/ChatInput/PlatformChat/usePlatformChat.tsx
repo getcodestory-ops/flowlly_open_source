@@ -24,6 +24,7 @@ export function usePlatformChat(
 	const activeProject = useStore((state) => state.activeProject);
 	const activeChatEntity = useStore((state) => state.activeChatEntity);
 	const appendChatEntity = useStore((state) => state.appendChatEntity);
+	const chatDirectiveType = useChatStore((state) => state.chatDirectiveType);
 	const selectedContexts = useChatStore((state) => state.selectedContexts);
 	const contextFolder = useChatStore((state) => state.contextFolder);
 	const setIsWaitingForResponse = useChatStore((state) => state.setIsWaitingForResponse);
@@ -41,7 +42,6 @@ export function usePlatformChat(
 
 	const { mutate, isPending, data } = useMutation({
 		mutationFn: talkToAgent,
-		retry: 2,
 		onError: (error) => {
 			console.error("Chat submission error:", error);
 			toast({
@@ -172,7 +172,7 @@ export function usePlatformChat(
 
 		let chatEntityId: string = activeChatEntity?.id || "untitled";
 		const currentContexts = selectedContexts[chatEntityId] || [];
-		if (currentContexts.length > 0) {
+		if (currentContexts.length > 0 && chatDirectiveType === "chat") {
 			const attachmentsJson = JSON.stringify(currentContexts.map((ctx) => ({
 				name: ctx.name,
 				uuid: ctx.id,

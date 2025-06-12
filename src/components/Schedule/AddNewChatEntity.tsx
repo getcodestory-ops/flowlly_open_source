@@ -24,7 +24,7 @@ function AddNewChatEntity({ onComplete }: { onComplete?: () => void }) {
 	const [chatName, setChatName] = useState("");
 	const [chatDescription, setChatDescription] = useState("");
 	const queryClient = useQueryClient();
-	const { setSelectedContexts } = useChatStore();
+	const { setSelectedContexts, setChatDirectiveType } = useChatStore();
 
 	const mutation = useMutation({
 		mutationFn: () => {
@@ -62,6 +62,7 @@ function AddNewChatEntity({ onComplete }: { onComplete?: () => void }) {
 			onClick={() => {
 				setActiveChatEntity(null);
 				setSelectedContexts("untitled", []);
+				setChatDirectiveType("chat");
 				if (onComplete) {
 					onComplete();
 				}

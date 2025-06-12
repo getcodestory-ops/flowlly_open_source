@@ -2,7 +2,6 @@
 import PlatformChatInterface from "./PlatformChatInterface";
 import { useState, useEffect } from "react";
 import {
-	PanelRight,
 	PenBox,
 	Pencil,
 } from "lucide-react";
@@ -21,12 +20,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { useChatStore } from "@/hooks/useChatStore";
 import { updateChatName } from "@/api/agentRoutes";
-const models = [
-	{ id: "gemini-2.5-pro-preview-05-06", name: "Gemini Pro 2.5 (latest)" },
-	{ id: "gemini-2.0-flash", name: "Gemini Flash" },
-	{ id: "claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
-	{ id: "gpt-4o", name: "GPT-4.0" },
-];
+
 
 const titleMap: Record<string, string> = {
 	document: "Source for answers",
@@ -56,7 +50,7 @@ export default function PlatformChatComponent({
   onContentUpdate?: (newContent: string) => void;
 }) {
 	const { sidePanel } = useChatStore();
-	const { setIsWaitingForResponse } = useChatStore();
+	const { setIsWaitingForResponse, setChatDirectiveType } = useChatStore();
 	const { setSelectedContexts } = useChatStore();
 	const [activeTab, setActiveTab] = useState<"chat" | "settings">("chat");
 	const { toast } = useToast();
@@ -116,6 +110,7 @@ export default function PlatformChatComponent({
 		setSelectedContexts("untitled", []);
 		setActiveTab("chat");
 		setIsWaitingForResponse(false);
+		setChatDirectiveType("chat");
 	};
 
 	const handleSelectChatEntity = (chatEntity: any) => {

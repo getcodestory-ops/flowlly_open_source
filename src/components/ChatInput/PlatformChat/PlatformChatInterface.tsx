@@ -17,10 +17,10 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePlatformChat } from "./usePlatformChat";
 import { useToast } from "@/components/ui/use-toast";
-import Image from "next/image";
 import clsx from "clsx";
 import AtSelectorComponent from "./components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
+import EmptyChatInterface from "./PlatformChatInterface/components/EmptyChatInterface/EmptyChatInterface";
 // Define models for the UI
 const models = [
 	{ id: "gemini-2.5-pro-preview-05-06", name: "Gemini Pro 2.5 (latest)" },
@@ -58,15 +58,6 @@ export default function PlatformChatInterface({
 	} = usePlatformChat(folderId, chatTarget, selectedModel, includeContext);
 	const { setSidePanel, setCollapsed, contextFolder } = useChatStore();
 
-
-	const examplePrompts: string[] = [];
-
-
-
-	// Function to set chat input with an example prompt
-	const setExamplePrompt = (prompt: string) => {
-		setChatInput(prompt);
-	};
 
 	const scrollToBottom = () => {
 		if (chatContainerRef.current) {
@@ -144,89 +135,6 @@ export default function PlatformChatInterface({
 		</>
 	);
 
-
-	// Update the empty state textarea section
-	const renderEmptyStateInput = () => (
-		<div className="flex flex-col items-center px-4 py-6">
-			<div className="max-w-md w-full bg-white rounded-xl p-6 mb-6 shadow-sm">
-				<div className="text-center mb-6">
-					<Image 
-						alt="Flowlly AI" 
-						className="mx-auto mb-3" 
-						height={96} 
-						src="/logos/FlowllyGuy.png" 
-						width={96}
-					/>
-					<h3 className="text-lg font-medium text-indigo-900 mb-2">
-						Chat with Flowlly
-					</h3>
-					<p className="text-slate-500 text-sm mb-4">
-						🚀 Hey there! I&apos;m your AI assistant, ready to help with your 
-						project tasks, docs, and workflows. Lets build something awesome together! ✨
-					</p>
-				</div>
-				<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
-					{examplePrompts.length > 0 && examplePrompts.map((prompt, index) => (
-						<Button
-							className="justify-start text-left bg-white border-slate-100 hover:bg-indigo-50 hover:border-indigo-100 transition-colors text-sm"
-							key={index}
-							onClick={() => setExamplePrompt(prompt)}
-							size="sm"
-							variant="outline"
-						>
-							<span className="truncate">{prompt}</span>
-						</Button>
-					))}
-				</div>
-			</div>
-			<div className="w-full relative overflow-hidden rounded-xl bg-white border border-slate-100 shadow-sm focus-within:ring-1 focus-within:ring-indigo-300 transition-shadow">
-				<Label className="sr-only" htmlFor="empty-message">
-					Message
-				</Label>
-				<div className="absolute top-0 left-2 z-10 pt-2">
-					<AtSelectorComponent />
-				</div>
-				<Textarea
-					className="min-h-20 resize-none border-0 p-4 pl-12 mt-4 shadow-none focus-visible:ring-0 text-slate-800"
-					disabled={isPending}
-					id="empty-message"
-					onChange={(e) => setChatInput(e.target.value)}
-					onKeyDown={(e) => {
-						if (e.key === "Enter" && !e.shiftKey) {
-							e.preventDefault();
-							handleSubmit();
-						}
-					}}
-					placeholder="Type your message here..."
-					value={chatInput}
-				/>
-				<div className="flex items-center p-3 pt-0">
-					{loadDocumentPanel()}
-					<Button
-						className="ml-auto gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
-						disabled={
-							isWaitingForResponse ||
-							(!chatInput.trim())
-						}
-						onClick={handleSubmit}
-						size="sm"
-						type="submit"
-					>
-						{isWaitingForResponse ? (
-							<>
-								<Loader2 className="h-3.5 w-3.5 animate-spin" />
-							</>
-						) : (
-							<>
-								Send
-								<CornerDownLeft className="h-3.5 w-3.5" />
-							</>
-						)}
-					</Button>
-				</div>
-			</div>
-		</div>
-	);
 
 	// Create a map of refs for message content elements
 	const messageRefs = useRef<{
@@ -409,7 +317,7 @@ export default function PlatformChatInterface({
 					<div className="pt-2">
 						{chats.map((history, index) => (
 							<div className="flex flex-col gap-2" key={index}>
-								{  (typeof history.message === "string" || (history.message.function_call?.name !== "run_workflow" && history.message.function_call?.name !== "send_data_to_workflow")) && (
+								{  (typeof history.message === "string" ||  !["run_workflow", "send_data_to_workflow", "continue_conversation", "start_new_conversation"].includes(history.message.function_call?.name || "")) && (
 									<div
 										className={`${
 											history.sender.toLowerCase() === "user"
@@ -462,9 +370,15 @@ export default function PlatformChatInterface({
 					</div>
 				</ScrollArea>
 			) : (
-			// Empty state
 				<div className="flex flex-col items-center justify-center h-full">
-					{renderEmptyStateInput()}
+					<EmptyChatInterface
+						chatInput={chatInput}
+						handleSubmit={handleSubmit}
+						isPending={isPending}
+						isWaitingForResponse={isWaitingForResponse}
+						loadDocumentPanel={loadDocumentPanel}
+						setChatInput={setChatInput}
+					/>
 				</div>
 			)}
 			{/* Only show this input area when there are chats */}
