@@ -2,14 +2,14 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { CornerDownLeft, Loader2, FileSpreadsheet, Bot, FileText, FileCode } from "lucide-react";
+import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search } from "lucide-react";
 import Image from "next/image";
 import AtSelectorComponent from "../../../components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
 import BidLevelling from "./FormDirectives/BidLevelling";
 import DailyReport from "./FormDirectives/DailyReport";
 import ReportWriting from "./FormDirectives/ReportWriting";
-
+import KnowledgeManager from "./FormDirectives/KnowledgeManager";
 interface EmptyChatInterfaceProps {
 	chatInput: string;
 	setChatInput: (value: string) => void;
@@ -30,7 +30,7 @@ export default function EmptyChatInterface({
 	const { chatDirectiveType, setChatDirectiveType } = useChatStore();
 
 	const chatTypes: Array<{
-		id: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "none";
+		id: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "none";
 		title: string;
 		description: string;
 		icon: any;
@@ -60,6 +60,14 @@ export default function EmptyChatInterface({
 			icon: FileCode,
 			color: "bg-purple-50 hover:bg-purple-100 border-purple-200",
 			iconColor: "text-purple-600",
+		},
+		{
+			id: "knowledgeManager",
+			title: "Knowledge Search & Discovery",
+			description: "Search and find specific information across your project documents and folders",
+			icon: Search,
+			color: "bg-orange-50 hover:bg-orange-100 border-orange-200",
+			iconColor: "text-orange-600",
 		},
 	];
 
@@ -98,6 +106,21 @@ export default function EmptyChatInterface({
 		return (
 			<div className="flex flex-col items-center px-4 py-6">
 				<ReportWriting
+					handleSubmit={handleSubmit}
+					isPending={isPending}
+					isWaitingForResponse={isWaitingForResponse}
+					loadDocumentPanel={loadDocumentPanel}
+					setChatInput={setChatInput}
+				/>
+			</div>
+		);
+	}
+
+	// If knowledge manager is selected, show only the form
+	if (chatDirectiveType === "knowledgeManager") {
+		return (
+			<div className="flex flex-col items-center px-4 py-6">
+				<KnowledgeManager
 					handleSubmit={handleSubmit}
 					isPending={isPending}
 					isWaitingForResponse={isWaitingForResponse}
