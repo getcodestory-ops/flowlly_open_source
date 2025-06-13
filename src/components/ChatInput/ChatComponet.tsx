@@ -58,23 +58,6 @@ export default function ChatComponent() : JSX.Element {
 		};
 	}, [isDragging]);
 
-	if (!hasOpenTabs) {
-		return (
-			<div className="p-2">
-				<Toaster />
-				{activeProject && (
-					<div className="w-full">
-						<PlatformChatComponent
-							chatTarget="agent"
-							folderId={activeProject?.project_id}
-							folderName="Agent"
-						/>
-					</div>
-				)}
-			</div>
-		);
-	}
-	
 	return (
 		<div className="p-2">
 			<Toaster />
@@ -85,7 +68,7 @@ export default function ChatComponent() : JSX.Element {
 							"flex-shrink-0",
 							!isDragging && "transition-all duration-200 ease-in-out",
 						)}
-						style={{ width: `${panelWidth}%` }}
+						style={{ width: hasOpenTabs ? `${panelWidth}%` : "100%" }}
 					>
 						<PlatformChatComponent
 							chatTarget="agent"
@@ -93,27 +76,31 @@ export default function ChatComponent() : JSX.Element {
 							folderName="Agent"
 						/>
 					</div>
-					<div
-						className={clsx(
-							"w-1 bg-gray-200 hover:bg-blue-400 cursor-col-resize flex-shrink-0",
-							!isDragging && "transition-colors duration-200",
-							isDragging && "bg-blue-500",
-						)}
-						onMouseDown={handleMouseDown}
-					>
-						<div className="w-full h-full flex items-center justify-center">
-							<div className="w-0.5 h-8 bg-gray-400 rounded-full opacity-60" />
-						</div>
-					</div>
-					<div 
-						className={clsx(
-							"flex-shrink-0",
-							!isDragging && "transition-all duration-200 ease-in-out",
-						)}
-						style={{ width: `${100 - panelWidth}%` }}
-					>
-						<InteractiveChatPanel />
-					</div>
+					{hasOpenTabs && (
+						<>
+							<div
+								className={clsx(
+									"w-1 bg-gray-200 hover:bg-blue-400 cursor-col-resize flex-shrink-0",
+									!isDragging && "transition-colors duration-200",
+									isDragging && "bg-blue-500",
+								)}
+								onMouseDown={handleMouseDown}
+							>
+								<div className="w-full h-full flex items-center justify-center">
+									<div className="w-0.5 h-8 bg-gray-400 rounded-full opacity-60" />
+								</div>
+							</div>
+							<div 
+								className={clsx(
+									"flex-shrink-0",
+									!isDragging && "transition-all duration-200 ease-in-out",
+								)}
+								style={{ width: `${100 - panelWidth}%` }}
+							>
+								<InteractiveChatPanel />
+							</div>
+						</>
+					)}
 				</div>
 			)}
 		</div>
