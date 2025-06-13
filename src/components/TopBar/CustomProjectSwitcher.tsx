@@ -14,6 +14,7 @@ import {
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { Building } from "lucide-react";
 
+
 export function CustomProjectSwitcher({
 	onProjectSwitch,
 	className,
@@ -69,14 +70,18 @@ const ProjectLineItem = ({
 	const params = useParams();
 	const pathname = usePathname();
 
-	const {  setActiveProject } = useStore(
+	const {  setActiveProject, setActiveChatEntity } = useStore(
 		(state) => ({
 			setActiveProject: state.setActiveProject,
+			setActiveChatEntity: state.setActiveChatEntity,
 		}),
 	);
+
 	const switchProject = (project: ProjectEntity): void => {
 		// Update URL if needed
 		const projectId = params ? params?.projectId : null;
+		setActiveChatEntity(null);
+
 
 		if (projectId && pathname && pathname.includes(`/${projectId}/`)) {
 			const newPath = pathname.replace(
