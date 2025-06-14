@@ -8,7 +8,8 @@ import {
 	XIcon,
 	Eye,
 	Database,
-	EyeOff
+	EyeOff,
+	ChevronRight
 } from "lucide-react";
 
 import Image from "next/image";
@@ -17,6 +18,12 @@ import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/hooks/useChatStore";
 import AttachmentViewer from "./AttachmentViewer";
 import { useStore } from "@/utils/store";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@/components/ui/accordion";
 
 
 function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: { id?: string, message: AgentMessage | string, setIsWaitingForResponse: (value: boolean) => void }) : React.ReactNode {
@@ -105,11 +112,7 @@ function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: {
 		}
 
 		if (typeof message.content === "string") {
-			return (
-				<div>
-					<MarkDownDisplay content={message.content} />
-				</div>
-			);
+			return <MarkDownDisplay content={message.content} />;
 		}
 		if ("function_response" in message) {
 			const getFunctionResponse = (result: any) => {
@@ -123,7 +126,9 @@ function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: {
 							<>
 								{
 									result.body && (
-										<MarkDownDisplay content={result.body} />
+										<>
+											<MarkDownDisplay content={result.body} />
+										</>
 									)
 								}
 								{sidePanel?.type === "editor" && sidePanel?.resourceId === result.resource_id && (
@@ -201,15 +206,57 @@ function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: {
 
 					if (result.body) {
 						if (typeof result.body === "string") {
-							return<>
-								<MarkDownDisplay content={result.body} />
-								<div className="flex justify-end">
-									{result.sources && getSources(result.sources)}
-								</div>
-							</>; 
+							return (
+								<>
+									{result.log && (
+										<div className="mb-4">
+											<Accordion 
+												className="border rounded-lg"
+												collapsible
+												type="single"
+											>
+												<AccordionItem className="border-0" value="logs">
+													<AccordionTrigger className="px-4 py-3 hover:bg-gray-50 rounded-lg transition-colors">
+														<div className="flex items-center gap-2">
+															<FileText className="h-4 w-4 text-blue-500" />
+															<span className="font-medium">View result logs</span>
+															<ChevronRight className="h-4 w-4 text-gray-400" />
+														</div>
+													</AccordionTrigger>
+													<AccordionContent className="px-4 pb-4">
+														<div className="bg-gray-50 rounded-md p-3 border-l-4 border-blue-500">
+															<MarkDownDisplay content={result.log} />
+														</div>
+													</AccordionContent>
+												</AccordionItem>
+											</Accordion>
+										</div>
+									)}
+									{result.body && (
+										<div className="mb-4">
+											<div className="border-l-4 border-green-500 p-4 rounded-r-md">
+												<MarkDownDisplay content={result.body} />
+											</div>
+										</div>
+									)}
+									<div className="flex justify-end">
+										{result.sources && getSources(result.sources)}
+									</div>
+								</>
+							); 
 						}
 						if (typeof result.body === "object") {
-							return <MarkDownDisplay content={JSON.stringify(result.body)} />;
+							return (
+								<div className="mb-4">
+									<div className="border-l-4 border-green-500 p-4 rounded-r-md">
+										<div className="flex items-center gap-2 mb-2">
+											<FileText className="h-4 w-4 text-green-600" />
+											<span className="font-medium text-green-800">Results</span>
+										</div>
+										<MarkDownDisplay content={JSON.stringify(result.body, null, 2)} />
+									</div>
+								</div>
+							);
 						}
 					}
 				}
