@@ -218,6 +218,7 @@ const VALID_DIRECTIVES = [
 	"edit_project_document",
 	"append_to_project_document",
 	"create_new_project_document",
+	"send_message_to_user",
 	"programming_assistant",
 	"save_checkpoint",
 	"instructions",
@@ -592,6 +593,12 @@ function remarkDirectiveComponents() {
 							content: node.children?.[0]?.value || "",
 						};
 						break;
+					case "send_message_to_user":
+						data.hName = "custom-send-message-to-user";
+						data.hProperties = {
+							content: "",
+						};
+						break;
 					default:
 						// Use the directive name directly if not mapped
 						data.hName = `custom-${hName}`;
@@ -748,8 +755,12 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 		"custom-create-new-file-in-sandbox": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FilePlus className="w-4 h-4" />} />,
 		"custom-update-file-in-sandbox": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Pencil className="w-4 h-4" />} />,
 		"custom-append-to-file-in-sandbox": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FilePlus className="w-4 h-4" />} />,
+		"custom-send-message-to-user": ({ content }: { content: string }) => <div className="mt-4"> </div>,
 		"custom-expose-sandbox-port": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Network className="w-4 h-4" />} />,
-		"custom-mark-task-complete": ({ content }: { content: string }) => <CustomViewer content={content} icon={<CheckCircle className="w-4 h-4" />} />,
+		"custom-mark-task-complete": ({ content }: { content: string }) => <CustomViewer className="text-green-500"
+			content={content}
+			icon={<CheckCircle className="w-4 h-4" />}
+		                                                                   />,
 		"custom-programming-expert": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Brain className="w-4 h-4" />} />,
 		"custom-uuid": ({ content }: { content: string }) => (
 			<UUIDViewer content={content} />

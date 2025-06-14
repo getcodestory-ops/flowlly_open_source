@@ -332,9 +332,9 @@ export default function PlatformChatInterface({
 													: "w-full bg-white py-3 px-2 border-b border-slate-100 last:border-b-0 min-h-[40px] transition-all duration-200"
 											}`}
 										>
-											{history.sender.toLowerCase() !== "user" && (
+											{history.sender.toLowerCase() !== "user" && (index === 0 || chats[index - 1].sender.toLowerCase() === "user") && (
 												<div className="text-xs text-slate-400 mb-1 pl-1">
-											Flowlly AI
+											Flowlly
 												</div>
 											)}
 											<div
@@ -349,7 +349,7 @@ export default function PlatformChatInterface({
 											</div>
 											{/* Improve the copy button UI and add proper spacing */}
 
-											{history.sender.toLowerCase() !== "user" &&  (
+											{/* {history.sender.toLowerCase() !== "user" &&  (
 												<div className="mt-1 flex justify-start items-center">
 													<Button
 														className="text-xs text-slate-400 hover:text-indigo-600 flex items-center gap-1 p-1 h-auto rounded-md opacity-60 hover:opacity-100 transition-opacity"
@@ -361,7 +361,7 @@ export default function PlatformChatInterface({
 														<span>Copy</span>
 													</Button>
 												</div>
-											)}
+											)} */}
 										</div>
 									</div>
 								)}
