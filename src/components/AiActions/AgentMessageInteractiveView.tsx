@@ -117,7 +117,7 @@ function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: {
 		if ("function_response" in message) {
 			const getFunctionResponse = (result: any) => {
 				if (typeof result === "string" ) {
-					return result;
+					return <MarkDownDisplay content={result} />;
 				}
 				if (typeof result === "object") {
 					if (result.resource_id)
@@ -209,22 +209,22 @@ function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: {
 							return (
 								<>
 									{result.log && (
-										<div className="mb-4">
+										<div className="mb-8">
 											<Accordion 
-												className="border rounded-lg"
+												className="border-b rounded-lg"
 												collapsible
 												type="single"
 											>
 												<AccordionItem className="border-0" value="logs">
 													<AccordionTrigger className="px-4 py-3 hover:bg-gray-50 rounded-lg transition-colors">
 														<div className="flex items-center gap-2">
-															<FileText className="h-4 w-4 text-blue-500" />
-															<span className="font-medium">View result logs</span>
+															<FileText className="h-4 w-4 text-gray-500 text-xs" />
+															<span className="text-xs">View result logs</span>
 															<ChevronRight className="h-4 w-4 text-gray-400" />
 														</div>
 													</AccordionTrigger>
-													<AccordionContent className="px-4 pb-4">
-														<div className="bg-gray-50 rounded-md p-3 border-l-4 border-blue-500">
+													<AccordionContent className="pb-4 ">
+														<div className="bg-gray-50 rounded-md ">
 															<MarkDownDisplay content={result.log} />
 														</div>
 													</AccordionContent>
@@ -234,7 +234,7 @@ function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: {
 									)}
 									{result.body && (
 										<div className="mb-4">
-											<div className="border-l-4 border-green-500 p-4 rounded-r-md">
+											<div className=" rounded-r-md">
 												<MarkDownDisplay content={result.body} />
 											</div>
 										</div>
@@ -248,7 +248,7 @@ function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: {
 						if (typeof result.body === "object") {
 							return (
 								<div className="mb-4">
-									<div className="border-l-4 border-green-500 p-4 rounded-r-md">
+									<div className="border-l-4  p-4 rounded-r-md">
 										<div className="flex items-center gap-2 mb-2">
 											<FileText className="h-4 w-4 text-green-600" />
 											<span className="font-medium text-green-800">Results</span>
