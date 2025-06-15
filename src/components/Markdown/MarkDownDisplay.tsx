@@ -209,6 +209,7 @@ const VALID_DIRECTIVES = [
 	"run_command_in_sandbox",
 	"create_new_file_in_sandbox",
 	"update_file_in_sandbox",
+	"edit_file_in_sandbox",
 	"append_to_file_in_sandbox",
 	"expose_sandbox_port",
 	"mark_task_complete",
@@ -504,6 +505,7 @@ function remarkDirectiveComponents() {
 						};
 						break;
 					case "update_file_in_sandbox":
+					case "edit_file_in_sandbox":
 						data.hName = "custom-update-file-in-sandbox";
 						data.hProperties = {
 							content: "Updating File in Sandbox",
