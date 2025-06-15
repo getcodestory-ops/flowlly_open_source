@@ -5,7 +5,12 @@ import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import StreamComponent from "./StreamAgentChat";
 import { AgentChat } from "@/types/agentChats";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface StreamMessageWrapperProps {
   streamingKey: string;
@@ -213,71 +218,60 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 	};
 
 	return (
-		<div className="w-full border border-gray-200 rounded-lg overflow-hidden">
-			{/* Status Header */}
-			<div className="px-3 py-2 bg-gray-50 border-b border-gray-200">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center space-x-2">
-						<span className="text-sm text-gray-600 flex items-center">
-							{getStatusText()}
-							{(taskStatus === "pending" || taskStatus === "processing") && (
-								<AnimatedDots />
-							)}
-						</span>
-					</div>
-					<button
-						className="p-1 hover:bg-gray-200 rounded transition-colors"
-						onClick={(e) => {
-							e.stopPropagation();
-							setIsFullyExpanded(!isFullyExpanded);
-						}}
-					>
-						{isFullyExpanded ? (
-							<ChevronDown className="w-4 h-4 text-gray-500" />
-						) : (
-							<ChevronRight className="w-4 h-4 text-gray-500" />
-						)}
-					</button>
-				</div>
-			</div>
-			<div 
-				className={`relative transition-all duration-300 cursor-pointer ${
-					isFullyExpanded ? "" : "max-h-32 overflow-hidden"
-				}`}
-				onClick={() => setIsFullyExpanded(!isFullyExpanded)}
+		<div className="w-full">
+			<Accordion 
+				className="border rounded-lg"
+				collapsible
+				onValueChange={(value) => setIsFullyExpanded(value === "stream-content")}
+				type="single"
+				value={isFullyExpanded ? "stream-content" : undefined}
 			>
-				<div className="p-4 text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
-					<StreamComponent
-						authToken={authToken}
-						key={streamingKey}
-						streamingKey={streamingKey}
-					/>
-				</div>
-				{!isFullyExpanded && (
-					<div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none" />
-				)}
-			</div>
-			<div className="px-3 py-2 bg-gray-50 border-t border-gray-200 flex items-center justify-center">
-				<button
-					className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
-					onClick={(e) => {
-						e.stopPropagation();
-						setIsFullyExpanded(!isFullyExpanded);
-					}}
-				>
-					{isFullyExpanded ? (
-						<div className="flex items-center space-x-1">
-							<ChevronDown className="w-3 h-3" />
-							<span>Show Less</span>
+				<AccordionItem className="border-0" value="stream-content">
+					<div className="px-4 py-3  border-b border-gray-200">
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-2">
+								<span className="text-sm text-gray-600 flex items-center">
+									{getStatusText()}
+									{(taskStatus === "pending" || taskStatus === "processing") && (
+										<AnimatedDots />
+									)}
+								</span>
+							</div>
+							<AccordionTrigger className="p-1 hover:bg-gray-200 rounded transition-colors [&[data-state=open]>svg]:rotate-90">
+								<div className="w-4 h-4" />
+							</AccordionTrigger>
 						</div>
-					) : (
-						<div className="flex items-center space-x-1">
-							<ChevronRight className="w-3 h-3" />
-							<span>Show More</span>
+					</div>
+					{/* Preview Window */}
+					{!isFullyExpanded && (
+						<div 
+							className="relative max-h-32 overflow-hidden cursor-pointer hover:bg-gray-25 transition-colors"
+							onClick={() => setIsFullyExpanded(true)}
+						>
+							<div className="p-4 text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
+								<StreamComponent
+									authToken={authToken}
+									key={streamingKey}
+									streamingKey={streamingKey}
+								/>
+							</div>
+							<div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none" />
 						</div>
 					)}
-				</button>
-			</div>
+					{/* Full Content */}
+					<AccordionContent className="px-4 pb-4">
+						<div className="bg-gray-50 rounded-md p-3 border-l-4 border-blue-500">
+							<div className="text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
+								<StreamComponent
+									authToken={authToken}
+									key={streamingKey}
+									streamingKey={streamingKey}
+								/>
+							</div>
+						</div>
+					</AccordionContent>
+				</AccordionItem>
+			</Accordion>
 		</div>
 	);
 };
