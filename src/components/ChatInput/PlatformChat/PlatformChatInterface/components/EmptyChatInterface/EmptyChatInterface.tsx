@@ -10,6 +10,7 @@ import BidLevelling from "./FormDirectives/BidLevelling";
 import DailyReport from "./FormDirectives/DailyReport";
 import ReportWriting from "./FormDirectives/ReportWriting";
 import KnowledgeManager from "./FormDirectives/KnowledgeManager";
+
 interface EmptyChatInterfaceProps {
 	chatInput: string;
 	setChatInput: (value: string) => void;
@@ -28,6 +29,19 @@ export default function EmptyChatInterface({
 	loadDocumentPanel,
 }: EmptyChatInterfaceProps) {
 	const { chatDirectiveType, setChatDirectiveType } = useChatStore();
+	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+	// Auto-expand textarea as text grows
+	React.useEffect(() => {
+		const textarea = textareaRef.current;
+		if (textarea) {
+			// Reset height to auto to get the correct scrollHeight
+			textarea.style.height = "auto";
+			// Set height to scrollHeight with min and max constraints
+			const newHeight = Math.min(Math.max(textarea.scrollHeight, 80), 200); // min 80px, max 200px
+			textarea.style.height = `${newHeight}px`;
+		}
+	}, [chatInput]);
 
 	const chatTypes: Array<{
 		id: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "none";
@@ -202,6 +216,8 @@ export default function EmptyChatInterface({
 						}
 					}}
 					placeholder="Type your message here..."
+					ref={textareaRef}
+					style={{ height: "auto" }}
 					value={chatInput}
 				/>
 				<div className="flex items-center p-3 pt-0">
