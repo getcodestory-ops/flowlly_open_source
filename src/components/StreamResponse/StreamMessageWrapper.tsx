@@ -220,7 +220,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 	return (
 		<div className="w-full">
 			<Accordion 
-				className="border rounded-lg"
+				className="rounded-lg"
 				collapsible
 				onValueChange={(value) => setIsFullyExpanded(value === "stream-content")}
 				type="single"
@@ -242,7 +242,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 							</AccordionTrigger>
 						</div>
 					</div>
-					{/* Preview Window */}
 					{!isFullyExpanded && (
 						<div 
 							className="relative max-h-32 overflow-hidden cursor-pointer hover:bg-gray-25 transition-colors"
@@ -258,7 +257,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 							<div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none" />
 						</div>
 					)}
-					{/* Full Content */}
 					<AccordionContent className="px-4 pb-4">
 						<div className="bg-gray-50 rounded-md p-3 border-l-4 border-blue-500">
 							<div className="text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
