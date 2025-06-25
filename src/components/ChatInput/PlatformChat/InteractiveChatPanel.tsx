@@ -408,7 +408,7 @@ const InteractiveChatPanel = () : React.ReactNode => {
 				</div>
 			)}
 			{/* Tab Content */}
-			<div className="flex-1 p-4 overflow-auto">
+			<div className="flex-1 p-4 overflow-auto relative">
 				{tabs.length === 0 && (
 					<div className="flex items-center justify-center h-full text-gray-500">
 						<div className="text-center">
@@ -418,38 +418,46 @@ const InteractiveChatPanel = () : React.ReactNode => {
 						</div>
 					</div>
 				)}
-				{activeTab && activeTab.type === "folder" && (
-					<DocumentSelector useChatContext />
-				)}
-				{activeTab && activeTab.type === "sources" && (
-					<>
-						{inLineViewableExtensions.includes(getFileExtension(activeTab.filename)) && (
+				{tabs.map((tab) => (
+					<div 
+						className={`absolute inset-0 ${tab.id === activeTabId ? "block" : "hidden"}`}
+						key={tab.id}
+						style={{ padding: "1rem" }}
+					>
+						{tab.type === "folder" && (
+							<DocumentSelector useChatContext />
+						)}
+						{tab.type === "sources" && (
 							<>
-								{getCurrentViewMode(activeTab.id) === "original" ? (
-									getFileExtension(activeTab.filename) === "md" ? (
-										<ResourceTextViewer resource_id={activeTab.resourceId} />
-									) : (
-										<InlineDocumentViewer 
-											fileExtension={getFileExtension(activeTab.filename)} 
-											resourceId={activeTab.resourceId}
-										/>
-									)
-								) : (
-									<ResourceTextViewer resource_id={activeTab.resourceId} />
+								{inLineViewableExtensions.includes(getFileExtension(tab.filename)) && (
+									<>
+										{getCurrentViewMode(tab.id) === "original" ? (
+											getFileExtension(tab.filename) === "md" ? (
+												<ResourceTextViewer resource_id={tab.resourceId} />
+											) : (
+												<InlineDocumentViewer 
+													fileExtension={getFileExtension(tab.filename)} 
+													resourceId={tab.resourceId}
+												/>
+											)
+										) : (
+											<ResourceTextViewer resource_id={tab.resourceId} />
+										)}
+									</>
+								)}
+								{getFileExtension(tab.filename) === "txt" && (
+									<ResourceTextViewer resource_id={tab.resourceId} />
 								)}
 							</>
 						)}
-						{getFileExtension(activeTab.filename) === "txt" && (
-							<ResourceTextViewer resource_id={activeTab.resourceId} />
+						{tab.type === "editor" && (
+							<ResourceTextViewer resource_id={tab.resourceId} /> 
 						)}
-					</>
-				)}
-				{activeTab && activeTab.type === "editor" && (
-					<ResourceTextViewer resource_id={activeTab.resourceId} /> 
-				)}
-				{activeTab && activeTab.type === "log" && (
-					<RunningLogViewer logId={activeTab.resourceId} />
-				)}
+						{tab.type === "log" && (
+							<RunningLogViewer logId={tab.resourceId} />
+						)}
+					</div>
+				))}
 			</div>
 			{/* Save As Dialog */}
 			<Dialog onOpenChange={setShowSaveAsDialog} open={showSaveAsDialog}>
