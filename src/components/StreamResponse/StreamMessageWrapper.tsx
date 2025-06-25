@@ -4,7 +4,7 @@ import { getTaskStatus } from "@/api/schedule_routes";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import StreamComponent from "./StreamAgentChat";
-import { AgentChat } from "@/types/agentChats";
+import { stopAgent } from "@/api/agentRoutes";
 import {
 	Accordion,
 	AccordionContent,
@@ -36,6 +36,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 	const [isFullyExpanded, setIsFullyExpanded] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 	const [taskStatus, setTaskStatus] = useState<string>("pending");
+	const [isStopping, setIsStopping] = useState(false);
 
 	useEffect(() => {
 		if (!streamingKey || !session) return;
@@ -183,6 +184,32 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 		};
 	}, [streamingKey, session, messageId, activeChatEntity?.id, queryClient, setLocalChats, toast]);
 
+	const handleStopAgent = async() => {
+		if (!session || !streamingKey || isStopping) return;
+		
+		setIsStopping(true);
+		try {
+			const response = await stopAgent({
+				session,
+				streamingId: streamingKey,
+			});
+			
+			toast({
+				title: "Stopping agent gracefully!",
+				description: response.message || "Stop signal sent to agent",
+			});
+		} catch (error) {
+			console.error("Error stopping agent:", error);
+			toast({
+				title: "Error",
+				description: "Failed to send stop signal. Please try again.",
+				variant: "destructive",
+			});
+		} finally {
+			setIsStopping(false);
+		}
+	};
+
 	const getStatusText = () => {
 		switch (taskStatus) {
 			case "pending":
@@ -195,6 +222,8 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 				return "Failed";
 			case "timeout":
 				return "Working in background !";
+			case "stopped":
+				return "Stopped";
 			default:
 				return "Unknown";
 		}
@@ -236,6 +265,15 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 										<AnimatedDots />
 									)}
 								</span>
+								{(taskStatus === "pending" || taskStatus === "processing") && (
+									<button
+										className="ml-2 px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded border border-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+										disabled={isStopping}
+										onClick={handleStopAgent}
+									>
+										{isStopping ? "Stopping..." : "Stop"}
+									</button>
+								)}
 							</div>
 							<AccordionTrigger className="p-1 hover:bg-gray-200 rounded transition-colors [&[data-state=open]>svg]:rotate-90">
 								<div className="w-4 h-4" />

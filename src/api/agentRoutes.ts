@@ -66,6 +66,23 @@ export const talkToAgent = async({
 	return response.data;
 };
 
+export const stopAgent = async({
+	session,
+	streamingId,
+}: {
+	session: Session;
+	streamingId: string;
+}) : Promise<{message: string}> => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat/stop_signal/${streamingId}`;
+	const response = await axios.post(url, {}, {
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${session.access_token}`,
+		},
+	});
+	return response.data;
+};
+
 export const createChatEntity = async(
 	sessionToken: Session,
 	chat_entity: CreateAgentChatEntity,
