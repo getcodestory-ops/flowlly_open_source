@@ -72,6 +72,7 @@ export const getTaskStatus = async(
 ): Promise<ScheduleResponse> => {
 	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/schedule/result/${currentTaskId}`;
 	const response = await axios.get(url, {
+		timeout: 1000,
 		headers: {
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${session.access_token}`,
