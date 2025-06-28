@@ -27,7 +27,7 @@ export const talkToAgent = async({
 	chatId,
 	projectId,
 	responseType = "general",
-	model = "gemini-2.0-flash",
+	model = "gemini-2.5-flash",
 	includeContext = false,
 	files = [],
 	googleSearch = false,

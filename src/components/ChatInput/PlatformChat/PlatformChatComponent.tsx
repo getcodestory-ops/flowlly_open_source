@@ -54,7 +54,7 @@ export default function PlatformChatComponent({
 	const { setSelectedContexts } = useChatStore();
 	const [activeTab, setActiveTab] = useState<"chat" | "settings">("chat");
 	const { toast } = useToast();
-	const [selectedModel, setSelectedModel] = useState<string>("gemini-2.5-pro-preview-05-06");
+	const [selectedModel, setSelectedModel] = useState<string>("gemini-2.5-pro");
 	const [includeContext, setIncludeContext] = useState<boolean>(false);
 	const [editingChatId, setEditingChatId] = useState<string | null>(null);
 	const [editedName, setEditedName] = useState<string>("");
