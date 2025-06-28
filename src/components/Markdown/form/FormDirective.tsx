@@ -7,6 +7,7 @@ import { usePlatformChat } from "@/components/ChatInput/PlatformChat/usePlatform
 import clsx from "clsx";
 
 
+
 interface FormField {
 	name: string;
 	label: string;
@@ -34,45 +35,65 @@ const FormDirective: React.FC<FormDirectiveProps> = ({
 	data, 
 }) => {
 	const activeProject = useStore((state) => state.activeProject);
+	const activeChatEntity = useStore((state) => state.activeChatEntity);
+	const currentChatId = activeChatEntity?.id || "untitled";
 	const { handleChatSubmit, isWaitingForResponse, isPending } = usePlatformChat(activeProject?.project_id || "", "agent", "gemini-2.5-pro", false);
 	const { setSidePanel, setCollapsed, selectedContexts, setSelectedContexts } = useChatStore();
 	const [formId] = useState(() => `form_${Date.now()}_${Math.random().toString(36)
 		.substr(2, 9)}`);
-	const selectedDocuments = selectedContexts[formId] || [];
+	
+	// Helper function to get field-specific context ID for attachment fields
+	const getFieldContextId = (fieldName: string, fieldType: string) => {
+		return fieldType === "attachment" ? `${formId}_${fieldName}` : formId;
+	};
+	
+	// Helper function to get selected documents for a specific field
+	const getSelectedDocuments = (fieldName: string, fieldType: string) => {
+		const contextId = getFieldContextId(fieldName, fieldType);
+		return selectedContexts[contextId] || [];
+	};
 	
 	// State to store form input values
 	const [formValues, setFormValues] = useState<{ [key: string]: any }>({});
 
-	// Document panel component similar to PlatformChatInterface
-	const loadDocumentPanel = useCallback((fieldName: string) => (
-		<Button
-			className={clsx(
-				"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
-				selectedDocuments.length > 0 && "text-indigo-500 bg-indigo-50/50",
-			)}
-			disabled={false}
-			onClick={() => {
-				setCollapsed(true);
-				setSidePanel({
-					isOpen: true,
-					type: "folder",
-					resourceId:  "default",
-					title: `Select files for ${fieldName}`,
-				});
-			}}
-			size="sm"
-			title={selectedDocuments.length > 0 ? `${selectedDocuments.length} file(s) selected` : "Add files"}
-			type="button"
-			variant="ghost"
-		>
-			<Paperclip className="h-4 w-4" />
-		</Button>
-	), [selectedDocuments, setCollapsed, setSidePanel]);
+	// Document panel component with form-specific configuration
+	const loadDocumentPanel = useCallback((fieldName: string, fieldType: string) => {
+		const contextId = getFieldContextId(fieldName, fieldType);
+		const fieldDocuments = selectedContexts[contextId] || [];
+		
+		return (
+			<Button
+				className={clsx(
+					"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
+					fieldDocuments.length > 0 && "text-indigo-500 bg-indigo-50/50",
+				)}
+				disabled={false}
+				onClick={() => {
+					setCollapsed(true);
+					setSidePanel({
+						isOpen: true,
+						type: "folder",
+						resourceId: contextId,
+						contextId: contextId,
+						title: `Select files for form: ${fieldName}`,
+					});
+				}}
+				size="sm"
+				title={fieldDocuments.length > 0 ? `${fieldDocuments.length} file(s) selected` : "Add files"}
+				type="button"
+				variant="ghost"
+			>
+				<Paperclip className="h-4 w-4" />
+			</Button>
+		);
+	}, [selectedContexts, setCollapsed, setSidePanel, formId]);
 
-	const removeDocument = useCallback((docId: string) => {
-		const newContexts = selectedDocuments.filter((doc) => doc.id !== docId);
-		setSelectedContexts(formId, newContexts);
-	}, [selectedDocuments, setSelectedContexts, formId]);
+	const removeDocument = useCallback((docId: string, fieldName: string, fieldType: string) => {
+		const contextId = getFieldContextId(fieldName, fieldType);
+		const fieldDocuments = selectedContexts[contextId] || [];
+		const newContexts = fieldDocuments.filter((doc) => doc.id !== docId);
+		setSelectedContexts(contextId, newContexts);
+	}, [selectedContexts, setSelectedContexts, formId]);
 
 
 
@@ -96,7 +117,8 @@ const FormDirective: React.FC<FormDirectiveProps> = ({
 				for (const field of requiredFields) {
 					const value = formValues[field.name];
 					if (field.type === "attachment") {
-						if (selectedDocuments.length === 0) {
+						const fieldDocuments = getSelectedDocuments(field.name, field.type);
+						if (fieldDocuments.length === 0) {
 							return false;
 						}
 					} else {
@@ -112,7 +134,7 @@ const FormDirective: React.FC<FormDirectiveProps> = ({
 			return false;
 		}
 		return false;
-	}, [data, formValues, selectedDocuments]);
+	}, [data, formValues, selectedContexts, formId]);
 
 	// Handle form submission
 	const handleFormSubmit = useCallback(() => {
@@ -266,6 +288,7 @@ ${JSON.stringify(formValues)}
 					);
 
 				case "attachment":
+					const fieldDocuments = getSelectedDocuments(field.name, field.type);
 					return (
 						<div className="mb-4" key={fieldId}>
 							<label className={labelClasses} htmlFor={fieldId}>
@@ -274,26 +297,26 @@ ${JSON.stringify(formValues)}
 							<div className="space-y-3">
 								{/* Document selection button */}
 								<div className="flex items-center gap-3">
-									{loadDocumentPanel(field.label)}
+									{loadDocumentPanel(field.name, field.type)}
 									<span className="text-sm text-gray-600">
-										{selectedDocuments.length === 0 
+										{fieldDocuments.length === 0 
 											? "Click to select documents from your folders"
-											: `${selectedDocuments.length} document${selectedDocuments.length !== 1 ? "s" : ""} selected`
+											: `${fieldDocuments.length} document${fieldDocuments.length !== 1 ? "s" : ""} selected`
 										}
 									</span>
 								</div>
-								{selectedDocuments.length > 0 && <div className="space-y-2">
-									{selectedDocuments.map((document) => <div 
+								{fieldDocuments.length > 0 && <div className="space-y-2">
+									{fieldDocuments.map((document) => <div 
 										className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-md border border-blue-200"
 										key={document.id}
-									                                     >
+									                                  >
 										<FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
 										<span className="text-sm text-blue-900 truncate flex-1" title={document.name}>
 											{document.name}
 										</span>
 										<Button
 											className="h-6 w-6 p-0 hover:bg-blue-200"
-											onClick={() => removeDocument(document.id)}
+											onClick={() => removeDocument(document.id, field.name, field.type)}
 											size="sm"
 											type="button"
 											variant="ghost"

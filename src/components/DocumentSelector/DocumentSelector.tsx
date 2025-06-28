@@ -23,12 +23,14 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 	setSelectedItems: propSetSelectedItems,
 	folderSelectOnly = false,
 	useChatContext = false,
+	contextId,
 }) => {
 	const session = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
 	const activeChatEntity = useStore((state) => state.activeChatEntity);
 	const { setSelectedContexts, selectedContexts, addTab, setContextFolder, contextFolder } = useChatStore();
 	const currentChatId = activeChatEntity?.id || "untitled";
+	const effectiveContextId = contextId || currentChatId;
 	const { toast } = useToast();
 	const queryClient = useQueryClient();
 
@@ -59,9 +61,9 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 	// Determine if we should use chat context or props
 	const shouldUseChatContext = useChatContext || (!propSelectedItems && !propSetSelectedItems);
 
-	// Get current selected items based on mode
+	// Get current selected items based on mode, using effectiveContextId
 	const selectedItems = shouldUseChatContext 
-		? (selectedContexts[currentChatId] || []).map((ctx) => ({
+		? (selectedContexts[effectiveContextId] || []).map((ctx) => ({
 			id: ctx.id,
 			name: ctx.name,
 			type: ctx.extension === "folder" ? "folder" as const : "file" as const,
@@ -281,9 +283,9 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 		if (folderSelectOnly && item.type !== "folder") return;
 
 		if (shouldUseChatContext) {
-			if (!currentChatId) return;
+			if (!effectiveContextId) return;
 
-			const currentContexts = selectedContexts[currentChatId] || [];
+			const currentContexts = selectedContexts[effectiveContextId] || [];
 			const isSelected = currentContexts.some((ctx) => ctx.id === item.id);
 			
 			const newContexts = isSelected
@@ -294,7 +296,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 					extension: item.type === "folder" ? "folder" : "file",
 				}];
 
-			setSelectedContexts(currentChatId, newContexts);
+			setSelectedContexts(effectiveContextId, newContexts);
 		} else {
 			if (!propSetSelectedItems) return;
 			
@@ -308,11 +310,11 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 
 	const removeSelectedItem = (id: string) => {
 		if (shouldUseChatContext) {
-			if (!currentChatId) return;
+			if (!effectiveContextId) return;
 			
-			const currentContexts = selectedContexts[currentChatId] || [];
+			const currentContexts = selectedContexts[effectiveContextId] || [];
 			const newContexts = currentContexts.filter((ctx) => ctx.id !== id);
-			setSelectedContexts(currentChatId, newContexts);
+			setSelectedContexts(effectiveContextId, newContexts);
 		} else {
 			if (!propSetSelectedItems) return;
 			propSetSelectedItems((prev) => prev.filter((item) => item.id !== id));

@@ -40,6 +40,8 @@ export interface DocumentSelectorProps {
   folderSelectOnly?: boolean;
   // New prop to force chat context mode
   useChatContext?: boolean;
+  // Optional context ID for form-specific or custom context selection
+  contextId?: string;
 }
 
 export interface DocumentSelectorHeaderProps {

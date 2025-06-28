@@ -425,7 +425,10 @@ const InteractiveChatPanel = () : React.ReactNode => {
 						style={{ padding: "1rem" }}
 					>
 						{tab.type === "folder" && (
-							<DocumentSelector useChatContext />
+							<DocumentSelector 
+								contextId={tab.contextId} 
+								useChatContext 
+							/>
 						)}
 						{tab.type === "sources" && (
 							<>
