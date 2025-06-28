@@ -7,6 +7,7 @@ interface SidePanel {
 	resourceId: string;
 	filename?: string;
 	title?: string;
+	contextId?: string;
 }
 
 interface ChatStore {
