@@ -30,8 +30,8 @@ export type ModelType = {
 };
 
 export const MODELS: ModelType[] = [
-	{ id: "gemini-2.5-pro-preview-05-06", name: "Gemini Pro 2.5 (latest)" },
-	{ id: "gemini-2.0-flash", name: "Gemini Flash" },
+	{ id: "gemini-2.5-pro", name: "Gemini high" },
+	{ id: "gemini-2.5-flash", name: "Gemini Flash" },
 	{ id: "claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
 	{ id: "gpt-4o", name: "GPT-4.0" },
 ]; 

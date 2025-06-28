@@ -12,7 +12,7 @@ import { useChatStore } from "@/hooks/useChatStore";
 export function usePlatformChat(
 	folderId: string,
 	chatTarget: string,
-	selectedModel: string = "gemini-2.5-pro-preview-05-06",
+	selectedModel: string = "gemini-2.5-pro",
 	includeContext: boolean = false,
 ) {
 	const { toast } = useToast();

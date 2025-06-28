@@ -113,14 +113,15 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 					}, 300); 
 				} else if (
 					response.status === "pending" ||
-          response.status === "processing"
+					response.status === "processing" ||
+					response.status === "failed"
 				) {
 					setIsWaitingForResponse(true);
-					// Continue polling if still in progress
+					// Continue polling if still in progress or temporarily failed
 					timeoutId = setTimeout(checkTaskStatus, 2000);
-				} else if (response.status === "failed" || response.status === "error") {
+				} else if (response.status === "error") {
 					setIsLoading(false);
-					// Handle failure - replace streaming message with error
+					// Handle error - replace streaming message with error
 					const currentLocalChats = useStore.getState().localChats;
 					const updatedChats = currentLocalChats.map((chat) => {
 						if (chat.id === messageId) {
