@@ -3,10 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Archivo_Black } from "next/font/google";
 import { UserNav } from "@/components/ProjectDashboard/components/UserNav";
-import HeaderNotification from "../Notifications/HeaderNotification";
 import { useStore } from "@/utils/store";
-import { getActivities } from "@/api/activity_routes";
-import getCurrentDateFormatted from "@/utils/getCurrentDateFormatted";
 import Link from "next/link";
 import {
 	Calendar,
@@ -17,7 +14,6 @@ import {
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getProjects } from "@/api/projectRoutes";
 import { getMembers } from "@/api/membersRoutes";
-import { getAgentChatEntities } from "@/api/agentRoutes";
 import { AppView } from "@/types/store";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CustomProjectSwitcher } from "./CustomProjectSwitcher";
