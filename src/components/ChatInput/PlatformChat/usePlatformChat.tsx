@@ -96,19 +96,6 @@ export function usePlatformChat(
 		
 	});
 
-	const { data: serverChats, isSuccess: isServerChatsSuccess } = useQuery({
-		queryKey: ["agentChats", activeChatEntity?.id, isWaitingForResponse],
-		queryFn: async() => {
-			if (!session || !activeChatEntity?.id) return [];
-			if (isTokenExpired(session)) return [];
-			const response = await getAgentChats(session, activeChatEntity.id);
-			setLocalChats(response);
-			return response;
-		},
-		enabled: !!session && !!activeChatEntity?.id && !isWaitingForResponse,
-	});
-
-
 
 	const createChatEntityMutation = useMutation({
 		mutationFn: async(messageContent: string) => {
