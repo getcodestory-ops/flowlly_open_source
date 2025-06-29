@@ -117,7 +117,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 					response.status === "failed"
 				) {
 					setIsWaitingForResponse(true);
-					// Continue polling if still in progress or temporarily failed
 					timeoutId = setTimeout(checkTaskStatus, 2000);
 				} else if (response.status === "error") {
 					setIsLoading(false);
@@ -159,16 +158,13 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 				console.error("Error checking task status:", error);
 				if (!isUnmounted) {
 					// Don't immediately fail on network errors, but limit retries
-					if (pollCount < 3) {
+					if (pollCount < 5) {
 						timeoutId = setTimeout(checkTaskStatus, 5000); // Longer delay on errors
 					} else {
-						setIsLoading(false);
-						setTaskStatus("error");
-						setIsWaitingForResponse(false);
 						toast({
-							title: "Network Error",
-							description: "Failed to check task status. Please try again.",
-							variant: "destructive",
+							title: "Chat might be disconnected. Please refresh the page.",
+							description: "Chat might be disconnected. Please refresh the page.",
+							variant: "default",
 						});
 					}
 				}
@@ -215,7 +211,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 		switch (taskStatus) {
 			case "pending":
 			case "processing":
-				return "Working";
+				return "Thinking";
 			case "completed":
 				return "Complete";
 			case "failed":
@@ -276,8 +272,10 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 									</button>
 								)}
 							</div>
-							<AccordionTrigger className="p-1 hover:bg-gray-200 rounded transition-colors [&[data-state=open]>svg]:rotate-90">
-								<div className="w-4 h-4" />
+							<AccordionTrigger className="p-1 hover:bg-gray-200 rounded">
+								<div className="text-xs text-gray-400 mr-2">
+									{isFullyExpanded ? "Hide thoughts" : "See thoughts"}
+								</div>
 							</AccordionTrigger>
 						</div>
 					</div>
@@ -289,7 +287,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 							<div className="p-4 text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
 								<StreamComponent
 									authToken={authToken}
-									key={streamingKey}
+									key={`${streamingKey}-preview`}
 									streamingKey={streamingKey}
 								/>
 							</div>
@@ -297,15 +295,17 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 						</div>
 					)}
 					<AccordionContent className="px-4 pb-4">
-						<div className="bg-gray-50 rounded-md p-3 border-l-4 border-blue-500">
-							<div className="text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
-								<StreamComponent
-									authToken={authToken}
-									key={streamingKey}
-									streamingKey={streamingKey}
-								/>
+						{isFullyExpanded && (
+							<div className="bg-gray-50 rounded-md p-3 border-l-4 border-blue-500">
+								<div className="text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
+									<StreamComponent
+										authToken={authToken}
+										key={`${streamingKey}-expanded`}
+										streamingKey={streamingKey}
+									/>
+								</div>
 							</div>
-						</div>
+						)}
 					</AccordionContent>
 				</AccordionItem>
 			</Accordion>

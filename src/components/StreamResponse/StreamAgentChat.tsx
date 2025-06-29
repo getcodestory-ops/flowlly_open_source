@@ -44,11 +44,8 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 		};
 
 		eventSource.onmessage = (event) => {
-			// Only process message events (heartbeats come through 'heartbeat' event type)
 			if (event.data) {
-				// Filter out the END:{streaming_key} message
 				if (event.data.startsWith("END:")) {
-					//console.log("Received end marker in message data, ignoring");
 					return;
 				}
 

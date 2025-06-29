@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { useStore } from "@/utils/store";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getPlatformChatEntities } from "@/api/agentRoutes";
+import { getPlatformChatEntities, getAgentChats } from "@/api/agentRoutes";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -113,10 +113,31 @@ export default function PlatformChatComponent({
 		setChatDirectiveType("chat");
 	};
 
-	const handleSelectChatEntity = (chatEntity: any) => {
+	const handleSelectChatEntity = async(chatEntity: any) => {
 		setIsWaitingForResponse(false);
 		setActiveChatEntity(chatEntity);
 		setActiveTab("chat");
+		
+		// Manually fetch chats for this entity
+		if (session && chatEntity.id) {
+			try {
+				const chats = await getAgentChats(session, chatEntity.id);
+				setLocalChats(chats);
+				
+				// Optional: Update React Query cache
+				queryClient.setQueryData(
+					["agentChats", chatEntity.id],
+					chats,
+				);
+			} catch (error) {
+				console.error("Failed to fetch chats:", error);
+				toast({
+					title: "Error",
+					description: "Failed to load chat history",
+					variant: "destructive",
+				});
+			}
+		}
 	};
 
 
