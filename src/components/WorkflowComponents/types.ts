@@ -98,7 +98,7 @@ export type GraphData = {
   created_at: string;
   nodes: NodeData[];
   run_time: string;
-  event_type: string;
+  event_type: string; 
   event_schedule?: EventSchedule[];
   event_trigger?: EventTrigger[];
   event_resources?: EventResource[];

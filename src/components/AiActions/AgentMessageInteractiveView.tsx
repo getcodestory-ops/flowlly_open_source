@@ -9,9 +9,8 @@ import {
 	Eye,
 	Database,
 	EyeOff,
-	ChevronRight
+	Logs
 } from "lucide-react";
-
 import Image from "next/image";
 import ContextSourceViewer from "../Folder/ContextSourceViewer";
 import { Button } from "@/components/ui/button";
@@ -209,22 +208,20 @@ function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: {
 							return (
 								<>
 									{result.log && (
-										<div className="mb-8">
+										<div className="m-0">
 											<Accordion 
-												className="border-b rounded-lg"
+												className=""
 												collapsible
 												type="single"
 											>
 												<AccordionItem className="border-0" value="logs">
-													<AccordionTrigger className="px-4 py-3 hover:bg-gray-50 rounded-lg transition-colors">
-														<div className="flex items-center gap-2">
-															<FileText className="h-4 w-4 text-gray-500 text-xs" />
-															<span className="text-xs">View result logs</span>
-															<ChevronRight className="h-4 w-4 text-gray-400" />
+													<AccordionTrigger className="px-4 py-3 rounded-lg transition-colors justify-end -mt-8 ml-8 [&>svg]:hidden">
+														<div className="flex items-center gap-2 hover:bg-gray-50" title="View logs">
+															<Logs className="h-4 w-4 text-gray-500 text-xs " />
 														</div>
 													</AccordionTrigger>
-													<AccordionContent className="pb-4 ">
-														<div className="bg-gray-50 rounded-md ">
+													<AccordionContent className="">
+														<div className="bg-gray-50 rounded-md p-2 ">
 															<MarkDownDisplay content={result.log} />
 														</div>
 													</AccordionContent>

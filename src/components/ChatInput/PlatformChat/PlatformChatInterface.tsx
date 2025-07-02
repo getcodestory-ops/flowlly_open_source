@@ -12,7 +12,7 @@ import {
 	CornerDownLeft,
 	Loader2,
 	Paperclip,
-	Copy,
+	Bird
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePlatformChat } from "./usePlatformChat";
@@ -161,79 +161,77 @@ export default function PlatformChatInterface({
 
 	// Function to copy formatted content
 	const copyFormattedContent = (index: number) => {
-		const messageRef = messageRefs.current[index];
+		const history = chats[index];
+		let textContent = "";
 
-		if (messageRef && messageRef.current) {
-			// Get the HTML content from the rendered message
-			const htmlContent = messageRef.current.innerHTML;
+		if (typeof history.message === "string") {
+			textContent = history.message;
+		} else if (history.message && typeof history.message === "object") {
+			// Convert HTML to plain text for copying
+			const tempDiv = document.createElement("div");
+			tempDiv.innerHTML = history.message.toString();
+			textContent = getTextFromHtml(tempDiv.innerHTML);
+		}
 
-			// Create a new clipboard item with both plain text and HTML formats
-			const plainText = getTextFromHtml(htmlContent);
-
-			// Use the newer Clipboard API if available
-			if (navigator.clipboard && "write" in navigator.clipboard) {
-				try {
-					// @ts-ignore - ClipboardItem might not be recognized by TypeScript
-					const clipboardItem = new ClipboardItem({
-						"text/plain": new Blob([plainText], { type: "text/plain" }),
-						"text/html": new Blob([htmlContent], { type: "text/html" }),
-					});
-
-					// @ts-ignore - Clipboard write method might not be recognized by TypeScript
-					navigator.clipboard
-						.write([clipboardItem])
-						.then(() => {
-							toast({
-								title: "Copied to clipboard!",
-								duration: 2000,
-							});
-						})
-						.catch((err) => {
-							console.error("Failed to copy: ", err);
-							// Fallback to plain text
-							// @ts-ignore - Clipboard writeText might not be recognized by TypeScript
-							navigator.clipboard.writeText(plainText);
-							toast({
-								title: "Plain text copied to clipboard",
-								description: "HTML formatting not supported in your browser",
-								duration: 2000,
-							});
-						});
-				} catch (err) {
-					// If ClipboardItem is not supported, fallback to plain text
-					// @ts-ignore - Clipboard writeText might not be recognized by TypeScript
-					navigator.clipboard.writeText(plainText);
-					toast({
-						title: "Copied to clipboard",
-						description: "HTML formatting not supported in your browser",
-						duration: 2000,
-					});
-				}
-			} else {
-				// Fallback for browsers that don't support the newer API
-				// @ts-ignore - Clipboard writeText might not be recognized by TypeScript
-				navigator.clipboard.writeText(plainText);
-				toast({
-					title: "Copied to clipboard",
-					description: "HTML formatting not supported in your browser",
-					duration: 2000,
+		if (textContent) {
+			navigator.clipboard.writeText(textContent)
+				.then(() => {
+					// Successfully copied to clipboard
+				})
+				.catch(() => {
+					// Failed to copy content
 				});
+		}
+	};
+
+	// Helper function to determine if we should show "Flowlly" label
+	const shouldShowFlowllyLabel = (currentIndex: number) => {
+		const currentMessage = chats[currentIndex];
+		
+		// Only show for non-user messages
+		if (currentMessage.sender.toLowerCase() === "user") {
+			return false;
+		}
+		
+		// Check if this message will be rendered (not filtered out)
+		const isCurrentMessageVisible = typeof currentMessage.message === "string" || 
+			!["run_workflow", "send_data_to_workflow", "continue_conversation", "start_new_conversation"].includes(currentMessage.message?.function_call?.name || "");
+		
+		if (!isCurrentMessageVisible) {
+			return false;
+		}
+		
+		// Show if it's the first message
+		if (currentIndex === 0) {
+			return true;
+		}
+		
+		// Show if the previous message was from user
+		if (chats[currentIndex - 1].sender.toLowerCase() === "user") {
+			return true;
+		}
+		
+		// Show if this is the first visible non-user message in a sequence of non-user messages
+		// Look backwards to find if there's any visible non-user message before this one in the current turn
+		for (let i = currentIndex - 1; i >= 0; i--) {
+			const prevMessage = chats[i];
+			
+			// If we hit a user message, this is the start of a new turn
+			if (prevMessage.sender.toLowerCase() === "user") {
+				return true;
 			}
-		} else {
-			// If ref doesn't exist, fall back to original behavior
-			if (typeof chats[index].message !== "string" && chats[index].message.content) {
-				const contentStr =
-          typeof chats[index].message.content === "string"
-          	? chats[index].message.content
-          	: JSON.stringify(chats[index].message.content);
-
-				navigator.clipboard.writeText(contentStr);
-				toast({
-					title: "Copied to clipboard",
-					duration: 2000,
-				});
+			
+			// If we find a visible non-user message, don't show label
+			const isPrevMessageVisible = typeof prevMessage.message === "string" || 
+				!["run_workflow", "send_data_to_workflow", "continue_conversation", "start_new_conversation"].includes(prevMessage.message?.function_call?.name || "");
+			
+			if (isPrevMessageVisible) {
+				return false;
 			}
 		}
+		
+		// If we reach here, this is the first visible message in the conversation
+		return true;
 	};
 
 	// Update the regular chat input section
@@ -332,9 +330,9 @@ export default function PlatformChatInterface({
 													: "w-full bg-white py-3 px-2 border-b border-slate-100 last:border-b-0 min-h-[40px] transition-all duration-200"
 											}`}
 										>
-											{history.sender.toLowerCase() !== "user" && (index === 0 || chats[index - 1].sender.toLowerCase() === "user") && (
-												<div className="text-xs text-slate-400 mb-1 pl-1">
-											Flowlly
+											{shouldShowFlowllyLabel(index) && (
+												<div className="flex text-xs text-slate-400 mb-1 pl-1">
+													Flowlly
 												</div>
 											)}
 											<div

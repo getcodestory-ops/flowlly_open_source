@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useStore } from "@/utils/store";
-import { getTaskStatus } from "@/api/schedule_routes";
+import { getTaskStatusById } from "@/api/taskQueue";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import StreamComponent from "./StreamAgentChat";
@@ -11,6 +11,7 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from "@/components/ui/accordion";
+import { StopCircle } from "lucide-react";
 
 interface StreamMessageWrapperProps {
   streamingKey: string;
@@ -64,7 +65,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 				}
 
 				pollCount++;
-				const response = await getTaskStatus(session, streamingKey);
+				const response = await getTaskStatusById(session, streamingKey);
 
 				if (isUnmounted) return;
 
@@ -87,30 +88,69 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 
 				if (response.status === "completed" && response.result) {
 					setIsLoading(false);
-					setTimeout(() => {
-						const currentActiveChatEntity = useStore.getState().activeChatEntity;
-						if (currentActiveChatEntity?.id === activeChatEntity?.id) {
+					// Remove the setTimeout to prevent race conditions
+					const currentActiveChatEntity = useStore.getState().activeChatEntity;
+					if (currentActiveChatEntity?.id === activeChatEntity?.id) {
+						// Use a more robust update mechanism with retry logic
+						const updateChats = () => {
 							const currentLocalChats = useStore.getState().localChats;
-							const updatedChats = currentLocalChats.map((chat) => {
-								if (chat.id === messageId) {
-									if (response.result && response.result.length > 0) {
-										return response.result[0];
-									}
-								}
-								return chat;
-							});
-							if (response.result && response.result.length > 1) {
-								const additionalMessages = response.result.slice(1);
-								updatedChats.push(...additionalMessages);
+							
+							// Find the current message to ensure we're updating the right one
+							const messageIndex = currentLocalChats.findIndex((chat) => chat.id === messageId);
+							if (messageIndex === -1) {
+								console.warn(`Message with id ${messageId} not found in local chats`);
+								setIsWaitingForResponse(false);
+								return false;
 							}
-							setLocalChats(updatedChats);
-							queryClient.setQueryData(
-								["agentChats", activeChatEntity?.id],
-								() => updatedChats,
-							);
-							setIsWaitingForResponse(false);
+
+							// Check if the message is still a streaming message to prevent overwriting completed messages
+							const currentMessage = currentLocalChats[messageIndex];
+							if (typeof currentMessage.message === "object" && 
+								currentMessage.message.type === "stream" && 
+								currentMessage.message.streaming_key === streamingKey) {
+								const updatedChats = [...currentLocalChats];
+								
+								// Replace the streaming message with the completed result
+								if (response.result && response.result.length > 0) {
+									// Preserve the original message ID and any other metadata
+									const completedMessage = {
+										...response.result[0],
+										id: messageId, // Ensure we keep the original message ID
+									};
+									updatedChats[messageIndex] = completedMessage;
+								}
+								
+								// Add any additional messages to the end
+								if (response.result && response.result.length > 1) {
+									const additionalMessages = response.result.slice(1);
+									updatedChats.push(...additionalMessages);
+								}
+								
+								// Atomic update of both store and query cache
+								setLocalChats(updatedChats);
+								queryClient.setQueryData(
+									["agentChats", activeChatEntity?.id],
+									() => updatedChats,
+								);
+								return true;
+							} else {
+								// Message is no longer a streaming message, skipping update
+								return false;
+							}
+						};
+
+						// Attempt to update, with a fallback mechanism
+						const updateSuccessful = updateChats();
+						if (!updateSuccessful) {
+							// If the first attempt failed, try once more after a short delay
+							// This handles cases where the store state might be temporarily inconsistent
+							setTimeout(() => {
+								updateChats();
+							}, 50);
 						}
-					}, 300); 
+						
+						setIsWaitingForResponse(false);
+					}
 				} else if (
 					response.status === "pending" ||
 					response.status === "processing" ||
@@ -253,10 +293,10 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 				value={isFullyExpanded ? "stream-content" : undefined}
 			>
 				<AccordionItem className="border-0" value="stream-content">
-					<div className="px-4 py-3  border-b border-gray-200">
-						<div className="flex items-center justify-between">
+					<AccordionTrigger className="px-4 py-3 rounded-lg transition-colors justify-end [&>svg]:hidden">
+						<div className="flex items-center gap-2 w-full justify-between">
 							<div className="flex items-center gap-2">
-								<span className="text-sm text-gray-600 flex items-center">
+								<span className="text-xs text-gray-500 flex items-center">
 									{getStatusText()}
 									{(taskStatus === "pending" || taskStatus === "processing") && (
 										<AnimatedDots />
@@ -264,21 +304,22 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 								</span>
 								{(taskStatus === "pending" || taskStatus === "processing") && (
 									<button
-										className="ml-2 px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded border border-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed "
+										className="px-1 py-0.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
 										disabled={isStopping}
-										onClick={handleStopAgent}
+										onClick={(e) => {
+											e.stopPropagation();
+											handleStopAgent();
+										}}
 									>
-										{isStopping ? "Stopping..." : "Stop"}
+										<StopCircle className="h-3 w-3" />
 									</button>
 								)}
 							</div>
-							<AccordionTrigger className="p-1 hover:bg-gray-200 rounded">
-								<div className="text-xs text-gray-400 mr-2">
-									{isFullyExpanded ? "Hide thoughts" : "See thoughts"}
-								</div>
-							</AccordionTrigger>
+							<div className="text-xs text-gray-400">
+								{isFullyExpanded ? "Hide thoughts" : "See thoughts"}
+							</div>
 						</div>
-					</div>
+					</AccordionTrigger>
 					{!isFullyExpanded && (
 						<div 
 							className="relative max-h-32 overflow-hidden cursor-pointer hover:bg-gray-25 transition-colors"
@@ -296,7 +337,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 					)}
 					<AccordionContent className="px-4 pb-4">
 						{isFullyExpanded && (
-							<div className="bg-gray-50 rounded-md p-3 border-l-4 border-blue-500">
+							<div className="bg-gray-50 rounded-md p-3 ">
 								<div className="text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
 									<StreamComponent
 										authToken={authToken}
