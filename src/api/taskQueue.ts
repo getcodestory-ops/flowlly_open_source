@@ -392,3 +392,17 @@ export const deleteProjectEvent = async({
 };
 
 
+export const getTaskStatusById = async(
+	session: Session,
+	currentTaskId: string,
+): Promise<{status: string, result: any}> => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/task/status/${currentTaskId}`;
+	const response = await axios.get(url, {
+		timeout: 5000,	
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${session.access_token}`,
+		},
+	});
+	return response.data;
+};

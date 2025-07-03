@@ -138,7 +138,7 @@ const FormDirective: React.FC<FormDirectiveProps> = ({
 
 	// Handle form submission
 	const handleFormSubmit = useCallback(() => {
-		const message = `Response:
+		const message = `
 :::instructions
 ${JSON.stringify(formValues)}
 :::`;

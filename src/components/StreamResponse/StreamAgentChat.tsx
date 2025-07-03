@@ -69,8 +69,8 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			eventSource.close();
 			eventSourceRef.current = null;
 
-			// Instead of invalidating queries, use the callback if provided
-			if (onStreamComplete && displayValue) {
+			// Call the callback if provided, regardless of displayValue content
+			if (onStreamComplete) {
 				onStreamComplete(displayValue);
 			}
 		};
@@ -80,8 +80,8 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			setIsPending(false);
 			setStreamComplete(true);
 
-			// Instead of invalidating queries, use the callback if provided
-			if (onStreamComplete && displayValue) {
+			// Call the callback if provided, regardless of displayValue content
+			if (onStreamComplete) {
 				onStreamComplete(displayValue);
 			}
 
