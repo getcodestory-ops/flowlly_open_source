@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useStore } from "@/utils/store";
 import { getTaskStatusById } from "@/api/taskQueue";
 import { useToast } from "@/components/ui/use-toast";
@@ -38,6 +38,33 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 	const [isLoading, setIsLoading] = useState(true);
 	const [taskStatus, setTaskStatus] = useState<string>("pending");
 	const [isStopping, setIsStopping] = useState(false);
+	
+	// Add state to track stream completion for optimized polling
+	const [isStreamComplete, setIsStreamComplete] = useState(false);
+	const streamCompleteRef = useRef(false);
+	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const checkTaskStatusRef = useRef<(() => Promise<void>) | null>(null);
+
+	// Handle stream completion callback - memoized to prevent unnecessary re-renders
+	const handleStreamComplete = useCallback((content: string) => {
+		setIsStreamComplete(true);
+		streamCompleteRef.current = true;
+		
+		// Clear current timeout and immediately schedule a fast poll
+		if (timeoutRef.current) {
+			clearTimeout(timeoutRef.current);
+			timeoutRef.current = null;
+		}
+		
+		// Trigger immediate fast poll
+		if (checkTaskStatusRef.current) {
+			setTimeout(() => {
+				if (checkTaskStatusRef.current) {
+					checkTaskStatusRef.current();
+				}
+			}, 50);
+		}
+	}, []);
 
 	useEffect(() => {
 		if (!streamingKey || !session) return;
@@ -45,7 +72,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 		let isUnmounted = false;
 		let pollCount = 0;
 		const MAX_POLL_ATTEMPTS = 600; // 5 minutes at 2-second intervals
-		let timeoutId: NodeJS.Timeout;
 
 		const checkTaskStatus = async() => {
 			try {
@@ -157,7 +183,10 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 					response.status === "failed"
 				) {
 					setIsWaitingForResponse(true);
-					timeoutId = setTimeout(checkTaskStatus, 2000);
+					
+					// Dynamic polling interval based on stream completion using ref
+					const pollInterval = streamCompleteRef.current ? 100 : 5000; // 100ms after stream ends, 5s during streaming
+					timeoutRef.current = setTimeout(checkTaskStatus, pollInterval);
 				} else if (response.status === "error") {
 					setIsLoading(false);
 					// Handle error - replace streaming message with error
@@ -199,7 +228,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 				if (!isUnmounted) {
 					// Don't immediately fail on network errors, but limit retries
 					if (pollCount < 5) {
-						timeoutId = setTimeout(checkTaskStatus, 5000); // Longer delay on errors
+						timeoutRef.current = setTimeout(checkTaskStatus, 5000); // Longer delay on errors
 					} else {
 						toast({
 							title: "Chat might be disconnected. Please refresh the page.",
@@ -211,12 +240,17 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 			}
 		};
 
+		// Store the function reference so it can be called from the callback
+		checkTaskStatusRef.current = checkTaskStatus;
+
 		checkTaskStatus();
 
 		return () => {
 			isUnmounted = true;
-			if (timeoutId) {
-				clearTimeout(timeoutId);
+			checkTaskStatusRef.current = null;
+			if (timeoutRef.current) {
+				clearTimeout(timeoutRef.current);
+				timeoutRef.current = null;
 			}
 		};
 	}, [streamingKey, session, messageId, activeChatEntity?.id, queryClient, setLocalChats, toast]);
@@ -328,7 +362,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 							<div className="p-4 text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
 								<StreamComponent
 									authToken={authToken}
-									key={`${streamingKey}-preview`}
+									onStreamComplete={handleStreamComplete}
 									streamingKey={streamingKey}
 								/>
 							</div>
@@ -341,7 +375,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 								<div className="text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
 									<StreamComponent
 										authToken={authToken}
-										key={`${streamingKey}-expanded`}
+										onStreamComplete={handleStreamComplete}
 										streamingKey={streamingKey}
 									/>
 								</div>
