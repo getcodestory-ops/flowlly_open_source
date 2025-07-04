@@ -232,27 +232,55 @@ interface Attachment {
 	name: string;
 	uuid: string;
 	type: string;
+	url?: string;
 }
 
 // Update AttachmentsComponent to use AttachmentViewer
 const AttachmentsComponent: React.FC<{ attachments: string }> = ({ attachments }) => {
 	try {
 		const parsedAttachments = JSON.parse(attachments);
+		
 		const files = parsedAttachments.map((attachment: Attachment) => ({	
 			resource_id: attachment.uuid,
 			resource_name: attachment.name,
 			extension: attachment.type,
+			url: attachment.url, // Include URL if present
 		}));
 		
 		return <AttachmentViewer files={files} />;
 	} catch (error) {
-		return <div>Attachments: {attachments}</div>;
+		console.error("Error parsing attachments:", error);
+		console.error("Attachments string that failed:", attachments);
+		return (
+			<div className="bg-red-50 border border-red-200 rounded p-2 text-sm">
+				<div className="text-red-700 font-medium">Error parsing attachments</div>
+				<div className="text-red-600 text-xs mt-1">Raw data: {attachments}</div>
+			</div>
+		);
 	}
 };
 
 // Custom directive plugin that transforms directives to custom components
 function remarkDirectiveComponents() {
 	return (tree: any) => {
+		// Helper function to extract complete text content from all child nodes
+		const extractCompleteContent = (node: any): string => {
+			if (!node.children) return "";
+			
+			let content = "";
+			const traverse = (children: any[]) => {
+				for (const child of children) {
+					if (child.type === "text") {
+						content += child.value;
+					} else if (child.children) {
+						traverse(child.children);
+					}
+				}
+			};
+			traverse(node.children);
+			return content;
+		};
+
 		visit(tree, (node) => {
 			if (
 				(node.type === "textDirective" ||
@@ -282,7 +310,7 @@ function remarkDirectiveComponents() {
 						// Extract the sourceText from the content
 						data.hName = "custom-source";
 						data.hProperties = {
-							sourceText: node.children?.[0]?.value || "",
+							sourceText: extractCompleteContent(node),
 						};
 						break;
 					
@@ -296,7 +324,7 @@ function remarkDirectiveComponents() {
 					case "workflow-results":
 						data.hName = "custom-workflow-results";
 						data.hProperties = {
-							content: node.children?.[0]?.value || "",
+							content: extractCompleteContent(node),
 						};
 						break;
 					
@@ -357,7 +385,7 @@ function remarkDirectiveComponents() {
 					case "workflow_result":
 						data.hName = "custom-workflow-result";
 						data.hProperties = {
-							content: node.children?.[0]?.value || "",
+							content: extractCompleteContent(node),
 							id: id,
 						};
 						break;
@@ -430,7 +458,7 @@ function remarkDirectiveComponents() {
 					case "attachments":
 						data.hName = "custom-attachments";
 						data.hProperties = {
-							attachments: node.children?.[0]?.value || "[]",
+							attachments: extractCompleteContent(node) || "[]",
 						};
 						break;
 					case "extract_file_insights":
@@ -551,7 +579,7 @@ function remarkDirectiveComponents() {
 					case "uuid":
 						data.hName = "custom-uuid";
 						data.hProperties = {
-							content: node.children?.[0]?.value || "",
+							content: extractCompleteContent(node),
 						};
 						break;
 					case "edit_project_document":
@@ -593,7 +621,7 @@ function remarkDirectiveComponents() {
 					case "instructions":
 						data.hName = "custom-instructions";
 						data.hProperties = {
-							content: node.children?.[0]?.value || "",
+							content: extractCompleteContent(node),
 						};
 						break;
 					case "send_message_to_user":
