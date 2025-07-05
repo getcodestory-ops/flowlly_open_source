@@ -179,14 +179,38 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 					}
 				} else if (
 					response.status === "pending" ||
-					response.status === "processing" ||
-					response.status === "failed"
+					response.status === "processing"
 				) {
 					setIsWaitingForResponse(true);
 					
 					// Dynamic polling interval based on stream completion using ref
 					const pollInterval = streamCompleteRef.current ? 100 : 5000; // 100ms after stream ends, 5s during streaming
 					timeoutRef.current = setTimeout(checkTaskStatus, pollInterval);
+				} else if (response.status === "failed") {
+					setIsLoading(false);
+					setIsWaitingForResponse(false); // Allow sending new messages when task fails
+					
+					// Handle failed task - replace streaming message with error
+					const currentLocalChats = useStore.getState().localChats;
+					const updatedChats = currentLocalChats.map((chat) => {
+						if (chat.id === messageId) {
+							return {
+								...chat,
+								message: {
+									content: "Task failed to complete. Please try again.",
+									role: "assistant",
+								},
+							};
+						}
+						return chat;
+					});
+					setLocalChats(updatedChats);
+					
+					toast({
+						title: "Task Failed",
+						description: "The task failed to complete. Please try again.",
+						variant: "destructive",
+					});
 				} else if (response.status === "error") {
 					setIsLoading(false);
 					// Handle error - replace streaming message with error
