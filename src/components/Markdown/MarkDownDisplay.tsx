@@ -225,7 +225,9 @@ const VALID_DIRECTIVES = [
 	"save_checkpoint",
 	"instructions",
 	"uuid",
-	"form"];
+	"form",
+	"assistant",
+];
 
 // Add Attachment interface
 interface Attachment {
@@ -630,6 +632,12 @@ function remarkDirectiveComponents() {
 							content: "",
 						};
 						break;
+					case "assistant":
+						data.hName = "custom-assistant";
+						data.hProperties = {
+							content: extractCompleteContent(node),
+						};
+						break;
 					default:
 						// Use the directive name directly if not mapped
 						data.hName = `custom-${hName}`;
@@ -717,13 +725,17 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 			content={content}
 			icon={<CheckCircle className="w-4 h-4" />}
 		                                                                   />,
+		"custom-assistant": ({ content }: { content: string }) => <CustomViewer className="text-blue-500"
+			content={content}
+			icon={<Brain className="w-4 h-4" />}
+		                                                          />,
 		"custom-programming-expert": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Brain className="w-4 h-4" />} />,
 		"custom-uuid": ({ content }: { content: string }) => (
 			<UUIDViewer content={content} />
 		),
 		"custom-save-checkpoint": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Save className="w-4 h-4" />} />,
 		"custom-form": ({ data }: { data: string }) => <FormDirective data={data} />,
-		"custom-instructions": ({ content }: { content: string }) => <CustomViewer content={content} icon={<ListTodo className="w-4 h-4" />} />,
+		"custom-instructions": ({ content }: { content: string }) => <CustomViewer content="instructions" icon={<ListTodo className="w-4 h-4" />} />,
 		// Use a normal paragraph component for li elements
 		li: ({ children, ...props }: any) => {
 			return <li {...props}>{children}</li>;
