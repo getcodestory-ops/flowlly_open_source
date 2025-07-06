@@ -17,6 +17,7 @@ import AttachmentViewer from "../AiActions/AttachmentViewer";
 import  ChartComponent  from "./chart/ChartComponent";
 import { useChatStore } from "@/hooks/useChatStore";
 import FormDirective from "./form/FormDirective";
+import  IntegrationDirective  from "./integration/IntegrationDirective";
 
 interface MarkdownRendererProps {
   content: string;
@@ -227,6 +228,7 @@ const VALID_DIRECTIVES = [
 	"uuid",
 	"form",
 	"assistant",
+	"integration",
 ];
 
 // Add Attachment interface
@@ -638,6 +640,12 @@ function remarkDirectiveComponents() {
 							content: extractCompleteContent(node),
 						};
 						break;
+					case "integration":
+						data.hName = "custom-integration";
+						data.hProperties = {
+							data: extractCompleteContent(node) || "{}",
+						};
+						break;
 					default:
 						// Use the directive name directly if not mapped
 						data.hName = `custom-${hName}`;
@@ -736,6 +744,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 		"custom-save-checkpoint": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Save className="w-4 h-4" />} />,
 		"custom-form": ({ data }: { data: string }) => <FormDirective data={data} />,
 		"custom-instructions": ({ content }: { content: string }) => <CustomViewer content="instructions" icon={<ListTodo className="w-4 h-4" />} />,
+		"custom-integration": ({ data }: { data: string }) => <IntegrationDirective data={data} />,
 		// Use a normal paragraph component for li elements
 		li: ({ children, ...props }: any) => {
 			return <li {...props}>{children}</li>;
