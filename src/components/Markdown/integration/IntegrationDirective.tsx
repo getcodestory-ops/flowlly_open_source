@@ -52,6 +52,41 @@ const IntegrationDirective: React.FC<IntegrationDirectiveProps> = ({ data }) => 
 
 			const authUrl = `${baseUri}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&state=${state}`;
 			window.location.href = authUrl;
+		} else if (service === "microsoft") {
+			if (!session || !activeProject) {
+				toast({
+					title: "Error",
+					description: "Either session or project is not valid!",
+					duration: 4000,
+				});
+				return;
+			}
+
+			const sessionToken = session.access_token;
+			const userId = session.user?.id;
+			const projectId = activeProject.project_id;
+
+			if (!sessionToken || !userId || !projectId) {
+				toast({
+					title: "Error",
+					description: "Missing required authentication data!",
+					duration: 4000,
+				});
+				return;
+			}
+
+			// Redirect to Microsoft OAuth login with specific scopes
+			const params = new URLSearchParams({
+				client_id: "5f3afbcd-94ce-4a50-9721-79136b5d4c1e",
+				response_type: "code",
+				redirect_uri: "https://flowlly.eastus.cloudapp.azure.com/microsoft/integration",
+				response_mode: "query",
+				scope: "openid profile Sites.Read.All Files.ReadWrite.All OnlineMeetings.Read Calendars.ReadWrite ",
+				state: sessionToken + "___" + userId + "___" + projectId,
+			});
+
+			const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?${params.toString()}`;
+			window.location.href = authUrl;
 		}
 	};
 
@@ -73,9 +108,13 @@ const IntegrationDirective: React.FC<IntegrationDirectiveProps> = ({ data }) => 
 									Your Procore account is successfully connected
 								</div>
 							</div>
-							<div className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-								Connected
-							</div>
+							<Button
+								className="bg-green-600 hover:bg-green-700"
+								onClick={() => handleIntegration("procore")}
+								size="sm"
+							>
+								Reauthenticate
+							</Button>
 						</div>
 					</div>
 				);
@@ -105,6 +144,56 @@ const IntegrationDirective: React.FC<IntegrationDirectiveProps> = ({ data }) => 
 			);
 		}
 
+		if (service === "microsoft") {
+			if (isConnected) {
+				return (
+					<div className="flex w-full transition-all my-2">
+						<div className="flex items-center gap-3 bg-green-50 rounded-lg p-3 border border-green-200">
+							<CheckCircle2 className="w-5 h-5 text-green-600" />
+							<div className="flex-1">
+								<div className="font-medium text-green-800 text-sm">
+									Microsoft Connected
+								</div>
+								<div className="text-xs text-green-600 mt-1">
+									Your Microsoft account is successfully connected
+								</div>
+							</div>
+							<Button
+								className="bg-green-600 hover:bg-green-700"
+								onClick={() => handleIntegration("microsoft")}
+								size="sm"
+							>
+								Reauthenticate
+							</Button>
+						</div>
+					</div>
+				);
+			}
+
+			return (
+				<div className="flex w-full transition-all my-2">
+					<div className="flex items-center gap-3 bg-blue-50 rounded-lg p-3 border border-blue-200">
+						<Link className="w-5 h-5 text-blue-600" />
+						<div className="flex-1">
+							<div className="font-medium text-blue-800 text-sm">
+								Microsoft Integration Available
+							</div>
+							<div className="text-xs text-blue-600 mt-1">
+								Connect your Microsoft account to access Office 365, SharePoint, and more
+							</div>
+						</div>
+						<Button
+							className="bg-blue-600 hover:bg-blue-700"
+							onClick={() => handleIntegration("microsoft")}
+							size="sm"
+						>
+							Connect Microsoft
+						</Button>
+					</div>
+				</div>
+			);
+		}
+
 		// Default case for other services
 		if (isConnected) {
 			return (
@@ -119,9 +208,13 @@ const IntegrationDirective: React.FC<IntegrationDirectiveProps> = ({ data }) => 
 								Your {service} account is successfully connected
 							</div>
 						</div>
-						<div className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-							Connected
-						</div>
+						<Button
+							className="bg-green-600 hover:bg-green-700"
+							onClick={() => handleIntegration(service)}
+							size="sm"
+						>
+							Reauthenticate
+						</Button>
 					</div>
 				</div>
 			);
