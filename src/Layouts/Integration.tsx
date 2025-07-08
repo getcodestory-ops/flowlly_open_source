@@ -135,6 +135,7 @@ export default function Integration(): React.ReactNode {
 				});
 				return;
 			}
+			//here new things
 
 			const clientId = process.env.NEXT_PUBLIC_PROCORE_CLIENT_ID;
 			const redirectUri = process.env.NEXT_PUBLIC_PROCORE_REDIRECT_URI;
