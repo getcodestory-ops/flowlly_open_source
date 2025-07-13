@@ -136,6 +136,8 @@ const InteractiveChatPanel = () : React.ReactNode => {
 			const link = document.createElement("a");
 			link.href = downloadResource.url;
 			link.download = activeTab.filename;
+			link.target = "_blank"; // Ensure it doesn't replace current window
+			link.rel = "noopener noreferrer"; // Security best practice
 			document.body.appendChild(link);
 			link.click();
 			document.body.removeChild(link);
