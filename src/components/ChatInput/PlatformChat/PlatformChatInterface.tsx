@@ -21,6 +21,7 @@ import clsx from "clsx";
 import AtSelectorComponent from "./components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
 import EmptyChatInterface from "./PlatformChatInterface/components/EmptyChatInterface/EmptyChatInterface";
+import { requestHelp } from "@/api/agentRoutes";
 // Define models for the UI
 const models = [
 	{ id: "gemini-2.5-pro", name: "Gemini high" },
@@ -54,10 +55,11 @@ export default function PlatformChatInterface({
 		chatInput,
 		session,
 		isWaitingForResponse,
+		activeChatEntity,
 		setIsWaitingForResponse,
 	} = usePlatformChat(folderId, chatTarget, selectedModel, includeContext);
 	const { setSidePanel, setCollapsed, contextFolder } = useChatStore();
-
+	
 
 	const scrollToBottom = () => {
 		if (chatContainerRef.current) {
@@ -109,7 +111,7 @@ export default function PlatformChatInterface({
 	const loadDocumentPanel = () => (
 		<>
 			<div className="flex gap-2">
-	
+			    
 				<Button
 					className={clsx(
 						"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
@@ -313,6 +315,7 @@ export default function PlatformChatInterface({
 					ref={chatContainerRef}
 				>
 					<div className="pt-2">
+						
 						{chats.map((history, index) => (
 							<div className="flex flex-col gap-2" key={index}>
 								{  (typeof history.message === "string" ||  !["run_workflow", "send_data_to_workflow", "continue_conversation", "start_new_conversation"].includes(history.message.function_call?.name || "")) && (
@@ -365,6 +368,43 @@ export default function PlatformChatInterface({
 								)}
 							</div>
 						))}
+						
+					</div>
+					<div className="flex justify-start px-2 py-2">
+						<Button
+							className="text-xs text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 border-none px-2 py-1 gap-1 h-auto transition-colors"
+							onClick={async() => {
+								try {
+									if (!session || !activeProject) {
+										toast({
+											title: "Error",
+											description: "No session or active project available",
+											variant: "destructive",
+										});
+										return;
+									}
+									
+									await requestHelp(session, activeProject.project_id, activeChatEntity?.id ?? "");
+									toast({
+										title: "Help Request Sent",
+										description: "The Flowlly team has been notified and will assist you shortly.",
+										duration: 3000,
+									});
+								} catch (error) {
+									console.error("Failed to request help:", error);
+									toast({
+										title: "Request Failed",
+										description: "Failed to send help request. Please try again.",
+										variant: "destructive",
+									});
+								}
+							}}
+							size="sm"
+							variant="ghost"
+						>
+							<Bird className="w-3 h-3" />
+							<span title="Flowlly team will review the chat and complete the task !">Get Help</span>
+						</Button>
 					</div>
 				</ScrollArea>
 			) : (

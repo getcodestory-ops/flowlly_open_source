@@ -224,6 +224,7 @@ export function usePlatformChat(
 		chats: localChats, // Return localChats from the store
 		isPending,
 		activeProject,
+		activeChatEntity,
 		isOpen,
 		onClose,
 		handleChatSubmit,
