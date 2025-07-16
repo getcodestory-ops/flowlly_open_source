@@ -367,3 +367,23 @@ export const updateChatName = async(
 		throw new Error("Network response was not ok");
 	}
 };
+
+
+export const requestHelp = async(
+	session: Session,
+	projectId: string,
+	chatEntityId: string,
+) => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/task/log_help_request`;
+	const response = await axios.post(url, {
+		project_id: projectId,
+		chat_entity_id: chatEntityId,
+	}, {
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${session.access_token}`,
+		},
+	});
+
+	return response.data;
+};
