@@ -13,6 +13,51 @@ import {
 } from "@/components/ui/accordion";
 import { StopCircle } from "lucide-react";
 
+// Notification utility functions
+const requestNotificationPermission = async(): Promise<boolean> => {
+	if (!("Notification" in window)) {
+		return false;
+	}
+
+	if (Notification.permission === "granted") {
+		return true;
+	}
+
+	if (Notification.permission !== "denied") {
+		const permission = await Notification.requestPermission();
+		return permission === "granted";
+	}
+
+	return false;
+};
+
+const sendNotification = (title: string, options?: NotificationOptions) => {
+	// Only send notification if the tab is not active/visible
+	if (document.hidden && Notification.permission === "granted") {
+		const notification = new Notification(title, {
+			icon: "/favicon.ico", // Use your app's favicon
+			badge: "/favicon.ico",
+			tag: "flowlly-task-complete", // Prevents duplicate notifications
+			requireInteraction: false, // Auto-dismiss after a few seconds
+			...options,
+		});
+
+		// Auto-close notification after 5 seconds
+		setTimeout(() => {
+			notification.close();
+		}, 5000);
+
+		// Optional: Focus the tab when notification is clicked
+		notification.onclick = () => {
+			window.focus();
+			notification.close();
+		};
+
+		return notification;
+	}
+	return null;
+};
+
 interface StreamMessageWrapperProps {
   streamingKey: string;
   authToken: string;
@@ -44,6 +89,19 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 	const streamCompleteRef = useRef(false);
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const checkTaskStatusRef = useRef<(() => Promise<void>) | null>(null);
+	
+	// Add state for notification permission
+	const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+
+	// Request notification permission on mount
+	useEffect(() => {
+		const initNotifications = async() => {
+			const hasPermission = await requestNotificationPermission();
+			setNotificationsEnabled(hasPermission);
+		};
+		
+		initNotifications();
+	}, []);
 
 	// Handle stream completion callback - memoized to prevent unnecessary re-renders
 	const handleStreamComplete = useCallback((content: string) => {
@@ -114,6 +172,15 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 
 				if (response.status === "completed" && response.result) {
 					setIsLoading(false);
+					
+					// Send notification to user
+					if (notificationsEnabled) {
+						sendNotification("Task Completed! 🎉", {
+							body: "Your request has been processed successfully.",
+							icon: "/favicon.ico",
+						});
+					}
+					
 					// Remove the setTimeout to prevent race conditions
 					const currentActiveChatEntity = useStore.getState().activeChatEntity;
 					if (currentActiveChatEntity?.id === activeChatEntity?.id) {
@@ -277,7 +344,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 				timeoutRef.current = null;
 			}
 		};
-	}, [streamingKey, session, messageId, activeChatEntity?.id, queryClient, setLocalChats, toast]);
+	}, [streamingKey, session, messageId, activeChatEntity?.id, queryClient, setLocalChats, toast, notificationsEnabled]);
 
 	const handleStopAgent = async() => {
 		if (!session || !streamingKey || isStopping) return;
