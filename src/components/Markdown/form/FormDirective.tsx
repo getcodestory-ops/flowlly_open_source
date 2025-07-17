@@ -163,14 +163,55 @@ const FormDirective: React.FC<FormDirectiveProps> = ({
 		}
 	}, [data, formValues, selectedContexts, formId]);
 
+	// Collect all attachments from form fields
+	const collectAllAttachments = useCallback(() => {
+		const allAttachments: any[] = [];
+		
+		// Collect attachments from selectedContexts for this form
+		Object.keys(selectedContexts).forEach((contextId) => {
+			if (contextId.startsWith(formId)) {
+				const documents = selectedContexts[contextId] || [];
+				allAttachments.push(...documents);
+			}
+		});
+		
+		return allAttachments;
+	}, [selectedContexts, formId]);
+
+	// Collect form data including attachment field references
+	const collectFormData = useCallback(() => {
+		const formData = { ...formValues };
+		
+		// Add attachment field information
+		Object.keys(selectedContexts).forEach((contextId) => {
+			if (contextId.startsWith(formId)) {
+				const documents = selectedContexts[contextId] || [];
+				// Extract field name from context ID
+				const fieldName = contextId.replace(`${formId}_`, "");
+				
+				if (documents.length > 0) {
+					formData[fieldName] = documents.map((doc) => ({
+						id: doc.id,
+						name: doc.name,
+						extension: doc.extension || "",
+					}));
+				}
+			}
+		});
+		
+		return formData;
+	}, [formValues, selectedContexts, formId]);
+
 	// Handle form submission
 	const handleFormSubmit = useCallback(() => {
+		const allAttachments = collectAllAttachments();
+		const completeFormData = collectFormData();
 		const message = `
 :::instructions
-${JSON.stringify(formValues)}
+${JSON.stringify(completeFormData, null, 2)}
 :::`;
-		handleChatSubmit({ message: message, files: [] });
-	}, [handleChatSubmit, isFormValid, formValues]);
+		handleChatSubmit({ message: message, files: allAttachments });
+	}, [handleChatSubmit, isFormValid, collectAllAttachments, collectFormData]);
 
 	try {
 		const parsedConfig = JSON.parse(data);
@@ -332,26 +373,30 @@ ${JSON.stringify(formValues)}
 										}
 									</span>
 								</div>
-								{fieldDocuments.length > 0 && <div className="space-y-2">
-									{fieldDocuments.map((document) => <div 
-										className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-md border border-blue-200"
-										key={document.id}
-									                                  >
-										<FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
-										<span className="text-sm text-blue-900 truncate flex-1" title={document.name}>
-											{document.name}
-										</span>
-										<Button
-											className="h-6 w-6 p-0 hover:bg-blue-200"
-											onClick={() => removeDocument(document.id, field.name, field.type)}
-											size="sm"
-											type="button"
-											variant="ghost"
-										>
-											<X className="h-3 w-3 text-blue-600" />
-										</Button>
-									</div>)}
-								</div>}
+								{fieldDocuments.length > 0 && (
+									<div className="space-y-2">
+										{fieldDocuments.map((document) => (
+											<div 
+												className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-md border border-blue-200"
+												key={document.id}
+											>
+												<FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
+												<span className="text-sm text-blue-900 truncate flex-1" title={document.name}>
+													{document.name}
+												</span>
+												<Button
+													className="h-6 w-6 p-0 hover:bg-blue-200"
+													onClick={() => removeDocument(document.id, field.name, field.type)}
+													size="sm"
+													type="button"
+													variant="ghost"
+												>
+													<X className="h-3 w-3 text-blue-600" />
+												</Button>
+											</div>
+										))}
+									</div>
+								)}
 							</div>
 						</div>
 					);
