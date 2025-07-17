@@ -7,6 +7,62 @@ import { useChatStore } from "@/hooks/useChatStore";
 import { usePlatformChat } from "@/components/ChatInput/PlatformChat/usePlatformChat";
 import clsx from "clsx";
 
+// Robust JSON parser that handles edge cases and extracts JSON from mixed content
+const parseFormConfig = (jsonString: string) => {
+	// Helper function to extract JSON object from mixed content
+	const extractJsonObject = (str: string): string => {
+		const trimmed = str.trim();
+		
+		// Find the first opening brace
+		const start = trimmed.indexOf("{");
+		if (start === -1) return str;
+		
+		// Find the matching closing brace by counting braces
+		let braceCount = 0;
+		let end = start;
+		
+		for (let i = start; i < trimmed.length; i++) {
+			if (trimmed[i] === "{") braceCount++;
+			if (trimmed[i] === "}") braceCount--;
+			if (braceCount === 0) {
+				end = i;
+				break;
+			}
+		}
+		
+		// Extract just the JSON portion
+		return trimmed.substring(start, end + 1);
+	};
+	
+	try {
+		// First try to parse as-is (valid JSON)
+		return JSON.parse(jsonString);
+	} catch (firstError) {
+		try {
+			// Extract just the JSON object part
+			const extractedJson = extractJsonObject(jsonString);
+			
+			// Try parsing the extracted JSON
+			return JSON.parse(extractedJson);
+		} catch (secondError) {
+			try {
+				// If that fails, normalize quotes and try again
+				const extractedJson = extractJsonObject(jsonString);
+				const normalizedJson = extractedJson
+					.replace(/'/g, "\"")  // Replace single quotes with double quotes
+					.replace(/True/g, "true")  // Replace Python True with JSON true
+					.replace(/False/g, "false")  // Replace Python False with JSON false
+					.replace(/None/g, "null");  // Replace Python None with JSON null
+				
+				return JSON.parse(normalizedJson);
+			} catch (thirdError) {
+				// If all attempts fail, throw the original error
+				throw firstError;
+			}
+		}
+	}
+};
+
 
 
 interface FormField {
@@ -115,7 +171,7 @@ const FormDirective: React.FC<FormDirectiveProps> = ({
 
 	const isFormValid = useCallback(() => {
 		try {
-			const parsedConfig = JSON.parse(data);
+			const parsedConfig = parseFormConfig(data);
 			const formConfig: FormConfig = parsedConfig;
 			
 			// Recursive function to validate fields (including nested fields in groups)
@@ -215,7 +271,7 @@ ${JSON.stringify(completeFormData, null, 2)}
 	}, [handleChatSubmit, isFormValid, collectAllAttachments, collectFormData]);
 
 	try {
-		const parsedConfig = JSON.parse(data);
+		const parsedConfig = parseFormConfig(data);
 
 
 		// Handle both formats: fields array or groups array
