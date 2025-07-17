@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkDirective from "remark-directive";
 import type { Components } from "react-markdown";
-import { Play, Info, Eye, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch, NotebookPen, FileOutput, FileInput, FilePlus, Terminal, Database, Network, FolderOpen, BookOpen, Brain, File, ExternalLink, Paperclip, ListTodo } from "lucide-react";
+import { Play, Info, Eye, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch, NotebookPen, FileOutput, FileInput, FilePlus, Terminal, Database, Network, FolderOpen, BookOpen, Brain, File, ExternalLink, Paperclip, ListTodo, Globe } from "lucide-react";
 import { visit } from "unist-util-visit";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -681,6 +681,25 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 }) => {
 	// Custom components for ReactMarkdown
 	const components: CustomMarkdownComponents = {
+		// Custom link component that opens in new tab and shows "click here" for URLs
+		a: ({ href, children, ...props }: any) => {
+			// Check if the link text is the same as the URL (auto-generated link)
+			const linkText = typeof children === "string" ? children : children?.[0];
+			const isAutoLink = href === linkText || (typeof linkText === "string" && linkText.startsWith("http"));
+			
+			return (
+				<a 
+					{...props}
+					className="inline-flex items-center gap-1 px-2 py-1 mx-1 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 hover:text-gray-800 hover:border-gray-300 transition-all duration-200 no-underline group"
+					href={href}
+					rel="noopener noreferrer"
+					target="_blank"
+				>
+					<span>{isAutoLink ? "click here" : children}</span>
+					<Globe className="w-3 h-3 opacity-60 group-hover:opacity-100 transition-opacity" />
+				</a>
+			);
+		},
 		// Define components for each custom element
 		"custom-source": ({ sourceText }: { sourceText: string }) => <SourceComponent sourceText={sourceText} />,
 		"custom-viewer": ({ content }: { content: string }) => <CustomViewer content={content} />,
