@@ -11,17 +11,23 @@ import clsx from "clsx";
 interface FormField {
 	name: string;
 	label: string;
-	type: "text" | "textarea" | "attachment" | "select" | "checkbox" | "radio" | "number" | "email" | "password" | "date" | "tel";
+	type: "text" | "textarea" | "attachment" | "select" | "checkbox" | "radio" | "number" | "email" | "password" | "date" | "tel" | "group";
 	required?: boolean;
 	placeholder?: string;
 	options?: string[];
 	multiple?: boolean;
+	fields?: FormField[]; // For group type - nested fields
 }
 
 // Form configuration interface
 interface FormConfig {
 	title?: string;
-	fields: FormField[];
+	fields?: FormField[];
+	groups?: {
+		name: string;
+		label: string;
+		fields: FormField[];
+	}[];
 }
 
 
@@ -109,31 +115,52 @@ const FormDirective: React.FC<FormDirectiveProps> = ({
 	const isFormValid = useCallback(() => {
 		try {
 			const parsedConfig = JSON.parse(data);
-			if (parsedConfig.fields && Array.isArray(parsedConfig.fields)) {
-				const formConfig: FormConfig = parsedConfig;
-				
-				// Check if all required fields are filled
-				const requiredFields = formConfig.fields.filter((field) => field.required);
-				for (const field of requiredFields) {
-					const value = formValues[field.name];
-					if (field.type === "attachment") {
-						const fieldDocuments = getSelectedDocuments(field.name, field.type);
-						if (fieldDocuments.length === 0) {
+			const formConfig: FormConfig = parsedConfig;
+			
+			// Recursive function to validate fields (including nested fields in groups)
+			const validateFields = (fields: FormField[]): boolean => {
+				for (const field of fields) {
+					if (field.type === "group" && field.fields) {
+						// Recursively validate nested fields in groups
+						if (!validateFields(field.fields)) {
 							return false;
 						}
-					} else {
-						// For other fields, check if value exists and is not empty
-						if (!value || (typeof value === "string" && value.trim() === "")) {
-							return false;
+					} else if (field.required) {
+						// Validate individual required fields
+						const value = formValues[field.name];
+						if (field.type === "attachment") {
+							const fieldDocuments = getSelectedDocuments(field.name, field.type);
+							if (fieldDocuments.length === 0) {
+								return false;
+							}
+						} else {
+							// For other fields, check if value exists and is not empty
+							if (!value || (typeof value === "string" && value.trim() === "")) {
+								return false;
+							}
 						}
 					}
 				}
 				return true;
+			};
+			
+			// Handle both formats: fields array or groups array
+			if (formConfig.fields && Array.isArray(formConfig.fields)) {
+				return validateFields(formConfig.fields);
+			} else if (formConfig.groups && Array.isArray(formConfig.groups)) {
+				// For groups format, validate each group's fields
+				for (const group of formConfig.groups) {
+					if (!validateFields(group.fields)) {
+						return false;
+					}
+				}
+				return true;
 			}
+			
+			return false;
 		} catch (error) {
 			return false;
 		}
-		return false;
 	}, [data, formValues, selectedContexts, formId]);
 
 	// Handle form submission
@@ -149,9 +176,9 @@ ${JSON.stringify(formValues)}
 		const parsedConfig = JSON.parse(data);
 
 
-		// Handle new format
+		// Handle both formats: fields array or groups array
 		const formConfig: FormConfig = parsedConfig;
-		const { title, fields } = formConfig;
+		const { title, fields, groups } = formConfig;
 
 		const renderFormField = (field: FormField) => {
 			const fieldId = `field-${field.name}`;
@@ -329,11 +356,99 @@ ${JSON.stringify(formValues)}
 						</div>
 					);
 
+				case "group":
+					return (
+						<div className="mb-6" key={fieldId}>
+							<div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+								<h4 className="text-md font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-300">
+									{field.label}
+								</h4>
+								<div className="space-y-4">
+									{field.fields?.map(renderFormField)}
+								</div>
+							</div>
+						</div>
+					);
+
 				default:
+					// Fallback for invalid field types - provide details and textarea with attachment option
+					const fallbackFieldName = `${field.name}_fallback`;
+					const fallbackAttachmentName = `${field.name}_fallback_attachments`;
+					const fallbackDocuments = getSelectedDocuments(fallbackAttachmentName, "attachment");
+					
 					return (
 						<div className="mb-4" key={fieldId}>
-							<div className="px-3 py-2 bg-red-50 border border-red-200 rounded-md text-red-700">
-								Invalid field type: {field.type}
+							<div className="bg-orange-50 border border-orange-200 rounded-md p-4">
+								<div className="mb-3">
+									<div className="flex items-center gap-2 mb-2">
+										<span className="text-orange-600 font-medium">⚠ Unsupported field type:</span>
+										<code className="bg-orange-100 px-2 py-1 rounded text-sm">{field.type}</code>
+									</div>
+									<div className="text-sm text-orange-700">
+										<p><strong>Field:</strong> {field.label}</p>
+										{field.placeholder && <p><strong>Expected:</strong> {field.placeholder}</p>}
+										{field.options && <p><strong>Options:</strong> {field.options.join(", ")}</p>}
+									</div>
+								</div>								
+								<div className="space-y-3">
+									<div>
+										<label className={`${labelClasses} text-orange-800`} htmlFor={`${fieldId}_fallback`}>
+											{field.label} (Fallback Input)
+											{isRequired && <span className="text-red-500 ml-1">*</span>}
+										</label>
+										<textarea
+											className={`${inputClasses} border-orange-300 focus:ring-orange-500 focus:border-orange-500`}
+											disabled={isPending}
+											id={`${fieldId}_fallback`}
+											name={fallbackFieldName}
+											onChange={(e) => handleFormInputChange(fallbackFieldName, e.target.value)}
+											placeholder={field.placeholder || "Please provide your input for this field..."}
+											required={isRequired}
+											rows={3}
+											value={formValues[fallbackFieldName] || ""}
+										/>
+									</div>									
+									<div>
+										<label className="block text-sm font-medium text-orange-800 mb-2">
+											Supporting Documents (Optional)
+										</label>
+										<div className="space-y-3">
+											<div className="flex items-center gap-3">
+												{loadDocumentPanel(fallbackAttachmentName, "attachment")}
+												<span className="text-sm text-orange-700">
+													{fallbackDocuments.length === 0 
+														? "Click to attach supporting documents"
+														: `${fallbackDocuments.length} document${fallbackDocuments.length !== 1 ? "s" : ""} attached`
+													}
+												</span>
+											</div>
+											{fallbackDocuments.length > 0 && (
+												<div className="space-y-2">
+													{fallbackDocuments.map((document) => (
+														<div 
+															className="flex items-center gap-2 px-3 py-2 bg-orange-100 rounded-md border border-orange-300"
+															key={document.id}
+														>
+															<FileText className="h-4 w-4 text-orange-600 flex-shrink-0" />
+															<span className="text-sm text-orange-900 truncate flex-1" title={document.name}>
+																{document.name}
+															</span>
+															<Button
+																className="h-6 w-6 p-0 hover:bg-orange-200"
+																onClick={() => removeDocument(document.id, fallbackAttachmentName, "attachment")}
+																size="sm"
+																type="button"
+																variant="ghost"
+															>
+																<X className="h-3 w-3 text-orange-600" />
+															</Button>
+														</div>
+													))}
+												</div>
+											)}
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					);
@@ -348,7 +463,88 @@ ${JSON.stringify(formValues)}
 					</h3>
 				)}
 				<form className="space-y-1" onSubmit={(e) => { e.preventDefault(); handleFormSubmit(); }}>
-					{fields.map(renderFormField)}
+					{/* Render fields based on format */}
+					{fields && fields.map(renderFormField)}
+					{groups && groups.map((group) => (
+						<div className="mb-6" key={group.name}>
+							<div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+								<h4 className="text-md font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-300">
+									{group.label}
+								</h4>
+								<div className="space-y-4">
+									{group.fields.map(renderFormField)}
+								</div>
+							</div>
+						</div>
+					))}
+					<div className="mt-8 pt-6 border-t-2 border-gray-300">
+						<h4 className="text-md font-semibold text-gray-800 mb-4">
+							Additional Information (Optional)
+						</h4>
+						<div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
+							{/* Additional Comments */}
+							<div>
+								<label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="additional_comments">
+									Additional Comments
+								</label>
+								<textarea
+									className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
+									disabled={isPending}
+									id="additional_comments"
+									name="additional_comments"
+									onChange={(e) => handleFormInputChange("additional_comments", e.target.value)}
+									placeholder="Any additional information, clarifications, or comments you'd like to provide..."
+									rows={3}
+									value={formValues["additional_comments"] || ""}
+								/>
+							</div>
+							<div>
+								<label className="block text-sm font-medium text-gray-700 mb-2">
+									Additional Attachments
+								</label>
+								<div className="space-y-3">
+									<div className="flex items-center gap-3">
+										{loadDocumentPanel("additional_attachments", "attachment")}
+										<span className="text-sm text-gray-600">
+											{(() => {
+												const additionalDocs = getSelectedDocuments("additional_attachments", "attachment");
+												return additionalDocs.length === 0 
+													? "Click to attach any supporting documents, photos, or files"
+													: `${additionalDocs.length} additional document${additionalDocs.length !== 1 ? "s" : ""} attached`;
+											})()}
+										</span>
+									</div>
+									{(() => {
+										const additionalDocs = getSelectedDocuments("additional_attachments", "attachment");
+										return additionalDocs.length > 0 && (
+											<div className="space-y-2">
+												{additionalDocs.map((document) => (
+													<div 
+														className="flex items-center gap-2 px-3 py-2 bg-blue-100 rounded-md border border-blue-300"
+														key={document.id}
+													>
+														<FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
+														<span className="text-sm text-blue-900 truncate flex-1" title={document.name}>
+															{document.name}
+														</span>
+														<Button
+															className="h-6 w-6 p-0 hover:bg-blue-200"
+															onClick={() => removeDocument(document.id, "additional_attachments", "attachment")}
+															size="sm"
+															type="button"
+															variant="ghost"
+														>
+															<X className="h-3 w-3 text-blue-600" />
+														</Button>
+													</div>
+												))}
+											</div>
+										);
+									})()}
+								</div>
+							</div>
+						</div>
+					</div>					
 					<div className="flex justify-end pt-4 border-t border-gray-200">
 						<Button
 							className="bg-indigo-500 hover:bg-indigo-600 text-white px-6"

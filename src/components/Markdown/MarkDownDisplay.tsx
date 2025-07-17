@@ -242,7 +242,21 @@ interface Attachment {
 // Update AttachmentsComponent to use AttachmentViewer
 const AttachmentsComponent: React.FC<{ attachments: string }> = ({ attachments }) => {
 	try {
-		const parsedAttachments = JSON.parse(attachments);
+		let parsedAttachments;
+		
+		try {
+			// First try to parse as-is (valid JSON)
+			parsedAttachments = JSON.parse(attachments);
+		} catch (firstError) {
+			// If that fails, try to convert Python dict format to JSON
+			const jsonString = attachments
+				.replace(/'/g, "\"")  // Replace single quotes with double quotes
+				.replace(/True/g, "true")  // Replace Python True with JSON true
+				.replace(/False/g, "false")  // Replace Python False with JSON false
+				.replace(/None/g, "null");  // Replace Python None with JSON null
+			
+			parsedAttachments = JSON.parse(jsonString);
+		}
 		
 		const files = parsedAttachments.map((attachment: Attachment) => ({	
 			resource_id: attachment.uuid,
