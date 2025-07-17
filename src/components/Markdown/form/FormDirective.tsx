@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { Paperclip, FileText, X, CornerDownLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useStore } from "@/utils/store";
 import { useChatStore } from "@/hooks/useChatStore";
 import { usePlatformChat } from "@/components/ChatInput/PlatformChat/usePlatformChat";
@@ -523,72 +524,96 @@ ${JSON.stringify(completeFormData, null, 2)}
 						</div>
 					))}
 					<div className="mt-8 pt-6 border-t-2 border-gray-300">
-						<h4 className="text-md font-semibold text-gray-800 mb-4">
-							Additional Information (Optional)
-						</h4>
-						<div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
-							{/* Additional Comments */}
-							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="additional_comments">
-									Additional Comments
-								</label>
-								<textarea
-									className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
-									disabled={isPending}
-									id="additional_comments"
-									name="additional_comments"
-									onChange={(e) => handleFormInputChange("additional_comments", e.target.value)}
-									placeholder="Any additional information, clarifications, or comments you'd like to provide..."
-									rows={3}
-									value={formValues["additional_comments"] || ""}
-								/>
-							</div>
-							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-2">
-									Additional Attachments
-								</label>
-								<div className="space-y-3">
-									<div className="flex items-center gap-3">
-										{loadDocumentPanel("additional_attachments", "attachment")}
-										<span className="text-sm text-gray-600">
-											{(() => {
-												const additionalDocs = getSelectedDocuments("additional_attachments", "attachment");
-												return additionalDocs.length === 0 
-													? "Click to attach any supporting documents, photos, or files"
-													: `${additionalDocs.length} additional document${additionalDocs.length !== 1 ? "s" : ""} attached`;
-											})()}
+						<Accordion className="w-full"
+							collapsible
+							type="single"
+						>
+							<AccordionItem className="border-none" value="additional-info">
+								<AccordionTrigger className="hover:no-underline py-2 px-2 hover:bg-gray-50 rounded-md">
+									<div className="flex items-center gap-2">
+										<span className="text-md font-semibold text-gray-800">
+											Additional Information (Optional)
 										</span>
+										{(() => {
+											const additionalCommentsValue = formValues["additional_comments"] || "";
+											const additionalDocs = getSelectedDocuments("additional_attachments", "attachment");
+											const hasContent = additionalCommentsValue.trim() || additionalDocs.length > 0;
+											return hasContent && (
+												<span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+													{[additionalCommentsValue.trim() && "comments", additionalDocs.length > 0 && `${additionalDocs.length} file${additionalDocs.length !== 1 ? "s" : ""}`].filter(Boolean).join(", ")}
+												</span>
+											);
+										})()}
 									</div>
-									{(() => {
-										const additionalDocs = getSelectedDocuments("additional_attachments", "attachment");
-										return additionalDocs.length > 0 && (
-											<div className="space-y-2">
-												{additionalDocs.map((document) => (
-													<div 
-														className="flex items-center gap-2 px-3 py-2 bg-blue-100 rounded-md border border-blue-300"
-														key={document.id}
-													>
-														<FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
-														<span className="text-sm text-blue-900 truncate flex-1" title={document.name}>
-															{document.name}
-														</span>
-														<Button
-															className="h-6 w-6 p-0 hover:bg-blue-200"
-															onClick={() => removeDocument(document.id, "additional_attachments", "attachment")}
-															size="sm"
-															type="button"
-															variant="ghost"
-														>
-															<X className="h-3 w-3 text-blue-600" />
-														</Button>
-													</div>
-												))}
+								</AccordionTrigger>
+								<AccordionContent className="pt-4">
+									<div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
+										{/* Additional Comments */}
+										<div>
+											<label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="additional_comments">
+												Additional Comments
+											</label>
+											<textarea
+												className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
+												disabled={isPending}
+												id="additional_comments"
+												name="additional_comments"
+												onChange={(e) => handleFormInputChange("additional_comments", e.target.value)}
+												placeholder="Any additional information, clarifications, or comments you'd like to provide..."
+												rows={3}
+												value={formValues["additional_comments"] || ""}
+											/>
+										</div>
+										{/* Additional Attachments */}
+										<div>
+											<label className="block text-sm font-medium text-gray-700 mb-2">
+												Additional Attachments
+											</label>
+											<div className="space-y-3">
+												<div className="flex items-center gap-3">
+													{loadDocumentPanel("additional_attachments", "attachment")}
+													<span className="text-sm text-gray-600">
+														{(() => {
+															const additionalDocs = getSelectedDocuments("additional_attachments", "attachment");
+															return additionalDocs.length === 0 
+																? "Click to attach any supporting documents, photos, or files"
+																: `${additionalDocs.length} additional document${additionalDocs.length !== 1 ? "s" : ""} attached`;
+														})()}
+													</span>
+												</div>
+												{(() => {
+													const additionalDocs = getSelectedDocuments("additional_attachments", "attachment");
+													return additionalDocs.length > 0 && (
+														<div className="space-y-2">
+															{additionalDocs.map((document) => (
+																<div 
+																	className="flex items-center gap-2 px-3 py-2 bg-blue-100 rounded-md border border-blue-300"
+																	key={document.id}
+																>
+																	<FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
+																	<span className="text-sm text-blue-900 truncate flex-1" title={document.name}>
+																		{document.name}
+																	</span>
+																	<Button
+																		className="h-6 w-6 p-0 hover:bg-blue-200"
+																		onClick={() => removeDocument(document.id, "additional_attachments", "attachment")}
+																		size="sm"
+																		type="button"
+																		variant="ghost"
+																	>
+																		<X className="h-3 w-3 text-blue-600" />
+																	</Button>
+																</div>
+															))}
+														</div>
+													);
+												})()}
 											</div>
-										);
-									})()}
-								</div>
-							</div>
-						</div>
+										</div>
+									</div>
+								</AccordionContent>
+							</AccordionItem>
+						</Accordion>
 					</div>					
 					<div className="flex justify-end pt-4 border-t border-gray-200">
 						<Button
