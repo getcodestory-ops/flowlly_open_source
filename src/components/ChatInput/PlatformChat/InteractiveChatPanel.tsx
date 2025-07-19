@@ -1,7 +1,7 @@
-import {  useState } from "react";
+import React, { useState } from "react";
 import { useChatStore } from "@/hooks/useChatStore";
 import { Button } from "@/components/ui/button";
-import { getInlineDocument, saveDocumentAs } from "@/api/folderRoutes";
+import { getInlineDocument, saveDocumentAs, fetchResource } from "@/api/folderRoutes";
 import { updateDocumentName } from "@/api/documentRoutes";
 import { useStore } from "@/utils/store";
 import { useQuery } from "@tanstack/react-query";
@@ -21,10 +21,147 @@ const imageExtensions = ["jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif
 const tifExtensions = ["tif", "tiff"];
 const htmlExtensions = ["html", "htm"];
 const microsoftExtensions = ["doc", "docx", "xlsx", "xls", "ppt", "pptx"];
+const csvExtensions = ["csv"];
+
+// CSV Viewer Component
+const CSVViewer = ({ resourceId }: { resourceId: string }) => {
+	const [csvData, setCsvData] = useState<string[][]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+	const { session } = useStore();
+	const { activeProject } = useStore();
+
+	const { data: resource, isLoading, isError } = useQuery({
+		queryKey: ["csvResource", session, activeProject, resourceId],
+		queryFn: () => {
+			if (!session || !activeProject?.project_id) {
+				return Promise.reject("No session or active project");
+			}
+			return fetchResource(session, activeProject.project_id, resourceId);
+		},
+		enabled: !!session && !!activeProject?.project_id && !!resourceId,
+	});
+
+	React.useEffect(() => {
+		const parseCsvContent = async() => {
+			if (!resource?.metadata?.content) {
+				if (!isLoading && !isError) {
+					setError("No CSV content available");
+				}
+				setLoading(false);
+				return;
+			}
+
+			try {
+				setLoading(true);
+				const csvText = resource.metadata.content;
+				
+				// Simple CSV parser - handles basic CSV format
+				const lines = csvText.split("\n").filter((line: string) => line.trim());
+				const parsedData = lines.map((line: string) => {
+					// Handle quoted fields and commas within quotes
+					const result = [];
+					let current = "";
+					let inQuotes = false;
+					
+					for (let i = 0; i < line.length; i++) {
+						const char = line[i];
+						if (char === "\"") {
+							inQuotes = !inQuotes;
+						} else if (char === "," && !inQuotes) {
+							result.push(current.trim());
+							current = "";
+						} else {
+							current += char;
+						}
+					}
+					result.push(current.trim());
+					return result;
+				});
+				
+				setCsvData(parsedData);
+			} catch (err) {
+				setError("Failed to parse CSV content");
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		parseCsvContent();
+	}, [resource, isLoading, isError]);
+
+	if (isLoading || loading) {
+		return (
+			<div className="flex items-center justify-center p-8">
+				<div className="text-sm text-gray-600">Loading CSV...</div>
+			</div>
+		);
+	}
+
+	if (isError || error) {
+		return (
+			<div className="flex flex-col items-center justify-center p-8">
+				<FileText className="h-16 w-16 text-gray-400" />
+				<p className="mt-2 text-sm text-gray-600">{error || "Failed to load CSV file"}</p>
+			</div>
+		);
+	}
+
+	if (csvData.length === 0) {
+		return (
+			<div className="flex flex-col items-center justify-center p-8">
+				<FileText className="h-16 w-16 text-gray-400" />
+				<p className="mt-2 text-sm text-gray-600">No data found in CSV</p>
+			</div>
+		);
+	}
+
+	return (
+		<div className="w-full h-full overflow-auto">
+			<div className="min-w-full">
+				<table className="w-full border-collapse border border-gray-300">
+					<thead>
+						{csvData.length > 0 && (
+							<tr className="bg-gray-50">
+								{csvData[0].map((header, index) => (
+									<th 
+										className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold text-gray-900 sticky top-0 bg-gray-50"
+										key={index}
+									>
+										{header}
+									</th>
+								))}
+							</tr>
+						)}
+					</thead>
+					<tbody>
+						{csvData.slice(1).map((row, rowIndex) => (
+							<tr className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"} key={rowIndex}>
+								{row.map((cell, cellIndex) => (
+									<td 
+										className="border border-gray-300 px-3 py-2 text-sm text-gray-900 max-w-xs truncate"
+										key={cellIndex}
+										title={cell}
+									>
+										{cell}
+									</td>
+								))}
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	);
+};
 
 const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string, fileExtension: string}) : React.ReactNode => {
 	const { session } = useStore();
 	const { activeProject } = useStore();
+	
+	// Only fetch inline document URL for files that actually need it (not CSV files)
+	const needsInlineUrl = !csvExtensions.includes(fileExtension);
+	
 	const { data: resource } = useQuery({
 		queryKey: ["getInlineFileUrl", session, activeProject, resourceId],
 		queryFn: () => {
@@ -33,7 +170,19 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 			}
 			return getInlineDocument({ session, projectId: activeProject.project_id, resourceId });
 		},
+		enabled: needsInlineUrl && !!session && !!activeProject?.project_id,
 	});
+
+	// Handle CSV files first (they don't need the resource URL)
+	if (csvExtensions.includes(fileExtension)) {
+		return (
+			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
+				<CSVViewer resourceId={resourceId} />
+			</div>
+		);
+	}
+
+	// For all other files, we need the resource URL
 	return (
 		<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
 			{resource && imageExtensions.includes(fileExtension) && !tifExtensions.includes(fileExtension) && (
@@ -78,7 +227,6 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 				/>
 			)}
 			{resource && !imageExtensions.includes(fileExtension) && !htmlExtensions.includes(fileExtension) && !microsoftExtensions.includes(fileExtension) && (
-				
 				<iframe 
 					className="border-0"
 					height="100%"
