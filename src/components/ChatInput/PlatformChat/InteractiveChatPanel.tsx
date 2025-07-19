@@ -155,12 +155,61 @@ const CSVViewer = ({ resourceId }: { resourceId: string }) => {
 	);
 };
 
+// HTML Viewer Component
+const HTMLViewer = ({ resourceId }: { resourceId: string }) => {
+	const { session } = useStore();
+	const { activeProject } = useStore();
+
+	const { data: resource, isLoading, isError } = useQuery({
+		queryKey: ["htmlResource", session, activeProject, resourceId],
+		queryFn: () => {
+			if (!session || !activeProject?.project_id) {
+				return Promise.reject("No session or active project");
+			}
+			return fetchResource(session, activeProject.project_id, resourceId);
+		},
+		enabled: !!session && !!activeProject?.project_id && !!resourceId,
+	});
+
+	if (isLoading) {
+		return (
+			<div className="flex items-center justify-center p-8">
+				<div className="text-sm text-gray-600">Loading HTML...</div>
+			</div>
+		);
+	}
+
+	if (isError || !resource?.metadata?.content) {
+		return (
+			<div className="flex flex-col items-center justify-center p-8">
+				<FileText className="h-16 w-16 text-gray-400" />
+				<p className="mt-2 text-sm text-gray-600">Failed to load HTML file</p>
+			</div>
+		);
+	}
+
+	// Create a data URL for the HTML content
+	const htmlContent = resource.metadata.content;
+	const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`;
+
+	return (
+		<div className="w-full h-full overflow-auto">
+			<iframe 
+				className="border-0 bg-white w-full h-full"
+				sandbox="allow-same-origin"
+				src={dataUrl}
+				title="HTML Document"
+			/>
+		</div>
+	);
+};
+
 const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string, fileExtension: string}) : React.ReactNode => {
 	const { session } = useStore();
 	const { activeProject } = useStore();
 	
-	// Only fetch inline document URL for files that actually need it (not CSV files)
-	const needsInlineUrl = !csvExtensions.includes(fileExtension);
+	// Only fetch inline document URL for files that actually need it (not CSV or HTML files)
+	const needsInlineUrl = !csvExtensions.includes(fileExtension) && !htmlExtensions.includes(fileExtension);
 	
 	const { data: resource } = useQuery({
 		queryKey: ["getInlineFileUrl", session, activeProject, resourceId],
@@ -178,6 +227,15 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 		return (
 			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
 				<CSVViewer resourceId={resourceId} />
+			</div>
+		);
+	}
+
+	// Handle HTML files (they don't need the resource URL either)
+	if (htmlExtensions.includes(fileExtension)) {
+		return (
+			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
+				<HTMLViewer resourceId={resourceId} />
 			</div>
 		);
 	}
@@ -216,17 +274,7 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 					/>
 				</div>
 			)}
-			{resource && htmlExtensions.includes(fileExtension) && (
-				<iframe 
-					className="border-0 bg-white"
-					height="100%"
-					sandbox="allow-scripts allow-same-origin allow-forms allow-modals"
-					src={resource?.url}
-					title="HTML Document"
-					width="100%"
-				/>
-			)}
-			{resource && !imageExtensions.includes(fileExtension) && !htmlExtensions.includes(fileExtension) && !microsoftExtensions.includes(fileExtension) && (
+			{resource && !imageExtensions.includes(fileExtension) && !microsoftExtensions.includes(fileExtension) && (
 				<iframe 
 					className="border-0"
 					height="100%"
