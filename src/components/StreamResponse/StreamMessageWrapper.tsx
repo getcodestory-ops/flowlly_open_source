@@ -129,7 +129,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 
 		let isUnmounted = false;
 		let pollCount = 0;
-		const MAX_POLL_ATTEMPTS = 600; // 5 minutes at 2-second intervals
+		const MAX_POLL_ATTEMPTS = 600; // Max attempts with 100ms intervals = ~1 minute
 
 		const checkTaskStatus = async() => {
 			try {
@@ -250,8 +250,8 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 				) {
 					setIsWaitingForResponse(true);
 					
-					// Dynamic polling interval based on stream completion using ref
-					const pollInterval = streamCompleteRef.current ? 100 : 5000; // 100ms after stream ends, 5s during streaming
+					// Fast polling after stream completion, no polling during streaming
+					const pollInterval = 500; // 500ms after stream ends
 					timeoutRef.current = setTimeout(checkTaskStatus, pollInterval);
 				} else if (response.status === "failed") {
 					setIsLoading(false);
@@ -334,7 +334,8 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 		// Store the function reference so it can be called from the callback
 		checkTaskStatusRef.current = checkTaskStatus;
 
-		checkTaskStatus();
+		// Don't start polling immediately - wait for stream completion
+		// checkTaskStatus(); // Removed this line
 
 		return () => {
 			isUnmounted = true;
