@@ -133,16 +133,68 @@ const DocumentReference: React.FC<{ documentId: string, content: string }> = ({ 
 	);
 };
 
-// Update CustomViewer to accept an icon
-const CustomViewer: React.FC<{ content: string; icon?: React.ReactNode; className?: string }> = ({ content, icon, className }) => {
+// Update CustomViewer to accept an icon string and map it to the correct icon component
+const CustomViewer: React.FC<{ content: string; details?: string; icon?: React.ReactNode | string; className?: string }> = ({ content, details, icon, className }) => {
+	// Icon mapping for string names to React components
+	const iconMap: { [key: string]: React.ReactNode } = {
+		FilePlus: <FilePlus className="w-4 h-4" />,
+		Edit: <Pencil className="w-4 h-4" />,
+		FileInput: <FileInput className="w-4 h-4" />,
+		Eye: <Eye className="w-4 h-4" />,
+		Play: <Play className="w-4 h-4" />,
+		Terminal: <Terminal className="w-4 h-4" />,
+		Globe: <Globe className="w-4 h-4" />,
+		FileSearch: <FileText className="w-4 h-4" />, // Using FileText as FileSearch isn't available
+		Save: <Save className="w-4 h-4" />,
+		FileText: <FileText className="w-4 h-4" />,
+		BookOpen: <BookOpen className="w-4 h-4" />,
+		FileDown: <FileInput className="w-4 h-4" />, // Using FileInput as FileDown isn't available
+		Search: <Search className="w-4 h-4" />,
+		ClipboardList: <ListTodo className="w-4 h-4" />, // Using ListTodo as ClipboardList isn't available
+		Rocket: <ExternalLink className="w-4 h-4" />, // Using ExternalLink as Rocket isn't available
+		MessageCircle: <MessageCircle className="w-4 h-4" />,
+		Code: <Code className="w-4 h-4" />,
+		Database: <Database className="w-4 h-4" />,
+		Network: <Network className="w-4 h-4" />,
+		FolderOpen: <FolderOpen className="w-4 h-4" />,
+		Brain: <Brain className="w-4 h-4" />,
+		File: <File className="w-4 h-4" />,
+		CheckCircle: <CheckCircle className="w-4 h-4" />,
+		Calendar: <Calendar className="w-4 h-4" />,
+		BarChart2: <BarChart2 className="w-4 h-4" />,
+		Loader2: <Loader2 className="w-4 h-4 animate-spin" />,
+		FolderSearch2: <FolderSearch2 className="w-4 h-4" />,
+		NotebookPen: <NotebookPen className="w-4 h-4" />,
+		TextSearch: <TextSearch className="w-4 h-4" />,
+		FileOutput: <FileOutput className="w-4 h-4" />,
+		Info: <Info className="w-4 h-4" />,
+		NotebookTabs: <NotebookTabs className="w-4 h-4" />,
+		Settings: <Save className="w-4 h-4" />, // Using Save as Settings isn't available in current imports
+	};
+
+	// Determine which icon to use
+	const getIcon = () => {
+		if (typeof icon === "string") {
+			return iconMap[icon] || <Play className="w-4 h-4" />;
+		}
+		return icon || <Play className="w-4 h-4" />;
+	};
+
 	return (
 		<div className={`flex my-1 w-full transition-all  ${className}`}>
 			<div className="flex justify-center gap-2 bg-gray-100  rounded-md p-0.5 px-2 border border-gray-300 ">
 				<div>
-					{icon || <Play className="w-4 h-4" />}
+					{getIcon()}
 				</div>
-				<div className="font-medium  text-center text-xs ">
-          			{content}
+				<div className="flex flex-col">
+					<div className="font-medium  text-start text-xs ">
+						{content}
+					</div>
+					{details && (
+						<div className="text-xs text-gray-500 text-center mt-0.5">
+							{details}
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
@@ -173,62 +225,14 @@ const UUIDViewer: React.FC<{ content: string }> = ({ content }) => {
 // Add this constant with valid directive names
 const VALID_DIRECTIVES = [
 	"source",
-	"workflow",
-	"workflow-results",
-	"addition",
-	"deletion",
-	"document",
-	"read_file",
-	"execute_file_code",
-	"write_report_content",
-	"edit_report_content",
-	"complete_report",
-	"generate_chart",
-	"workflow_result",
-	"lookup_log",
-	"complete_log_update",
-	"project_document_search",
-	"google_search",
-	"workflow_started",
-	"workflow_completed",
-	"follow_up_started",
-	"look_up_project_schedule",
 	"respond_to_user",
-	"start_writing_or_editing_report",
-	"edit_report",
 	"attachments",
-	"extract_file_insights",
-	"get_report_template",
-	"get_task_guidelines",
 	"chart",
-	"write_project_document_to_sandbox",
-	"read_complete_project_document",
-	"read_project_document_summary",
-	"copy_file_from_sandbox_to_project_document",
-	"read_file_from_sandbox",
-	"get_all_files_in_sandbox",
-	"execute_code_in_jupyter_notebook",
-	"run_command_in_sandbox",
-	"create_new_file_in_sandbox",
-	"update_file_in_sandbox",
-	"edit_file_in_sandbox",
-	"append_to_file_in_sandbox",
-	"expose_sandbox_port",
 	"mark_task_complete",
-	"programming_expert",
-	"examine_project_document_file",
-	"examine_file_from_sandbox",
-	"edit_project_document",
-	"append_to_project_document",
-	"create_new_project_document",
-	"send_message_to_user",
-	"programming_assistant",
-	"save_checkpoint",
 	"instructions",
 	"uuid",
 	"form",
-	"assistant",
-	"integration",
+	"custom-viewer",
 ];
 
 // Add Attachment interface
@@ -660,11 +664,31 @@ function remarkDirectiveComponents() {
 							data: extractCompleteContent(node) || "{}",
 						};
 						break;
+					case "custom-viewer":
+						data.hName = "custom-viewer";
+						try {
+							const jsonData = JSON.parse(extractCompleteContent(node) || "{}");
+							data.hProperties = {
+								data: jsonData,
+							};
+						} catch (error) {
+							console.error("Error parsing custom-viewer data:", error);
+							data.hProperties = {
+								data: {
+									description: "Error parsing data",
+									icon: "Info",
+									color: "text-red-600",
+								},
+							};
+						}
+						break;
 					default:
 						// Use the directive name directly if not mapped
-						data.hName = `custom-${hName}`;
+						data.hName = `${hName}`;
 						data.id = id;
-						data.hProperties = node.attributes || {};
+						data.hProperties = {
+							data: extractCompleteContent(node) || "{}",
+						};
 				}
 			}
 		});
@@ -702,7 +726,12 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 		},
 		// Define components for each custom element
 		"custom-source": ({ sourceText }: { sourceText: string }) => <SourceComponent sourceText={sourceText} />,
-		"custom-viewer": ({ content }: { content: string }) => <CustomViewer content={content} />,
+		"custom-viewer": ({ data }: { data: { description: string, details?: string, icon: string, className?: string, color?: string } }) => <CustomViewer 
+			className={data.className || data.color}
+			content={data.description}
+			details={data.details}
+			icon={data.icon}
+		                                                                                                                                      />,
 		"custom-read-file": ({ content }: { content: string }) => <CustomViewer content={content} icon={<FileText className="w-4 h-4" />} />,
 		"custom-lookup-log": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Eye className="w-4 h-4" />} />,
 		"custom-complete-log-update": ({ content }: { content: string }) => <CustomViewer content={content} icon={<CheckCircle className="w-4 h-4" />} />,
