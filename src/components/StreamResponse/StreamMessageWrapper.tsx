@@ -377,7 +377,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 		switch (taskStatus) {
 			case "pending":
 			case "processing":
-				return "Thinking";
+				return "Flowlly is Operating Computer";
 			case "completed":
 				return "Complete";
 			case "failed":
@@ -442,7 +442,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 								)}
 							</div>
 							<div className="text-xs text-gray-400">
-								{isFullyExpanded ? "Hide thoughts" : "See thoughts"}
+								{isFullyExpanded ? "Hide computer process" : "See computer process"}
 							</div>
 						</div>
 					</AccordionTrigger>
