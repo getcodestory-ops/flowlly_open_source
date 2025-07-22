@@ -1,10 +1,10 @@
 // MarkdownRenderer.tsx
-import React from "react";
+import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkDirective from "remark-directive";
 import type { Components } from "react-markdown";
-import { Play, Info, Eye, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch, NotebookPen, FileOutput, FileInput, FilePlus, Terminal, Database, Network, FolderOpen, BookOpen, Brain, File, ExternalLink, Paperclip, ListTodo, Globe } from "lucide-react";
+import { Play, Info, Eye, EyeOff, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch, NotebookPen, FileOutput, FileInput, FilePlus, Terminal, Database, Network, FolderOpen, BookOpen, Brain, File, ExternalLink, Paperclip, ListTodo, Globe } from "lucide-react";
 import { visit } from "unist-util-visit";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -134,7 +134,9 @@ const DocumentReference: React.FC<{ documentId: string, content: string }> = ({ 
 };
 
 // Update CustomViewer to accept an icon string and map it to the correct icon component
-const CustomViewer: React.FC<{ content: string; details?: string; icon?: React.ReactNode | string; className?: string }> = ({ content, details, icon, className }) => {
+const CustomViewer: React.FC<{ content: string; details?: string; icon?: React.ReactNode | string; className?: string, hide?: boolean }> = ({ content, details, icon, className, hide }) => {
+	const [isVisible, setIsVisible] = useState(!hide);
+
 	// Icon mapping for string names to React components
 	const iconMap: { [key: string]: React.ReactNode } = {
 		FilePlus: <FilePlus className="w-4 h-4" />,
@@ -184,15 +186,27 @@ const CustomViewer: React.FC<{ content: string; details?: string; icon?: React.R
 		<div className={`flex my-1 w-full transition-all  ${className}`}>
 			<div className="flex justify-center gap-2 bg-gray-100  rounded-md p-0.5 px-2 border border-gray-300 ">
 				<div>
-					{getIcon()}
+					 {getIcon()} 
 				</div>
 				<div className="flex flex-col">
-					<div className="font-medium  text-start text-xs ">
+					
+					<div className={`font-medium text-start text-xs ${!isVisible ? "hidden" : ""}`}>
 						{content}
 					</div>
-					{details && (
+					{details && isVisible && (
 						<div className="text-xs text-gray-500 text-center mt-0.5">
 							{details}
+						</div>
+					)}
+					{hide && (
+						<div className="flex justify-start">
+							<button
+								className="text-gray-500 flex  justify-start hover:text-gray-700 cursor-pointer p-1 hover:bg-gray-200 rounded transition-colors"
+								onClick={() => setIsVisible(!isVisible)}
+								title={isVisible ? "Hide details" : "Show details"}
+							>
+								{isVisible ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+							</button>
 						</div>
 					)}
 				</div>
@@ -805,7 +819,10 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 		),
 		"custom-save-checkpoint": ({ content }: { content: string }) => <CustomViewer content={content} icon={<Save className="w-4 h-4" />} />,
 		"custom-form": ({ data }: { data: string }) => <FormDirective data={data} />,
-		"custom-instructions": ({ content }: { content: string }) => <CustomViewer content="instructions" icon={<ListTodo className="w-4 h-4" />} />,
+		"custom-instructions": ({ content }: { content: string }) => <CustomViewer content={content}
+			hide
+			icon={<ListTodo className="w-4 h-4" />}
+		                                                             />,
 		"custom-integration": ({ data }: { data: string }) => <IntegrationDirective data={data} />,
 		// Use a normal paragraph component for li elements
 		li: ({ children, ...props }: any) => {
