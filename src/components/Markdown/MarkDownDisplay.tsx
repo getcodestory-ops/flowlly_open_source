@@ -247,6 +247,7 @@ const VALID_DIRECTIVES = [
 	"uuid",
 	"form",
 	"custom-viewer",
+	"integration",
 ];
 
 // Add Attachment interface
