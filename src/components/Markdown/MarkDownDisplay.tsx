@@ -248,6 +248,7 @@ const VALID_DIRECTIVES = [
 	"form",
 	"custom-viewer",
 	"integration",
+	"context",
 ];
 
 // Add Attachment interface
@@ -656,6 +657,7 @@ function remarkDirectiveComponents() {
 						};
 						break;
 					case "instructions":
+					case "context":
 						data.hName = "custom-instructions";
 						data.hProperties = {
 							content: extractCompleteContent(node),
