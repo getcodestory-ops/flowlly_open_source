@@ -90,11 +90,11 @@ function CreateJob(): React.ReactNode {
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Button className="bg-indigo-500 text-white">
-							<Plus className="mr-2 h-4 w-4" /> Create Workflow
+							<Plus className="mr-2 h-4 w-4" /> Create Meeting
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent>
-						<DropdownMenuItem
+						{/* <DropdownMenuItem
 							onSelect={() => {
 								setSelectedJobType("customWorkflow");
 								setIsCustomWorkflowDialogOpen(true);
@@ -102,7 +102,7 @@ function CreateJob(): React.ReactNode {
 						>
 							<Settings className="mr-2 h-4 w-4" />
 							Build a workflow
-						</DropdownMenuItem>
+						</DropdownMenuItem> */}
 						<DropdownMenuItem
 							onSelect={() => {
 								setSelectedJobType("meeting");

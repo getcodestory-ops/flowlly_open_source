@@ -336,7 +336,7 @@ const menuItems: {
 	// 	link: "projects",
 	// },
 	{
-		label: "Workflow",
+		label: "Meetings",
 		fnKey: "workflows",
 		icon: <ClipboardList className="h-5 w-5" />,
 		link: "workbench",
