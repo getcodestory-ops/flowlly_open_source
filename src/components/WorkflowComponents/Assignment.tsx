@@ -118,13 +118,13 @@ export default function AssignmentHome(): React.ReactNode {
 								<div className="flex flex-row justify-between">
 									<div className="">
 										<CardTitle className="flex  gap-8 text-2xl font-bold">
-									AI Workflows
+									Meetings
 										</CardTitle>
 										<CardDescription>
 											<div className="flex justify-between items-start">
-												<div className="flex flex-col gap-2">
-											Manage and run AI workflows for your project
-												</div>
+												{/* <div className="flex flex-col gap-2">
+											Manage  meetings for your project
+												</div> */}
 											</div>
 										</CardDescription>
 									</div>

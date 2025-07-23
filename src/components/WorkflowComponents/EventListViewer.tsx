@@ -59,7 +59,7 @@ import { useStore } from "@/utils/store";
 import { deleteProjectEvent } from "@/api/taskQueue";
 
 const localeText = {
-	searchWorkflows: "Filter workflows by name or type...",
+	searchWorkflows: "Filter meetings by name or type...",
 };
 import { PlayIcon } from "lucide-react";
 
@@ -308,7 +308,7 @@ export const EventListViewer: React.FC = ({
 			{viewMode === ViewMode.GRID && (
 				<div>
 					{/* Non-meeting events section */}
-					<div className="mb-8">
+					{/* <div className="mb-8">
 						<h2 className="text-xl font-semibold mb-4 border-b border-gray-200 pb-2">Workflows</h2>
 						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
 							{filteredGraphs.filter((graph) => graph.event_type !== "meeting").length > 0 ? (
@@ -408,9 +408,9 @@ export const EventListViewer: React.FC = ({
 								</div>
 							)}
 						</div>
-					</div>
+					</div> */}
 					<div>
-						<h2 className="text-xl font-semibold mb-4 border-b border-gray-200 pb-2">Meetings</h2>
+						{/* <h2 className="text-xl font-semibold mb-4 border-b border-gray-200 pb-2">Meetings</h2> */}
 						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
 							{filteredGraphs.filter((graph) => graph.event_type === "meeting").length > 0 ? (
 								filteredGraphs

@@ -130,7 +130,7 @@ export default function AtSelectorComponent() : JSX.Element {
 						<AtSign className="h-4 w-4 text-gray-500" />
 					</Button>
 				</PopoverTrigger>
-				<PopoverContent align="start" className="w-[200px] p-0">
+				<PopoverContent align="start" className="w-[400px] p-0">
 					<Command>
 						<CommandInput className="font-medium text-gray-500" placeholder="Search..." />
 						<CommandList>
