@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { AgentMessage } from "@/types/agentChats";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
+import MarkdownTerminal from "../Markdown/style/MarkdownTerminal";
 import StreamMessageWrapper from "../StreamResponse/StreamMessageWrapper";
 
 import {
@@ -221,9 +222,7 @@ function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: {
 														</div>
 													</AccordionTrigger>
 													<AccordionContent className="">
-														<div className="bg-gray-50 rounded-md p-2 ">
-															<MarkDownDisplay content={result.log} />
-														</div>
+														<MarkdownTerminal content={result.log} />
 													</AccordionContent>
 												</AccordionItem>
 											</Accordion>

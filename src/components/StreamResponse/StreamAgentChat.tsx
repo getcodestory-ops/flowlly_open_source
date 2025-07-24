@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import MarkDownDisplay from "../Markdown/MarkDownDisplay";
 import { CircleIcon } from "lucide-react";
+import MarkdownTerminal from "../Markdown/style/MarkdownTerminal";
 
 interface StreamComponentProps {
   streamingKey: string;
@@ -102,7 +102,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 		<div className="mb-4">
 			{displayValue ? (
 				<div className="pb-4">
-					<MarkDownDisplay content={displayValue} />
+					<MarkdownTerminal content={displayValue} />
 					{isPending && (
 						<div className="flex gap-1 items-center mt-2">
 							<CircleIcon
