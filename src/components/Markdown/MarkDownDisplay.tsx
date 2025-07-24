@@ -514,7 +514,7 @@ function remarkDirectiveComponents() {
 					case "chart":
 						data.hName = "custom-chart";
 						data.hProperties = {
-							data: node.children?.[0]?.children[0]?.value || "{}",
+							data: extractCompleteContent(node) || "{}",
 						};
 						break;
 					case "write_project_document_to_sandbox":
@@ -653,7 +653,7 @@ function remarkDirectiveComponents() {
 					case "form":
 						data.hName = "custom-form";
 						data.hProperties = {
-							data: node.children?.[0]?.children[0]?.value || "{}",
+							data: extractCompleteContent(node) || "{}",
 						};
 						break;
 					case "instructions":
