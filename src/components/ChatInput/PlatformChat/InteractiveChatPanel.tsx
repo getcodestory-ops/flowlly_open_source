@@ -16,6 +16,7 @@ import {
 	DialogContent,
 } from "@/components/ui/dialog";
 import FolderSelector from "@/components/ProjectEvent/FolderSelector";
+import { UnsavedChangesDialog } from "@/components/DocumentEditor/ToolBarItems";
 
 const imageExtensions = ["jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff"];
 const tifExtensions = ["tif", "tiff"];
@@ -309,8 +310,9 @@ const InteractiveChatPanel = () : React.ReactNode => {
 	const [showSaveAsDialog, setShowSaveAsDialog] = useState(false);
 	const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
 	const [selectedFolderName, setSelectedFolderName] = useState<string>("");
-	const { session } = useStore();
-	const { activeProject } = useStore();
+	const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+	const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+	const { session, activeProject, unsavedChanges, setUnsavedChanges, clearUnsavedChanges, clearAllUnsavedChanges } = useStore();
 	const { toast } = useToast();
 
 	const activeTab = tabs.find((tab) => tab.id === activeTabId);
@@ -352,9 +354,80 @@ const InteractiveChatPanel = () : React.ReactNode => {
 		setViewModes((prev) => ({ ...prev, [tabId]: mode }));
 	};
 
+	// Function to check if tab has unsaved changes before performing an action
+	const checkUnsavedChanges = (tabId: string, action: () => void) => {
+		const tab = tabs.find((t) => t.id === tabId);
+		const documentId = tab?.resourceId || tabId; // Use resourceId as document identifier
+		
+		if (unsavedChanges[documentId]) {
+			setPendingAction(() => action);
+			setShowUnsavedDialog(true);
+		} else {
+			action();
+		}
+	};
+
+	// Update unsaved changes for a specific tab
+	const setTabUnsavedChanges = (tabId: string, hasChanges: boolean) => {
+		const tab = tabs.find((t) => t.id === tabId);
+		const documentId = tab?.resourceId || tabId;
+		setUnsavedChanges(documentId, hasChanges);
+	};
+
+	// Clear unsaved changes for a tab (when saved)
+	const clearTabUnsavedChanges = (tabId: string) => {
+		const tab = tabs.find((t) => t.id === tabId);
+		const documentId = tab?.resourceId || tabId;
+		clearUnsavedChanges(documentId);
+	};
+
 	const handleTabClose = (tabId: string, e: React.MouseEvent) => {
 		e.stopPropagation();
-		removeTab(tabId);
+		checkUnsavedChanges(tabId, () => {
+			removeTab(tabId);
+			clearTabUnsavedChanges(tabId);
+		});
+	};
+
+	// Handle mode switching with unsaved changes check
+	const handleModeSwitch = (tabId: string) => {
+		const currentMode = getCurrentViewMode(tabId);
+		const newMode = currentMode === "original" ? "text" : "original";
+		
+		// Only check for unsaved changes when switching FROM text mode (edit mode)
+		if (currentMode === "text") {
+			checkUnsavedChanges(tabId, () => {
+				setCurrentViewMode(tabId, newMode);
+				clearTabUnsavedChanges(tabId);
+			});
+		} else {
+			setCurrentViewMode(tabId, newMode);
+			// Note: Unsaved changes will be set by ResourceTextViewer when actual content changes occur
+		}
+	};
+
+	// Dialog handlers for unsaved changes
+	const handleSaveAndContinue = async() => {
+		// For now, we'll just proceed with the action
+		// In a full implementation, you'd want to save the content first
+		if (pendingAction) {
+			pendingAction();
+			setPendingAction(null);
+		}
+		setShowUnsavedDialog(false);
+	};
+
+	const handleDiscardChanges = () => {
+		if (pendingAction) {
+			pendingAction();
+			setPendingAction(null);
+		}
+		setShowUnsavedDialog(false);
+	};
+
+	const handleCancelAction = () => {
+		setPendingAction(null);
+		setShowUnsavedDialog(false);
 	};
 
 	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "wav", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", ".xlsx", ".docx", ".doc", "docx", "doc", "xlsx", "md", "json", "jsonl", "py", "css", "js", "ts", "tsx"];
@@ -500,6 +573,9 @@ const InteractiveChatPanel = () : React.ReactNode => {
 										)}
 										<span className="truncate" title={tab.title}>
 											{tab.title}
+											{unsavedChanges[tab.resourceId || tab.id] && (
+												<span className="text-orange-600 ml-1">•</span>
+											)}
 										</span>
 										<Button
 											className="h-4 w-4 p-0 hover:bg-gray-200 flex-shrink-0 ml-1"
@@ -526,7 +602,19 @@ const InteractiveChatPanel = () : React.ReactNode => {
 						</Button>
 						<Button
 							className="h-6 w-6 p-0"
-							onClick={clearAllTabs}
+							onClick={() => {
+								// Check if any tab has unsaved changes
+								const hasAnyUnsavedChanges = Object.values(unsavedChanges).some(Boolean);
+								if (hasAnyUnsavedChanges) {
+									setPendingAction(() => () => {
+										clearAllTabs();
+										clearAllUnsavedChanges();
+									});
+									setShowUnsavedDialog(true);
+								} else {
+									clearAllTabs();
+								}
+							}}
 							size="icon"
 							title="Close All Tabs"
 							variant="ghost"
@@ -590,16 +678,29 @@ const InteractiveChatPanel = () : React.ReactNode => {
 								Save As
 							</Button>
 							<Button 
-								className="gap-2"
-								onClick={() => {
-									const currentMode = getCurrentViewMode(activeTab.id);
-									setCurrentViewMode(activeTab.id, currentMode === "original" ? "text" : "original");
-								}}
+								className={`gap-2 transition-all duration-200 relative ${
+									getCurrentViewMode(activeTab.id) === "text" 
+										? "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100" 
+										: "hover:bg-gray-100 border border-transparent"
+								}`}
+								onClick={() => handleModeSwitch(activeTab.id)}
 								size="sm"
 								variant="ghost"
 							>
-								{getCurrentViewMode(activeTab.id) === "original" ? <Pencil className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-								{getCurrentViewMode(activeTab.id) === "original" ? "View and Edit File Content" : "View Original"}
+								{getCurrentViewMode(activeTab.id) === "original" ? (
+									<>
+										<Pencil className="h-4 w-4" />
+										<span className="font-medium">Edit</span>
+									</>
+								) : (
+									<>
+										<FileText className="h-4 w-4" />
+										<span className="font-medium">View</span>
+									</>
+								)}
+								{unsavedChanges[activeTab.resourceId || activeTab.id] && getCurrentViewMode(activeTab.id) === "text" && (
+									<div className="absolute -top-1 -right-1 h-3 w-3 bg-orange-500 rounded-full border-2 border-white animate-pulse" />
+								)}
 							</Button>
 						</>
 					)}
@@ -634,7 +735,11 @@ const InteractiveChatPanel = () : React.ReactNode => {
 									<>
 										{getCurrentViewMode(tab.id) === "original" ? (
 											getFileExtension(tab.filename) === "md" ? (
-												<ResourceTextViewer resource_id={tab.resourceId} />
+												<ResourceTextViewer 
+													resource_id={tab.resourceId}
+													// TODO: Add onUnsavedChanges prop when ResourceTextViewer supports it
+													// onUnsavedChanges={(hasChanges: boolean) => setTabUnsavedChanges(tab.id, hasChanges)}
+												/>
 											) : (
 												<InlineDocumentViewer 
 													fileExtension={getFileExtension(tab.filename)} 
@@ -642,7 +747,11 @@ const InteractiveChatPanel = () : React.ReactNode => {
 												/>
 											)
 										) : (
-											<ResourceTextViewer resource_id={tab.resourceId} />
+											<ResourceTextViewer 
+												resource_id={tab.resourceId}
+												// TODO: Add onUnsavedChanges prop when ResourceTextViewer supports it
+												// onUnsavedChanges={(hasChanges: boolean) => setTabUnsavedChanges(tab.id, hasChanges)}
+											/>
 										)}
 									</>
 								)}
@@ -681,6 +790,14 @@ const InteractiveChatPanel = () : React.ReactNode => {
 					</div>
 				</DialogContent>
 			</Dialog>
+			{/* Unsaved Changes Dialog */}
+			<UnsavedChangesDialog
+				isOpen={showUnsavedDialog}
+				isSaving={false}
+				onCancel={handleCancelAction}
+				onDiscard={handleDiscardChanges}
+				onSave={handleSaveAndContinue}
+			/>
 		</div>
 	);
 };

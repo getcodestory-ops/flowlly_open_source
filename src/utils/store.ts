@@ -94,6 +94,7 @@ export const useStore = create<State>()((set, get) => ({
 	documentId: "",
 	AiActionsView: "open",
 	projectStatus: "On Schedule",
+	unsavedChanges: {} as Record<string, boolean>,
 	setSession: (session: Session | null) => set(() => ({ session })),
 	// setNotification : (notification: NotificationInterface, projectId: string) => {
 	//   const userUpdatesCollection = get().userUpdatesCollection;
@@ -214,4 +215,17 @@ export const useStore = create<State>()((set, get) => ({
 	setProjectStatus: (projectStatus: string) =>
 		set(() => ({ projectStatus: projectStatus })),
 	setLocalChats: (localChats: AgentChat[]) => set(() => ({ localChats })),
+	setUnsavedChanges: (documentId: string, hasChanges: boolean) =>
+		set((state) => ({
+			unsavedChanges: {
+				...state.unsavedChanges,
+				[documentId]: hasChanges,
+			},
+		})),
+	clearUnsavedChanges: (documentId: string) =>
+		set((state) => {
+			const { [documentId]: _, ...rest } = state.unsavedChanges;
+			return { unsavedChanges: rest };
+		}),
+	clearAllUnsavedChanges: () => set(() => ({ unsavedChanges: {} })),
 }));

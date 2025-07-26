@@ -109,13 +109,10 @@ const EmailModal: React.FC<EmailModalProps> = ({
 	return (
 		<>
 			<ToolTipedButton
-				className="flex gap-2 px-3"
 				onClick={() => setIsOpen(true)}
 				tooltip="Distribute report"
-				variant="default"
 			>
 				<MdOutlinePeopleAlt className="h-4 w-4" />
-				<span className="text-sm">Send</span>
 			</ToolTipedButton>
 			<Dialog
 				onOpenChange={() => {

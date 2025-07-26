@@ -40,6 +40,7 @@ const EditorBlock = ({ id }: EditorBlockProps) => {
 					documentType="Daily Report"
 					key={key}
 					saveFunction={onSubmit}
+					showComments
 				/>
 			)}
 			{isLoading && (

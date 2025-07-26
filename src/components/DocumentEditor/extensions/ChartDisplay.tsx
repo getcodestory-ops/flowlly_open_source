@@ -4,7 +4,10 @@ import ChartComponent from "@/components/Markdown/chart/ChartComponent";
 
 export const ChartDisplay = (props: any) => {
 	const chartData = props.node.attrs.data || "{}";
-
+	
+	// Tiptap v3: Handle potential undefined getPos
+	const pos = props.getPos?.();
+	
 	// Use useMemo to render the component only when chartData changes
 	const renderedComponent = useMemo(() => {
 		// Check if we have valid chart data

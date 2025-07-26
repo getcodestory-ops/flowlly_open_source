@@ -148,6 +148,41 @@
   @apply outline-1;
 }
 
+/* TipTap Editor Text Styles */
+.ProseMirror span[style*="color: #f59e0b"] {
+  background-color: #fef3c7;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.ProseMirror span[style*="color: #7c3aed"] {
+  background-color: #ede9fe;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.ProseMirror span[style*="color: #2563eb"] {
+  font-weight: 500;
+}
+
+.ProseMirror span[style*="color: #16a34a"] {
+  font-weight: 500;
+}
+
+.ProseMirror span[style*="color: #ea580c"] {
+  font-weight: 500;
+}
+
+.ProseMirror span[style*="color: #dc2626"] {
+  font-weight: 600;
+}
+
+.ProseMirror span[style*="color: #6b7280"] {
+  font-style: italic;
+}
+
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
   50% { transform: translateX(100%); }

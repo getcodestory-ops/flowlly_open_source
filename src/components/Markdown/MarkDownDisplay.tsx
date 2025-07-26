@@ -7,10 +7,10 @@ import type { Components } from "react-markdown";
 import { Play, Info, Eye, EyeOff, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch, NotebookPen, FileOutput, FileInput, FilePlus, Terminal, Database, Network, FolderOpen, BookOpen, Brain, File, ExternalLink, Paperclip, ListTodo, Globe } from "lucide-react";
 import { visit } from "unist-util-visit";
 import { useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import UnderLine from "@tiptap/extension-underline";
-import TextAlign from "@tiptap/extension-text-align";
-import { Markdown } from "tiptap-markdown";
+import { StarterKit } from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import { TextAlign } from "@tiptap/extension-text-align";
+// import { Markdown } from "tiptap-markdown"; // Temporarily disabled - not compatible with Tiptap v3
 import { DiffStyleExtension } from "@/components/DocumentEditor/extensions/DiffStyleExtension";
 import EditorProvider from "../DocumentEditor/EditorProvider";
 import AttachmentViewer from "../AiActions/AttachmentViewer";
@@ -103,10 +103,10 @@ const SimpleDocumentEditor: React.FC<{ content: string }> = ({ content }) => {
 	const editor = useEditor({
 		extensions: [
 			StarterKit,
-			Markdown.configure({
-				html: true,
-			}),
-			UnderLine,
+			// Markdown.configure({ // Temporarily disabled - not compatible with Tiptap v3
+			// 	html: true,
+			// }),
+			Underline,
 			TextAlign.configure({
 				types: ["heading", "paragraph"],
 			}),

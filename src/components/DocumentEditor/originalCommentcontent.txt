@@ -1,0 +1,1319 @@
+import { useCallback, useState } from 'react'
+
+import { useUser } from '../hooks/useUser'
+import './styles.scss'
+
+import { TiptapCollabProvider } from '@hocuspocus/provider'
+import { Collaboration } from '@tiptap/extension-collaboration'
+import { CollaborationCursor } from '@tiptap/extension-collaboration-cursor'
+import Image from '@tiptap/extension-image'
+import Placeholder from '@tiptap/extension-placeholder'
+import { EditorContent, useEditor } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import { CommentsKit, hoverOffThread, hoverThread } from '@tiptap-pro/extension-comments'
+import { useCallback, useRef, useState } from 'react'
+import { v4 as uuid } from 'uuid'
+import * as Y from 'yjs'
+
+import { fromBase64String } from '../demo-setup'
+import { initialContent } from '../initialContent'
+import { ThreadsList } from './components/ThreadsList'
+import { ThreadsProvider } from './context'
+import { useThreads } from './hooks/useThreads'
+import { useUser } from './hooks/useUser'
+
+const doc = new Y.Doc()
+
+const isDev = import.meta.env.MODE === 'development'
+const id = isDev ? 'dev' : uuid()
+
+const provider = new TiptapCollabProvider({
+  appId: '7j9y6m10',
+  name: `tiptap-comments-demo/${id}`,
+  document: doc,
+})
+
+// apply initial content
+const initialBinary = fromBase64String(initialContent)
+
+Y.applyUpdate(provider.document, initialBinary)
+
+export default () => {
+  const [showUnresolved, setShowUnresolved] = useState(true)
+  const [selectedThread, setSelectedThread] = useState(null)
+  const threadsRef = useRef([])
+
+  const user = useUser()
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        history: false,
+      }),
+      Image,
+      Collaboration.configure({
+        document: doc,
+      }),
+      CollaborationCursor.configure({
+        provider,
+        user: {
+          name: user.name,
+          color: user.color,
+        },
+      }),
+      CommentsKit.configure({
+        provider,
+        useLegacyWrapping: false,
+        onClickThread: threadId => {
+          const isResolved = threadsRef.current.find(t => t.id === threadId)?.resolvedAt
+
+          if (!threadId || isResolved) {
+            setSelectedThread(null)
+            editor.chain().unselectThread().run()
+            return
+          }
+
+          setSelectedThread(threadId)
+          editor.chain().selectThread({ id: threadId, updateSelection: false }).run()
+        },
+      }),
+      Placeholder.configure({
+        placeholder: 'Write a text to add comments …',
+      }),
+    ],
+  })
+
+  const { threads = [], createThread } = useThreads(provider, editor, user)
+
+  threadsRef.current = threads
+
+  const selectThreadInEditor = useCallback(threadId => {
+    editor.chain().selectThread({ id: threadId }).run()
+  }, [editor])
+
+  const deleteThread = useCallback(threadId => {
+    provider.deleteThread(threadId)
+    editor.commands.removeThread({ id: threadId })
+  }, [editor])
+
+  const resolveThread = useCallback(threadId => {
+    editor.commands.resolveThread({ id: threadId })
+  }, [editor])
+
+  const unresolveThread = useCallback(threadId => {
+    editor.commands.unresolveThread({ id: threadId })
+  }, [editor])
+
+  const updateComment = useCallback((threadId, commentId, content, metaData) => {
+    editor.commands.updateComment({
+      threadId, id: commentId, content, data: metaData,
+    })
+  }, [editor])
+
+  const onHoverThread = useCallback(threadId => {
+    hoverThread(editor, [threadId])
+  }, [editor])
+
+  const onLeaveThread = useCallback(() => {
+    hoverOffThread(editor)
+  }, [editor])
+
+  if (!editor) {
+    return null
+  }
+
+  const filteredThreads = threads.filter(t => (showUnresolved ? !t.resolvedAt : !!t.resolvedAt))
+
+  return (
+    <ThreadsProvider
+      onClickThread={selectThreadInEditor}
+      onDeleteThread={deleteThread}
+      onHoverThread={onHoverThread}
+      onLeaveThread={onLeaveThread}
+      onResolveThread={resolveThread}
+      onUpdateComment={updateComment}
+      onUnresolveThread={unresolveThread}
+      selectedThreads={editor.storage.comments.focusedThreads}
+      selectedThread={selectedThread}
+      setSelectedThread={setSelectedThread}
+      threads={threads}
+    >
+      <div className="col-group" data-viewmode={showUnresolved ? 'open' : 'resolved'}>
+        <div className="main">
+          <div className="control-group">
+            <div className="button-group">
+              <button onClick={createThread} disabled={editor.state.selection.empty}>Add comment</button>
+              <button onClick={() => editor.chain().focus().setImage({ src: 'https://placehold.co/800x500' }).run()}>Add image</button>
+            </div>
+          </div>
+          <EditorContent editor={editor} />
+        </div>
+        <div className="sidebar">
+          <div className="sidebar-options">
+            <div className="option-group">
+              <div className="label-large">Comments</div>
+              <div className="switch-group">
+                <label>
+                  <input type="radio" name="thread-state" onChange={() => setShowUnresolved(true)} checked={showUnresolved} />
+                  Open
+                </label>
+                <label>
+                  <input type="radio" name="thread-state" onChange={() => setShowUnresolved(false)} checked={!showUnresolved}/>
+                  Resolved
+                </label>
+              </div>
+            </div>
+            <ThreadsList provider={provider} threads={filteredThreads} />
+          </div>
+        </div>
+      </div>
+    </ThreadsProvider>
+  )
+}
+
+import {
+    createContext, useCallback, useContext,
+  } from 'react'
+  
+  export const ThreadsContext = createContext({
+    threads: [],
+    selectedThreads: [],
+    selectedThread: null,
+  
+    onClickThread: () => null,
+    deleteThread: () => null,
+    resolveThread: () => null,
+    unresolveThread: () => null,
+    onUpdateComment: () => null,
+    onHoverThread: () => null,
+    onLeaveThread: () => null,
+  })
+  
+  export const ThreadsProvider = ({
+    children,
+    threads = [],
+    selectedThreads = [],
+    selectedThread = null,
+    onClickThread = () => null,
+    onDeleteThread = () => null,
+    onResolveThread = () => null,
+    onUnresolveThread = () => null,
+    onUpdateComment = () => null,
+    onHoverThread = () => null,
+    onLeaveThread = () => null,
+    setSelectedThread = () => null,
+  }) => {
+    const handleThreadClick = useCallback(threadId => {
+      setSelectedThread(currentThreadId => {
+        if (currentThreadId !== threadId) {
+          onClickThread(threadId)
+          setSelectedThread(threadId)
+        }
+  
+        return currentThreadId !== threadId ? threadId : null
+      })
+    }, [onClickThread])
+  
+    const providerValue = {
+      threads,
+      selectedThreads,
+      selectedThread,
+  
+      deleteThread: onDeleteThread,
+      resolveThread: onResolveThread,
+      unresolveThread: onUnresolveThread,
+      onClickThread: handleThreadClick,
+      onUpdateComment,
+      onHoverThread,
+      onLeaveThread,
+    }
+  
+    return (
+      <ThreadsContext.Provider value={providerValue}>
+        {children}
+      </ThreadsContext.Provider>
+    )
+  }
+  
+  export const useThreadsState = () => {
+    return useContext(ThreadsContext)
+  }
+
+  /* Basic editor styles */
+.tiptap {
+    :first-child {
+      margin-top: 0;
+    }
+  
+    /* List styles */
+    ul,
+    ol {
+      padding: 0 1rem;
+      margin: 1.25rem 1rem 1.25rem 0.4rem;
+  
+      li p {
+        margin-top: 0.25em;
+        margin-bottom: 0.25em;
+      }
+    }
+  
+    /* Heading styles */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      line-height: 1.1;
+      margin-top: 2.5rem;
+      text-wrap: pretty;
+    }
+  
+    h1,
+    h2 {
+      margin-top: 3.5rem;
+      margin-bottom: 1.5rem;
+    }
+  
+    h1 {
+      font-size: 1.4rem;
+    }
+  
+    h2 {
+      font-size: 1.2rem;
+    }
+  
+    h3 {
+      font-size: 1.1rem;
+    }
+  
+    h4,
+    h5,
+    h6 {
+      font-size: 1rem;
+    }
+  
+    /* Code and preformatted text styles */
+    code {
+      background-color: var(--purple-light);
+      border-radius: 0.4rem;
+      color: var(--black);
+      font-size: 0.85rem;
+      padding: 0.25em 0.3em;
+    }
+  
+    pre {
+      background: var(--black);
+      border-radius: 0.5rem;
+      color: var(--white);
+      font-family: 'JetBrainsMono', monospace;
+      margin: 1.5rem 0;
+      padding: 0.75rem 1rem;
+  
+      code {
+        background: none;
+        color: inherit;
+        font-size: 0.8rem;
+        padding: 0;
+      }
+    }
+  
+    blockquote {
+      border-left: 3px solid var(--gray-3);
+      margin: 1.5rem 0;
+      padding-left: 1rem;
+    }
+  
+    hr {
+      border: none;
+      border-top: 1px solid var(--gray-2);
+      margin: 2rem 0;
+    }
+  
+    /* Placeholder */
+    .is-empty::before {
+      color: var(--gray-4);
+      content: attr(data-placeholder);
+      float: left;
+      height: 0;
+      pointer-events: none;
+    }
+  
+    /* Image styling */
+    img {
+      display: block;
+      height: auto;
+      margin: 1.5rem 0;
+      max-width: 100%;
+  
+      &.ProseMirror-selectednode {
+        outline: 3px solid var(--purple);
+      }
+    }
+  
+    p {
+      word-break: break-all;
+    }
+  
+    /* Give a remote user a caret */
+    .collaboration-cursor__caret {
+      border-left: 1px solid #0d0d0d;
+      border-right: 1px solid #0d0d0d;
+      margin-left: -1px;
+      margin-right: -1px;
+      pointer-events: none;
+      position: relative;
+      word-break: normal;
+    }
+  
+    /* Render the username above the caret */
+    .collaboration-cursor__label {
+      border-radius: 3px 3px 3px 0;
+      color: #0d0d0d;
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 600;
+      left: -1px;
+      line-height: normal;
+      padding: 0.1rem 0.3rem;
+      position: absolute;
+      top: -1.4em;
+      user-select: none;
+      white-space: nowrap;
+    }
+  
+    /* Thread mark */
+    .tiptap-thread,
+    .tiptap-thread * {
+      transition: all 0.2s cubic-bezier(0.65,0.05,0.36,1);
+    }
+  
+    .tiptap-thread[data-type="block"] {
+      &:first-child {
+        margin-top: 0;
+      }
+  
+      > :not(p, h1, h2, h3, h4, h5, h6, ul, li) {
+        outline-width: 2px;
+        outline-color: transparent;
+        outline-style: dashed;
+      }
+    }
+  }
+  
+  /* Comments & Threads */
+  body { 
+    overflow: hidden;
+  
+    .main {
+      height: 100vh;
+      overflow: auto;
+    }
+  
+    .sidebar {
+      width: 20rem;
+  
+      @media (max-width: 540px) {
+        padding-bottom: 0;
+        width: 100%;
+      }
+    }
+  }
+  
+  .threads-group {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0 -1rem;
+    overflow: auto;
+    padding: 0 1rem;
+  
+    @media (max-width: 540px) {
+      margin: 0 -1.5rem;
+      max-height: 40vh;
+      padding: 0 1.5rem 1.5rem;
+      width: calc(100% + 3rem);
+    }
+  
+    .thread {
+      border-radius: 0.5rem;
+      box-shadow: 0px 0px 0px 1px var(--gray-3) inset;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s cubic-bezier(0.65,0.05,0.36,1);
+  
+      &.is-active,
+      &:hover {
+        box-shadow: 0px 0px 0px 1px var(--gray-4) inset;
+      }
+  
+      &.is-open {
+        box-shadow: 0px 0px 0px 1px var(--purple) inset;
+      }
+  
+      /* Thread header */
+      .header-group {
+        border-bottom: 1px solid var(--gray-3);
+        padding: 0.375rem 0.5rem;
+  
+        button {
+          background-color: unset;
+  
+          &:hover {
+            background-color: var(--gray-2);
+          }
+        }
+      }
+  
+      /* Hint */
+      .hint {
+        align-items: center;
+        background-color: var(--yellow-light);
+        border: 1px solid var(--gray-2);
+        border-radius: 0.5rem;
+        display: flex;
+        flex-direction: row;
+        font-size: 0.75rem;
+        gap: 0.5rem;
+        line-height: 1.15;
+        min-height: 1.75rem;
+        padding: 0.25rem 0.5rem;
+        margin: 0.8rem 0.8rem 0;
+      }
+  
+      /* Closed thread */
+      &:not(.is-open) {
+        .comments-group {
+          .comment {
+            &:not(:last-child) {
+              padding-bottom: 0;
+            }
+  
+            .comment-content {
+              p {
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 2;
+                align-self: stretch;
+                display: -webkit-box;
+              }
+    
+              .button-group {
+                display: none;
+              }
+    
+              label {
+                display: inherit;
+              }
+            }
+          }
+  
+          .comments-count {
+            margin-top: 0.2rem;
+          }
+        }
+      }
+  
+      /* Comments */
+      .comments-group {
+        display: flex;
+        flex-direction: column;
+        padding: 0.8rem;
+  
+        .comment {
+          display: flex;
+          flex-direction: column;
+          gap: 0.125rem;
+  
+          &.deleted {
+            opacity: .5;
+          }
+      
+          &:not(:first-child) {
+            border-top: 1px solid var(--gray-3);
+            padding-top: 0.75rem;
+          }
+  
+          &:not(:last-child) {
+            padding-bottom: 0.75rem;
+          }
+    
+          .comment-edit {
+            padding: unset;
+          }
+  
+          .comment-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.625rem;
+          }
+        }
+      }
+    }
+  
+    /* Basic styling */
+    button {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.375rem;
+      border-radius: 0.375rem;
+    }
+  
+    .button-group {
+      gap: 0.125rem;
+    }
+  
+    label {
+      color: var(--gray-5);
+      font-size: 0.75rem;
+      font-weight: 400;
+    }
+  
+    p {
+      font-size: 0.75rem;
+      line-height: 1.4;
+      margin: 0;
+      overflow: hidden;
+    }
+  
+    .label-group {
+      column-gap: 0.25rem;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+  
+      label:not(:first-child)::before {
+        content: "·";
+        padding-right: 0.25rem;
+      }
+  
+      label:first-of-type {
+        font-weight: 700;
+        color: var(--black);
+      }
+    }
+  
+    /* Reply input styling */
+    .reply-group, 
+    .comment-edit {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+      padding: 0.2rem 0.8rem 0.8rem;
+  
+      textarea {
+        height: 4.5rem;
+        resize: none; 
+        padding: 0.375rem 0.625rem;
+        line-height: 1.3;
+        width: 100%;
+  
+        &:focus,
+        &:focus-visible {
+          border-color: var(--black);
+        }
+      }
+  
+      .flex-row {
+        column-gap: 0.5rem;
+        row-gap: 0.25rem;
+      }
+    }
+  
+    .reply-group {
+      &:not(:has(textarea:focus)) {
+        .flex-row {
+          display: none;
+        }
+      }
+  
+      textarea:placeholder-shown:not(:focus) {
+        height: 2rem;
+      }
+  
+      textarea:not(:placeholder-shown) {
+        height: 4.5rem;
+      }
+  
+      &:has(textarea:not(:placeholder-shown)) {
+        .flex-row {
+          display: flex;
+        }
+      }
+    }
+  }
+  
+  /* Structue */
+  .col-group {
+    display: flex;
+    flex-direction: row;
+  
+    @media (max-width: 540px) {
+      flex-direction: column-reverse;
+    }
+  }
+  
+  .main {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .sidebar {
+    border-left: 1px solid var(--gray-3);
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding: 1rem;
+    width: 15rem;
+    position: sticky;
+    height: 100vh;
+    top: 0;
+    width: 20rem;
+  
+    @media (max-width: 540px) {
+      border-bottom: 1px solid var(--gray-3);
+      border-left: unset;
+      width: 100%;
+      height: auto;
+      position: unset;
+      padding: 1.5rem;
+    }
+  }
+  
+  .sidebar-options {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 1rem;
+    position: sticky;
+    top: 1rem;
+  }
+  
+  .option-group {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    width: 100%;
+  
+    form {
+      width: 100%;
+  
+      input {
+        width: 100%;
+      }
+    }
+  }
+  
+  [data-viewmode="open"] .tiptap {
+    .tiptap-thread[data-status-all="open"] {
+      &[data-type="block"] {
+        > :not(p, h1, h2, h3, h4, h5, h6, ul, li) {
+          background-color: var(--yellow);
+          outline-color: var(--yellow);
+        }
+    
+        &:hover,
+        &[data-state="selected"],
+        &[data-state="hovered"] {
+          > :not(p, h1, h2, h3, h4, h5, h6, ul, li) {
+            background-color: var(--yellow-contrast);
+            outline-color: var(--yellow-contrast);
+          }
+        }
+      }
+  
+      &[data-type="inline"] {
+        border-bottom: 2px dashed var(--yellow-contrast);
+  
+        &:hover,
+        &[data-state="selected"],
+        &[data-state="hovered"] {
+          background-color: var(--yellow);
+        }
+      }
+    }
+  }
+  
+  [data-viewmode="resolved"] .tiptap {
+    .tiptap-thread[data-status="closed"] {
+      &[data-type="block"] {
+        > :not(p, h1, h2, h3, h4, h5, h6, ul, li) {
+          background-color: var(--yellow);
+          outline-color: var(--yellow);
+        }
+    
+        &:hover,
+        &[data-state="selected"],
+        &[data-state="hovered"] {
+          > :not(p, h1, h2, h3, h4, h5, h6, ul, li) {
+            background-color: var(--yellow-contrast);
+            outline-color: var(--yellow-contrast);
+          }
+        }
+      }
+  
+      &[data-type="inline"] {
+        border-bottom: 2px dashed var(--yellow-contrast);
+  
+        &:hover,
+        &[data-state="selected"],
+        &[data-state="hovered"] {
+          background-color: var(--yellow);
+        }
+      }
+    }
+  }
+  
+  /* [data-viewmode="open"] .tiptap .tiptap-thread:not([data-status="closed"]),
+  [data-viewmode="resolved"] .tiptap .tiptap-thread:not([data-status="open"]) {
+    &[data-type="block"] {
+      > :not(p, h1, h2, h3, h4, h5, h6, ul, li) {
+        background-color: var(--yellow);
+        outline-color: var(--yellow);
+      }
+  
+      &:hover,
+      &[data-state="selected"],
+      &[data-state="hovered"] {
+        > :not(p, h1, h2, h3, h4, h5, h6, ul, li) {
+          background-color: var(--yellow-contrast);
+          outline-color: var(--yellow-contrast);
+        }
+      }
+    }
+  
+    &[data-type="inline"] {
+      border-bottom: 2px dashed var(--yellow-contrast);
+  
+      &:hover,
+      &[data-state="selected"],
+      &[data-state="hovered"] {
+        background-color: var(--yellow);
+      }
+    }
+  }
+
+  */
+
+  mport { useCallback, useState } from 'react'
+
+export const CommentCard = ({
+  name,
+  createdAt,
+  deleted,
+  content,
+  onEdit,
+  onDelete,
+  showActions = false,
+}) => {
+  const [isComposing, setIsComposing] = useState(false)
+  const [composeValue, setComposeValue] = useState(content)
+
+  const handleSubmit = useCallback(e => {
+    e.preventDefault()
+
+    if (onEdit) {
+      setIsComposing(false)
+
+      onEdit(composeValue)
+    }
+  }, [composeValue, onEdit])
+
+  const commentWrapperClass = ['comment']
+
+  if (deleted) {
+    commentWrapperClass.push('deleted')
+  }
+
+  return (
+    <div className={commentWrapperClass.join(' ')}>
+      <div className="label-group">
+        <label>{name}</label>
+        <label>{new Date(createdAt).toLocaleTimeString()}</label>
+      </div>
+
+      {deleted && (
+        <div className="comment-content">
+          <p>Comment was deleted</p>
+        </div>
+      )}
+
+      {!isComposing && !deleted ? (
+        <div className="comment-content">
+          <p>{content}</p>
+          {showActions ? (
+            <div className="button-group">
+              <button onClick={e => {
+                e.preventDefault()
+                e.stopPropagation()
+
+                setIsComposing(true)
+              }}>Edit</button>
+              {onDelete ? <button onClick={e => {
+                e.preventDefault()
+                e.stopPropagation()
+
+                onDelete()
+              }}>Delete</button> : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {isComposing && !deleted ? (
+        <div className="comment-edit">
+          <form onSubmit={handleSubmit}>
+            <textarea
+              type="text"
+              onChange={e => setComposeValue(e.currentTarget.value)}
+              value={composeValue}
+            />
+            <div className="flex-row">
+              <div className="button-group">
+              <button type="reset" onClick={() => setIsComposing(false)}>Cancel</button>
+                <button type="submit" className="primary" disabled={!composeValue.length || composeValue === content}>Accept</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      ) : null}
+
+    </div>
+  )
+}
+
+import { useCallback, useEffect, useRef } from 'react'
+
+export const ThreadCard = ({
+  id,
+  active,
+  open,
+  children,
+  onClick,
+  onClickOutside,
+}) => {
+  const cardRef = useRef()
+  const handleClick = useCallback(() => {
+    if (onClick) {
+      onClick(id)
+    }
+  }, [id, onClick])
+
+  useEffect(() => {
+    if (!active) {
+      return () => null
+    }
+
+    const clickHandler = onClickOutside ? event => {
+      if (!cardRef.current) {
+        return
+      }
+
+      if (!cardRef.current.contains(event.target)) {
+        onClickOutside()
+      }
+    } : null
+
+    if (clickHandler) {
+      document.addEventListener('click', clickHandler)
+    }
+
+    return () => {
+      if (clickHandler) {
+        document.removeEventListener('click', clickHandler)
+      }
+    }
+  }, [active, onClickOutside])
+
+  return (
+    <div
+      ref={cardRef}
+      className={`thread${open ? ' is-open' : ''}${active ? ' is-active' : ''}`}
+      onClick={handleClick}
+    >
+      {children}
+    </div>
+  )
+}
+
+import { useCallback, useState } from 'react'
+
+import { useUser } from '../hooks/useUser'
+
+export const ThreadComposer = ({ threadId, provider }) => {
+  const user = useUser()
+  const [comment, setComment] = useState('')
+
+  const handleSubmit = useCallback(
+    e => {
+      e.preventDefault()
+
+      if (!comment) {
+        return
+      }
+
+      if (provider) {
+        provider.addComment(threadId, {
+          content: comment,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          data: { userName: user.name },
+        })
+
+        setComment('')
+      }
+    },
+    [comment, provider],
+  )
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <textarea
+        placeholder="Reply to thread …"
+        onChange={e => setComment(e.currentTarget.value)}
+        value={comment}
+      />
+      <div className="flex-row">
+        <div className="button-group">
+          <button type="submit" className="primary" disabled={!comment.length}>Send</button>
+        </div>
+      </div>
+    </form>
+  )
+}
+
+mport { useThreadsState } from '../context'
+import { ThreadsListItem } from './ThreadsListItem'
+
+export const ThreadsList = ({ provider, threads }) => {
+  const { selectedThreads, selectedThread } = useThreadsState()
+
+  if (threads.length === 0) {
+    return <label className="label">No threads.</label>
+  }
+
+  return (
+    <div className="threads-group">
+      {threads.map(t => (
+        <ThreadsListItem
+          key={t.id}
+          thread={t}
+          active={selectedThreads.includes(t.id) || selectedThread === t.id}
+          open={selectedThread === t.id}
+          provider={provider}
+        />
+      ))}
+    </div>
+  )
+}
+
+import { useCallback, useMemo } from 'react'
+
+import { useThreadsState } from '../context'
+import { CommentCard } from './CommentCard'
+import { ThreadCard } from './ThreadCard'
+import { ThreadComposer } from './ThreadComposer'
+
+export const ThreadsListItem = ({
+  thread,
+  provider,
+  active,
+  open,
+}) => {
+  const {
+    onClickThread,
+    deleteThread,
+    onHoverThread,
+    onLeaveThread,
+    resolveThread,
+    unresolveThread,
+  } = useThreadsState()
+  const classNames = ['threadsList--item']
+
+  if (active || open) {
+    classNames.push('threadsList--item--active')
+  }
+
+  const comments = useMemo(() => provider.getThreadComments(thread.id, true), [provider, thread])
+
+  const firstComment = comments && comments[0]
+
+  const handleDeleteClick = useCallback(() => {
+    deleteThread(thread.id)
+  }, [thread.id, deleteThread])
+
+  const handleResolveClick = useCallback(() => {
+    resolveThread(thread.id)
+  }, [thread.id, resolveThread])
+
+  const handleUnresolveClick = useCallback(() => {
+    unresolveThread(thread.id)
+  }, [thread.id, resolveThread])
+
+  const editComment = useCallback((commentId, val) => {
+    provider.updateComment(thread.id, commentId, { content: val })
+  }, [provider, thread.id])
+
+  const deleteComment = useCallback(commentId => {
+    provider.deleteComment(thread.id, commentId, { deleteContent: true })
+  }, [provider, thread.id, deleteThread, firstComment])
+
+  return (
+    <div onMouseEnter={() => onHoverThread(thread.id)} onMouseLeave={() => onLeaveThread()}>
+      <ThreadCard
+        id={thread.id}
+        active={active}
+        open={open}
+        onClick={!open ? onClickThread : null}
+        // onClickOutside
+      >
+        {open ? (
+          <>
+            <div className="header-group">
+              <div className="button-group">
+                {!thread.resolvedAt ? (
+                  <button onClick={handleResolveClick}>✓ Resolve</button>
+                ) : (
+                  <button onClick={handleUnresolveClick}>⟲ Unresolve</button>
+                )}
+                <button onClick={handleDeleteClick}>× Delete</button>
+              </div>
+            </div>
+
+            {thread.resolvedAt ? (
+              <div className="hint">💡 Resolved at {new Date(thread.resolvedAt).toLocaleDateString()} {new Date(thread.resolvedAt).toLocaleTimeString()}</div>
+            ) : null}
+
+            <div className="comments-group">
+              {comments.map(comment => (
+                <CommentCard
+                  key={comment.id}
+                  name={comment.data.userName}
+                  content={comment.deletedAt ? null : comment.content}
+                  createdAt={comment.createdAt}
+                  deleted={comment.deletedAt}
+                  onEdit={val => {
+                    if (val) {
+                      editComment(comment.id, val)
+                    }
+                  }}
+                  onDelete={() => {
+                    deleteComment(comment.id)
+                  }}
+                  showActions={true}
+                />
+              ))}
+            </div>
+            <div className="reply-group">
+              <ThreadComposer threadId={thread.id} provider={provider} />
+            </div>
+          </>
+        ) : null}
+
+        {!open && firstComment && firstComment.data ? (
+          <div className="comments-group">
+            <CommentCard
+              key={firstComment.id}
+              name={firstComment.data.userName}
+              content={firstComment.content}
+              createdAt={firstComment.createdAt}
+              deleted={firstComment.deletedAt}
+              onEdit={val => {
+                if (val) {
+                  editComment(firstComment.id, val)
+                }
+              }}
+            />
+            <div className="comments-count">
+              <label>{Math.max(0, comments.length - 1) || 0} {(comments.length - 1 || 0) === 1 ? 'reply' : 'replies'}</label>
+            </div>
+          </div>
+        ) : null}
+      </ThreadCard>
+    </div>
+  )
+}
+
+import { subscribeToThreads } from '@tiptap-pro/extension-comments'
+import { useCallback, useEffect, useState } from 'react'
+
+export const useThreads = (provider, editor, user) => {
+  const [threads, setThreads] = useState()
+
+  useEffect(() => {
+    if (provider) {
+      const unsubscribe = subscribeToThreads({
+        provider,
+        callback: currentThreads => {
+          setThreads(currentThreads)
+        },
+      })
+
+      return () => {
+        unsubscribe()
+      }
+    }
+  }, [provider])
+
+  const createThread = useCallback(() => {
+    const input = window.prompt('Comment content')
+
+    if (!input) {
+      return
+    }
+
+    if (!editor) {
+      return
+    }
+
+    editor.chain().focus().setThread({ content: input, commentData: { userName: user.name } }).run()
+  }, [editor, user])
+
+  return { threads, createThread }
+}
+
+const colors = ['#958DF1', '#F98181', '#FBBC88', '#FAF594', '#70CFF8', '#94FADB', '#B9F18D']
+const names = [
+  'Lea Thompson',
+  'Cyndi Lauper',
+  'Tom Cruise',
+  'Madonna',
+  'Jerry Hall',
+  'Joan Collins',
+  'Winona Ryder',
+  'Christina Applegate',
+  'Alyssa Milano',
+  'Molly Ringwald',
+  'Ally Sheedy',
+  'Debbie Harry',
+  'Olivia Newton-John',
+  'Elton John',
+  'Michael J. Fox',
+  'Axl Rose',
+  'Emilio Estevez',
+  'Ralph Macchio',
+  'Rob Lowe',
+  'Jennifer Grey',
+  'Mickey Rourke',
+  'John Cusack',
+  'Matthew Broderick',
+  'Justine Bateman',
+  'Lisa Bonet',
+]
+
+const getRandomElement = list => list[Math.floor(Math.random() * list.length)]
+
+const getRandomColor = () => getRandomElement(colors)
+const getRandomName = () => getRandomElement(names)
+
+export const userName = getRandomName()
+export const userColor = getRandomColor()
+
+export const useUser = () => {
+  return {
+    name: userName,
+    color: userColor,
+  }
+}
+
+{
+    "type": "doc",
+    "from": 0,
+    "to": 227,
+    "content": [
+      {
+        "type": "heading",
+        "from": 0,
+        "to": 28,
+        "attrs": {
+          "level": 1
+        },
+        "content": [
+          {
+            "type": "text",
+            "from": 1,
+            "to": 12,
+            "text": "Welcome to "
+          },
+          {
+            "type": "text",
+            "from": 12,
+            "to": 27,
+            "marks": [
+              {
+                "type": "inlineThread",
+                "attrs": {
+                  "data-thread-id": "2c182121-d6c1-45a2-a151-60e0f2fd1d49"
+                }
+              }
+            ],
+            "text": "Tiptap Comments"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "from": 28,
+        "to": 115,
+        "content": [
+          {
+            "type": "text",
+            "from": 29,
+            "to": 114,
+            "text": "Tiptap Comments allows you to annotate and discuss your Tiptap documents via Threads."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "from": 115,
+        "to": 225,
+        "content": [
+          {
+            "type": "text",
+            "from": 116,
+            "to": 156,
+            "text": "Feel free to try it out in this demo by "
+          },
+          {
+            "type": "text",
+            "from": 156,
+            "to": 173,
+            "marks": [
+              {
+                "type": "inlineThread",
+                "attrs": {
+                  "data-thread-id": "5f0dfd9e-3ffb-4c19-9739-0fb654324a35"
+                }
+              }
+            ],
+            "text": "selecting a slice"
+          },
+          {
+            "type": "text",
+            "from": 173,
+            "to": 205,
+            "text": " of content and clicking on the "
+          },
+          {
+            "type": "text",
+            "from": 205,
+            "to": 216,
+            "marks": [
+              {
+                "type": "bold"
+              }
+            ],
+            "text": "Add comment"
+          },
+          {
+            "type": "text",
+            "from": 216,
+            "to": 224,
+            "text": " button."
+          }
+        ]
+      }
+    ]
+  }
