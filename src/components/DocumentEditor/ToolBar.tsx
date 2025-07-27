@@ -240,11 +240,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
 					<ListTools editor={editor} />
 					<Separator className="mx-1" orientation="vertical" />
 					<TableTools editor={editor} />
-					<AITools 
-						documentId={documentId} 
-						editor={editor} 
-						onAIEditedContent={onAIEditedContent} 
-					/>
 					<ImageTools editor={editor} />
 				</div>
 				<div className="flex items-center gap-2">
