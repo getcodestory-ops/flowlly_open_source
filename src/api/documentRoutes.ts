@@ -205,4 +205,27 @@ export const updateDocumentName = async(
 	}
 };
 
+export const getAIDocumentLineEdit = async(
+	session: Session,
+	originalContent: string,
+	userComments: string,
+) => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/document/edit/paragraph`;
+	
+	try {
+		const response = await axios.post(url, {
+			original_content: originalContent,
+			user_comments: userComments,
+		}, {
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${session.access_token}`,
+			},
+		});
+		return response.data;
+	} catch (error) {
+		throw error;
+	}
+};
+
 

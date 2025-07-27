@@ -84,6 +84,19 @@ export const DiffStyleExtension = Highlight.extend<DiffStyleOptions>({
 					};
 				},
 			},
+			"data-diff-group": {
+				default: null,
+				parseHTML: (element) => element.getAttribute("data-diff-group"),
+				renderHTML: (attributes) => {
+					if (!attributes["data-diff-group"]) {
+						return {};
+					}
+					
+					return {
+						"data-diff-group": attributes["data-diff-group"],
+					};
+				},
+			},
 		};
 	},
 
@@ -150,248 +163,264 @@ export const DiffStyleExtension = Highlight.extend<DiffStyleOptions>({
 				const style = document.createElement("style");
 				style.id = "diff-actions-style";
 				style.textContent = `
-          /* Action buttons container */
-          .ProseMirror-diff-actions {
-            display: flex;
-            position: sticky;
-            top: 0px;
-            border-radius: 6px 6px 0 0;
-            z-index: 100;
-            background-color: white;
-            padding: 4px 8px;
-            border-bottom: 1px solid #ddd;
-            gap: 8px;
-            justify-content: flex-end;
-            width: 100%;
-            box-sizing: border-box;
-          }
-
           .ProseMirror {
             position: relative;
           }
 
-          .ProseMirror-diff-button {
-            padding: 3px 8px;
+          /* Enhanced diff styling */
+          mark[data-color="#f98181"],
+          mark.delete {
+            background-color: #f98181;
+            color: inherit;
+            padding: 2px 4px;
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+          }
+
+          mark[data-color="#8ce99a"],
+          mark.insert {
+            background-color: #8ce99a;
+            color: inherit;
+            padding: 2px 4px;
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+          }
+
+          /* Hover effect for diff marks */
+          mark[data-color="#f98181"]:hover,
+          mark.delete:hover {
+            box-shadow: 0 2px 8px rgba(249, 129, 129, 0.4);
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+          }
+
+          mark[data-color="#8ce99a"]:hover,
+          mark.insert:hover {
+            box-shadow: 0 2px 8px rgba(140, 233, 154, 0.4);
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+          }
+
+          /* Global floating action panel for diff content */
+          .diff-action-panel {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 120px;
+          }
+
+          .diff-action-panel.visible {
+            display: flex;
+          }
+
+          .diff-action-button {
+            padding: 6px 12px;
             border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.2s;
             font-size: 12px;
-            border: 1px solid transparent;
             font-weight: 500;
+            border: none;
+            transition: background-color 0.2s;
+            width: 100%;
           }
 
-          .ProseMirror-diff-button:hover {
-            background-color: #f0f0f0;
-          }
-
-          .ProseMirror-diff-accept-all {
+          .diff-action-accept {
             color: #1f883d;
-            border-color: #7ee787;
             background-color: #dafbe1;
+            border: 1px solid #7ee787;
           }
-           .ProseMirror-diff-accept-all:hover {
-             background-color: #c0f5c8;
-           }
 
-          .ProseMirror-diff-reject-all {
-            color: #d1242f;
-            border-color: #ffa198;
-            background-color: #ffebe9;
+          .diff-action-accept:hover {
+            background-color: #c0f5c8;
           }
-           .ProseMirror-diff-reject-all:hover {
-              background-color: #ffd4d0;
+
+          .diff-action-reject {
+            color: #d1242f;
+            background-color: #ffebe9;
+            border: 1px solid #ffa198;
+          }
+
+          .diff-action-reject:hover {
+            background-color: #ffd4d0;
+          }
+
+          .diff-action-info {
+            font-size: 11px;
+            color: #666;
+            text-align: center;
+            padding: 4px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 4px;
           }
         `;
 				document.head.appendChild(style);
 
-				const actionsContainer = document.createElement("div");
-				actionsContainer.className = "ProseMirror-diff-actions";
-				actionsContainer.style.display = "none";
-
-				const acceptAllButton = document.createElement("button");
-				acceptAllButton.className =
-					"ProseMirror-diff-button ProseMirror-diff-accept-all";
-				acceptAllButton.textContent = "Accept All";
-				acceptAllButton.type = "button";
-
-				const rejectAllButton = document.createElement("button");
-				rejectAllButton.className =
-					"ProseMirror-diff-button ProseMirror-diff-reject-all";
-				rejectAllButton.textContent = "Reject All";
-				rejectAllButton.type = "button";
-
-				actionsContainer.appendChild(acceptAllButton);
-				actionsContainer.appendChild(rejectAllButton);
-				editorView.dom.parentElement?.insertBefore(
-					actionsContainer,
-					editorView.dom,
-				);
-
-				const updateButtonsVisibility = () => {
-					if (!showDiffButtons) {
-						actionsContainer.style.display = "none";
-						return;
-					}
-
-					let hasChanges = false;
-					const { doc, schema } = editorView.state;
-					const targetMarkType = schema.marks[diffMarkName];
-
-					if (!targetMarkType) {
-						actionsContainer.style.display = "none";
-						console.warn(`DiffActionsExtension: Mark type "${diffMarkName}" not found in schema.`);
-						return;
-					}
-					
-					doc.descendants((node: Node) => {
-						// Check if this node has the highlight mark with the right class or color
-						const hasDiffMark = node.marks.some((mark) => {
-							const isTargetType = mark.type === targetMarkType;
-							
-							// Check for class-based indicators first
-							if (mark.attrs.class === "delete" || mark.attrs.class === "insert") {
-								return true;
-							}
-							
-							// Fallback to color-based detection
-							const hasRightColor = mark.attrs["data-color"] === deletionColor || 
-													mark.attrs["data-color"] === insertionColor;
-							
-							return isTargetType && hasRightColor;
-						});
-						
-						if (hasDiffMark) {
-							hasChanges = true;
-							return false; // Stop traversal once we found a change
-						}
-						return true;
-					});
-
-					actionsContainer.style.display = hasChanges ? "flex" : "none";
-				};
-
-				updateButtonsVisibility();
-
-				const findDeletionRanges = (markType: MarkType): { from: number; to: number }[] => {
-					const ranges: { from: number; to: number }[] = [];
-					const { doc } = editorView.state;
-					let activeRange: { from: number; to: number } | null = null;
-
-					doc.descendants((node, pos) => {
-						const mark = node.marks.find(
-							(m) => m.type === markType && 
-							(m.attrs.class === "delete" || m.attrs["data-color"] === deletionColor),
-						);
-						const markActive = !!mark;
-
-						if (markActive && !activeRange) {
-							activeRange = { from: pos, to: pos + node.nodeSize };
-						} else if (markActive && activeRange) {
-							activeRange.to = pos + node.nodeSize;
-						} else if (!markActive && activeRange) {
-							ranges.push(activeRange);
-							activeRange = null;
-						}
-						return true;
-					});
-
-					if (activeRange) {
-						ranges.push(activeRange);
-					}
-					return ranges;
-				};
+				// Create a global action panel
+				const actionPanel = document.createElement("div");
+				actionPanel.className = "diff-action-panel";
 				
-				const findInsertionRanges = (markType: MarkType): { from: number; to: number }[] => {
-					const ranges: { from: number; to: number }[] = [];
-					const { doc } = editorView.state;
-					let activeRange: { from: number; to: number } | null = null;
+				const infoDiv = document.createElement("div");
+				infoDiv.className = "diff-action-info";
+				
+				const acceptButton = document.createElement("button");
+				acceptButton.className = "diff-action-button diff-action-accept";
+				
+				const rejectButton = document.createElement("button");
+				rejectButton.className = "diff-action-button diff-action-reject";
+				
+				actionPanel.appendChild(infoDiv);
+				actionPanel.appendChild(acceptButton);
+				actionPanel.appendChild(rejectButton);
+				document.body.appendChild(actionPanel);
 
-					doc.descendants((node, pos) => {
-						const mark = node.marks.find(
-							(m) => m.type === markType && 
-							(m.attrs.class === "insert" || m.attrs["data-color"] === insertionColor),
-						);
-						const markActive = !!mark;
+				let currentDiffElement: HTMLElement | null = null;
+				let currentIsDelete = false;
+				let currentDiffGroup: string | null = null;
 
-						if (markActive && !activeRange) {
-							activeRange = { from: pos, to: pos + node.nodeSize };
-						} else if (markActive && activeRange) {
-							activeRange.to = pos + node.nodeSize;
-						} else if (!markActive && activeRange) {
-							ranges.push(activeRange);
-							activeRange = null;
-						}
-						return true;
-					});
-
-					if (activeRange) {
-						ranges.push(activeRange);
-					}
-					return ranges;
-				};
-
-				const handleBulkAction = (isAccept: boolean) => {
-					if (!showDiffButtons) return;
-
-					let tr = editorView.state.tr;
-					const { schema } = editorView.state;
+				// Function to handle individual accept/reject actions
+				const handleIndividualAction = (diffGroupId: string, isApply: boolean) => {
+					const { state, dispatch } = editorView;
+					const { schema } = state;
 					const targetMarkType = schema.marks[diffMarkName];
 
-					if (!targetMarkType) {
-						console.error(`DiffActionsExtension: Mark type "${diffMarkName}" not found in schema during bulk action.`);
-						return;
-					}
+					if (!targetMarkType) return;
 
-					const deletionRanges = findDeletionRanges(targetMarkType);
-					const insertionRanges = findInsertionRanges(targetMarkType);
+					try {
+						// Find all elements with the same diff group ID
+						const editorElement = editorView.dom;
+						const groupElements = editorElement.querySelectorAll(`mark[data-diff-group="${diffGroupId}"]`);
+						
+						let tr = state.tr;
+						let hasChanges = false;
 
-					const allChanges = [
-						...deletionRanges.map((r) => ({ ...r, type: "delete" as const })),
-						...insertionRanges.map((r) => ({ ...r, type: "insert" as const })),
-					];
-					allChanges.sort((a, b) => b.to - a.to);
+						// Process elements in reverse order to maintain positions
+						const elementsArray = Array.from(groupElements).reverse();
+						
+						for (const element of elementsArray) {
+							const htmlElement = element as HTMLElement;
+							const isDelete = htmlElement.classList.contains("delete") || 
+								htmlElement.getAttribute("data-color") === deletionColor;
+							const isInsert = htmlElement.classList.contains("insert") || 
+								htmlElement.getAttribute("data-color") === insertionColor;
 
-					allChanges.forEach(({ from, to, type }) => {
-						if (isAccept) {
-							if (type === "delete") {
-								tr = tr.delete(from, to);
-							} else if (type === "insert") {
-								tr = tr.removeMark(from, to, targetMarkType);
-							}
-						} else {
-							if (type === "delete") {
-								tr = tr.removeMark(from, to, targetMarkType);
-							} else if (type === "insert") {
-								tr = tr.delete(from, to);
+							if (isDelete || isInsert) {
+								const pos = editorView.posAtDOM(htmlElement, 0);
+								const node = state.doc.nodeAt(pos);
+								
+								if (node) {
+									if (isApply) {
+										if (isDelete) {
+											// Apply change: remove the deleted content
+											tr = tr.delete(pos, pos + node.nodeSize);
+											hasChanges = true;
+										} else if (isInsert) {
+											// Apply change: keep insertion, remove highlight
+											tr = tr.removeMark(pos, pos + node.nodeSize, targetMarkType);
+											hasChanges = true;
+										}
+									} else {
+										if (isDelete) {
+											// Reject change: keep deleted content, remove highlight
+											tr = tr.removeMark(pos, pos + node.nodeSize, targetMarkType);
+											hasChanges = true;
+										} else if (isInsert) {
+											// Reject change: remove the inserted content
+											tr = tr.delete(pos, pos + node.nodeSize);
+											hasChanges = true;
+										}
+									}
+								}
 							}
 						}
-					});
 
-					if (tr.docChanged) {
-						editorView.dispatch(tr);
-						updateButtonsVisibility();
+						if (hasChanges) {
+							dispatch(tr);
+						}
+
+						// Hide the action panel
+						actionPanel.classList.remove("visible");
+						currentDiffElement = null;
+						currentDiffGroup = null;
+					} catch (error) {
+						console.warn("Could not handle diff action:", error);
 					}
 				};
 
-				acceptAllButton.addEventListener("click", () =>
-					handleBulkAction(true),
-				);
-				rejectAllButton.addEventListener("click", () =>
-					handleBulkAction(false),
-				);
+				// Setup event listeners for the action panel
+				acceptButton.addEventListener("click", () => {
+					if (currentDiffGroup) {
+						handleIndividualAction(currentDiffGroup, true);
+					}
+				});
+
+				rejectButton.addEventListener("click", () => {
+					if (currentDiffGroup) {
+						handleIndividualAction(currentDiffGroup, false);
+					}
+				});
+
+				// Add click event listener to the editor
+				const handleEditorClick = (event: MouseEvent) => {
+					const target = event.target as HTMLElement;
+					if (target && target.tagName === "MARK") {
+						const dataColor = target.getAttribute("data-color");
+						const classList = target.classList;
+						const diffGroupId = target.getAttribute("data-diff-group");
+
+						const isDelete = dataColor === deletionColor || classList.contains("delete");
+						const isInsert = dataColor === insertionColor || classList.contains("insert");
+
+						if ((isDelete || isInsert) && diffGroupId) {
+							currentDiffElement = target;
+							currentIsDelete = isDelete;
+							currentDiffGroup = diffGroupId;
+
+							// Update panel content for diff groups
+							infoDiv.textContent = "Diff Change";
+							acceptButton.textContent = "Apply Change";
+							rejectButton.textContent = "Reject Change";
+
+							// Show the action panel
+							actionPanel.classList.add("visible");
+							
+							// Prevent the click from bubbling
+							event.stopPropagation();
+						}
+					} else {
+						// Hide panel if clicking elsewhere
+						actionPanel.classList.remove("visible");
+						currentDiffElement = null;
+						currentDiffGroup = null;
+					}
+				};
+
+				editorView.dom.addEventListener("click", handleEditorClick);
 
 				return {
 					update(view, prevState) {
-						if (!prevState || !prevState.doc.eq(view.state.doc)) {
-							updateButtonsVisibility();
-						}
+						// Don't do anything on updates to prevent infinite loops
 					},
 					destroy: () => {
 						const styleElement = document.getElementById("diff-actions-style");
 						if (styleElement) {
 							styleElement.remove();
 						}
-						actionsContainer.remove();
+						if (actionPanel.parentNode) {
+							actionPanel.parentNode.removeChild(actionPanel);
+						}
+						editorView.dom.removeEventListener("click", handleEditorClick);
 					},
 				};
 			},

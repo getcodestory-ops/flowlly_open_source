@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Editor } from "@tiptap/react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { getAIDocumentLineEdit } from "@/api/documentRoutes";
+import { useStore } from "@/utils/store";
 
 interface BubbleMenuProps {
   editor: Editor;
@@ -9,20 +11,25 @@ interface BubbleMenuProps {
 }
 
 const EditorBubbleMenu: React.FC<BubbleMenuProps> = ({ editor, onCreateComment }) => {
+	const { session } = useStore();
 	const [isVisible, setIsVisible] = useState(false);
 	const [position, setPosition] = useState({ top: 0, left: 0 });
 	const [showCommentInput, setShowCommentInput] = useState(false);
+	const [showRevisionInput, setShowRevisionInput] = useState(false);
 	const [commentText, setCommentText] = useState("");
+	const [userComments, setUserComments] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
 	const [hasSelection, setHasSelection] = useState(false);
 	const [isHoveringSelection, setIsHoveringSelection] = useState(false);
 	const [isHoveringBubble, setIsHoveringBubble] = useState(false);
 	const bubbleRef = useRef<HTMLDivElement>(null);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const commentsTextareaRef = useRef<HTMLTextAreaElement>(null);
 	const selectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	// Update visibility based on hover states with delay
 	useEffect(() => {
-		const shouldShow = hasSelection && (isHoveringSelection || isHoveringBubble || showCommentInput);
+		const shouldShow = hasSelection && (isHoveringSelection || isHoveringBubble || showCommentInput || showRevisionInput);
 		
 		if (shouldShow) {
 			// Clear any existing timeout and show immediately
@@ -40,7 +47,7 @@ const EditorBubbleMenu: React.FC<BubbleMenuProps> = ({ editor, onCreateComment }
 				setIsVisible(false);
 			}, 150); // 150ms delay
 		}
-	}, [hasSelection, isHoveringSelection, isHoveringBubble, showCommentInput]);
+	}, [hasSelection, isHoveringSelection, isHoveringBubble, showCommentInput, showRevisionInput]);
 
 	useEffect(() => {
 		if (!editor) return;
@@ -71,7 +78,9 @@ const EditorBubbleMenu: React.FC<BubbleMenuProps> = ({ editor, onCreateComment }
 				setHasSelection(false);
 				setIsHoveringSelection(false);
 				setShowCommentInput(false);
+				setShowRevisionInput(false);
 				setCommentText("");
+				setUserComments("");
 			}
 		};
 
@@ -141,6 +150,13 @@ const EditorBubbleMenu: React.FC<BubbleMenuProps> = ({ editor, onCreateComment }
 		}
 	}, [showCommentInput]);
 
+	// Focus textarea when revision input is shown
+	useEffect(() => {
+		if (showRevisionInput && commentsTextareaRef.current) {
+			commentsTextareaRef.current.focus();
+		}
+	}, [showRevisionInput]);
+
 	// Handle bubble menu hover
 	const handleBubbleMouseEnter = () => {
 		setIsHoveringBubble(true);
@@ -152,6 +168,13 @@ const EditorBubbleMenu: React.FC<BubbleMenuProps> = ({ editor, onCreateComment }
 
 	const handleCommentClick = () => {
 		setShowCommentInput(true);
+		setShowRevisionInput(false);
+	};
+
+	const handleRevisionClick = () => {
+		setShowRevisionInput(true);
+		setShowCommentInput(false);
+		setUserComments("");
 	};
 
 	const handleSubmitComment = () => {
@@ -171,6 +194,78 @@ const EditorBubbleMenu: React.FC<BubbleMenuProps> = ({ editor, onCreateComment }
 		editor.commands.setTextSelection(editor.state.selection.to);
 	};
 
+	const handleSubmitRevision = async() => {
+		if (!userComments.trim() || !session) return;
+
+		setIsLoading(true);
+		try {
+			// Get the selected text
+			const { selection } = editor.state;
+			const selectedText = editor.state.doc.textBetween(selection.from, selection.to);
+
+			const response = await getAIDocumentLineEdit(
+				session,
+				selectedText,
+				userComments.trim(),
+			);
+
+			if (response.success && response.data.updated_content) {
+				// Generate a unique diff group ID for this change
+				const diffGroupId = `diff-${Date.now()}-${Math.random().toString(36)
+					.substring(2, 11)}`;
+
+				// Apply deletion class to the original content
+				editor.chain()
+					.focus()
+					.setTextSelection({ from: selection.from, to: selection.to })
+					.setHighlight({ color: "#f98181" })
+					.updateAttributes("highlight", { 
+						class: "delete",
+						"data-diff-group": diffGroupId,
+					})
+					.run();
+
+				// Insert the new content after the original content
+				editor.chain()
+					.focus()
+					.setTextSelection(selection.to)
+					.insertContent(response.data.updated_content)
+					.run();
+
+				// Apply insertion class to the newly inserted content
+				const insertionStart = selection.to;
+				const insertionEnd = insertionStart + response.data.updated_content.length;
+				
+				editor.chain()
+					.focus()
+					.setTextSelection({ from: insertionStart, to: insertionEnd })
+					.setHighlight({ color: "#8ce99a" })
+					.updateAttributes("highlight", { 
+						class: "insert",
+						"data-diff-group": diffGroupId,
+					})
+					.run();
+				
+				setUserComments("");
+				setShowRevisionInput(false);
+				// Clear the selection to hide the bubble menu after revision submission
+				editor.commands.setTextSelection(insertionEnd);
+			}
+		} catch (error) {
+			console.error("Error getting AI revision:", error);
+			// Show error message or fallback behavior
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const handleCancelRevision = () => {
+		setUserComments("");
+		setShowRevisionInput(false);
+		// Clear the selection to hide the bubble menu after canceling
+		editor.commands.setTextSelection(editor.state.selection.to);
+	};
+
 	if (!editor || !isVisible) {
 		return null;
 	}
@@ -186,10 +281,10 @@ const EditorBubbleMenu: React.FC<BubbleMenuProps> = ({ editor, onCreateComment }
 				top: `${position.top}px`,
 				left: `${position.left}px`,
 				zIndex: 9999,
-				minWidth: showCommentInput ? "280px" : "auto",
+				minWidth: (showCommentInput || showRevisionInput) ? "280px" : "auto",
 			}}
 		>
-			{!showCommentInput ? (
+			{!showCommentInput && !showRevisionInput ? (
 				<div className="flex items-center gap-1">
 					{/* Format buttons */}
 					<button
@@ -259,8 +354,26 @@ const EditorBubbleMenu: React.FC<BubbleMenuProps> = ({ editor, onCreateComment }
 						</svg>
 						Comment
 					</button>
+					<button
+						className="flex items-center gap-1 p-1.5 rounded hover:bg-green-100 text-green-600 text-xs font-medium"
+						onClick={handleRevisionClick}
+						title="AI Revision"
+						type="button"
+					>
+						<svg 
+							fill="none" 
+							height="12" 
+							stroke="currentColor" 
+							strokeWidth="2" 
+							viewBox="0 0 24 24" 
+							width="12"
+						>
+							<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+						</svg>
+						AI Revision
+					</button>
 				</div>
-			) : (
+			) : showCommentInput ? (
 				<div className="space-y-2 p-2">
 					<div className="text-sm font-medium text-gray-700">Add Comment</div>
 					<Textarea
@@ -298,6 +411,75 @@ const EditorBubbleMenu: React.FC<BubbleMenuProps> = ({ editor, onCreateComment }
 					</div>
 					<div className="text-xs text-gray-500">
 						Press Ctrl+Enter to submit, Esc to cancel
+					</div>
+				</div>
+			) : (
+				<div className="space-y-2 p-2">
+					<div className="text-sm font-medium text-gray-700">AI Revision</div>
+					<Textarea
+						className="min-h-[50px] text-sm"
+						disabled={isLoading}
+						onChange={(e) => setUserComments(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+								e.preventDefault();
+								handleSubmitRevision();
+							}
+							if (e.key === "Escape") {
+								e.preventDefault();
+								handleCancelRevision();
+							}
+						}}
+						placeholder="Describe how you want the selected content to be revised..."
+						ref={commentsTextareaRef}
+						value={userComments}
+					/>
+					<div className="flex gap-2">
+						<Button 
+							className="bg-green-600 hover:bg-green-700" 
+							disabled={!userComments.trim() || isLoading}
+							onClick={handleSubmitRevision}
+							size="sm"
+						>
+							{isLoading ? (
+								<div className="flex items-center gap-2">
+									<svg 
+										className="animate-spin h-4 w-4" 
+										fill="none" 
+										viewBox="0 0 24 24" 
+										xmlns="http://www.w3.org/2000/svg"
+									>
+										<circle 
+											className="opacity-25" 
+											cx="12" 
+											cy="12" 
+											r="10" 
+											stroke="currentColor" 
+											strokeWidth="4"
+										/>
+										<path 
+											className="opacity-75" 
+											d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" 
+											fill="currentColor"
+										/>
+									</svg>
+									Processing...
+								</div>
+							) : (
+								"Apply AI Revision"
+							)}
+						</Button>
+						<Button 
+							disabled={isLoading}
+							onClick={handleCancelRevision}
+							size="sm"
+							variant="outline"
+						>
+							Cancel
+						</Button>
+					</div>
+					<div className="text-xs text-gray-500">
+						Press Ctrl+Enter to apply, Esc to cancel
 					</div>
 				</div>
 			)}
