@@ -15,7 +15,7 @@ import Underline from "@tiptap/extension-underline";
 import { Highlight } from "@tiptap/extension-highlight";
 import Toolbar from "./ToolBar";
 import { HoverExtension } from "./extensions/HoverExtension";
-import { DiffStyleExtension } from "./extensions/DiffStyleExtension";
+import { CompoundDiffExtension } from "./extensions/CompoundDiffExtension";
 import { StyleParser } from "./extensions/StyleParser";
 import Image from "@tiptap/extension-image";
 import EditorProvider from "./EditorProvider";
@@ -109,9 +109,8 @@ const ContentEditor = ({
 			TableHeader,
 			TableCell,
 			HoverExtension,
-			DiffStyleExtension.configure({
-				showDiffButtons: showDiffButtons,
-				multicolor: true,
+			CompoundDiffExtension.configure({
+				HTMLAttributes: {},
 			}),
 			ReactChartDisplayExtension,
 		],

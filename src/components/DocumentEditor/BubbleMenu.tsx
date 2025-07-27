@@ -214,42 +214,22 @@ const EditorBubbleMenu: React.FC<BubbleMenuProps> = ({ editor, onCreateComment }
 				const diffGroupId = `diff-${Date.now()}-${Math.random().toString(36)
 					.substring(2, 11)}`;
 
-				// Apply deletion class to the original content
+				// Delete the selected text and insert a compound diff
 				editor.chain()
 					.focus()
 					.setTextSelection({ from: selection.from, to: selection.to })
-					.setHighlight({ color: "#f98181" })
-					.updateAttributes("highlight", { 
-						class: "delete",
-						"data-diff-group": diffGroupId,
-					})
-					.run();
-
-				// Insert the new content after the original content
-				editor.chain()
-					.focus()
-					.setTextSelection(selection.to)
-					.insertContent(response.data.updated_content)
-					.run();
-
-				// Apply insertion class to the newly inserted content
-				const insertionStart = selection.to;
-				const insertionEnd = insertionStart + response.data.updated_content.length;
-				
-				editor.chain()
-					.focus()
-					.setTextSelection({ from: insertionStart, to: insertionEnd })
-					.setHighlight({ color: "#8ce99a" })
-					.updateAttributes("highlight", { 
-						class: "insert",
-						"data-diff-group": diffGroupId,
+					.deleteSelection()
+					.insertCompoundDiff({
+						originalContent: selectedText,
+						revisedContent: response.data.updated_content,
+						diffGroup: diffGroupId,
 					})
 					.run();
 				
 				setUserComments("");
 				setShowRevisionInput(false);
 				// Clear the selection to hide the bubble menu after revision submission
-				editor.commands.setTextSelection(insertionEnd);
+				editor.commands.setTextSelection(selection.from);
 			}
 		} catch (error) {
 			console.error("Error getting AI revision:", error);
