@@ -5,17 +5,10 @@ import {
 	Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { WorkflowStatus } from "@/hooks/useWorkflowStack";
 import { Badge } from "@/components/ui/badge";
 import { WorkflowsTabContent } from "./WorkflowsTabContent";
 import { Tooltipped } from "@/components/Common/Tooltiped";
-import {
-	Dialog,
-	DialogContent,
-	DialogTrigger,
-} from "@/components/ui/dialog";
 import { useWorkflow } from "@/hooks/useWorkflow";
-import WorkFlowProgressViewer from "@/components/WorkflowStack/WorkFlowProgressViewer";
 import { Session } from "@supabase/supabase-js";
 export const WorkflowViewer = ({ session }: { session: Session | null }): React.ReactNode => {
 	const {
@@ -23,7 +16,6 @@ export const WorkflowViewer = ({ session }: { session: Session | null }): React.
 		setCurrentResult,
 		currentGraph,
 	} = useWorkflow();
-	const [isDialogOpen, setIsDialogOpen] = useState(false);
 
 	return (
 		<div className="flex flex-col h-full overflow-hidden">
@@ -46,20 +38,6 @@ export const WorkflowViewer = ({ session }: { session: Session | null }): React.
 				<Badge variant="outline">
 					{currentGraph?.event_type}
 				</Badge>
-				{currentGraph?.event_trigger &&
-				currentGraph?.event_trigger.length > 0 && (
-					<Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
-						<DialogTrigger asChild className="ml-auto">
-							<Button variant="default">
-								<Play className="h-4 w-4 mr-2" />
-								Start {currentGraph?.name || "Workflow"}
-							</Button>
-						</DialogTrigger>
-						<DialogContent className="max-w-2xl ">
-							<WorkFlowProgressViewer onClose={() => setIsDialogOpen(false)} />
-						</DialogContent>
-					</Dialog>
-				)}
 			</div>
 			<WorkflowsTabContent />
 		</div>

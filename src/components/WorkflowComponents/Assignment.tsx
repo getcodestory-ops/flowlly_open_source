@@ -22,7 +22,7 @@ import type {
 
 import LoaderAnimation from "@/components/Animations/LoaderAnimation";
 import CreateJob from "./CreateJob";
-import { WorkflowViewer } from "./AssignmentComponents/WorkflowViewer";
+import { WorkflowsTabContent } from "./AssignmentComponents/WorkflowsTabContent";
 import { useWorkflow } from "@/hooks/useWorkflow";
 import { DatabaseViewer } from "./DatabaseViewer";
 
@@ -138,7 +138,7 @@ export default function AssignmentHome(): React.ReactNode {
 							</CardContent>
 						</Card>
 					) : (
-						<WorkflowViewer session={session} />
+						<WorkflowsTabContent />
 					)}
 				</>
 			)}

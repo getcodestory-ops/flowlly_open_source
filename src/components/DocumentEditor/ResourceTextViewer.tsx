@@ -5,7 +5,7 @@ import ContentEditor from "../DocumentEditor/ContentEditor";
 import { useStorageTextFileSave } from "../DocumentEditor/useStorageTextSave";
 import LoaderAnimation from "../Animations/LoaderAnimation";
 
-export function ResourceTextViewer({ resource_id }: { resource_id: string }) {
+export function ResourceTextViewer({ resource_id, showComments = false }: { resource_id: string, showComments?: boolean }) {
 	const activeProject = useStore((state) => state.activeProject);
 	const session = useStore((state) => state.session);
 	const { onSubmit, isPending } = useStorageTextFileSave(resource_id);
@@ -18,7 +18,7 @@ export function ResourceTextViewer({ resource_id }: { resource_id: string }) {
 	});
 
 	return (
-		<div className="h-full">
+		<div className="h-full ">
 			{isLoading ? (
 				<div className="flex justify-center items-center h-full">
 					<LoaderAnimation />
@@ -29,7 +29,9 @@ export function ResourceTextViewer({ resource_id }: { resource_id: string }) {
 						content={data.metadata.content}
 						documentId={resource_id}
 						documentName={data.file_name}
+						projectAccessId={activeProject?.project_id}
 						saveFunction={onSubmit}
+						showComments={showComments}
 					/>
 				</div>
 			) : null}

@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { FaFileAlt, FaSpinner } from "react-icons/fa";
 import { MessageCircle } from "lucide-react";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
@@ -20,7 +19,6 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { updateDocumentName } from "@/api/documentRoutes";
 (pdfMake as any).vfs = pdfFonts.vfs;
 import { type Editor } from "@tiptap/react";
 import FolderSelector from "@/components/ProjectEvent/FolderSelector";
@@ -73,8 +71,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
 	// Get unsaved changes for this specific document
 	const hasUnsavedChanges = documentId ? unsavedChanges[documentId] || false : false;
 	const lastSavedContent = useRef<string>("");
-	const [fileName, setFileName] = useState<string | undefined>(documentName);
-	const [editingFileName, setEditingFileName] = useState<string | undefined>(documentName);
 	const [showSaveAsDialog, setShowSaveAsDialog] = useState(false);
 	const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
 	const [selectedFolderName, setSelectedFolderName] = useState<string>("");
@@ -187,35 +183,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
 		setShowUnsavedDialog(false);
 	};
 
-	const handleFileNameChange = async(newName: string) => {
-		if (!documentId) return;
-		if (!sessionToken) return;
-		const response = await updateDocumentName(sessionToken, documentId, newName);
-		if (response) {
-			toast({
-				title: "File name updated",
-				description: "File name updated to " + newName,
-			});
-			setFileName(newName);
-		} else {
-			toast({
-				title: "Error",
-				description: "Failed to update file name",
-				variant: "destructive",
-			});
-			setEditingFileName(fileName);
-		}
-	};
-
-
-	const handleFileNameInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-		const newName = e.target.value.trim();
-		if (newName && newName !== fileName) {
-			handleFileNameChange(newName);
-		} else {
-			setEditingFileName(fileName); // Reset to original name if empty or unchanged
-		}
-	};
 
 
 

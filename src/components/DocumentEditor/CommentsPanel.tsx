@@ -4,7 +4,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageCircle, CheckCircle, X, Plus, Undo2, Trash2 } from "lucide-react";
 import { useEditorStore } from "@/hooks/useEditorStore";
 import { useStore } from "@/utils/store";
@@ -39,10 +38,10 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
 	const {
 		threads,
 		selectedThread,
-		showUnresolved,
 		isCommentsVisible,
+		isLoading,
+		error,
 		setSelectedThread,
-		setShowUnresolved,
 		setCommentsVisible,
 		createThread,
 		createGeneralComment,
@@ -60,24 +59,22 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
 	const [showNewCommentForm, setShowNewCommentForm] = useState(false);
 	const [newThreadComment, setNewThreadComment] = useState("");
 
-	const handleAddComment = (threadId: string) => {
+	const handleAddComment = async(threadId: string) => {
 		if (newComment.trim()) {
 			const commentId = `comment-${Date.now()}`;
-			updateComment(threadId, commentId, newComment.trim(), userEmail);
+			await updateComment(threadId, commentId, newComment.trim(), userEmail);
 			setNewComment("");
-			// Notify parent of changes if callback provided
 			if (onCommentsChange) {
 				onCommentsChange(threads);
 			}
 		}
 	};
 
-	const handleCreateNewThread = () => {
+	const handleCreateNewThread = async() => {
 		if (newThreadComment.trim()) {
-			createGeneralComment(newThreadComment.trim(), userEmail);
+			await createGeneralComment(newThreadComment.trim(), userEmail);
 			setNewThreadComment("");
 			setShowNewCommentForm(false);
-			// Notify parent of changes if callback provided
 			if (onCommentsChange) {
 				onCommentsChange(threads);
 			}
@@ -147,14 +144,31 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
 					</div>
 				</div>
 			)}
-			<div className="w-80 absolute top-16 left-4 bg-background border-gray-200 border-l border-r border-b rounded-b-lg p-2">
+			<div className="w-80 absolute top-12 right-0 bg-background border-gray-200 border rounded-b-lg p-2"
+				style={{
+					zIndex: 1000,
+				}}
+			>
 				<div className="p-4 border-b">
 					<div className="flex items-center justify-between">
 						<h3 className="font-semibold flex items-center gap-2">
 							<MessageCircle className="h-4 w-4" />
 							Comments
+							<Badge className="ml-2" variant="secondary">
+								{threads.length}
+							</Badge>
 						</h3>
 						<div className="flex items-center gap-2">
+							{error && (
+								<span className="text-xs text-red-500" title={error}>
+									❗
+								</span>
+							)}
+							{isLoading && (
+								<span className="text-xs text-blue-500">
+									⏳
+								</span>
+							)}
 							<Button
 								className="h-7 px-2"
 								onClick={() => setShowNewCommentForm(!showNewCommentForm)}
@@ -177,36 +191,25 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
 						</div>
 					</div>
 				</div>
-				<Tabs 
-					className="flex-1 flex flex-col" 
-					defaultValue={showUnresolved ? "open" : "resolved"}
-					onValueChange={(value) => setShowUnresolved(value === "open")}
-					value={showUnresolved ? "open" : "resolved"}
-				>
-					<div className="px-4 pt-3">
-						<TabsList className="grid w-full grid-cols-2">
-							<TabsTrigger className="flex items-center gap-2" value="open">
-							Open
-								<Badge className="ml-auto" variant="secondary">
-									{threads.filter((thread) => !thread.resolvedAt).length}
-								</Badge>
-							</TabsTrigger>
-							<TabsTrigger className="flex items-center gap-2" value="resolved">
-							Resolved
-								<Badge className="ml-auto" variant="secondary">
-									{threads.filter((thread) => !!thread.resolvedAt).length}
-								</Badge>
-							</TabsTrigger>
-						</TabsList>
-					</div>
-					<TabsContent className="flex-1 mt-0" value="open">
-						<ScrollArea className="h-[65vh] px-4">
-							<div className="space-y-3 pt-3">
-								{threads.filter((thread) => !thread.resolvedAt).reverse()
+				<div className="flex-1 flex flex-col">
+					<ScrollArea className="h-[78vh] px-4">
+						<div className="space-y-3 pt-3">
+							{threads.length > 0 ? (
+								// Sort comments: open comments first, then resolved ones
+								[...threads]
+									.sort((a, b) => {
+										// Open comments (no resolvedAt) come first
+										if (!a.resolvedAt && b.resolvedAt) return -1;
+										if (a.resolvedAt && !b.resolvedAt) return 1;
+										// Within each group, sort by creation date (newest first)
+										return b.createdAt.getTime() - a.createdAt.getTime();
+									})
 									.map((thread) => (
 										<Card
 											className={`cursor-pointer transition-colors ${
 												selectedThread === thread.id ? "border-2 border-primary" : ""
+											} ${
+												thread.resolvedAt ? "opacity-60" : ""
 											}`}
 											key={thread.id}
 											onClick={() => setSelectedThread(thread.id)}
@@ -227,9 +230,9 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
 														{thread.resolvedAt ? (
 															<Button
 																className="h-6 w-6 p-0"
-																onClick={(e) => {
+																onClick={async(e) => {
 																	e.stopPropagation();
-																	unresolveThread(thread.id);
+																	await unresolveThread(thread.id);
 																	if (onCommentsChange) {
 																		onCommentsChange(threads);
 																	}
@@ -243,9 +246,9 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
 														) : (
 															<Button
 																className="h-6 w-6 p-0"
-																onClick={(e) => {
+																onClick={async(e) => {
 																	e.stopPropagation();
-																	resolveThread(thread.id);
+																	await resolveThread(thread.id);
 																	if (onCommentsChange) {
 																		onCommentsChange(threads);
 																	}
@@ -259,9 +262,9 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
 														)}
 														<Button
 															className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-															onClick={(e) => {
+															onClick={async(e) => {
 																e.stopPropagation();
-																deleteThread(thread.id);
+																await deleteThread(thread.id);
 																if (onCommentsChange) {
 																	onCommentsChange(threads);
 																}
@@ -277,18 +280,21 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
 											</CardHeader>
 											<CardContent className="pt-0">
 												{thread.selectedText && (
-													<div className="mb-3 p-2 bg-blue-50 border-l-4 border-blue-400 rounded">
+													<div className={`mb-3 p-2 bg-blue-50 border-l-4 border-blue-400 rounded ${
+														thread.resolvedAt ? "line-through" : ""
+													}`}
+													>
 														<div className="text-xs font-medium text-blue-700 mb-1">
-													Selected text:
+															Selected text:
 														</div>
 														<div className="text-sm text-blue-800 italic">
-													&ldquo;{thread.selectedText}&rdquo;
+															&ldquo;{thread.selectedText}&rdquo;
 														</div>
 													</div>
 												)}
 												<div className="space-y-2">
 													{thread.comments.map((comment) => (
-														<div className="text-sm" key={comment.id}>
+														<div className={`text-sm ${thread.resolvedAt ? "line-through" : ""}`} key={comment.id}>
 															<div className="font-medium text-xs text-muted-foreground mb-1">
 																{comment.author || "Anonymous"}
 															</div>
@@ -298,7 +304,7 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
 														</div>
 													))}
 												</div>        
-												{selectedThread === thread.id && (
+												{selectedThread === thread.id && !thread.resolvedAt && (
 													<div className="mt-3 pt-3 border-t">
 														<Textarea
 															className="min-h-[60px] text-sm"
@@ -312,7 +318,7 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
 																onClick={() => handleAddComment(thread.id)}
 																size="sm"
 															>
-														Reply
+																Reply
 															</Button>
 															<Button 
 																onClick={() => {
@@ -322,146 +328,23 @@ const CommentsPanel: React.FC<CommentsPanelProps> = ({
 																size="sm"
 																variant="outline"
 															>
-														Cancel
+																Cancel
 															</Button>
 														</div>
 													</div>
 												)}
 											</CardContent>
 										</Card>
-									))}
-								{threads.filter((thread) => !thread.resolvedAt).length === 0 && (
-									<div className="text-center py-8 text-muted-foreground">
-										<MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-										<p className="text-sm">No open comments</p>
-									</div>
-								)}
-							</div>
-						</ScrollArea>
-					</TabsContent>
-					<TabsContent className="flex-1 mt-0" value="resolved">
-						<ScrollArea className="h-[60vh] px-4">
-							<div className="space-y-3 pt-3">
-								{threads.filter((thread) => !!thread.resolvedAt).reverse()
-									.map((thread) => (
-										<Card
-											className={`cursor-pointer transition-colors ${
-												selectedThread === thread.id ? "ring-2 ring-primary" : ""
-											}`}
-											key={thread.id}
-											onClick={() => setSelectedThread(thread.id)}
-											onMouseEnter={() => {}} // No-op
-											onMouseLeave={() => {}} // No-op
-										>
-											<CardHeader className="pb-2">
-												<div className="flex items-center justify-between">
-													<div className="flex items-center gap-2">
-														<Badge className="text-xs" variant="secondary">
-													Resolved
-														</Badge>
-														<span className="text-xs text-muted-foreground">
-															{thread.createdAt.toLocaleDateString()}
-														</span>
-													</div>
-													<div className="flex items-center gap-1">
-														<Button
-															className="h-6 w-6 p-0"
-															onClick={(e) => {
-																e.stopPropagation();
-																unresolveThread(thread.id);
-																if (onCommentsChange) {
-																	onCommentsChange(threads);
-																}
-															}}
-															size="sm"
-															title="Unresolve comment"
-															variant="ghost"
-														>
-															<Undo2 className="h-3 w-3" />
-														</Button>
-														<Button
-															className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-															onClick={(e) => {
-																e.stopPropagation();
-																deleteThread(thread.id);
-																if (onCommentsChange) {
-																	onCommentsChange(threads);
-																}
-															}}
-															size="sm"
-															title="Delete comment"
-															variant="ghost"
-														>
-															<Trash2 className="h-3 w-3" />
-														</Button>
-													</div>
-												</div>
-											</CardHeader>
-											<CardContent className="pt-0">
-												{thread.selectedText && (
-													<div className="mb-3 p-2 bg-blue-50 border-l-4 border-blue-400 rounded">
-														<div className="text-xs font-medium text-blue-700 mb-1">
-													Selected text:
-														</div>
-														<div className="text-sm text-blue-800 italic">
-													&ldquo;{thread.selectedText}&rdquo;
-														</div>
-													</div>
-												)}
-												<div className="space-y-2">
-													{thread.comments.map((comment) => (
-														<div className="text-sm" key={comment.id}>
-															<div className="font-medium text-xs text-muted-foreground mb-1">
-																{comment.author || "Anonymous"}
-															</div>
-															<div className="text-foreground">
-																{comment.content}
-															</div>
-														</div>
-													))}
-												</div>        
-												{selectedThread === thread.id && (
-													<div className="mt-3 pt-3 border-t">
-														<Textarea
-															className="min-h-[60px] text-sm"
-															onChange={(e) => setNewComment(e.target.value)}
-															placeholder="Add a reply..."
-															value={newComment}
-														/>
-														<div className="flex gap-2 mt-2">
-															<Button 
-																disabled={!newComment.trim()} 
-																onClick={() => handleAddComment(thread.id)}
-																size="sm"
-															>
-														Reply
-															</Button>
-															<Button 
-																onClick={() => {
-																	setNewComment("");
-																	setSelectedThread(null);
-																}} 
-																size="sm"
-																variant="outline"
-															>
-														Cancel
-															</Button>
-														</div>
-													</div>
-												)}
-											</CardContent>
-										</Card>
-									))}
-								{threads.filter((thread) => !!thread.resolvedAt).length === 0 && (
-									<div className="text-center py-8 text-muted-foreground">
-										<MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-										<p className="text-sm">No resolved comments</p>
-									</div>
-								)}
-							</div>
-						</ScrollArea>
-					</TabsContent>
-				</Tabs>
+									))
+							) : (
+								<div className="text-center py-8 text-muted-foreground">
+									<MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+									<p className="text-sm">No comments yet</p>
+								</div>
+							)}
+						</div>
+					</ScrollArea>
+				</div>
 			</div>
 		</>
 	);
