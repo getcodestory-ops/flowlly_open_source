@@ -206,9 +206,6 @@ export const DiffStyleExtension = Highlight.extend<DiffStyleOptions>({
           /* Global floating action panel for diff content */
           .diff-action-panel {
             position: fixed;
-            top: 50%;
-            right: 20px;
-            transform: translateY(-50%);
             background: white;
             border: 1px solid #ddd;
             border-radius: 8px;
@@ -391,6 +388,29 @@ export const DiffStyleExtension = Highlight.extend<DiffStyleOptions>({
 							infoDiv.textContent = "Diff Change";
 							acceptButton.textContent = "Apply Change";
 							rejectButton.textContent = "Reject Change";
+
+							// Position the panel near the clicked element
+							const rect = target.getBoundingClientRect();
+							const panelWidth = 120; // min-width from CSS
+							const panelHeight = 80; // approximate height
+							
+							// Calculate position to show panel near the element
+							let left = rect.right + 10; // 10px to the right of the element
+							let top = rect.top - panelHeight / 2; // vertically center with the element
+							
+							// Ensure panel doesn't go off-screen
+							if (left + panelWidth > window.innerWidth) {
+								left = rect.left - panelWidth - 10; // show to the left instead
+							}
+							
+							if (top < 10) {
+								top = 10; // don't go above viewport
+							} else if (top + panelHeight > window.innerHeight) {
+								top = window.innerHeight - panelHeight - 10; // don't go below viewport
+							}
+							
+							actionPanel.style.left = `${left}px`;
+							actionPanel.style.top = `${top}px`;
 
 							// Show the action panel
 							actionPanel.classList.add("visible");
