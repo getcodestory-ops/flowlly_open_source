@@ -5,17 +5,17 @@ import { getInlineDocument, saveDocumentAs, fetchResource } from "@/api/folderRo
 import { updateDocumentName } from "@/api/documentRoutes";
 import { useStore } from "@/utils/store";
 import { useQuery } from "@tanstack/react-query";
-import { X, FileText, FileImage, FileAudio, FileVideo, FileCode, File, Pencil, Download, Folder, Plus, Save } from "lucide-react";
+import { X, FileText, FileImage, FileAudio, FileVideo, FileCode, File, Pencil, Download, Folder, Plus, Save, Edit3, ChevronLeft, ChevronRight } from "lucide-react";
 import { ResourceTextViewer } from "@/components/DocumentEditor/ResourceTextViewer";
 import RunningLogViewer from "@/components/WorkflowComponents/RunningLogViewer";
 import { DocumentSelector } from "@/components/DocumentSelector";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 import {
 	Dialog,
 	DialogContent,
 } from "@/components/ui/dialog";
 import FolderSelector from "@/components/ProjectEvent/FolderSelector";
+import { UnsavedChangesDialog } from "@/components/DocumentEditor/ToolBarItems";
 
 const imageExtensions = ["jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff"];
 const tifExtensions = ["tif", "tiff"];
@@ -208,7 +208,6 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 	const { session } = useStore();
 	const { activeProject } = useStore();
 	
-	// Only fetch inline document URL for files that actually need it (not CSV or HTML files)
 	const needsInlineUrl = !csvExtensions.includes(fileExtension) && !htmlExtensions.includes(fileExtension);
 	
 	const { data: resource } = useQuery({
@@ -222,7 +221,7 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 		enabled: needsInlineUrl && !!session && !!activeProject?.project_id,
 	});
 
-	// Handle CSV files first (they don't need the resource URL)
+
 	if (csvExtensions.includes(fileExtension)) {
 		return (
 			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
@@ -231,7 +230,6 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 		);
 	}
 
-	// Handle HTML files (they don't need the resource URL either)
 	if (htmlExtensions.includes(fileExtension)) {
 		return (
 			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
@@ -240,7 +238,6 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 		);
 	}
 
-	// For all other files, we need the resource URL
 	return (
 		<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
 			{resource && imageExtensions.includes(fileExtension) && !tifExtensions.includes(fileExtension) && (
@@ -309,8 +306,15 @@ const InteractiveChatPanel = () : React.ReactNode => {
 	const [showSaveAsDialog, setShowSaveAsDialog] = useState(false);
 	const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
 	const [selectedFolderName, setSelectedFolderName] = useState<string>("");
-	const { session } = useStore();
-	const { activeProject } = useStore();
+	const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+	const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+	const [canScrollLeft, setCanScrollLeft] = useState(false);
+	const [canScrollRight, setCanScrollRight] = useState(false);
+	const [showLeftArrow, setShowLeftArrow] = useState(false);
+	const [showRightArrow, setShowRightArrow] = useState(false);
+	const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+	const tabAreaRef = React.useRef<HTMLDivElement>(null);
+	const { session, activeProject, unsavedChanges, setUnsavedChanges, clearUnsavedChanges, clearAllUnsavedChanges } = useStore();
 	const { toast } = useToast();
 
 	const activeTab = tabs.find((tab) => tab.id === activeTabId);
@@ -352,9 +356,71 @@ const InteractiveChatPanel = () : React.ReactNode => {
 		setViewModes((prev) => ({ ...prev, [tabId]: mode }));
 	};
 
+	const checkUnsavedChanges = (tabId: string, action: () => void) => {
+		const tab = tabs.find((t) => t.id === tabId);
+		const documentId = tab?.resourceId || tabId; 
+		
+		if (unsavedChanges[documentId]) {
+			setPendingAction(() => action);
+			setShowUnsavedDialog(true);
+		} else {
+			action();
+		}
+	};
+
+	const clearTabUnsavedChanges = (tabId: string) => {
+		const tab = tabs.find((t) => t.id === tabId);
+		const documentId = tab?.resourceId || tabId;
+		clearUnsavedChanges(documentId);
+	};
+
 	const handleTabClose = (tabId: string, e: React.MouseEvent) => {
 		e.stopPropagation();
-		removeTab(tabId);
+		checkUnsavedChanges(tabId, () => {
+			removeTab(tabId);
+			clearTabUnsavedChanges(tabId);
+		});
+	};
+
+	// Handle mode switching with unsaved changes check
+	const handleModeSwitch = (tabId: string) => {
+		const currentMode = getCurrentViewMode(tabId);
+		const newMode = currentMode === "original" ? "text" : "original";
+		
+		// Only check for unsaved changes when switching FROM text mode (edit mode)
+		if (currentMode === "text") {
+			checkUnsavedChanges(tabId, () => {
+				setCurrentViewMode(tabId, newMode);
+				clearTabUnsavedChanges(tabId);
+			});
+		} else {
+			setCurrentViewMode(tabId, newMode);
+			// Note: Unsaved changes will be set by ResourceTextViewer when actual content changes occur
+		}
+	};
+
+	// Dialog handlers for unsaved changes
+	const handleSaveAndContinue = async() => {
+		// For now, we'll just proceed with the action
+		// In a full implementation, you'd want to save the content first
+		if (pendingAction) {
+			pendingAction();
+			setPendingAction(null);
+		}
+		setShowUnsavedDialog(false);
+	};
+
+	const handleDiscardChanges = () => {
+		if (pendingAction) {
+			pendingAction();
+			setPendingAction(null);
+		}
+		setShowUnsavedDialog(false);
+	};
+
+	const handleCancelAction = () => {
+		setPendingAction(null);
+		setShowUnsavedDialog(false);
 	};
 
 	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "wav", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", ".xlsx", ".docx", ".doc", "docx", "doc", "xlsx", "md", "json", "jsonl", "py", "css", "js", "ts", "tsx"];
@@ -461,9 +527,88 @@ const InteractiveChatPanel = () : React.ReactNode => {
 		});
 	};
 
+	// Tab scrolling functions
+	const checkScrollButtons = () => {
+		if (!scrollContainerRef.current) return;
+		
+		const container = scrollContainerRef.current;
+		const scrollLeft = container.scrollLeft;
+		const scrollWidth = container.scrollWidth;
+		const clientWidth = container.clientWidth;
+		
+		// Add small threshold to handle rounding errors
+		const threshold = 1;
+		
+		setCanScrollLeft(scrollLeft > threshold);
+		setCanScrollRight(scrollLeft < scrollWidth - clientWidth - threshold);
+	};
+
+	const scrollTabs = (direction: "left" | "right") => {
+		if (!scrollContainerRef.current) return;
+		
+		const container = scrollContainerRef.current;
+		const scrollAmount = 150; // Scroll by 150px
+		
+		if (direction === "left") {
+			container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+		} else {
+			container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+		}
+	};
+
+	// Check scroll buttons when tabs change or on resize
+	React.useEffect(() => {
+		const timeoutId = setTimeout(() => {
+			checkScrollButtons();
+		}, 100); // Small delay to ensure DOM is updated
+		
+		return () => clearTimeout(timeoutId);
+	}, [tabs]);
+
+	// Handle mouse movement to show/hide edge arrows
+	const handleTabAreaMouseMove = (e: React.MouseEvent) => {
+		if (!tabAreaRef.current) return;
+		
+		const rect = tabAreaRef.current.getBoundingClientRect();
+		const mouseX = e.clientX - rect.left;
+		const areaWidth = rect.width;
+		const edgeThreshold = 80; // 80px from edge for easier triggering
+		
+		// Show left arrow if near left edge and can scroll left
+		setShowLeftArrow(canScrollLeft && mouseX < edgeThreshold);
+		
+		// Show right arrow if near right edge and can scroll right  
+		setShowRightArrow(canScrollRight && mouseX > areaWidth - edgeThreshold);
+	};
+
+	const handleTabAreaMouseLeave = () => {
+		setShowLeftArrow(false);
+		setShowRightArrow(false);
+	};
+
+	// Check scroll buttons on scroll and resize
+	React.useEffect(() => {
+		const container = scrollContainerRef.current;
+		if (!container) return;
+
+		const handleScroll = () => checkScrollButtons();
+		const handleResize = () => checkScrollButtons();
+		
+		container.addEventListener("scroll", handleScroll);
+		window.addEventListener("resize", handleResize);
+		
+		// Initial check
+		const timeoutId = setTimeout(checkScrollButtons, 100);
+		
+		return () => {
+			container.removeEventListener("scroll", handleScroll);
+			window.removeEventListener("resize", handleResize);
+			clearTimeout(timeoutId);
+		};
+	}, []);
+
 	return (
-		<div className="h-[calc(100vh-20px)] flex flex-col bg-gray-50 rounded-lg border border-gray-200">
-			{/* Header with Select Files and Folders button */}
+		<div className="h-[calc(100vh-20px)] flex flex-col bg-gray-50 rounded-lg border ">
 			{tabs.length === 0 && (
 				<div className="flex items-center justify-center p-4 bg-white border-b border-gray-200 rounded-t-lg">
 					<Button
@@ -476,57 +621,207 @@ const InteractiveChatPanel = () : React.ReactNode => {
 					</Button>
 				</div>
 			)}
-			{/* Tab Bar */}
 			{tabs.length > 0 && (
-				<div className="flex items-center bg-white border-b border-gray-200 rounded-t-lg">
-					<ScrollArea className="flex-1">
-						<div className="flex items-center">
-							{tabs.map((tab) => {
-								const isActive = tab.id === activeTabId;
-								const fileExtension = getFileExtension(tab.filename);
-								
-								return (
-									<button
-										className={`flex items-center gap-2 px-3 py-2 text-sm border-r border-gray-200 hover:bg-gray-50 min-w-0 max-w-48 ${
-											isActive ? "bg-gray-50 border-b-2 border-b-blue-500" : ""
-										}`}
-										key={tab.id}
-										onClick={() => setActiveTab(tab.id)}
-									>
-										{tab.type === "folder" ? (
-											<Folder className="h-4 w-4 text-blue-500 flex-shrink-0" />
-										) : (
-											<div className="flex-shrink-0">{getFileIcon(fileExtension)}</div>
-										)}
-										<span className="truncate" title={tab.title}>
-											{tab.title}
-										</span>
-										<Button
-											className="h-4 w-4 p-0 hover:bg-gray-200 flex-shrink-0 ml-1"
-											onClick={(e) => handleTabClose(tab.id, e)}
-											size="icon"
-											variant="ghost"
+				<div className="flex items-center bg-gray-100 border-b border-gray-200 rounded-t-lg min-h-[52px]">
+					<div 
+						className="flex-1 min-w-0 relative"
+						onMouseLeave={handleTabAreaMouseLeave}
+						onMouseMove={handleTabAreaMouseMove}
+						ref={tabAreaRef}
+					>
+						{/* Floating Left Arrow */}
+						{showLeftArrow && (
+							<div className="absolute left-4 top-1/2 -translate-y-1/2 z-20 animate-in fade-in duration-200">
+								<Button
+									className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-lg border"
+									onClick={() => scrollTabs("left")}
+									size="icon"
+									title="Scroll tabs left"
+									variant="ghost"
+								>
+									<ChevronLeft className="h-4 w-4" />
+								</Button>
+							</div>
+						)}
+						{showRightArrow && (
+							<div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 animate-in fade-in duration-200">
+								<Button
+									className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-lg border"
+									onClick={() => scrollTabs("right")}
+									size="icon"
+									title="Scroll tabs right"
+									variant="ghost"
+								>
+									<ChevronRight className="h-4 w-4" />
+								</Button>
+							</div>
+						)}
+						<div 
+							className="overflow-x-auto"
+							ref={scrollContainerRef}
+							style={{
+								scrollbarWidth: "none",
+								msOverflowStyle: "none",
+								// @ts-ignore
+								"&::-webkit-scrollbar": { display: "none" },
+							}}
+						>
+							<div className="flex items-end pb-1 px-2 gap-1 h-[51px]">
+								{tabs.map((tab, index) => {
+									const isActive = tab.id === activeTabId;
+									const fileExtension = getFileExtension(tab.filename);
+									
+									// Chrome-like dynamic width
+									const getTabWidth = () => {
+										const maxWidth = 200;
+										const minWidth = 120;
+										if (tabs.length <= 3) return maxWidth;
+										if (tabs.length <= 6) return Math.max(minWidth, 180);
+										return Math.max(minWidth, Math.min(180, 600 / tabs.length));
+									};
+									
+									return (
+										<button
+											className={`relative flex items-center gap-2 px-3 py-2 text-sm transition-all duration-200 flex-shrink-0 ${
+												isActive 
+													? "bg-white border border-gray-200 border-b-0 rounded-t-lg shadow-sm z-10 -mb-px h-[42px]" 
+													: "bg-gray-200 hover:bg-gray-300 rounded-t-lg border border-gray-300 border-b-gray-100 mb-0 h-[38px]"
+											}`}
+											key={tab.id}
+											onClick={() => setActiveTab(tab.id)}
+											style={{ width: `${getTabWidth()}px` }}
 										>
-											<X className="h-3 w-3" />
-										</Button>
-									</button>
-								);
-							})}
+											{tab.type === "folder" ? (
+												<Folder className="h-4 w-4 text-blue-500 flex-shrink-0" />
+											) : (
+												<div className="flex-shrink-0">{getFileIcon(fileExtension)}</div>
+											)}
+											<span className="truncate min-w-0 flex-1 overflow-hidden" title={tab.title}>
+												{editingTabId === tab.id && tab.type === "sources" ? (
+													<input
+														autoFocus
+														className="text-sm bg-transparent border border-gray-300 rounded px-1 py-0 min-w-0 max-w-[150px] focus:outline-none focus:ring-1 focus:ring-blue-500"
+														onBlur={() => handleFileNameInputBlur(tab.id)}
+														onChange={(e) => setEditedName(e.target.value)}
+														onKeyDown={(e) => handleFileNameKeyDown(e, tab.id)}
+														value={editedName}
+													/>
+												) : (
+													<span 
+														className={tab.type === "sources" ? "cursor-pointer hover:bg-gray-100 px-1 rounded" : ""}
+														onDoubleClick={() => handleFileNameDoubleClick(tab)}
+														title={tab.type === "sources" ? "Double-click to edit filename" : tab.title}
+													>
+														{tab.filename || tab.title}
+														{unsavedChanges[tab.resourceId || tab.id] && (
+															<span className="text-orange-600 ml-1">•</span>
+														)}
+													</span>
+												)}
+											</span>
+											<Button
+												className="h-4 w-4 p-0 hover:bg-gray-200 flex-shrink-0 ml-1"
+												onClick={(e) => handleTabClose(tab.id, e)}
+												size="icon"
+												variant="ghost"
+											>
+												<X className="h-3 w-3" />
+											</Button>
+										</button>
+									);
+								})}
+							</div>
 						</div>
-					</ScrollArea>
-					<div className="flex items-center gap-1 px-2">
+					</div>
+					<div className="flex items-center gap-1 px-3 bg-gray-100 border-l border-gray-200 rounded-tr-lg">
+						<div className="flex items-center gap-1">
+							<Button 
+								className="h-8 w-8 p-0"
+								disabled={!activeTab || activeTab.type !== "sources"}
+								onClick={() => activeTab && handleFileNameDoubleClick(activeTab)}
+								size="icon"
+								title={activeTab?.type === "sources" ? "Rename file" : "Rename not available"}
+								variant="ghost"
+							>
+								<Edit3 className="h-4 w-4" />
+							</Button>
+							<Button 
+								className="h-8 w-8 p-0"
+								disabled={!activeTab || activeTab.type !== "sources" || !downloadResource?.url}
+								onClick={handleDownload}
+								size="icon"
+								title={activeTab?.type === "sources" ? "Download file" : "Download not available"}
+								variant="ghost"
+							>
+								<Download className="h-4 w-4" />
+							</Button>
+							<Button 
+								className="h-8 w-8 p-0"
+								disabled={!activeTab || activeTab.type !== "sources"}
+								onClick={() => setShowSaveAsDialog(true)}
+								size="icon"
+								title={activeTab?.type === "sources" ? "Save as copy" : "Save not available"}
+								variant="ghost"
+							>
+								<Save className="h-4 w-4" />
+							</Button>
+							<Button 
+								className={`gap-1 px-2 h-8 transition-all duration-200 relative ${
+									activeTab?.type === "sources" && getCurrentViewMode(activeTab.id) === "text" 
+										? "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100" 
+										: "hover:bg-gray-100 border border-transparent"
+								} ${activeTab?.type !== "sources" ? "opacity-50" : ""}`}
+								disabled={!activeTab || activeTab.type !== "sources"}
+								onClick={() => activeTab && handleModeSwitch(activeTab.id)}
+								size="sm"
+								title={
+									!activeTab || activeTab.type !== "sources" 
+										? "Edit mode not available" 
+										: (getCurrentViewMode(activeTab.id) === "original" ? "Switch to edit mode" : "Switch to view mode")
+								}
+								variant="ghost"
+							>
+								{!activeTab || activeTab.type !== "sources" || getCurrentViewMode(activeTab.id) === "original" ? (
+									<>
+										<Pencil className="h-4 w-4" />
+										<span className="text-xs font-medium">Edit</span>
+									</>
+								) : (
+									<>
+										<FileText className="h-4 w-4" />
+										<span className="text-xs font-medium">View</span>
+									</>
+								)}
+								{activeTab && unsavedChanges[activeTab.resourceId || activeTab.id] && activeTab.type === "sources" && getCurrentViewMode(activeTab.id) === "text" && (
+									<div className="absolute -top-1 -right-1 h-3 w-3 bg-orange-500 rounded-full border-2 border-white animate-pulse" />
+								)}
+							</Button>
+						</div>
+						{/* Universal actions */}
 						<Button
-							className="gap-2"
+							className="h-8 w-8 p-0"
 							onClick={handleAddFolderSelector}
-							size="sm"
+							size="icon"
 							title="Add Files and Folders"
 							variant="ghost"
 						>
-							<Folder className="h-4 w-4" />Drive 
+							<Folder className="h-4 w-4" />
 						</Button>
 						<Button
-							className="h-6 w-6 p-0"
-							onClick={clearAllTabs}
+							className="h-8 w-8 p-0"
+							onClick={() => {
+								// Check if any tab has unsaved changes
+								const hasAnyUnsavedChanges = Object.values(unsavedChanges).some(Boolean);
+								if (hasAnyUnsavedChanges) {
+									setPendingAction(() => () => {
+										clearAllTabs();
+										clearAllUnsavedChanges();
+									});
+									setShowUnsavedDialog(true);
+								} else {
+									clearAllTabs();
+								}
+							}}
 							size="icon"
 							title="Close All Tabs"
 							variant="ghost"
@@ -536,77 +831,7 @@ const InteractiveChatPanel = () : React.ReactNode => {
 					</div>
 				</div>
 			)}
-			{/* Active Tab Header */}
-			{activeTab && (
-				<div className="flex items-center gap-2 p-2 bg-white border-b border-gray-200">
-					{activeTab.type === "folder" ? (
-						<>
-							<Folder className="h-4 w-4 text-blue-500" />
-							<span className="text-sm font-medium">Select Files and Folders</span>
-						</>
-					) : (
-						<>
-							{getFileIcon(getFileExtension(activeTab.filename))}
-							{editingTabId === activeTab.id ? (
-								<input
-									autoFocus
-									className="text-sm font-medium bg-transparent border border-gray-300 rounded px-2 py-1 min-w-0 max-w-[300px] focus:outline-none focus:ring-1 focus:ring-blue-500"
-									onBlur={() => handleFileNameInputBlur(activeTab.id)}
-									onChange={(e) => setEditedName(e.target.value)}
-									onKeyDown={(e) => handleFileNameKeyDown(e, activeTab.id)}
-									value={editedName}
-								/>
-							) : (
-								<span 
-									className="text-sm font-medium cursor-pointer hover:bg-gray-50 px-2 py-1 rounded transition-colors"
-									onDoubleClick={() => handleFileNameDoubleClick(activeTab)}
-									title="Double-click to edit filename"
-								>
-									{activeTab.filename}
-								</span>
-							)}
-						</>
-					)}
-					<div className="flex-1" />
-					{activeTab.type !== "folder" && (
-						<>
-							<Button 
-								className="gap-2"
-								disabled={!downloadResource?.url}
-								onClick={handleDownload}
-								size="sm"
-								variant="ghost"
-							>
-								<Download className="h-4 w-4" />
-								Download
-							</Button>
-							<Button 
-								className="gap-2"
-								onClick={() => setShowSaveAsDialog(true)}
-								size="sm"
-								variant="ghost"
-							>
-								<Save className="h-4 w-4" />
-								Save As
-							</Button>
-							<Button 
-								className="gap-2"
-								onClick={() => {
-									const currentMode = getCurrentViewMode(activeTab.id);
-									setCurrentViewMode(activeTab.id, currentMode === "original" ? "text" : "original");
-								}}
-								size="sm"
-								variant="ghost"
-							>
-								{getCurrentViewMode(activeTab.id) === "original" ? <Pencil className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-								{getCurrentViewMode(activeTab.id) === "original" ? "View and Edit File Content" : "View Original"}
-							</Button>
-						</>
-					)}
-				</div>
-			)}
-			{/* Tab Content */}
-			<div className="flex-1 p-4 overflow-auto relative">
+			<div className="flex-1 overflow-auto relative">
 				{tabs.length === 0 && (
 					<div className="flex items-center justify-center h-full text-gray-500">
 						<div className="text-center">
@@ -618,9 +843,8 @@ const InteractiveChatPanel = () : React.ReactNode => {
 				)}
 				{tabs.map((tab) => (
 					<div 
-						className={`absolute inset-0 ${tab.id === activeTabId ? "block" : "hidden"}`}
+						className={`absolute px-2 inset-0 ${tab.id === activeTabId ? "block" : "hidden"}`}
 						key={tab.id}
-						style={{ padding: "1rem" }}
 					>
 						{tab.type === "folder" && (
 							<DocumentSelector 
@@ -633,8 +857,11 @@ const InteractiveChatPanel = () : React.ReactNode => {
 								{inLineViewableExtensions.includes(getFileExtension(tab.filename)) && (
 									<>
 										{getCurrentViewMode(tab.id) === "original" ? (
+											
 											getFileExtension(tab.filename) === "md" ? (
-												<ResourceTextViewer resource_id={tab.resourceId} />
+												<ResourceTextViewer 
+													resource_id={tab.resourceId}
+												/>
 											) : (
 												<InlineDocumentViewer 
 													fileExtension={getFileExtension(tab.filename)} 
@@ -642,7 +869,9 @@ const InteractiveChatPanel = () : React.ReactNode => {
 												/>
 											)
 										) : (
-											<ResourceTextViewer resource_id={tab.resourceId} />
+											<ResourceTextViewer 
+												resource_id={tab.resourceId}
+											/>
 										)}
 									</>
 								)}
@@ -653,6 +882,7 @@ const InteractiveChatPanel = () : React.ReactNode => {
 						)}
 						{tab.type === "editor" && (
 							<ResourceTextViewer resource_id={tab.resourceId} /> 
+						
 						)}
 						{tab.type === "log" && (
 							<RunningLogViewer logId={tab.resourceId} />
@@ -660,7 +890,6 @@ const InteractiveChatPanel = () : React.ReactNode => {
 					</div>
 				))}
 			</div>
-			{/* Save As Dialog */}
 			<Dialog onOpenChange={setShowSaveAsDialog} open={showSaveAsDialog}>
 				<DialogContent className="sm:max-w-[500px]">
 					<h2 className="text-xl font-semibold mb-4">Save Document As</h2>
@@ -681,6 +910,13 @@ const InteractiveChatPanel = () : React.ReactNode => {
 					</div>
 				</DialogContent>
 			</Dialog>
+			<UnsavedChangesDialog
+				isOpen={showUnsavedDialog}
+				isSaving={false}
+				onCancel={handleCancelAction}
+				onDiscard={handleDiscardChanges}
+				onSave={handleSaveAndContinue}
+			/>
 		</div>
 	);
 };

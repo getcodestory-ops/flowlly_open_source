@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import ContentEditor from "../DocumentEditor/ContentEditor";
 import { useStorageTextFileSave } from "../DocumentEditor/useStorageTextSave";
 import { useDocumentTracer } from "./useDocumentTracer";
+import { useStore } from "@/utils/store";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
@@ -20,6 +21,9 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
 	const fileExt = metadata?.extension?.toLowerCase();
 	const { onSubmit, isPending } = useStorageTextFileSave(resource?.id);
 	const traces = useDocumentTracer(resource?.id);
+	
+	// Get active project for comment API calls
+	const { activeProject } = useStore();
 
 	const [numPages, setNumPages] = useState<number | null>(null);
 	const [pageNumber, setPageNumber] = useState(1);
@@ -115,7 +119,10 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
 						<DialogContent className="max-w-6xl ">
 							<ContentEditor
 								content={metadata?.content}
+								documentId={resource?.id}
+								projectAccessId={activeProject?.project_id}
 								saveFunction={onSubmit}
+								showComments
 							/>
 						</DialogContent>
 					</Dialog>

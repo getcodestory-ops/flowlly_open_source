@@ -8,7 +8,7 @@ import { StarterKit } from "@tiptap/starter-kit";
 import { TextAlign } from "@tiptap/extension-text-align";
 import { DiffStyleExtension } from "@/components/DocumentEditor/extensions/DiffStyleExtension";
 import EditorProvider from "../DocumentEditor/EditorProvider";
-import { Markdown } from "tiptap-markdown";
+// import { Markdown } from "tiptap-markdown"; // Temporarily disabled - not compatible with Tiptap v3
 import Image from "@tiptap/extension-image";
 import PropTypes from "prop-types";
 import  ContentEditor  from "../DocumentEditor/ContentEditor";
@@ -17,9 +17,9 @@ const SimpleDocumentEditor: React.FC<{ content: string }> = ({ content }) => {
 	const editor = useEditor({
 		extensions: [
 			StarterKit,
-			Markdown.configure({
-				html: true,
-			}),
+			// Markdown.configure({
+			// 	html: true,
+			// }),
 			TextAlign.configure({
 				types: ["heading", "paragraph"],
 			}),

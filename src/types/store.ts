@@ -100,6 +100,7 @@ export type State = {
   documentId: string;
   AiActionsView: "open" | "close" | "extend" | any;
   projectStatus: string;
+  unsavedChanges: Record<string, boolean>;
   setSession: (session: Session | null) => void;
   // setNotification : (notification: NotificationInterface, projectId: string) => void;
   setHasHydrated: (state: boolean) => void;
@@ -145,4 +146,7 @@ export type State = {
   setAiActionsView: (view: "open" | "close" | "expand" | any) => void;
   setProjectStatus: (status: string) => void;
   setLocalChats: (localChats: AgentChat[]) => void;
+  setUnsavedChanges: (documentId: string, hasChanges: boolean) => void;
+  clearUnsavedChanges: (documentId: string) => void;
+  clearAllUnsavedChanges: () => void;
 };

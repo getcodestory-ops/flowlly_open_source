@@ -155,7 +155,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 							return (
 								<div className="flex items-center">
 									<span className="font-medium">
-										{compact ? "Schedule" : "Scheduled Workflow"}
+										{compact ? "Select Meeting to see" : "Scheduled Workflow"}
 									</span>
 									<span className="ml-2 text-xs text-muted-foreground">
 										{new Date(`2000-01-01T${run_time}Z`).toLocaleTimeString(

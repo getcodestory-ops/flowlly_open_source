@@ -2,7 +2,6 @@ import PlatformChatComponent from "@/components/ChatInput/PlatformChat/PlatformC
 import EditorProvider from "../EditorProvider";
 import { useEditor } from "@tiptap/react";
 import { StarterKit } from "@tiptap/starter-kit";
-import { Markdown } from "tiptap-markdown";
 import { TextAlign } from "@tiptap/extension-text-align";
 import { DiffStyleExtension } from "@/components/DocumentEditor/extensions/DiffStyleExtension";
 
@@ -25,9 +24,6 @@ const AIEditorLayout = ({
 	const editorInstance = useEditor({
 		extensions: [
 			StarterKit,
-			Markdown.configure({
-				html: true,
-			}),
 			TextAlign.configure({
 				types: ["heading", "paragraph"],
 			}),
