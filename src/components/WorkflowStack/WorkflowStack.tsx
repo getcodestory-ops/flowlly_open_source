@@ -35,9 +35,9 @@ export const WorkflowStack = (): React.ReactNode => {
 					}
 					else {
 						toast({
-							title: "No running workflows found!",
+							title: "No meetings taking place currently!",
 							variant: "default",
-							description: "No running workflows found",
+							description: "No meetings are taking place currently!",
 						});
 					}
 				},
@@ -96,7 +96,7 @@ const WorkflowStackHeader = ({ isCollapsed, setIsCollapsed }: { isCollapsed: boo
 				<WorkflowHeaderIcon isRunning={isRunning} isWaitingUserInput={isWaitingUserInput} />
 				<div className="font-medium text-sm flex-1 flex flex-col gap-1">
 					<div className="flex justify-between items-center text-white">
-						<div>{isWaitingUserInput ? "Waiting for input..." : isRunning ? "Processing..." : "Completed!"}</div>
+						<div>{isWaitingUserInput ? "Meeting in progress..." : isRunning ? "Processing..." : "Completed!"}</div>
 						<div className="text-xs text-gray-300">{totalSuccess} of {totalWorkflows}</div>
 					</div>
 					<div className="relative w-full h-[3px] overflow-hidden rounded-full bg-white/20">

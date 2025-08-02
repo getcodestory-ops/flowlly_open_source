@@ -298,7 +298,7 @@ const getFileIcon = (extension: string) : React.ReactNode => {
 	return <File className="h-4 w-4" />;
 };
 
-const InteractiveChatPanel = () : React.ReactNode => {
+const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : React.ReactNode => {
 	const { tabs, activeTabId, setActiveTab, removeTab, clearAllTabs, addTab } = useChatStore();
 	const [viewModes, setViewModes] = useState<{[tabId: string]: "original" | "text"}>({});
 	const [editingTabId, setEditingTabId] = useState<string | null>(null);
@@ -608,7 +608,7 @@ const InteractiveChatPanel = () : React.ReactNode => {
 	}, []);
 
 	return (
-		<div className="h-[calc(100vh-20px)] flex flex-col bg-gray-50 rounded-lg border ">
+		<div className={`h-[calc(100vh-${heightOffset}px)] flex flex-col bg-gray-50 rounded-lg border `}>
 			{tabs.length === 0 && (
 				<div className="flex items-center justify-center p-4 bg-white border-b border-gray-200 rounded-t-lg">
 					<Button

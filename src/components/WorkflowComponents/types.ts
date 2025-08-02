@@ -198,3 +198,37 @@ export enum ViewMode {
 	LIST = "list",
 	CALENDAR = "calendar",
 }
+
+// Event access role enum
+export enum EventAccessRole {
+  OWNER = "owner",
+  ADMIN = "admin",
+  MEMBER = "member",
+  GUEST = "guest",
+  PARTICIPANT = "participant",
+}
+
+
+export type IdentificationType = "directory_id" | "email" | "user_id";
+
+
+export interface ParticipantMetadataFields {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phoneNumber?: string;
+  directory_id?: string;
+  [key: string]: any;
+}
+
+export type ParticipantMetadata = {
+  role: EventAccessRole;
+  identification: IdentificationType;
+  metadata: ParticipantMetadataFields;
+};
+
+export type Participant = {
+  id: string;
+  event_id: string;
+  participant_metadata: ParticipantMetadata;
+};

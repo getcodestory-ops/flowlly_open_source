@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,21 +8,48 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Target, ArrowUpDown, RefreshCw } from "lucide-react";
-import { CardHeader } from "@/components/ui/card";
-import clsx from "clsx";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { 
+	ArrowLeft, 
+	Target, 
+	RefreshCw, 
+	FolderPlus, 
+	Upload,
+	Search,
+	SortAsc,
+	SortDesc,
+	FileText,
+	Building2,
+	User,
+	Menu,
+	ChevronDown
+} from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { AddNewFolderModal } from "../CreateNewFolderModal/CreateNewFolderModal";
+import { createSubFolder } from "@/api/folderRoutes";
+import { useDocumentStore } from "@/hooks/useDocumentStore";
+import { useToast } from "@/components/ui/use-toast";
 import { FileUploadButton } from "../Folder/FilesTable/FileUploadButton";
-import { AddFolderButton } from "../Folder/FilesTable/AddFolderButton";
+import clsx from "clsx";
 import { DocumentSelectorHeaderProps, SortField } from "./types";
 
 export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 	currentFolderStructure,
-	contextFolder,
 	isProjectWide,
 	searchTerm,
 	setSearchTerm,
 	navigateBack,
-	setAsContextFolder,
 	onCreateFolder,
 	onScopeChange,
 	onRefresh,
@@ -33,6 +60,30 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 	sortDirection,
 	onSort,
 }) => {
+	const toolbarRef = useRef<HTMLDivElement>(null);
+	const { addFolder } = useDocumentStore();
+	const { toast } = useToast();
+	const [containerWidth, setContainerWidth] = useState(1200);
+
+	const COLLAPSE_BREAKPOINT = 750; // Start collapsing at this container width (more conservative)
+	const FULL_COLLAPSE_BREAKPOINT = 500; // Collapse everything except essentials
+
+	useEffect(() => {
+		if (!toolbarRef.current) return;
+
+		const resizeObserver = new ResizeObserver((entries) => {
+			for (const entry of entries) {
+				setContainerWidth(entry.contentRect.width);
+			}
+		});
+
+		resizeObserver.observe(toolbarRef.current);
+
+		return () => {
+			resizeObserver.disconnect();
+		};
+	}, []);
+
 	// Build breadcrumb path from current folder structure
 	const getBreadcrumbPath = () => {
 		const path = [];
@@ -44,108 +95,225 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 		return path.length > 1 ? `/${path.slice(1).join("/")}` : "/";
 	};
 
-	const SortButton = ({
-		field,
-		children,
-	}: {
-		field: SortField;
-		children: React.ReactNode;
-	}) => (
-		<Button
-			className="hover:bg-transparent"
-			onClick={() => onSort(field)}
-			size="sm"
-			variant="ghost"
-		>
-			{children}
-			{sortField === field && (
-				<ArrowUpDown
-					className={`ml-1 h-3 w-3 ${
-						sortDirection === "desc" ? "transform rotate-180" : ""
-					}`}
-				/>
-			)}
-		</Button>
-	);
+	const handleAddFolder = (name: string) => {
+		if (!activeProject) return;
+		
+		createSubFolder(
+			session,
+			activeProject.project_id,
+			name,
+			currentFolderId,
+			isProjectWide,
+			(data) => {
+				addFolder(currentFolderId, data);
+			},
+		);
+	};
+
+	// Determine what to show based on container width
+	const shouldCollapseFileOps = containerWidth < COLLAPSE_BREAKPOINT;
+	const shouldCollapseViewOps = containerWidth < FULL_COLLAPSE_BREAKPOINT;
 
 	return (
-		<CardHeader className="flex justify-between items-center">
-			<div className="flex items-center gap-2 w-full">
-				<Button
-					className="flex items-center gap-2"
-					disabled={!currentFolderStructure?.parent}
-					onClick={navigateBack}
-					variant="ghost"
-				>
-					<ArrowLeft size={16} />
-				</Button>
-				<div className="text-sm text-gray-500 flex-1 min-w-0">
-					<div className="truncate">
+		<div className="border-b bg-white">
+			<div className="flex items-center gap-1 px-4 py-2 min-h-[48px]" ref={toolbarRef}>
+				{/* Navigation Group - Always visible */}
+				<div className="flex items-center gap-1">
+					<Button
+						className="h-8 w-8 p-0 hover:bg-gray-100"
+						disabled={!currentFolderStructure?.parent}
+						onClick={navigateBack}
+						size="sm"
+						title="Back"
+						variant="ghost"
+					>
+						<ArrowLeft size={14} />
+					</Button>
+				</div>
+				<div className="flex-1 min-w-0 px-3">
+					<div className="text-sm text-gray-700 truncate font-medium">
 						{getBreadcrumbPath()}
 					</div>
 				</div>
-				<Button
-					className="flex items-center gap-2"
-					onClick={onRefresh}
-					size="sm"
-					title="Refresh folder contents"
-					variant="outline"
+				{/* Menu Button - Shows when items are collapsed */}
+				{(shouldCollapseFileOps || shouldCollapseViewOps) && (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								className="h-8 px-3 text-xs hover:bg-gray-100"
+								size="sm"
+								title="Menu"
+								variant="ghost"
+							>
+								<Menu className="mr-1" size={14} />
+								Menu
+								<ChevronDown className="ml-1" size={12} />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" className="w-56">
+							{/* File Operations in Menu */}
+							{shouldCollapseFileOps && (
+								<>
+									<AddNewFolderModal
+										onAdd={handleAddFolder}
+										parentFolderName={currentFolderStructure?.folderName || (isProjectWide ? "Project Root" : "Personal Root")}
+									>
+										<DropdownMenuItem className="h-8 px-3 text-xs hover:bg-gray-100 " onSelect={(e) => e.preventDefault()}>
+											<FolderPlus className="mr-1" size={14} />
+											New folder
+										</DropdownMenuItem>
+									</AddNewFolderModal>
+									<FileUploadButton
+										activeProject={activeProject}
+										folderId={currentFolderId}
+										session={session}
+										showInToolbar
+									/>
+									{shouldCollapseViewOps && <DropdownMenuSeparator />}
+								</>
+							)}
+							{shouldCollapseViewOps && (
+								<>
+									<DropdownMenuItem onClick={onRefresh}>
+										<RefreshCw className="mr-2" size={14} />
+										Refresh
+									</DropdownMenuItem>
+									<DropdownMenuItem onClick={() => onScopeChange(isProjectWide ? "personal" : "project")}>
+										{isProjectWide ? (
+											<>
+												<User className="mr-2" size={14} />
+												Switch to Personal
+											</>
+										) : (
+											<>
+												<Building2 className="mr-2" size={14} />
+												Switch to Project
+											</>
+										)}
+									</DropdownMenuItem>
+								</>
+							)}
+						</DropdownMenuContent>
+					</DropdownMenu>
+				)}
+				{!shouldCollapseFileOps && (
+					<>
+						<div className="flex items-center gap-1">
+							<AddNewFolderModal
+								onAdd={handleAddFolder}
+								parentFolderName={currentFolderStructure?.folderName || (isProjectWide ? "Project Root" : "Personal Root")}
+							>
+								<Button
+									className="h-8 px-3 text-xs hover:bg-gray-100"
+									size="sm"
+									title="New folder"
+									variant="ghost"
+								>
+									<FolderPlus className="mr-1" size={14} />
+									New folder
+								</Button>
+							</AddNewFolderModal>
+							<FileUploadButton
+								activeProject={activeProject}
+								folderId={currentFolderId}
+								session={session}
+							/>
+						</div>
+						<Separator className="h-6 mx-1" orientation="vertical" />
+					</>
+				)}
+				{!shouldCollapseViewOps && (
+					<>
+						<div className="flex items-center gap-1">
+							<Button
+								className="h-8 w-8 p-0 hover:bg-gray-100"
+								onClick={onRefresh}
+								size="sm"
+								title="Refresh"
+								variant="ghost"
+							>
+								<RefreshCw size={14} />
+							</Button>
+							<div className="flex items-center border rounded-md">
+								<Button
+									className={clsx(
+										"h-8 px-3 text-xs rounded-r-none border-0",
+										isProjectWide 
+											? "bg-blue-100 text-blue-700 hover:bg-blue-200" 
+											: "bg-transparent hover:bg-gray-100",
+									)}
+									onClick={() => onScopeChange("project")}
+									size="sm"
+									title="Show project-wide files and folders"
+									variant="ghost"
+								>
+									<Building2 className="mr-1" size={12} />
+									Project
+								</Button>
+								<Button
+									className={clsx(
+										"h-8 px-3 text-xs rounded-l-none border-0 border-l",
+										!isProjectWide 
+											? "bg-blue-100 text-blue-700 hover:bg-blue-200" 
+											: "bg-transparent hover:bg-gray-100",
+									)}
+									onClick={() => onScopeChange("personal")}
+									size="sm"
+									title="Show your personal files and folders"
+									variant="ghost"
+								>
+									<User className="mr-1" size={12} />
+									Personal
+								</Button>
+							</div>
+						</div>
+						<Separator className="h-6 mx-1" orientation="vertical" />
+					</>
+				)}
+				<div className={clsx(
+					"flex items-center gap-2",
+					shouldCollapseViewOps ? "min-w-[120px]" : "min-w-[180px]",
+				)}
 				>
-					<RefreshCw size={16} />
-					Refresh
-				</Button>
-				<AddFolderButton
-					activeProject={activeProject}
-					folderId={currentFolderId}
-					folderName={currentFolderStructure?.folderName || (isProjectWide ? "Project Root" : "Personal Root")}
-					isProjectWide={isProjectWide}
-					session={session}
-				/>
-				<FileUploadButton
-					activeProject={activeProject}
-					folderId={currentFolderId}
-					session={session}
-				/>
-				<Button
-					className={clsx(
-						"flex items-center gap-2",
-						contextFolder.id === currentFolderStructure?.folderId && "bg-indigo-50 border-indigo-200 text-indigo-700",
-					)}
-					onClick={setAsContextFolder}
-					size="sm"
-					title={`Set as active folder for chat context${contextFolder.id === currentFolderStructure?.folderId ? " (currently active)" : ""}`}
-					variant="outline"
-				>
-					<Target size={16} />
-					{contextFolder.id === currentFolderStructure?.folderId ? "Active Folder" : "Set Active"}
-				</Button>
-				<Select
-					onValueChange={onScopeChange}
-					value={isProjectWide ? "project" : "personal"}
-				>
-					<SelectTrigger className="w-[100px]">
-						<SelectValue placeholder="Select Scope" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="project">Project</SelectItem>
-						<SelectItem value="personal">Personal</SelectItem>
-					</SelectContent>
-				</Select>
-			</div>
-			<div className="mt-4 w-full flex items-center gap-8">
-				<div className="flex items-center gap-2">
-					<span className="text-sm text-gray-600">Sort by:</span>
-					<SortButton field="name">Name</SortButton>
-					<SortButton field="type">Type</SortButton>
-					<SortButton field="created_at">Date</SortButton>
+					<div className="relative flex-1">
+						<Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+						<Input
+							className="h-8 pl-7 text-xs"
+							onChange={(e) => setSearchTerm(e.target.value)}
+							placeholder="Search files..."
+							value={searchTerm}
+						/>
+					</div>
 				</div>
-				<Input
-					className="flex-1"
-					onChange={(e) => setSearchTerm(e.target.value)}
-					placeholder="Search files and folders..."
-					value={searchTerm}
-				/>
 			</div>
-		</CardHeader>
+			<div className="flex items-center gap-4 px-4 py-1 bg-gray-50/50 border-t">
+				<span className="text-xs text-gray-600 font-medium">Sort:</span>
+				<div className="flex items-center gap-1">
+					{[
+						{ field: "name" as SortField, label: "Name" },
+						{ field: "type" as SortField, label: "Type" },
+						{ field: "created_at" as SortField, label: "Date" },
+					].map(({ field, label }) => (
+						<Button
+							className={clsx(
+								"h-6 px-2 text-xs hover:bg-gray-100",
+								sortField === field && "bg-gray-100 text-gray-900 font-medium",
+							)}
+							key={field}
+							onClick={() => onSort(field)}
+							size="sm"
+							variant="ghost"
+						>
+							{label}
+							{sortField === field && (
+								sortDirection === "asc" ? 
+									<SortAsc className="ml-1" size={12} /> : 
+									<SortDesc className="ml-1" size={12} />
+							)}
+						</Button>
+					))}
+				</div>
+			</div>
+		</div>
 	);
 }; 

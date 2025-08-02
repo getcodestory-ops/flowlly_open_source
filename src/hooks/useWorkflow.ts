@@ -1,4 +1,4 @@
-import { EventSchedule, EventResult, GraphData, ViewMode } from "@/components/WorkflowComponents/types";
+import { EventSchedule, EventResult, GraphData, ViewMode, Participant, EventAccessRole } from "@/components/WorkflowComponents/types";
 import { create } from "zustand";
 
 interface WorkflowStore {
@@ -13,6 +13,9 @@ interface WorkflowStore {
 
   graphs: GraphData[] | null;
   setGraphs: (_: GraphData[] | null) => void;
+
+  eventParticipants: Participant[] | null;
+  setEventParticipants: (_: Participant[] | null) => void;
 
   currentGraph: GraphData | null;
   setCurrentGraph: (_: GraphData | null) => void;
@@ -29,10 +32,24 @@ interface WorkflowStore {
   selectedWorkflowId: string | null;
   setSelectedWorkflowId: (_: string | null) => void;
 
+  // User roles by event ID
+  userRolesByEventId: Record<string, EventAccessRole>;
+  setUserRoleForEvent: (eventId: string, role: EventAccessRole) => void;
+  clearUserRoleForEvent: (eventId: string) => void;
+
    // Computed values
    workflowStats: () => { completed: number; running: number; other: number; total: number };
    completedWorkflows: () => EventSchedule[];
    runningWorkflows: () => EventSchedule[];
+   
+   // User role for current event
+   getCurrentUserRole: () => EventAccessRole | null;
+   
+   // Role utility functions
+   isAdmin: () => boolean;
+   isOwner: () => boolean;
+   isAdminOrOwner: () => boolean;
+   canEditSettings: () => boolean;
 }
 
 export const useWorkflow = create<WorkflowStore>((set, get) => ({
@@ -48,6 +65,9 @@ export const useWorkflow = create<WorkflowStore>((set, get) => ({
 	graphs: null,
 	setGraphs: (graphs: GraphData[] | null) => set({ graphs }),
 
+	eventParticipants: null,
+	setEventParticipants: (eventParticipants: Participant[] | null) => set({ eventParticipants }),
+
 	currentGraph: null,
 	setCurrentGraph: (currentGraph: GraphData | null) => set({ currentGraph }),
 
@@ -62,6 +82,15 @@ export const useWorkflow = create<WorkflowStore>((set, get) => ({
 
 	selectedWorkflowId: null,
 	setSelectedWorkflowId: (selectedWorkflowId: string | null) => set({ selectedWorkflowId }),
+
+	// User roles by event ID
+	userRolesByEventId: {},
+	setUserRoleForEvent: (eventId: string, role: EventAccessRole) => set((state) => ({ userRolesByEventId: { ...state.userRolesByEventId, [eventId]: role } })),
+	clearUserRoleForEvent: (eventId: string) => set((state) => {
+		const newRoles = { ...state.userRolesByEventId };
+		delete newRoles[eventId];
+		return { userRolesByEventId: newRoles };
+	}),
 
 	// Computed workflow statistics
 	workflowStats: () => {
@@ -145,5 +174,33 @@ export const useWorkflow = create<WorkflowStore>((set, get) => ({
           (!!result.workflow_id && result.status !== "completed"),
 			),
 		);
+	},
+
+	// User role for current event
+	getCurrentUserRole: () => {
+		const currentGraphId = get().currentGraphId;
+		if (!currentGraphId) return null;
+
+		// Return cached role if available
+		const userRole = get().userRolesByEventId[currentGraphId];
+		return userRole || null;
+	},
+
+	// Role utility functions
+	isAdmin: () => {
+		const currentUserRole = get().getCurrentUserRole();
+		return currentUserRole === EventAccessRole.ADMIN;
+	},
+	isOwner: () => {
+		const currentUserRole = get().getCurrentUserRole();
+		return currentUserRole === EventAccessRole.OWNER;
+	},
+	isAdminOrOwner: () => {
+		const currentUserRole = get().getCurrentUserRole();
+		return currentUserRole === EventAccessRole.ADMIN || currentUserRole === EventAccessRole.OWNER;
+	},
+	canEditSettings: () => {
+		const currentUserRole = get().getCurrentUserRole();
+		return currentUserRole === EventAccessRole.ADMIN || currentUserRole === EventAccessRole.OWNER;
 	},
 }));

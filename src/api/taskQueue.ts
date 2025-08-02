@@ -4,7 +4,7 @@ import { Notification } from "@/types/notification";
 import { CreateEvent } from "@/types/projectEvents";
 import axios from "axios";
 import { Workflow } from "@/hooks/useWorkflowStack";
-import type { EventResult } from "@/components/WorkflowComponents/types";
+import type { EventResult, Participant } from "@/components/WorkflowComponents/types";
 
 
 export const getTaskQueue = async(
@@ -162,6 +162,44 @@ export const getProjectEvents = async({
 	return response.data;
 };
 
+export const getEventParticipants = async({
+	session,
+	projectId,
+	eventId,
+}: {
+	session: Session;
+	projectId: string;
+	eventId: string;
+}) => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/participants/${projectId}/${eventId}`;
+	const response = await axios.get(url, {
+		headers: {
+			Authorization: `Bearer ${session.access_token}`,
+		},
+	});
+	return response.data;
+};
+
+
+export const updateEventParticipants = async({
+	session,
+	projectId,
+	eventId,
+	participants,
+}: {
+	session: Session;
+	projectId: string;
+	eventId: string;
+	participants: Participant[];
+}) => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/project_event/participants/${projectId}/${eventId}`;
+	const response = await axios.put(url, participants, {
+		headers: {
+			Authorization: `Bearer ${session.access_token}`,
+		},
+	});
+	return response.data;
+};
 
 export const getInProgressWorkflows = async({
 	session,

@@ -9,9 +9,6 @@ import {
 	getMicrosoftWebhook,
 } from "@/api/integration_routes";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { useMutation } from "@tanstack/react-query";
 import {
 	Card,
@@ -20,7 +17,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, Loader2, Settings, Calendar, Mail } from "lucide-react";
 import { useStore } from "@/utils/store";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
@@ -31,9 +29,6 @@ export default function Integration(): React.ReactNode {
 	const activeProject = useStore((state) => state.activeProject);
 	const [procoreConnected, setProcoreConnected] = useState(false);
 	const [microsoftConnected, setMicrosoftConnected] = useState(false);
-	const [syncProjects, setSyncProjects] = useState(false);
-	const [syncInterval, setSyncInterval] = useState("60");
-	const [googleConnected, setGoogleConnected] = useState(false);
 	const [microsoftWebhook, setMicrosoftWebhook] = useState(null);
 	const [microsoftMailWebhook, setMicrosoftMailWebhook] = useState(null);
 
@@ -124,7 +119,7 @@ export default function Integration(): React.ReactNode {
 		},
 	});
 
-	const handleProcoreConnect = () => {
+	const handleProcoreConnect = (): void => {
 		//console.log("procoreConnected", procoreConnected);
 		if (!procoreConnected) {
 			if (!session || !activeProject) {
@@ -155,7 +150,7 @@ export default function Integration(): React.ReactNode {
 		}
 	};
 
-	const handleMicrosoftConnect = async() => {
+	const handleMicrosoftConnect = async(): Promise<void> => {
 		if (!microsoftConnected) {
 			const sessionToken = session?.access_token;
 			const userId = session?.user?.id;
@@ -193,190 +188,151 @@ export default function Integration(): React.ReactNode {
 		}
 	};
 
-	const handleGoogleConnect = () => {
-		setGoogleConnected(!googleConnected);
-	};
 
-	const handleSave = () => {
-		// In a real implementation, this would save the settings to your backend
-		//console.log("Settings saved:", { syncProjects, syncInterval });
-	};
 
 	return (
-		<div className="p-4 space-y-4">
+		<div className="container h-full overflow-auto">
 			<Toaster />
-			{/* Procore Integration Card */}
-			<Card className="w-full max-w-xl">
-				<CardHeader>
-					<CardTitle>Procore Integration</CardTitle>
-					<CardDescription>
-            			Connect and manage your Procore account integration
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-6">
-					<div className="flex items-center space-x-2">
-						{procoreConnected ? (
-							<CheckCircle2 className="h-5 w-5 text-green-500" />
-						) : (
-							<AlertCircle className="h-5 w-5 text-yellow-500" />
-						)}
-						<span className="text-sm font-medium">
-							{procoreConnected
-								? "Connected to Procore"
-								: "Not connected to Procore"}
-						</span>
-					</div>
-					<Button
-						onClick={handleProcoreConnect}
-						variant={procoreConnected ? "destructive" : "default"}
-					>
-						{procoreConnected
-							? "Disconnect from Procore"
-							: "Connect to Procore"}
-					</Button>
-					{procoreConnected && (
-						<div className="space-y-4">
-							<div className="flex items-center space-x-2">
-								<Switch
-									checked={syncProjects}
-									id="sync-projects"
-									onCheckedChange={setSyncProjects}
-								/>
-								<Label htmlFor="sync-projects">Sync Procore projects</Label>
+			<div className="p-6 h-full max-w-7xl mx-auto">
+				{/* Header Section */}
+				<div className="mb-8">
+					<h1 className="text-2xl font-semibold text-gray-900">Integrations</h1>
+					<p className="text-gray-600 mt-1">Connect your tools to streamline your workflow</p>
+				</div>
+				{/* Integration Cards */}
+				<div className="space-y-6">
+					{/* Procore Integration */}
+					<Card>
+						<CardHeader>
+							<div className="flex items-center justify-between">
+								<div>
+									<CardTitle className="flex items-center gap-2">
+										<Settings className="h-5 w-5 text-gray-600" />
+										Procore
+									</CardTitle>
+									<CardDescription>
+										Construction management platform
+									</CardDescription>
+								</div>
+								{procoreConnected ? (
+									<Badge className="text-green-700 border-green-200" variant="outline">
+										<CheckCircle2 className="h-3 w-3 mr-1" />
+										Connected
+									</Badge>
+								) : (
+									<Badge variant="secondary">Not Connected</Badge>
+								)}
 							</div>
-							<div className="space-y-2">
-								<Label htmlFor="sync-interval">Sync interval (minutes)</Label>
-								<Input
-									id="sync-interval"
-									max="1440"
-									min="1"
-									onChange={(e) => setSyncInterval(e.target.value)}
-									type="number"
-									value={syncInterval}
-								/>
-							</div>
-						</div>
-					)}
-				</CardContent>
-			</Card>
-			{/* Microsoft Integration Card */}
-			<Card className="w-full max-w-xl">
-				<CardHeader>
-					<CardTitle>Microsoft Integration</CardTitle>
-					<CardDescription>
-            Connect and manage your Microsoft account integration
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-6  ">
-					<div className="flex items-center space-x-2">
-						{microsoftConnected ? (
-							<CheckCircle2 className="h-5 w-5 text-green-500" />
-						) : (
-							<AlertCircle className="h-5 w-5 text-yellow-500" />
-						)}
-						<span className="text-sm font-medium">
-							{microsoftConnected
-								? "Connected to Microsoft"
-								: "Not connected to Microsoft"}
-						</span>
-					</div>
-					{!microsoftConnected && (
-						<Button
-							onClick={handleMicrosoftConnect}
-							variant={microsoftConnected ? "destructive" : "default"}
-						>
-              Connect to Microsoft
-						</Button>
-					)}
-					{microsoftConnected && !microsoftWebhook && (
-						<Button
-							className="mr-4"
-							disabled={isPending}
-							onClick={() => registerOutlookCalendarWebhookMutation()}
-						>
-							{isPending ? (
-								<div className="flex items-center space-x-2">
-									<Loader2 className="h-4 w-4 animate-spin" />
-									<span>Connecting...</span>
+						</CardHeader>
+						<CardContent>
+							{procoreConnected ? (
+								<div className="text-sm text-gray-600">
+									Your Procore account is connected and syncing schedules, projects, and reports.
 								</div>
 							) : (
-								"Connect your outlook calendar"
+								<div className="space-y-4">
+									<p className="text-sm text-gray-600">
+										Connect to sync your construction data with Procore.
+									</p>
+									<Button onClick={handleProcoreConnect}>
+										Connect to Procore
+									</Button>
+								</div>
 							)}
-						</Button>
-					)}
-					{microsoftConnected && !microsoftMailWebhook && (
-						<Button
-							className="mr-4"
-							disabled={isPendingMail}
-							onClick={() => registerOutlookMailWebhookMutation()}
-						>
-							{isPendingMail ? "Connecting..." : "Connect your outlook mail"}
-						</Button>
-					)}
-					{(microsoftWebhook || isSuccess) && (
-						<Button
-							className="mr-4"
-							variant={microsoftConnected ? "destructive" : "default"}
-						>
-              Disconnect Calendar
-						</Button>
-					)}
-					{(microsoftMailWebhook || isSuccessMail) && (
-						<Button
-							className="mr-4"
-							variant={microsoftConnected ? "destructive" : "default"}
-						>
-              Disconnect Mail
-						</Button>
-					)}
-					{microsoftConnected && (
-						<div className="space-y-4">
-							{/* Add Microsoft-specific settings here */}
-						</div>
-					)}
-				</CardContent>
-			</Card>
-			{/* Google Integration Card */}
-			{/* <Card className="w-full max-w-3xl">
-				<CardHeader>
-					<CardTitle>Google Integration</CardTitle>
-					<CardDescription>
-            Connect and manage your Google account integration
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-6">
-					<div className="flex items-center space-x-2">
-						{googleConnected ? (
-							<CheckCircle2 className="h-5 w-5 text-green-500" />
-						) : (
-							<AlertCircle className="h-5 w-5 text-yellow-500" />
-						)}
-						<span className="text-sm font-medium">
-							{googleConnected
-								? "Connected to Google"
-								: "Not connected to Google"}
-						</span>
-					</div>
-					<Button
-						onClick={handleGoogleConnect}
-						variant={googleConnected ? "destructive" : "default"}
-					>
-						{googleConnected ? "Disconnect from Google" : "Connect to Google"}
-					</Button>
-					{googleConnected && (
-						<div className="space-y-4">
-						</div>
-					)}
-				</CardContent> 
-			</Card> */}
-			{/* Save Settings Button */}
-			<Button
-				className="mt-4"
-				disabled={!procoreConnected && !microsoftConnected && !googleConnected}
-				onClick={handleSave}
-			>
-        Save Settings
-			</Button>
+						</CardContent>
+					</Card>
+					{/* Microsoft Integration */}
+					<Card>
+						<CardHeader>
+							<div className="flex items-center justify-between">
+								<div>
+									<CardTitle className="flex items-center gap-2">
+										<Settings className="h-5 w-5 text-gray-600" />
+										Microsoft 365
+									</CardTitle>
+									<CardDescription>
+										Outlook Calendar & Email integration
+									</CardDescription>
+								</div>
+								{microsoftConnected ? (
+									<Badge className="text-green-700 border-green-200" variant="outline">
+										<CheckCircle2 className="h-3 w-3 mr-1" />
+										Connected
+									</Badge>
+								) : (
+									<Badge variant="secondary">Not Connected</Badge>
+								)}
+							</div>
+						</CardHeader>
+						<CardContent>
+							{microsoftConnected ? (
+								<div className="space-y-4">
+									<div className="text-sm text-gray-600 mb-4">
+										Your Microsoft 365 account is connected. Configure specific services below:
+									</div>
+									<div className="flex items-center justify-between py-2 border-b border-gray-100">
+										<div className="flex items-center gap-2">
+											<Calendar className="h-4 w-4 text-gray-500" />
+											<span className="text-sm font-medium">Outlook Calendar</span>
+										</div>
+										{microsoftWebhook || isSuccess ? (
+											<Badge className="text-green-700 border-green-200" variant="outline">
+												Connected
+											</Badge>
+										) : (
+											<Button
+												disabled={isPending}
+												onClick={() => registerOutlookCalendarWebhookMutation()}
+												size="sm"
+												variant="outline"
+											>
+												{isPending ? (
+													<>
+														<Loader2 className="h-3 w-3 mr-1 animate-spin" />
+														Connecting...
+													</>
+												) : (
+													"Connect"
+												)}
+											</Button>
+										)}
+									</div>
+									{/* Email Service */}
+									<div className="flex items-center justify-between py-2">
+										<div className="flex items-center gap-2">
+											<Mail className="h-4 w-4 text-gray-500" />
+											<span className="text-sm font-medium">Outlook Mail</span>
+										</div>
+										{microsoftMailWebhook || isSuccessMail ? (
+											<Badge className="text-green-700 border-green-200" variant="outline">
+												Connected
+											</Badge>
+										) : (
+											<Button
+												disabled={isPendingMail}
+												onClick={() => registerOutlookMailWebhookMutation()}
+												size="sm"
+												variant="outline"
+											>
+												{isPendingMail ? "Connecting..." : "Connect"}
+											</Button>
+										)}
+									</div>
+								</div>
+							) : (
+								<div className="space-y-4">
+									<p className="text-sm text-gray-600">
+										Connect to sync your calendar events and email communications.
+									</p>
+									<Button onClick={handleMicrosoftConnect}>
+										Connect to Microsoft 365
+									</Button>
+								</div>
+							)}
+						</CardContent>
+					</Card>
+				</div>
+			</div>
 		</div>
 	);
 }

@@ -7,7 +7,7 @@ import { clsx } from "clsx";
 import InteractiveChatPanel from "@/components/ChatInput/PlatformChat/InteractiveChatPanel";
 import { useEffect, useState } from "react";
 
-export default function ChatComponent() : JSX.Element {
+export default function ChatComponent({ heightOffset = 20 }: {heightOffset?: number}) : JSX.Element {
 	const activeProject = useStore((state) => state.activeProject);
 	const { tabs, chatDirectiveType, setChatDirectiveType } = useChatStore();
 	const hasOpenTabs = tabs.length > 0;
@@ -73,7 +73,7 @@ export default function ChatComponent() : JSX.Element {
 						<PlatformChatComponent
 							chatTarget="agent"
 							folderId={activeProject?.project_id}
-							folderName="Agent"
+							heightOffset={heightOffset}
 						/>
 					</div>
 					{hasOpenTabs && (
@@ -97,7 +97,7 @@ export default function ChatComponent() : JSX.Element {
 								)}
 								style={{ width: `${100 - panelWidth}%` }}
 							>
-								<InteractiveChatPanel />
+								<InteractiveChatPanel heightOffset={heightOffset} />
 							</div>
 						</>
 					)}

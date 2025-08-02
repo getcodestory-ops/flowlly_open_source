@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import AddNewActivityModal from "../Schedule/AddNewActivityModal";
 import { Textarea } from "@/components/ui/textarea";
 import { updateActivity } from "@/api/activity_routes";
+import { Calendar, CheckCircle2, Clock } from "lucide-react";
 
 interface ActionItemInterface {
   results: Array<{
@@ -68,6 +69,12 @@ function ActionItemViewer({ results }: ActionItemInterface) {
 	const queryClient = useQueryClient();
 	const { activity_addition, activity_deletion, activity_modification } =
     results[0] ?? {};
+
+	// Check if all action item arrays are empty
+	const isAllEmpty = 
+		(!activity_addition || activity_addition.length === 0) &&
+		(!activity_deletion || activity_deletion.length === 0) &&
+		(!activity_modification || activity_modification.length === 0);
 
 	const approveImpact = useMutation({
 		mutationFn: (revision: { id: string; revision: Revision }) => {
@@ -276,302 +283,341 @@ function ActionItemViewer({ results }: ActionItemInterface) {
 	};
 
 	return (
-		<div className="font-normal p-4">
-			<Toaster />
-			<AddNewActivityModal
-				isOpen={isAddModalOpen}
-				onClose={handleCloseAddModal}
-			/>
-			{editableAdditions.length > 0 && (
-				<div className="my-4">
-					<h2 className="m-2 text-xl font-bold">
-						New activities to be added in schedule
-					</h2>
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Name</TableHead>
-								<TableHead>Description</TableHead>
-								<TableHead>Start Date</TableHead>
-								<TableHead>End Date</TableHead>
-								<TableHead>Actions</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{editableAdditions.map((activity, index) => (
-								<TableRow key={`addition-${index}`}>
-									<TableCell>
-										{activity.isEditing ? (
-											<Input
-												onChange={(e) =>
-													handleAdditionInputChange(
-														index,
-														"name",
-														e.target.value,
-													)
-												}
-												value={activity.name}
-											/>
-										) : (
-											activity.name
-										)}
-									</TableCell>
-									<TableCell>
-										{activity.isEditing ? (
-											<Textarea
-												onChange={(e) =>
-													handleAdditionInputChange(
-														index,
-														"description",
-														e.target.value,
-													)
-												}
-												value={activity.description}
-											/>
-										) : (
-											activity.description
-										)}
-									</TableCell>
-									<TableCell>
-										{activity.isEditing ? (
-											<Input
-												onChange={(e) =>
-													handleAdditionInputChange(
-														index,
-														"start",
-														e.target.value,
-													)
-												}
-												type="date"
-												value={activity.start}
-											/>
-										) : (
-											activity.start
-										)}
-									</TableCell>
-									<TableCell>
-										{activity.isEditing ? (
-											<Input
-												onChange={(e) =>
-													handleAdditionInputChange(
-														index,
-														"end",
-														e.target.value,
-													)
-												}
-												type="date"
-												value={activity.end}
-											/>
-										) : (
-											activity.end
-										)}
-									</TableCell>
-									<TableCell>
-										<div className="flex space-x-2">
-											<Button
-												onClick={() => handleAdditionEdit(index)}
-												size="icon"
-												variant="outline"
-											>
-												{activity.isEditing ? (
-													<CheckIcon className="h-w w-4" />
-												) : (
-													<Pencil1Icon className="h-w w-4" />
-												)}
-											</Button>
-											{!activity.isEditing && (
-												<>
-													<Button
-														onClick={() => handleAdditionApprove(activity)}
-														size="icon"
-														variant="outline"
-													>
-														<CheckIcon className="h-w w-4" />
-													</Button>
-													<Button
-														onClick={() => handleAdditionReject(activity)}
-														size="icon"
-														variant="outline"
-													>
-														<Cross2Icon className="h-w w-4" />
-													</Button>
-												</>
+		<div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+			<div className="p-6">
+				<Toaster />
+				<AddNewActivityModal
+					isOpen={isAddModalOpen}
+					onClose={handleCloseAddModal}
+				/>
+				{isAllEmpty && (
+					<div className="flex flex-col items-center justify-center py-16 px-6">
+						<div className="bg-green-50 rounded-full p-6 mb-6">
+							<CheckCircle2 className="h-12 w-12 text-green-600" />
+						</div>
+						<div className="text-center max-w-md">
+							<h3 className="text-xl font-semibold text-gray-900 mb-3">
+								All Set! No Action Items Recorded.
+							</h3>
+							<Button
+								className="inline-flex items-center space-x-2"
+								onClick={handleAddNewActivity}
+								variant="outline"
+							>
+								<PlusIcon className="h-4 w-4" />
+								<span>Add New task</span>
+							</Button>
+						</div>
+					</div>
+				)}
+				{editableAdditions.length > 0 && (
+					<div className="my-8">
+						<div className="mb-6">
+							<h2 className="text-2xl font-bold text-gray-900 mb-2">
+								New Activities to Add
+							</h2>
+							<p className="text-gray-600">
+								Review and approve these activities to be added to your schedule
+							</p>
+						</div>
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Name</TableHead>
+									<TableHead>Description</TableHead>
+									<TableHead>Start Date</TableHead>
+									<TableHead>End Date</TableHead>
+									<TableHead>Actions</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{editableAdditions.map((activity, index) => (
+									<TableRow key={`addition-${index}`}>
+										<TableCell>
+											{activity.isEditing ? (
+												<Input
+													onChange={(e) =>
+														handleAdditionInputChange(
+															index,
+															"name",
+															e.target.value,
+														)
+													}
+													value={activity.name}
+												/>
+											) : (
+												activity.name
 											)}
-										</div>
-									</TableCell>
+										</TableCell>
+										<TableCell>
+											{activity.isEditing ? (
+												<Textarea
+													onChange={(e) =>
+														handleAdditionInputChange(
+															index,
+															"description",
+															e.target.value,
+														)
+													}
+													value={activity.description}
+												/>
+											) : (
+												activity.description
+											)}
+										</TableCell>
+										<TableCell>
+											{activity.isEditing ? (
+												<Input
+													onChange={(e) =>
+														handleAdditionInputChange(
+															index,
+															"start",
+															e.target.value,
+														)
+													}
+													type="date"
+													value={activity.start}
+												/>
+											) : (
+												activity.start
+											)}
+										</TableCell>
+										<TableCell>
+											{activity.isEditing ? (
+												<Input
+													onChange={(e) =>
+														handleAdditionInputChange(
+															index,
+															"end",
+															e.target.value,
+														)
+													}
+													type="date"
+													value={activity.end}
+												/>
+											) : (
+												activity.end
+											)}
+										</TableCell>
+										<TableCell>
+											<div className="flex space-x-2">
+												<Button
+													onClick={() => handleAdditionEdit(index)}
+													size="icon"
+													variant="outline"
+												>
+													{activity.isEditing ? (
+														<CheckIcon className="h-w w-4" />
+													) : (
+														<Pencil1Icon className="h-w w-4" />
+													)}
+												</Button>
+												{!activity.isEditing && (
+													<>
+														<Button
+															onClick={() => handleAdditionApprove(activity)}
+															size="icon"
+															variant="outline"
+														>
+															<CheckIcon className="h-w w-4" />
+														</Button>
+														<Button
+															onClick={() => handleAdditionReject(activity)}
+															size="icon"
+															variant="outline"
+														>
+															<Cross2Icon className="h-w w-4" />
+														</Button>
+													</>
+												)}
+											</div>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+						<Button
+							className="mt-4"
+							onClick={handleAddNewActivity}
+							size="sm"
+							variant="outline"
+						>
+							<PlusIcon className="mr-2 h-4 w-4" /> Add New Activity
+						</Button>
+					</div>
+				)}
+				{activity_deletion && activity_deletion.length > 0 && (
+					<div className="my-8">
+						<div className="mb-6">
+							<h2 className="text-2xl font-bold text-gray-900 mb-2">
+								Activities to Remove
+							</h2>
+							<p className="text-gray-600">
+								These activities are recommended for deletion from your schedule
+							</p>
+						</div>
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Name</TableHead>
+									<TableHead>Approve</TableHead>
 								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-					<Button
-						className="mt-4"
-						onClick={handleAddNewActivity}
-						size="sm"
-						variant="outline"
-					>
-						<PlusIcon className="mr-2 h-4 w-4" /> Add New Activity
-					</Button>
-				</div>
-			)}
-			{activity_deletion && activity_deletion.length > 0 && (
-				<div className="my-8">
-					<h2 className="m-2 text-xl font-bold">Activities to be deleted</h2>
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Name</TableHead>
-								<TableHead>Approve</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{activity_deletion.map((activity, index) => (
-								<TableRow key={`deletion-${index}`}>
-									<TableCell>{activity.name}</TableCell>
-									<TableCell>
-										<Button size="icon" variant="outline">
-											<CheckIcon
-												className="h-w w-4"
-												// onClick={() => handleAdditionReject(activity)}
-											/>
-										</Button>
-									</TableCell>
+							</TableHeader>
+							<TableBody>
+								{activity_deletion.map((activity, index) => (
+									<TableRow key={`deletion-${index}`}>
+										<TableCell>{activity.name}</TableCell>
+										<TableCell>
+											<Button size="icon" variant="outline">
+												<CheckIcon
+													className="h-w w-4"
+													// onClick={() => handleAdditionReject(activity)}
+												/>
+											</Button>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</div>
+				)}
+				{activity_modification && activity_modification.length > 0 && (
+					<div className="my-8">
+						<div className="mb-6">
+							<h2 className="text-2xl font-bold text-gray-900 mb-2">
+								Schedule Modifications
+							</h2>
+							<p className="text-gray-600">
+								Review the proposed changes to existing activities
+							</p>
+						</div>
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Name</TableHead>
+									<TableHead>Reason</TableHead>
+									<TableHead>Impact on Start Date</TableHead>
+									<TableHead>Impact on End Date</TableHead>
+									<TableHead>Actions</TableHead>
 								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				</div>
-			)}
-			{activity_modification && activity_modification.length > 0 && (
-				<div className="my-4">
-					<h2 className="m-2 text-xl font-bold">
-						Existing activities to be changed
-					</h2>
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Name</TableHead>
-								<TableHead>Reason</TableHead>
-								<TableHead>Impact on Start Date</TableHead>
-								<TableHead>Impact on End Date</TableHead>
-								<TableHead>Actions</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{editableModifications.map((activity, index) => (
-								<TableRow key={`modification-${index}`}>
-									{activity.revision && (
-										<>
-											<TableCell>
-												{activity.isEditing ? (
-													<Input
-														onChange={(e) =>
-															handleInputChange(
-																index,
+							</TableHeader>
+							<TableBody>
+								{editableModifications.map((activity, index) => (
+									<TableRow key={`modification-${index}`}>
+										{activity.revision && (
+											<>
+												<TableCell>
+													{activity.isEditing ? (
+														<Input
+															onChange={(e) =>
+																handleInputChange(
+																	index,
                                 "name" as keyof Revision,
                                 e.target.value,
-															)
-														}
-														value={activity.editedRevision?.name || ""}
-													/>
-												) : (
-													activity.revision.name
-												)}
-											</TableCell>
-											<TableCell>
-												{activity.isEditing ? (
-													<Textarea
-														onChange={(e) =>
-															handleInputChange(
-																index,
+																)
+															}
+															value={activity.editedRevision?.name || ""}
+														/>
+													) : (
+														activity.revision.name
+													)}
+												</TableCell>
+												<TableCell>
+													{activity.isEditing ? (
+														<Textarea
+															onChange={(e) =>
+																handleInputChange(
+																	index,
                                 "reason" as keyof Revision,
                                 e.target.value,
-															)
-														}
-														value={activity.editedRevision?.reason || ""}
-													/>
-												) : (
-													activity.revision.reason
-												)}
-											</TableCell>
-											<TableCell>
-												{activity.isEditing ? (
-													<Input
-														onChange={(e) =>
-															handleInputChange(
-																index,
-																"impact_on_start_date",
-																e.target.value,
-															)
-														}
-														type="number"
-														value={
-															activity.editedRevision?.impact_on_start_date || 0
-														}
-													/>
-												) : (
-													activity.revision.impact_on_start_date
-												)}
-											</TableCell>
-											<TableCell>
-												{activity.isEditing ? (
-													<Input
-														onChange={(e) =>
-															handleInputChange(
-																index,
-																"impact_on_end_date",
-																e.target.value,
-															)
-														}
-														type="number"
-														value={
-															activity.editedRevision?.impact_on_end_date || 0
-														}
-													/>
-												) : (
-													activity.revision.impact_on_end_date
-												)}
-											</TableCell>
-											<TableCell>
-												<div className="flex space-x-2">
-													<Button
-														onClick={() => handleEdit(index)}
-														size="icon"
-														variant="outline"
-													>
-														{activity.isEditing ? (
-															<CheckIcon className="h-w w-4" />
-														) : (
-															<Pencil1Icon className="h-w w-4" />
-														)}
-													</Button>
-													{!activity.isEditing && (
-														<>
-															<Button
-																onClick={() => handleApprove(activity)}
-																size="icon"
-																variant="outline"
-															>
-																<CheckIcon className="h-w w-4" />
-															</Button>
-															<Button
-																onClick={() => handleReject(activity)}
-																size="icon"
-																variant="outline"
-															>
-																<Cross2Icon className="h-w w-4" />
-															</Button>
-														</>
+																)
+															}
+															value={activity.editedRevision?.reason || ""}
+														/>
+													) : (
+														activity.revision.reason
 													)}
-												</div>
-											</TableCell>
-										</>
-									)}
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				</div>
-			)}
+												</TableCell>
+												<TableCell>
+													{activity.isEditing ? (
+														<Input
+															onChange={(e) =>
+																handleInputChange(
+																	index,
+																	"impact_on_start_date",
+																	e.target.value,
+																)
+															}
+															type="number"
+															value={
+																activity.editedRevision?.impact_on_start_date || 0
+															}
+														/>
+													) : (
+														activity.revision.impact_on_start_date
+													)}
+												</TableCell>
+												<TableCell>
+													{activity.isEditing ? (
+														<Input
+															onChange={(e) =>
+																handleInputChange(
+																	index,
+																	"impact_on_end_date",
+																	e.target.value,
+																)
+															}
+															type="number"
+															value={
+																activity.editedRevision?.impact_on_end_date || 0
+															}
+														/>
+													) : (
+														activity.revision.impact_on_end_date
+													)}
+												</TableCell>
+												<TableCell>
+													<div className="flex space-x-2">
+														<Button
+															onClick={() => handleEdit(index)}
+															size="icon"
+															variant="outline"
+														>
+															{activity.isEditing ? (
+																<CheckIcon className="h-w w-4" />
+															) : (
+																<Pencil1Icon className="h-w w-4" />
+															)}
+														</Button>
+														{!activity.isEditing && (
+															<>
+																<Button
+																	onClick={() => handleApprove(activity)}
+																	size="icon"
+																	variant="outline"
+																>
+																	<CheckIcon className="h-w w-4" />
+																</Button>
+																<Button
+																	onClick={() => handleReject(activity)}
+																	size="icon"
+																	variant="outline"
+																>
+																	<Cross2Icon className="h-w w-4" />
+																</Button>
+															</>
+														)}
+													</div>
+												</TableCell>
+											</>
+										)}
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }

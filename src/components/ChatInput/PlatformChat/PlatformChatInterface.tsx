@@ -246,15 +246,9 @@ export default function PlatformChatInterface({
 				{/* Display selected model and context settings */}
 				<div className="absolute bottom-0 left-2 z-10">
 					<div className="flex items-center gap-2 py-1">
-						<span className="text-xs text-muted-foreground">
-							Model:{" "}
-							{models.find(
-								(m: { id: string; name: string }) => m.id === selectedModel,
-							)?.name || selectedModel} |
-						</span>
 						{contextFolder.name && (
 							<span className="text-xs text-muted-foreground">
-								New reports will be saved in {contextFolder.name} folder | 
+								New chat generated files will be saved in <span className="font-bold">{contextFolder.name}</span> folder 
 							</span>
 						)}
 					</div>
@@ -275,7 +269,7 @@ export default function PlatformChatInterface({
 							}
 						}
 					}}
-					placeholder="Type your message here..."
+					placeholder="Type message here or attach relevant files and set chat output folder using the clip icon below..."
 					value={chatInput}
 				/>
 				<div className="flex items-center p-3 pt-0">
