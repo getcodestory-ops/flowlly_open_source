@@ -33,7 +33,6 @@ const AITools: React.FC<AIToolsProps> = ({ editor, documentId, onAIEditedContent
 						chatTarget="editor"
 						content={editor.getHTML()}
 						folderId={documentId}
-						folderName="Document Editor"
 						onContentUpdate={onAIEditedContent}
 					/>
 				</div>

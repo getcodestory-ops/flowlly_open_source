@@ -155,7 +155,7 @@ function ScheduleUiView({ uiView }: { uiView?: string | string[] }) {
 						<PlatformChatComponent
 							chatTarget="schedule"
 							folderId={activeProject?.project_id}
-							folderName="Schedule"
+							
 						/>
 					)}
 					<div className="fixed p-2 z-50 top-3 ">

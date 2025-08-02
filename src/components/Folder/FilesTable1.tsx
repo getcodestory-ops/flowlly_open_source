@@ -341,7 +341,6 @@ export const FilesContent = ({
 					<PlatformChatComponent
 						chatTarget="folder"
 						folderId={folderId}
-						folderName={folderName}
 					/>
 					<div className="fixed p-2 z-50 top-3 ">
 						<Button
