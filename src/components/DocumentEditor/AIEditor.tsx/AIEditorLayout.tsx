@@ -9,7 +9,7 @@ import { DiffStyleExtension } from "@/components/DocumentEditor/extensions/DiffS
 interface AIEditorLayoutProps {
     chatTarget: "editor" | "workflow" | "schedule" | "project" | "agent" | "folder",
     folderId: string,
-    folderName: string,
+    folderName?: string,
     onContentUpdate?: (content: string) => void,
     content?: string,
 }
@@ -54,7 +54,6 @@ const AIEditorLayout = ({
 				<PlatformChatComponent
 					chatTarget={chatTarget}
 					folderId={folderId}
-					folderName={folderName}
 					onContentUpdate={handleContentUpdate}
 				/>
 			</div>
