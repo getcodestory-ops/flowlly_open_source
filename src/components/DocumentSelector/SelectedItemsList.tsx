@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { X, Folder, File, ExternalLink } from "lucide-react";
+import { X, Folder, File, Eye } from "lucide-react";
 import { SelectedItemsListProps } from "./types";
 
 export const SelectedItemsList: React.FC<SelectedItemsListProps> = ({
@@ -28,6 +28,7 @@ export const SelectedItemsList: React.FC<SelectedItemsListProps> = ({
 							>
 								<div className="flex items-center text-sm flex-1 gap-2">
 									<Button
+										className="text-red-500 hover:text-red-700 hover:bg-red-50"
 										onClick={() => onRemoveItem(item.id)}
 										size="sm"
 										variant="ghost"
@@ -50,14 +51,16 @@ export const SelectedItemsList: React.FC<SelectedItemsListProps> = ({
 									</span>
 									{item.type === "file" && onOpenInSidePanel && (
 										<Button
-											className="h-6 w-6 flex-shrink-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+											className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200"
 											onClick={(e) => {
 												e.stopPropagation();
 												onOpenInSidePanel(item.id, item.name);
 											}}
+											size="sm"
 											variant="ghost"
 										>
-											<ExternalLink className="h-4 w-4 text-gray-600 stroke-2" />
+											<Eye className="mr-1" size={12} />
+											<span className="text-xs">View</span>
 										</Button>
 									)}
 								</div>

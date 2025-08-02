@@ -11,6 +11,65 @@ import DailyReport from "./FormDirectives/DailyReport";
 import ReportWriting from "./FormDirectives/ReportWriting";
 import KnowledgeManager from "./FormDirectives/KnowledgeManager";
 
+// Animated Placeholder Component
+const AnimatedPlaceholder = ({ isEmpty }: { isEmpty: boolean }) => {
+	const [currentText, setCurrentText] = React.useState("");
+	const [currentIndex, setCurrentIndex] = React.useState(0);
+	const [isTyping, setIsTyping] = React.useState(true);
+
+	const placeholderTexts = [
+		"✨ Type your task and provide necessary files and folders...",
+		"📎 Click the clip icon below to select files for the agent to analyze...",
+		"📁 Set your output folder by clicking the clip icon and choosing 'Chat Folder'...",
+		"☁️ Upload documents to your project folders via the document panel...",
+		"🚀 Describe what you need help with - reports, analysis, estimates...",
+		"💼 Attach blueprints, contracts, or specifications for better results...",
+	];
+
+	React.useEffect(() => {
+		if (!isEmpty) return;
+
+		const currentFullText = placeholderTexts[currentIndex];
+		
+		if (isTyping) {
+			if (currentText.length < currentFullText.length) {
+				const timeout = setTimeout(() => {
+					setCurrentText(currentFullText.slice(0, currentText.length + 1));
+				}, 50);
+				return () => clearTimeout(timeout);
+			} else {
+				const timeout = setTimeout(() => {
+					setIsTyping(false);
+				}, 2500);
+				return () => clearTimeout(timeout);
+			}
+		} else {
+			if (currentText.length > 0) {
+				const timeout = setTimeout(() => {
+					setCurrentText(currentText.slice(0, -1));
+				}, 25);
+				return () => clearTimeout(timeout);
+			} else {
+				setCurrentIndex((prev) => (prev + 1) % placeholderTexts.length);
+				setIsTyping(true);
+			}
+		}
+	}, [currentText, currentIndex, isTyping, isEmpty]);
+
+	if (!isEmpty) return null;
+
+	return (
+		<div className="absolute inset-0 flex items-start px-4 pl-12 pt-8 pointer-events-none">
+			<span className="text-slate-400 text-sm font-medium leading-relaxed">
+				{currentText}
+				<span className="animate-pulse text-indigo-400">|</span>
+			</span>
+		</div>
+	);
+};
+
+
+
 interface EmptyChatInterfaceProps {
 	chatInput: string;
 	setChatInput: (value: string) => void;
@@ -204,22 +263,25 @@ export default function EmptyChatInterface({
 				<div className="absolute top-0 left-2 z-10 pt-2">
 					<AtSelectorComponent />
 				</div>
-				<Textarea
-					className="min-h-20 resize-none border-0 p-4 pl-12 mt-4 shadow-none focus-visible:ring-0 text-slate-800"
-					disabled={isPending}
-					id="empty-message"
-					onChange={(e) => setChatInput(e.target.value)}
-					onKeyDown={(e) => {
-						if (e.key === "Enter" && !e.shiftKey) {
-							e.preventDefault();
-							handleSubmit();
-						}
-					}}
-					placeholder="Type your message here..."
-					ref={textareaRef}
-					style={{ height: "auto" }}
-					value={chatInput}
-				/>
+				<div className="relative">
+					<AnimatedPlaceholder isEmpty={!chatInput.trim()} />
+					<Textarea
+						className="min-h-20 resize-none border-0 p-4 pl-12 mt-4 shadow-none focus-visible:ring-0 text-slate-800 bg-transparent"
+						disabled={isPending}
+						id="empty-message"
+						onChange={(e) => setChatInput(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === "Enter" && !e.shiftKey) {
+								e.preventDefault();
+								handleSubmit();
+							}
+						}}
+						placeholder=""
+						ref={textareaRef}
+						style={{ height: "auto" }}
+						value={chatInput}
+					/>
+				</div>
 				<div className="flex items-center p-3 pt-0">
 					{loadDocumentPanel()}
 					<Button

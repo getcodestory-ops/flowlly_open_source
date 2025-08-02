@@ -4,9 +4,10 @@ import {
 	ArrowDown,
 	ArrowUp,
 	PencilIcon,
-	Database,
 	Calendar,
 	Trash2,
+	Sparkles,
+	ArrowUpRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -473,8 +474,48 @@ export const EventListViewer: React.FC = ({
 										</Card>
 									))
 							) : (
-								<div className="col-span-full text-center p-4">
-									<p className="text-muted-foreground">No meetings found</p>
+								<div className="col-span-full flex flex-col items-center justify-center p-12 space-y-6">
+									{/* Animated Arrow pointing to top-left */}
+									<div className="relative">
+										<div className="animate-bounce">
+											<ArrowUpRight className="h-16 w-16  transform rotate-12" />
+										</div>
+										<div className="absolute -top-2 -right-2 animate-pulse">
+											<Sparkles className="h-6 w-6 text-yellow-500" />
+										</div>
+									</div>
+									{/* Encouraging Text */}
+									<div className="text-center space-y-3 max-w-md">
+										<h3 className="text-xl font-semibold text-gray-900">
+											Get Started with Your First Meeting
+										</h3>
+										<div className="space-y-2">
+											<p className="text-gray-600">
+												🎯 <span className="font-medium">Create a new meeting</span> to collaborate with your team
+											</p>
+											<p className="text-gray-600">
+												📅 <span className="font-medium">Connect your calendar</span> to sync existing meetings
+											</p>
+										</div>
+										<div className="text-sm text-gray-500 mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+											👆 Use the buttons above to get started
+										</div>
+									</div>
+									{/* Floating animation elements */}
+									<div className="absolute inset-0 pointer-events-none overflow-hidden">
+										<div 
+											className="animate-ping absolute top-4 left-1/4 w-2 h-2 bg-blue-400 rounded-full opacity-20" 
+											style={{ animationDelay: "0s" }}
+										/>
+										<div 
+											className="animate-ping absolute top-8 right-1/3 w-1 h-1 bg-green-400 rounded-full opacity-30" 
+											style={{ animationDelay: "1s" }}
+										/>
+										<div 
+											className="animate-ping absolute bottom-6 left-1/3 w-1.5 h-1.5 bg-purple-400 rounded-full opacity-25" 
+											style={{ animationDelay: "2s" }}
+										/>
+									</div>
 								</div>
 							)}
 						</div>

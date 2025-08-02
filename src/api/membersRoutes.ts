@@ -17,17 +17,17 @@ export const createNewMemberEntry = async(
 	sessionToken: Session,
 	projectAccessId: string,
 	projectDetails: {
-    project_id: string;
+    project_id?: string;
     user_id?: string;
-    first_name: string;
-    last_name: string;
+    first_name?: string;
+    last_name?: string;
     email: string;
-    phone: string;
-    role: string;
-    responsibilities: string;
-    skills: string;
-    active: boolean;
-    enable_sms: boolean;
+    phone?: string;
+    role?: string;
+    responsibilities?: string;
+    skills?: string;
+    active?: boolean;
+    enable_sms?: boolean;
     language?: string;
   },
 ) => {

@@ -42,10 +42,12 @@ import { useWorkflow } from "@/hooks/useWorkflow";
 
 interface EventScheduleListProps {
   graphs: EventSchedule[];
+  onWorkflowSelect?: () => void;
 }
 
 export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	graphs,
+	onWorkflowSelect,
 }) => {
 	const { setIsLoadingResult, setCurrentResult, currentGraphId, selectedWorkflowId } = useWorkflow();
 	const compact = true;
@@ -155,7 +157,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 							return (
 								<div className="flex items-center">
 									<span className="font-medium">
-										{compact ? "Select Meeting to see" : "Scheduled Workflow"}
+										{compact ? "Select a Meeting to see" : "Scheduled Workflow"}
 									</span>
 									<span className="ml-2 text-xs text-muted-foreground">
 										{new Date(`2000-01-01T${run_time}Z`).toLocaleTimeString(
@@ -318,6 +320,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 									compact={compact}
 									graphs={graphs}
 									key={row.id}
+									onWorkflowSelect={onWorkflowSelect}
 									row={row}
 									setSelectedEventId={setSelectedEventId}
 								/>
@@ -359,9 +362,10 @@ interface WorkflowListItemProps {
 	compact: boolean;
 	graphs: EventSchedule[];
 	setSelectedEventId: (_: string) => void;
+	onWorkflowSelect?: () => void;
 }
 
-const WorkflowListItem = ({ row, compact,  graphs, setSelectedEventId }: WorkflowListItemProps): React.ReactNode => {
+const WorkflowListItem = ({ row, compact,  graphs, setSelectedEventId, onWorkflowSelect }: WorkflowListItemProps): React.ReactNode => {
 	const { selectedWorkflowId, setSelectedWorkflowId } = useWorkflow();
 	const { setCurrentResult } = useWorkflow();
 	const isSelected = row.original.result?.id === selectedWorkflowId;
@@ -399,6 +403,7 @@ const WorkflowListItem = ({ row, compact,  graphs, setSelectedEventId }: Workflo
 						if (row.original.id === "eventTrigger") {
 							setCurrentResult(row.original.result);
 							setSelectedWorkflowId(row.original.result.id);
+							onWorkflowSelect?.();
 							return;
 						}
 
@@ -409,9 +414,11 @@ const WorkflowListItem = ({ row, compact,  graphs, setSelectedEventId }: Workflo
 						if (eventResult?.nodes) {
 							setCurrentResult(eventResult);
 							setSelectedWorkflowId(row.original.result.id);
+							onWorkflowSelect?.();
 						} else {
 							setSelectedEventId(row.original.result?.id);
 							setSelectedWorkflowId(row.original.result.id);
+							onWorkflowSelect?.();
 						}
 					}
 				}}

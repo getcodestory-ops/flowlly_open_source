@@ -46,12 +46,10 @@ export interface DocumentSelectorProps {
 
 export interface DocumentSelectorHeaderProps {
   currentFolderStructure: any;
-  contextFolder: any;
   isProjectWide: boolean;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   navigateBack: () => void;
-  setAsContextFolder: () => void;
   onCreateFolder: (name: string) => void;
   onScopeChange: (value: string) => void;
   onRefresh: () => void;

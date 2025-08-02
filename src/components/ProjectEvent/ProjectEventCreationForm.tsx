@@ -109,8 +109,8 @@ function ParticipantSelector({
 					defaultValue={selectedParticipants}
 					onValueChange={setSelectedParticipants}
 					options={participants.map((p) => ({
-						label: `${p.firstName} ${p.lastName}`,
-						value: p.id,
+						label: `${p.email} `,
+						value: p.email,
 					}))}
 				/>
 				<Dialog
@@ -325,7 +325,6 @@ export default function ProjectEventCreationForm({
 	useEffect(() => {
 		const isValid =
       meetingName !== "" &&
-      selectedParticipants.length > 0 &&
       startTime !== "" &&
       duration !== "" &&
       (participationOption === "join" ? participationLink !== "" : true);
@@ -347,6 +346,13 @@ export default function ProjectEventCreationForm({
 			console.error("Session or active project not available");
 			return;
 		}
+		
+		// Ensure the creator is always included as a participant
+		let finalParticipants = [...selectedParticipants];
+		if (session.user?.email && !selectedParticipants.includes(session.user.email)) {
+			finalParticipants.push(session.user.email);
+		}
+		
 		const submissionData: CreateEvent = {
 			project_event: {
 				id: selectedEvent || undefined,
@@ -361,12 +367,14 @@ export default function ProjectEventCreationForm({
 					recurrence_day: weeklyRecurrenceDay,
 				},
 			},
-			event_participants: selectedParticipants.map((p) => {
+			event_participants: finalParticipants.map((p) => {
+				// Assign admin role to the creator (current user), member role to others
+				const isCreator = session?.user?.email && p === session.user.email;
 				return {
-					role: "member",
-					identification: "directory_id",
+					role: isCreator ? "admin" : "member",
+					identification: "email",
 					metadata: {
-						directory_id: p,
+						email: p,
 					},
 				};
 			}),
@@ -428,6 +436,9 @@ export default function ProjectEventCreationForm({
 											setParticipants={setParticipants}
 											setSelectedParticipants={setSelectedParticipants}
 										/>
+										<p className="text-xs text-muted-foreground">
+											💡 You&apos;ll automatically be included as an admin participant
+										</p>
 									</div>
 									<div className="space-y-2 p-2 bg-secondary rounded-lg">
 										<div className="space-y-2">

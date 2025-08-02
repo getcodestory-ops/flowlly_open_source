@@ -10,6 +10,7 @@ import {
 	MessageSquareCode,
 	ClipboardList,
 	Folder,
+	ChevronRight,
 } from "lucide-react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getProjects } from "@/api/projectRoutes";
@@ -17,11 +18,14 @@ import { getMembers } from "@/api/membersRoutes";
 import { AppView } from "@/types/store";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CustomProjectSwitcher } from "./CustomProjectSwitcher";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { ProjectEntity } from "@/types/projects";
 import { cn } from "@/lib/utils";
 import { Tooltipped } from "../Common/Tooltiped";
+import ChatPanel from "@/components/ChatInput/PlatformChat/ChatPanel";
+import WorkflowPanel from "@/components/WorkflowComponents/WorkflowPanel";
+import { useChatStore } from "@/hooks/useChatStore";
 const archivoBlack = Archivo_Black({
 	weight: "400",
 	subsets: ["latin"],
@@ -29,7 +33,12 @@ const archivoBlack = Archivo_Black({
 
 export function EnhancedSidePanel(): React.ReactNode {
 	const [showProjectSwitcher, setShowProjectSwitcher] = useState(false);
+	const [showChatPanel, setShowChatPanel] = useState(false);
+	const [showWorkflowPanel, setShowWorkflowPanel] = useState(false);
 	const params = useParams();
+	const router = useRouter();
+	const hideChatTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const hideWorkflowTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	const {
 		session,
@@ -38,8 +47,9 @@ export function EnhancedSidePanel(): React.ReactNode {
 		setActiveProject,
 		setUserProjects,
 		setMembers,
+		setAppView,
 		setActiveChatEntity,
-		setChatEntities,
+		setLocalChats,
 	} = useStore((state) => ({
 		session: state.session,
 		userProjects: state.userProjects,
@@ -47,9 +57,12 @@ export function EnhancedSidePanel(): React.ReactNode {
 		setActiveProject: state.setActiveProject,
 		setUserProjects: state.setUserProjects,
 		setMembers: state.setMembers,
+		setAppView: state.setAppView,
 		setActiveChatEntity: state.setActiveChatEntity,
-		setChatEntities: state.setChatEntities,
+		setLocalChats: state.setLocalChats,
 	}));
+
+	const { setSelectedContexts, setIsWaitingForResponse, setChatDirectiveType } = useChatStore();
 
 	// Track the active project to detect changes
 	const previousProjectIdRef = useRef(activeProject?.project_id);
@@ -66,6 +79,70 @@ export function EnhancedSidePanel(): React.ReactNode {
 
 	const projectSwitcherRef = useRef<HTMLDivElement>(null);
 	const projectButtonRef = useRef<HTMLButtonElement>(null);
+	const chatPanelRef = useRef<HTMLDivElement>(null);
+	const chatButtonRef = useRef<HTMLDivElement>(null);
+	const workflowPanelRef = useRef<HTMLDivElement>(null);
+	const workflowButtonRef = useRef<HTMLDivElement>(null);
+
+	// Chat panel hover handlers with delay
+	const handleChatHoverEnter = (): void => {
+		// Clear any pending hide timeout
+		if (hideChatTimeoutRef.current) {
+			clearTimeout(hideChatTimeoutRef.current);
+			hideChatTimeoutRef.current = null;
+		}
+		setShowChatPanel(true);
+	};
+
+	const handleChatHoverLeave = (): void => {
+		// Set a delay before hiding the panel
+		hideChatTimeoutRef.current = setTimeout(() => {
+			setShowChatPanel(false);
+		}, 300); // 300ms delay
+	};
+
+	const handleChatPanelMouseEnter = (): void => {
+		// Clear any pending hide timeout when entering the panel
+		if (hideChatTimeoutRef.current) {
+			clearTimeout(hideChatTimeoutRef.current);
+			hideChatTimeoutRef.current = null;
+		}
+	};
+
+	const handleChatPanelMouseLeave = (): void => {
+		// Hide the panel when leaving the panel area
+		setShowChatPanel(false);
+	};
+
+	// Workflow panel hover handlers with delay
+	const handleWorkflowHoverEnter = (): void => {
+		// Clear any pending hide timeout
+		if (hideWorkflowTimeoutRef.current) {
+			clearTimeout(hideWorkflowTimeoutRef.current);
+			hideWorkflowTimeoutRef.current = null;
+		}
+		setShowWorkflowPanel(true);
+	};
+
+	const handleWorkflowHoverLeave = (): void => {
+		// Set a delay before hiding the panel
+		hideWorkflowTimeoutRef.current = setTimeout(() => {
+			setShowWorkflowPanel(false);
+		}, 300); // 300ms delay
+	};
+
+	const handleWorkflowPanelMouseEnter = (): void => {
+		// Clear any pending hide timeout when entering the panel
+		if (hideWorkflowTimeoutRef.current) {
+			clearTimeout(hideWorkflowTimeoutRef.current);
+			hideWorkflowTimeoutRef.current = null;
+		}
+	};
+
+	const handleWorkflowPanelMouseLeave = (): void => {
+		// Hide the panel when leaving the panel area
+		setShowWorkflowPanel(false);
+	};
 
 	// Fetch project list
 	const { data, isSuccess } = useQuery({
@@ -144,7 +221,31 @@ export function EnhancedSidePanel(): React.ReactNode {
 	// 	}
 	// }, [chatEntitities, setActiveChatEntity, setChatEntities]);
 
-	// Handle click outside to close project switcher
+	// Handle global keyboard shortcuts
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent): void => {
+			if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+				e.preventDefault();
+				// Create new chat: reset chat state
+				setActiveChatEntity(null);
+				setLocalChats([]);
+				setSelectedContexts("untitled", []);
+				setIsWaitingForResponse(false);
+				setChatDirectiveType("chat");
+				
+				// Set app view and navigate to agent page
+				setAppView("agent");
+				if (activeProject) {
+					router.push(`/project/${activeProject.project_id}/agent`);
+				}
+			}
+		};
+
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [activeProject, router, setActiveChatEntity, setLocalChats, setSelectedContexts, setIsWaitingForResponse, setChatDirectiveType, setAppView]);
+
+	// Handle click outside to close project switcher and chat panel
 	useEffect(() => {
 		function handleClickOutside(event: MouseEvent): void {
 			if (
@@ -155,11 +256,36 @@ export function EnhancedSidePanel(): React.ReactNode {
 			) {
 				setShowProjectSwitcher(false);
 			}
+
+			if (
+				chatPanelRef.current &&
+				!chatPanelRef.current.contains(event.target as Node) &&
+				chatButtonRef.current &&
+				!chatButtonRef.current.contains(event.target as Node)
+			) {
+				setShowChatPanel(false);
+			}
+
+			if (
+				workflowPanelRef.current &&
+				!workflowPanelRef.current.contains(event.target as Node) &&
+				workflowButtonRef.current &&
+				!workflowButtonRef.current.contains(event.target as Node)
+			) {
+				setShowWorkflowPanel(false);
+			}
 		}
 
 		document.addEventListener("mousedown", handleClickOutside);
 		return () => {
 			document.removeEventListener("mousedown", handleClickOutside);
+			// Clean up timeouts on unmount
+			if (hideChatTimeoutRef.current) {
+				clearTimeout(hideChatTimeoutRef.current);
+			}
+			if (hideWorkflowTimeoutRef.current) {
+				clearTimeout(hideWorkflowTimeoutRef.current);
+			}
 		};
 	}, []);
 
@@ -234,7 +360,10 @@ export function EnhancedSidePanel(): React.ReactNode {
 			</div>
 			{/* Project Switcher Popover */}
 			{showProjectSwitcher && (
-				<div className="absolute left-16 top-8 z-20" ref={projectSwitcherRef}>
+				<div className="absolute left-16 top-8 "
+					ref={projectSwitcherRef}
+					style={{ zIndex: 1000 }}
+				>
 					<div className="bg-white rounded-md shadow-lg border border-gray-200 w-[300px]">
 						{activeProject && (
 							<div className="font-medium text-sm border-b border-gray-100 w-full px-2 w-full py-2 bg-indigo-50 font-bold flex flex-row gap-1 justify-between items-center">
@@ -277,10 +406,57 @@ export function EnhancedSidePanel(): React.ReactNode {
 					</div>
 				</div>
 			)}
+			{/* Chat Panel Popover */}
+			{showChatPanel && activeProject && (
+				<div 
+					className="absolute left-[54px] top-0 h-full"
+					onMouseEnter={handleChatPanelMouseEnter}
+					onMouseLeave={handleChatPanelMouseLeave}
+					ref={chatPanelRef}
+					style={{ zIndex: 1000 }}
+				>
+					<ChatPanel
+						chatTarget="agent"
+						folderId={activeProject.project_id}
+						isVisible={showChatPanel}
+						onCreateNewChat={() => {
+							// Navigate to agent page when creating new chat
+							router.push(`/project/${activeProject.project_id}/agent`);
+							setShowChatPanel(false);
+						}}
+					/>
+				</div>
+			)}
+			{/* Workflow Panel Popover */}
+			{showWorkflowPanel && activeProject && (
+				<div 
+					className="absolute left-[54px] top-0 h-full"
+					onMouseEnter={handleWorkflowPanelMouseEnter}
+					onMouseLeave={handleWorkflowPanelMouseLeave}
+					ref={workflowPanelRef}
+					style={{ zIndex: 1000 }}
+				>
+					<WorkflowPanel
+						isVisible={showWorkflowPanel}
+						onNavigateBack={() => {
+							// Navigate to meetings page when going back
+							router.push(`/project/${activeProject.project_id}/meetings`);
+							setShowWorkflowPanel(false);
+						}}
+					/>
+				</div>
+			)}
 			{/* Navigation buttons */}
 			<div className="flex-1 overflow-y-auto">
 				<nav className="flex flex-col items-center py-4">
-					<AllMenuButtons />
+					<AllMenuButtons 
+						chatButtonRef={chatButtonRef}
+						onChatHoverEnter={handleChatHoverEnter}
+						onChatHoverLeave={handleChatHoverLeave}
+						onWorkflowHoverEnter={handleWorkflowHoverEnter}
+						onWorkflowHoverLeave={handleWorkflowHoverLeave}
+						workflowButtonRef={workflowButtonRef}
+					/>
 				</nav>
 			</div>
 			{/* User controls at bottom */}
@@ -337,9 +513,9 @@ const menuItems: {
 	// },
 	{
 		label: "Meetings",
-		fnKey: "workflows",
+		fnKey: "meetings",
 		icon: <ClipboardList className="h-5 w-5" />,
-		link: "workbench",
+		link: "meetings",
 	},
 	{
 		label: "Tasks",
@@ -373,7 +549,21 @@ const menuItems: {
 	// },
 ];
 
-const AllMenuButtons = (): React.ReactNode => {
+const AllMenuButtons = ({
+	chatButtonRef,
+	onChatHoverEnter,
+	onChatHoverLeave,
+	workflowButtonRef,
+	onWorkflowHoverEnter,
+	onWorkflowHoverLeave,
+}: {
+	chatButtonRef: React.RefObject<HTMLDivElement>;
+	onChatHoverEnter: () => void;
+	onChatHoverLeave: () => void;
+	workflowButtonRef: React.RefObject<HTMLDivElement>;
+	onWorkflowHoverEnter: () => void;
+	onWorkflowHoverLeave: () => void;
+}): React.ReactNode => {
 	const params = useParams();
 	const projectId = params ? params.projectId : null;
 
@@ -386,49 +576,89 @@ const AllMenuButtons = (): React.ReactNode => {
 		<>
 			{menuItems.map((item) => (
 				<MenuButton
+					hasExtendedPanel={item.fnKey === "agent" || item.fnKey === "meetings"}
 					icon={item.icon}
 					isSelected={appView === item.fnKey}
 					key={item.label}
 					label={item.label}
 					link={projectId ? `/project/${projectId}/${item.link}` : "/project"}
 					onClick={() => setAppView(item.fnKey)}
+					onMouseEnter={
+						item.fnKey === "agent" 
+							? onChatHoverEnter 
+							: item.fnKey === "meetings" 
+								? onWorkflowHoverEnter 
+								: undefined
+					}
+					onMouseLeave={
+						item.fnKey === "agent" 
+							? onChatHoverLeave 
+							: item.fnKey === "meetings" 
+								? onWorkflowHoverLeave 
+								: undefined
+					}
+					ref={
+						item.fnKey === "agent" 
+							? chatButtonRef 
+							: item.fnKey === "meetings" 
+								? workflowButtonRef 
+								: undefined
+					}
 				/>
 			))}
 		</>
 	);
 };
 
-const MenuButton = ({
-	isSelected,
-	onClick,
-	label,
-	link,
-	icon,
-}: {
-  isSelected: boolean;
-  onClick: () => void;
-  label: string;
-  link: string;
-  icon: React.ReactNode;
-}): React.ReactNode => {
-	return (
-		<div
-			className={`flex flex-col text-center justify-center items-center py-2 w-full border-r-4 border-gray-200 gap-0 ${
-				isSelected
-					? "text-indigo-600 bg-indigo-50 border-indigo-600"
-					: "text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 border-white"
-			}`}
-		>
-			<Link
-				className="flex h-6 w-6 items-center justify-center rounded-2xl transition-colors"
-				href={link}
-				onClick={onClick}
-			>
-				{icon}
-			</Link>
-			<span className="text-[0.65rem]">{label}</span>
-		</div>
-	);
-};
+const MenuButton = React.forwardRef<
+	HTMLDivElement,
+	{
+		icon: React.ReactNode;
+		isSelected: boolean;
+		label: string;
+		link: string;
+		onClick: () => void;
+		onMouseEnter?: () => void;
+		onMouseLeave?: () => void;
+		hasExtendedPanel?: boolean;
+			}
+			>(({ icon, isSelected, label, link, onClick, onMouseEnter, onMouseLeave, hasExtendedPanel }, ref) => {
+				return (
+					<div
+						className={`relative flex flex-col text-center justify-center items-center py-2 w-full border-r-4 border-gray-200 gap-0 ${
+							isSelected
+								? "text-indigo-600 bg-indigo-50 border-indigo-600"
+								: "text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 border-white"
+						}`}
+						onMouseEnter={onMouseEnter}
+						onMouseLeave={onMouseLeave}
+						ref={ref}
+					>
+						<Link
+							className="flex h-6 w-6 items-center justify-center rounded-2xl transition-colors"
+							href={link}
+							onClick={onClick}
+						>
+							{icon}
+						</Link>
+						<span className="text-[0.65rem]">{label}</span>
+						{hasExtendedPanel && (
+							<div className="absolute -right-0.5 top-1/2 transform -translate-y-1/2">
+								<div className="rounded-full p-0.5 transition-all ">
+									<ChevronRight 
+										className={`w-3 h-3 transition-colors ${
+											isSelected 
+												? "text-indigo-600" 
+												: "text-gray-600"
+										}`}
+									/>
+								</div>
+							</div>
+						)}
+					</div>
+				);
+			});
+
+MenuButton.displayName = "MenuButton";
 
 

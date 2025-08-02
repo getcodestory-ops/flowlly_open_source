@@ -61,7 +61,8 @@ export type AppView =
   | "integrations"
   | "workflows"
   | "configuration"
-  | "changePassword";
+  | "changePassword"
+  | "meetings";
 
 export type State = {
   session: Session | null;
