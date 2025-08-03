@@ -1,9 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useStore } from "@/utils/store";
 import { talkToAgent, ProcessedFile } from "@/api/agentRoutes";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getAgentChats } from "@/api/agentRoutes";
-import { isTokenExpired } from "@/utils/isTokenExpired";
 import { useToast } from "@/components/ui/use-toast";
 import { createPlatformChatEntity } from "@/api/agentRoutes";
 import { AgentChat, AgentChatEntity } from "@/types/agentChats";
@@ -19,6 +17,8 @@ export function usePlatformChat(
 	const queryClient = useQueryClient();
 	const chatInput = useChatStore((state) => state.chatInput);
 	const setChatInput = useChatStore((state) => state.setChatInput);
+	const getCombinedMessage = useChatStore((state) => state.getCombinedMessage);
+	const clearChatContext = useChatStore((state) => state.clearChatContext);
 	const session = useStore((state) => state.session);
 	const [googleSearch, setGoogleSearch] = useState(false);
 	const activeProject = useStore((state) => state.activeProject);
@@ -29,6 +29,7 @@ export function usePlatformChat(
 	const contextFolder = useChatStore((state) => state.contextFolder);
 	const setIsWaitingForResponse = useChatStore((state) => state.setIsWaitingForResponse);
 	const isWaitingForResponse = useChatStore((state) => state.isWaitingForResponse);
+	const chatTypeTags = useChatStore((state) => state.chatTypeTags);
 
 	// Use localChats from the store instead of local state
 	const localChats = useStore((state) => state.localChats);
@@ -109,6 +110,7 @@ export function usePlatformChat(
 				chat_details: messageContent,
 				relation_id: folderId,
 				relation_type: chatTarget,
+				metadata: chatTypeTags.length > 0 ? { tags: chatTypeTags } : undefined,
 			});
 
 			appendChatEntity(response);
@@ -183,6 +185,7 @@ export function usePlatformChat(
 		setLocalChats([...localChats, userMessage]);
 
 		setChatInput("");
+		clearChatContext(); // Clear context after message is sent
 
 		if (chatEntityId === "untitled") {
 			try {
@@ -230,6 +233,7 @@ export function usePlatformChat(
 		handleChatSubmit,
 		setChatInput,
 		chatInput,
+		getCombinedMessage,
 		onOpen,
 		session,
 		isWaitingForResponse,

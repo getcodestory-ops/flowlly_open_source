@@ -91,6 +91,12 @@ export interface CreateAgentChatEntity {
   chat_details?: string;
   relation_id?: string;
   relation_type?: string;
+  metadata?: {
+    tags?: {
+      name: string;
+      parent: string;
+    }[];
+  };
 }
 
 export interface AgentChatEntity {
@@ -98,6 +104,12 @@ export interface AgentChatEntity {
   project_id: string;
   chat_name: string;
   chat_details?: string;
+  metadata?: {
+    tags?: {
+      name: string;
+      parent: string;
+    }[];
+  };
   hidden?: boolean;
   created_at: string;
 }

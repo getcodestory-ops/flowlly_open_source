@@ -16,9 +16,10 @@ import type { NodeData, ActionData, EventResult } from "./types";
 import { useStore } from "@/utils/store";
 import { useWorkflow } from "@/hooks/useWorkflow";
 import { useRouter } from "next/navigation";
+import { useChatStore } from "@/hooks/useChatStore";
 
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
-import ChatComponent from "@/components/ChatInput/ChatComponet";
+import MeetingChatFromMeetingInstance from "./Meeting/MeetingChatFromMeetingInstance";
 import MeetingRecording from "./Meeting/MeetingRecording";
 import MinutesViewer from "./Meeting/MinutesViewer";
 import MeetingAgendaViewer from "./Meeting/MeetingAgendaViewer";
@@ -38,10 +39,15 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 		setAppView: state.setAppView,
 	}));
 	const { setCurrentResult } = useWorkflow();
+	const { clearChatContext, setChatDirectiveType } = useChatStore();
 	const router = useRouter();
 
 	// Handler for back button
 	const handleBackToMeetings = (): void => {
+		// Clear any meeting context when leaving the meeting view
+		clearChatContext();
+		setChatDirectiveType("chat");
+		
 		setCurrentResult(null);
 		setAppView("meetings");
 		if (activeProject) {
@@ -254,7 +260,9 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 							className="p-2 h-full " 
 							value="questions"
 						>
-							<ChatComponent heightOffset={75} />
+							<MeetingChatFromMeetingInstance 
+								currentResult={currentResult}
+							/>
 						</TabsContent>
 					</div>
 				</Tabs>

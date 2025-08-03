@@ -70,38 +70,6 @@ function AddNewChatEntity({ onComplete }: { onComplete?: () => void }) {
 		>
       New Chat
 		</Button>
-	// <Popover>
-	//   <PopoverTrigger>
-	//     <Button>Add New Chat Entity</Button>
-	//   </PopoverTrigger>
-	//   <PopoverContent className="w-96">
-	//     <div className="p-4">
-	//       <h2 className="text-lg font-medium">Create New Chat Entity</h2>
-	//       <div className="space-y-4 mt-4">
-	//         <Input
-	//           placeholder="Chat Name"
-	//           value={chatName}
-	//           onChange={(e) => setChatName(e.target.value)}
-	//         />
-	//         <Textarea
-	//           placeholder="Chat Description"
-	//           value={chatDescription}
-	//           onChange={(e) => setChatDescription(e.target.value)}
-	//         />
-	//       </div>
-	//       <div className="flex justify-end space-x-2 mt-4">
-	//         <Button
-	//           onClick={() => {
-	//             mutation.mutate();
-	//           }}
-	//         >
-	//           Save
-	//         </Button>
-	//         <Button variant="ghost">Cancel</Button>
-	//       </div>
-	//     </div>
-	//   </PopoverContent>
-	// </Popover>
 	);
 }
 

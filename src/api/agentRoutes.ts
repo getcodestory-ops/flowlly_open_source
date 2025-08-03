@@ -368,6 +368,31 @@ export const updateChatName = async(
 	}
 };
 
+export const updateChatEntityMetadata = async(
+	session: Session,
+	chatEntityId: string,
+	metadata: {
+		tags: {
+			name: string;
+			parent: string;
+		}[];
+	},
+) => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat_entity/metadata/${chatEntityId}`;
+	try {
+		const response = await axios.put(url, metadata, {
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${session.access_token}`,
+			},
+		});
+
+		return response.data;
+	} catch (error) {
+		throw new Error("Network response was not ok");
+	}
+};
+
 
 export const requestHelp = async(
 	session: Session,
