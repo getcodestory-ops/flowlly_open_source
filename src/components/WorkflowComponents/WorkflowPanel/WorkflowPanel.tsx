@@ -2,15 +2,14 @@ import React, { useEffect } from "react";
 import {
 	ArrowLeft,
 	Settings,
-	Calendar,
 	Users,
-	Plus,
 	AlertCircle
 } from "lucide-react";
 import { EventScheduleList } from "../EventScheduleList";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Tooltipped } from "@/components/Common/Tooltiped";
+import { MeetingsList } from "../Meeting/MeetingsList";
 import { useWorkflow } from "@/hooks/useWorkflow";
 import { useStore } from "@/utils/store";
 import { useRouter } from "next/navigation";
@@ -110,8 +109,8 @@ export default function WorkflowPanel({
 			<div className={`absolute top-0 h-full bg-gray-50 shadow-lg z-50 flex flex-col transition-all ${isVisible ? "left-0 w-96 duration-600" : "-left-96 w-0 duration-1000"}`}>
 				<div className="h-full flex flex-col">
 					{/* Header */}
-					<div className="p-6 pb-4">
-						<div className="flex flex-row items-center gap-3 mb-6">
+					<div className="p-6 ">
+						<div className="flex flex-row items-center gap-3">
 							<Tooltipped tooltip="Back to meetings page">
 								<Button
 									className="shrink-0 h-10 w-10 p-0 bg-white hover:bg-gray-50 border border-gray-200"
@@ -130,21 +129,6 @@ export default function WorkflowPanel({
 							All Meetings
 							</Button>
 						</div>
-						{/* New Meeting Button - Consistent with ChatPanel */}
-						<Button
-							className="w-full h-12 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-lg flex items-center justify-center gap-3 mb-6 shadow-sm"
-							onClick={() => {
-								setCurrentResult(null);
-								setAppView("meetings");
-								if (activeProject) {
-									router.push(`/project/${activeProject.project_id}/meetings`);
-								}
-							}}
-							variant="outline"
-						>
-							<Plus className="h-5 w-5" />
-							<span className="font-medium">New Meeting</span>
-						</Button>
 					</div>
 					<div className="flex-1 overflow-hidden">
 						{isLoadingEvents ? (
@@ -161,80 +145,11 @@ export default function WorkflowPanel({
 								<h3 className="text-sm font-medium text-gray-900 mb-2">Failed to load meetings</h3>
 								<p className="text-xs text-gray-500 mb-4">Please try again later</p>
 							</div>
-						) : !graphs || graphs.length === 0 ? (
-							<div className="text-center py-12 px-6">
-								<div className="mb-4">
-									<div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mx-auto">
-										<Calendar className="h-6 w-6 text-gray-400" />
-									</div>
-								</div>
-								<h3 className="text-sm font-medium text-gray-900 mb-2">No meetings created yet</h3>
-								<p className="text-xs text-gray-500 mb-4">Create your first meeting to get started</p>
-							</div>
 						) : (
-							<div className="h-full flex-1">
-								<ScrollArea className="h-full px-6">
-									<div className="py-6">
-										{graphs.filter((graph) => graph.event_type === "meeting").map((meeting, index, array) => {
-											// Group meetings by date
-											const date = new Date(meeting.created_at);
-											const today = new Date();
-											const yesterday = new Date(today);
-											yesterday.setDate(yesterday.getDate() - 1);
-										
-											let dateLabel = "";
-											if (index === 0 || (index > 0 && new Date(array[index - 1].created_at).toDateString() !== date.toDateString())) {
-												if (date.toDateString() === today.toDateString()) {
-													dateLabel = "Today";
-												} else if (date.toDateString() === yesterday.toDateString()) {
-													dateLabel = "Yesterday";
-												} else {
-													dateLabel = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-												}
-											}
-
-											return (
-												<div className="w-80" key={meeting.id}>
-													{dateLabel && (
-														<div className="text-xs font-medium text-gray-500 m-3 first:mt-0 w-32">
-															{dateLabel}
-														</div>
-													)}
-													<div
-														className="group cursor-pointer p-4 rounded-lg mb-2 transition-all duration-200 hover:bg-white hover:shadow-sm"
-														onClick={() => handleMeetingSelect(meeting.id)}
-													>
-														<div className="flex items-start gap-3">
-															<div className="p-2 rounded-lg bg-gray-200">
-																<Calendar className="h-4 w-4 text-gray-600" />
-															</div>
-															<div className="flex-1 min-w-0">
-																<h3 className="font-semibold text-gray-900 text-sm leading-tight truncate">
-																	{meeting.name}
-																</h3>
-																{meeting.description && (
-																	<p className="text-xs text-gray-500 mt-1 line-clamp-2">
-																		{meeting.description}
-																	</p>
-																)}
-																<div className="flex items-center justify-between mt-2">
-																	<div className="flex items-center gap-2 text-xs text-gray-500">
-																		{meeting.metadata?.frequency && (
-																			<span className="capitalize">
-																				{meeting.metadata.frequency}
-																			</span>
-																		)}
-																	</div>
-																</div>
-															</div>
-														</div>
-													</div>
-												</div>
-											);
-										})}
-									</div>
-								</ScrollArea>
-							</div>
+							<MeetingsList
+								meetings={graphs}
+								onMeetingSelect={handleMeetingSelect}
+							/>
 						)}
 					</div>
 				</div>

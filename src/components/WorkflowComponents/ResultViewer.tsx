@@ -6,11 +6,16 @@ import {
 	MessageSquare,
 	LogsIcon,
 	Calendar,
+	ArrowLeft,
 } from "lucide-react";
 import ActionItemViewer from "@/components/AiActions/ActionItemViewer";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Tooltipped } from "@/components/Common/Tooltiped";
 import type { NodeData, ActionData, EventResult } from "./types";
 import { useStore } from "@/utils/store";
+import { useWorkflow } from "@/hooks/useWorkflow";
+import { useRouter } from "next/navigation";
 
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 import ChatComponent from "@/components/ChatInput/ChatComponet";
@@ -28,6 +33,21 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 	cacheId: _CACHE_ID,
 }) => {
 	const session = useStore((state) => state.session);
+	const { activeProject, setAppView } = useStore((state) => ({
+		activeProject: state.activeProject,
+		setAppView: state.setAppView,
+	}));
+	const { setCurrentResult } = useWorkflow();
+	const router = useRouter();
+
+	// Handler for back button
+	const handleBackToMeetings = (): void => {
+		setCurrentResult(null);
+		setAppView("meetings");
+		if (activeProject) {
+			router.push(`/project/${activeProject.project_id}/meetings`);
+		}
+	};
 
 	// Get specific nodes from the workflow
 	const getNodeByType = (type: string): NodeData | undefined => {
@@ -130,22 +150,36 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 					onValueChange={setActiveTab} 
 					value={activeTab}
 				>
-					{/* Gmail-style tabs */}
+					{/* Gmail-style tabs with back button */}
 					<div className="border-b border-gray-200 bg-white flex-shrink-0">
-						<div className="flex overflow-x-auto scrollbar-hide">
-							{staticTabs
-								.filter((tab) => tab.hasData)
-								.map((tab) => (
-									<button
-										className={getTabStyles(tab, activeTab === tab.id)}
-										key={tab.id}
-										onClick={() => setActiveTab(tab.id)}
+						<div className="flex items-center gap-4 px-4">
+							<div className="flex items-center">
+								<Tooltipped tooltip="Back to meetings">
+									<Button
+										className="shrink-0 h-8 w-8 p-0 bg-white hover:bg-gray-50 border border-gray-200"
+										onClick={handleBackToMeetings}
+										size="icon"
+										variant="ghost"
 									>
-										{tab.icon}
-										<span className="hidden sm:inline whitespace-nowrap">{tab.label}</span>
-										<div className="w-2 h-2 rounded-full ml-1 bg-green-500" />
-									</button>
-								))}
+										<ArrowLeft className="h-4 w-4" />
+									</Button>
+								</Tooltipped>
+							</div>
+							<div className="flex overflow-x-auto scrollbar-hide">
+								{staticTabs
+									.filter((tab) => tab.hasData)
+									.map((tab) => (
+										<button
+											className={getTabStyles(tab, activeTab === tab.id)}
+											key={tab.id}
+											onClick={() => setActiveTab(tab.id)}
+										>
+											{tab.icon}
+											<span className="hidden sm:inline whitespace-nowrap">{tab.label}</span>
+											<div className="w-2 h-2 rounded-full ml-1 bg-green-500" />
+										</button>
+									))}
+							</div>
 						</div>
 					</div>
 					<div className="flex-1 min-h-0 overflow-hidden">
