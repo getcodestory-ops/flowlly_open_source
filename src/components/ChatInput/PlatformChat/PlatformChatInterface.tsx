@@ -53,6 +53,7 @@ export default function PlatformChatInterface({
 		handleChatSubmit,
 		setChatInput,
 		chatInput,
+		getCombinedMessage,
 		session,
 		isWaitingForResponse,
 		activeChatEntity,
@@ -100,9 +101,11 @@ export default function PlatformChatInterface({
 			return;
 		}
 
+		// Get combined message (chatInput + chatContext)
+		const combinedMessage = getCombinedMessage();
 
 		handleChatSubmit({
-			message: chatInput,
+			message: combinedMessage,
 			files: [],
 		});
 	};

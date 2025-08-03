@@ -49,11 +49,39 @@ interface ChatStore {
 	setContextFolder: (folderId: string | null, folderName: string) => void;
 	chatInput: string;
 	setChatInput: (input: string) => void;
-	chatDirectiveType: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "none";
-	setChatDirectiveType: (directiveType: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "none") => void;
+	// Chat context for specialized forms (bid levelling, etc.)
+	chatContext: string;
+	setChatContext: (context: string) => void;
+	clearChatContext: () => void;
+	// Get combined message (chatInput + chatContext)
+	getCombinedMessage: () => string;
+	chatDirectiveType: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "none";
+	setChatDirectiveType: (directiveType: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "none") => void;
+	// Chat type tags for new chats
+	chatTypeTags: {
+		name: string;
+		parent: string;
+	}[];
+	setChatTypeTags: (tags: { name: string; parent: string; }[]) => void;
+	clearChatTypeTags: () => void;
+	// Set meeting-specific tags
+	setMeetingChatTags: (meetingName: string) => void;
+	// Set meeting chat directive with specific meeting ID
+	setMeetingChatDirective: (meetingId?: string) => void;
+	// Store selected meeting ID for meeting chat
+	selectedMeetingId: string | null;
+	setSelectedMeetingId: (meetingId: string | null) => void;
+	// Store complete meeting workflow data (meeting type + instance)
+	meetingWorkflowData: { meetingType: any; meetingInstance: any } | null;
+	setMeetingWorkflowData: (data: { meetingType: any; meetingInstance: any } | null) => void;
+	// Track if we're coming from MeetingChatFromMeetingInstance
+	isFromMeetingInstance: boolean;
+	setIsFromMeetingInstance: (value: boolean) => void;
+	// Reset function for new chats
+	resetForNewChat: () => void;
 }
 
-const generateTabId = () => `tab_${Date.now()}_${Math.random().toString(36)
+const generateTabId = (): string => `tab_${Date.now()}_${Math.random().toString(36)
 	.substr(2, 9)}`;
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -74,7 +102,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		set({ sidePanel: tabWithId });
 		
 		// Also add to tabs for the new interface
-		const { tabs, addTab } = get();
+		const { addTab } = get();
 		addTab(sidePanel);
 	},
 	tabs: [],
@@ -150,7 +178,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		const untitledContexts = state.selectedContexts["untitled"];
 		if (!untitledContexts) return state;
 
-		const { ["untitled"]: _, ...restContexts } = state.selectedContexts;
+		const { ["untitled"]: _REMOVED, ...restContexts } = state.selectedContexts;
 		return {
 			selectedContexts: {
 				...restContexts,
@@ -165,8 +193,94 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	setContextFolder: (folderId, folderName) => set({ contextFolder: { id: folderId, name: folderName } }),
 	chatInput: "",
 	setChatInput: (input) => set({ chatInput: input }),
+	// Chat context management
+	chatContext: "",
+	setChatContext: (context) => set({ chatContext: context }),
+	clearChatContext: () => set({ chatContext: "" }),
+	// Get combined message for submission
+	getCombinedMessage: () => {
+		const { chatInput, chatContext } = get();
+		// If there's context, prepend it to the chat input
+		if (chatContext.trim()) {
+			return chatContext.trim() + (chatInput.trim() ? "\n\n" + chatInput.trim() : "");
+		}
+		return chatInput;
+	},
 	chatDirectiveType: "chat",
-	setChatDirectiveType: (directiveType) => set({ chatDirectiveType: directiveType }),
+	setChatDirectiveType: (directiveType) => {
+		// Clear context when switching chat types
+		set({ 
+			chatDirectiveType: directiveType,
+			chatContext: "",
+		});
+		
+		// Set appropriate tags based on chat type
+		const { setChatTypeTags } = get();
+		switch (directiveType) {
+			case "bidLevelling":
+				setChatTypeTags([{ name: "bid-levelling", parent: "root" }]);
+				break;
+			case "dailyReport":
+				setChatTypeTags([{ name: "daily-report", parent: "root" }]);
+				break;
+			case "reportWriting":
+				setChatTypeTags([{ name: "report-writing", parent: "root" }]);
+				break;
+			case "knowledgeManager":
+				setChatTypeTags([{ name: "knowledge-search", parent: "root" }]);
+				break;
+			case "meetingChat":
+				setChatTypeTags([{ name: "meeting-chat", parent: "root" }]);
+				break;
+			default:
+				setChatTypeTags([]);
+				break;
+		}
+	},
+	// Chat type tags management
+	chatTypeTags: [],
+	setChatTypeTags: (tags) => set({ chatTypeTags: tags }),
+	clearChatTypeTags: () => set({ chatTypeTags: [] }),
+	// Set meeting-specific tags
+	setMeetingChatTags: (meetingName: string) => {
+		const tags = [
+			{ name: "meeting", parent: "root" },
+			{ name: meetingName.toLowerCase().replace(/\s+/g, "-"), parent: "meeting" },
+		];
+		set({ chatTypeTags: tags });
+	},
+	// Set meeting chat directive with specific meeting ID
+	setMeetingChatDirective: (meetingId?: string) => {
+		set({ 
+			chatDirectiveType: "meetingChat",
+			selectedMeetingId: meetingId || null,
+			chatContext: "",
+		});
+		
+		// Set meeting chat tags
+		const { setChatTypeTags } = get();
+		setChatTypeTags([{ name: "meeting-chat", parent: "root" }]);
+	},
+	// Store selected meeting ID for meeting chat
+	selectedMeetingId: null,
+	setSelectedMeetingId: (meetingId) => set({ selectedMeetingId: meetingId }),
+	// Store complete meeting workflow data (meeting type + instance)
+	meetingWorkflowData: null,
+	setMeetingWorkflowData: (data) => set({ meetingWorkflowData: data }),
+	// Track if we're coming from MeetingChatFromMeetingInstance
+	isFromMeetingInstance: false,
+	setIsFromMeetingInstance: (value) => set({ isFromMeetingInstance: value }),
+	// Reset function for new chats
+	resetForNewChat: () => set({ 
+		chatInput: "",
+		chatContext: "",
+		chatDirectiveType: "chat",
+		chatTypeTags: [],
+		selectedContexts: {},
+		selectedMeetingId: null,
+		meetingWorkflowData: null,
+		isFromMeetingInstance: false,
+	}),
 }));
 
 

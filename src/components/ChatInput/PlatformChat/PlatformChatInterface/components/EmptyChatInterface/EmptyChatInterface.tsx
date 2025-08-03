@@ -2,7 +2,7 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search } from "lucide-react";
+import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, MessageSquare } from "lucide-react";
 import Image from "next/image";
 import AtSelectorComponent from "../../../components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
@@ -10,6 +10,7 @@ import BidLevelling from "./FormDirectives/BidLevelling";
 import DailyReport from "./FormDirectives/DailyReport";
 import ReportWriting from "./FormDirectives/ReportWriting";
 import KnowledgeManager from "./FormDirectives/KnowledgeManager";
+import MeetingChat from "./FormDirectives/MeetingChat";
 
 // Animated Placeholder Component
 const AnimatedPlaceholder = ({ isEmpty }: { isEmpty: boolean }) => {
@@ -103,7 +104,7 @@ export default function EmptyChatInterface({
 	}, [chatInput]);
 
 	const chatTypes: Array<{
-		id: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "none";
+		id: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "none";
 		title: string;
 		description: string;
 		icon: any;
@@ -141,6 +142,14 @@ export default function EmptyChatInterface({
 			icon: Search,
 			color: "bg-orange-50 hover:bg-orange-100 border-orange-200",
 			iconColor: "text-orange-600",
+		},
+		{
+			id: "meetingChat",
+			title: "Meeting Chat Assistant",
+			description: "Ask questions about meeting transcripts, action items, and decisions made",
+			icon: MessageSquare,
+			color: "bg-green-50 hover:bg-green-100 border-green-200",
+			iconColor: "text-green-600",
 		},
 	];
 
@@ -194,6 +203,21 @@ export default function EmptyChatInterface({
 		return (
 			<div className="flex flex-col items-center px-4 py-6">
 				<KnowledgeManager
+					handleSubmit={handleSubmit}
+					isPending={isPending}
+					isWaitingForResponse={isWaitingForResponse}
+					loadDocumentPanel={loadDocumentPanel}
+					setChatInput={setChatInput}
+				/>
+			</div>
+		);
+	}
+
+	// If meeting chat is selected, show only the form
+	if (chatDirectiveType === "meetingChat") {
+		return (
+			<div className="flex flex-col items-center px-4 py-6">
+				<MeetingChat
 					handleSubmit={handleSubmit}
 					isPending={isPending}
 					isWaitingForResponse={isWaitingForResponse}

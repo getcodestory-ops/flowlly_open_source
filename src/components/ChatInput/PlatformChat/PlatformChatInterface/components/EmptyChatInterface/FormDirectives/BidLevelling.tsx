@@ -200,12 +200,11 @@ DocumentSection.displayName = "DocumentSection";
 export default function BidLevelling({
 	isPending = false,
 	isWaitingForResponse = false,
-	setChatInput,
+	setChatInput: _setChatInput,
 	handleSubmit,
 }: BidLevellingProps) {
-	const { selectedContexts, setSelectedContexts, setSidePanel, setCollapsed } = useChatStore();
+	const { selectedContexts, setSelectedContexts, setSidePanel, setCollapsed, setChatContext } = useChatStore();
 	const { activeChatEntity } = useStore();
-	const currentChatId = activeChatEntity?.id || "untitled";
 	
 	// Generate a unique form ID for this bid levelling instance
 	const [formId] = useState(() => `bid_levelling_${Date.now()}_${Math.random().toString(36)
@@ -387,13 +386,13 @@ export default function BidLevelling({
 		handleSubmit();
 	}, [handleSubmit]);
 
-	// Update chat input in real time whenever form data or selected documents change
+	// Update chat context in real time whenever form data or selected documents change
 	useEffect(() => {
 		if (isFormValid && !isWaitingForResponse) {
 			const prompt = getPrompt();
-			setChatInput(prompt);
+			setChatContext(prompt);
 		}
-	}, [bidCount, formData, getPrompt, setChatInput, isFormValid, isWaitingForResponse, selectedContexts]);
+	}, [bidCount, formData, getPrompt, setChatContext, isFormValid, isWaitingForResponse, selectedContexts]);
 
 	const addMoreBid = useCallback(() => {
 		const newBidCount = bidCount + 1;
