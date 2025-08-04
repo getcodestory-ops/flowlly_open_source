@@ -71,7 +71,7 @@ interface FormField {
 	type: "text" | "textarea" | "attachment" | "select" | "checkbox" | "radio" | "number" | "email" | "password" | "date" | "tel" | "group";
 	required?: boolean;
 	placeholder?: string;
-	options?: string[];
+	options?: string[] | { label: string; value: string }[]; // Support both string arrays and object arrays
 	multiple?: boolean;
 	fields?: FormField[]; // For group type - nested fields
 }
@@ -349,11 +349,17 @@ ${JSON.stringify(completeFormData, null, 2)}
 								value={fieldValue}
 							>
 								<option value="">Choose an option...</option>
-								{field.options?.map((option, index) => (
-									<option key={index} value={option}>
-										{option}
-									</option>
-								))}
+								{field.options?.map((option, index) => {
+									// Handle both string options and object options {label, value}
+									const optionValue = typeof option === "string" ? option : option.value;
+									const optionLabel = typeof option === "string" ? option : option.label;
+									
+									return (
+										<option key={index} value={optionValue}>
+											{optionLabel}
+										</option>
+									);
+								})}
 							</select>
 						</div>
 					);
@@ -388,21 +394,25 @@ ${JSON.stringify(completeFormData, null, 2)}
 								<div className="space-y-2">
 									{field.options?.map((option, index) => {
 										const radioId = `${fieldId}-${index}`;
+										// Handle both string options and object options {label, value}
+										const optionValue = typeof option === "string" ? option : option.value;
+										const optionLabel = typeof option === "string" ? option : option.label;
+										
 										return (
 											<div className="flex items-center" key={radioId}>
 												<input
-													checked={fieldValue === option}
+													checked={fieldValue === optionValue}
 													className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
 													disabled={isPending}
 													id={radioId}
 													name={field.name}
-													onChange={(e) => handleFormInputChange(field.name, option)}
+													onChange={(e) => handleFormInputChange(field.name, optionValue)}
 													required={isRequired}
 													type="radio"
-													value={option}
+													value={optionValue}
 												/>
 												<label className="ml-2 block text-sm text-gray-700" htmlFor={radioId}>
-													{option}
+													{optionLabel}
 												</label>
 											</div>
 										);
