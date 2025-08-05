@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from "react";
-import { CircleIcon } from "lucide-react";
 import MarkdownTerminal from "../Markdown/style/MarkdownTerminal";
 
 interface StreamComponentProps {
@@ -9,15 +8,34 @@ interface StreamComponentProps {
   onStreamComplete?: (content: string) => void;
 }
 
+const LoadingDots: React.FC<{ showThinking?: boolean; centered?: boolean }> = ({ 
+	showThinking = false, 
+	centered = false, 
+}) => (
+	<div className={`flex gap-2 items-center ${centered ? "justify-center" : ""} ${showThinking ? "mt-2" : "mt-2"}`}>
+		<div className="flex gap-0.5 items-center">
+			<div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" />
+			<div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce delay-75" />
+			<div className="w-1.5 h-1.5 bg-pink-500 rounded-full animate-bounce delay-150" />
+		</div>
+		{showThinking && (
+			<span className="text-xs text-gray-600 font-medium">
+        thinking...
+			</span>
+		)}
+	</div>
+);
+
 const StreamComponent: React.FC<StreamComponentProps> = ({
 	streamingKey,
 	authToken,
-	taskId,
+	taskId: _taskId,
 	onStreamComplete,
 }) => {
 	const [displayValue, setDisplayValue] = useState<string>("");
 	const [isPending, setIsPending] = useState(true);
-	const [streamComplete, setStreamComplete] = useState(false);
+	const [_STREAM_COMPLETE, setStreamComplete] = useState(false);
+	const [isThinking, setIsThinking] = useState(false);
 	const eventSourceRef = useRef<EventSource | null>(null);
 
 	// Reset state when streamingKey changes
@@ -25,6 +43,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 		setDisplayValue("");
 		setIsPending(true);
 		setStreamComplete(false);
+		setIsThinking(false);
 		
 		// Clean up previous EventSource if it exists
 		if (eventSourceRef.current) {
@@ -49,6 +68,15 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 					return;
 				}
 
+				// Check if this is a THINKING event that came through as regular message data
+				if (event.data.includes("event: THINKING")) {
+					setIsThinking(true);
+					return; // Don't add this to displayValue
+				}
+
+				// Clear thinking state when regular data comes in
+				setIsThinking(false);
+
 				setDisplayValue((prev) => {
 					const newData = event.data.replace(/\\n/g, "\n"); // Convert escaped newlines to actual newlines
 					return prev + newData;
@@ -57,9 +85,14 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 		};
 
 		// Handle heartbeat events separately
-		eventSource.addEventListener("heartbeat", (event) => {
+		eventSource.addEventListener("heartbeat", (_event) => {
 			// Heartbeat received, can be used for connection monitoring if needed
 			// //console.log("Heartbeat received");
+		});
+
+		// Handle thinking events
+		eventSource.addEventListener("THINKING", (_event) => {
+			setIsThinking(true);
 		});
 
 		eventSource.onerror = (error) => {
@@ -103,37 +136,13 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			{displayValue ? (
 				<div className="pb-4">
 					<MarkdownTerminal content={displayValue} />
-					{isPending && (
-						<div className="flex gap-1 items-center mt-2">
-							<CircleIcon
-								className="w-3 h-3 text-gray-400 animate-pulse delay-0"
-								fill="currentColor"
-							/>
-							<CircleIcon
-								className="w-3 h-3 text-gray-400 animate-pulse delay-150"
-								fill="currentColor"
-							/>
-							<CircleIcon
-								className="w-3 h-3 text-gray-400 animate-pulse delay-300"
-								fill="currentColor"
-							/>
-						</div>
+					{(isThinking || isPending) && (
+						<LoadingDots showThinking={isThinking} />
 					)}
 				</div>
-			) : isPending ? (
-				<div className="flex gap-1 items-center justify-center pb-4">
-					<CircleIcon
-						className="w-3 h-3 text-gray-400 animate-pulse delay-0"
-						fill="currentColor"
-					/>
-					<CircleIcon
-						className="w-3 h-3 text-gray-400 animate-pulse delay-150"
-						fill="currentColor"
-					/>
-					<CircleIcon
-						className="w-3 h-3 text-gray-400 animate-pulse delay-300"
-						fill="currentColor"
-					/>
+			) : isPending || isThinking ? (
+				<div className="pb-4">
+					<LoadingDots centered showThinking={isThinking} />
 				</div>
 			) : null}
 		</div>
