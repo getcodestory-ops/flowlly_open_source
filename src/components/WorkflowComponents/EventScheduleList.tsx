@@ -444,7 +444,7 @@ const WorkflowItem = ({ name }: {name: any}): React.ReactNode => {
 					<ChevronRight className="w-3 h-3" /> 
 				</Button>
 			</div> */}
-			<div>{name}</div>
+			<div>{name} </div>
 		</div>
 	);
 };

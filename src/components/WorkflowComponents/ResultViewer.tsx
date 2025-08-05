@@ -69,6 +69,8 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 	const distributeNode = getNodeByType("distribute_minutes_of_meeting");
 	const meetingAgendaNode = getNodeByType("create_next_meeting_agenda");
 
+
+	
 	// Helper function to check if agenda is available
 	const isAgendaAvailable = (): boolean => {
 		if (!meetingAgendaNode) return false;
