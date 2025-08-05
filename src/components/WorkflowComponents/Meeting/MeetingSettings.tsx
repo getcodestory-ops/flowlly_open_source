@@ -229,7 +229,8 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = () => {
 							</div>
 						</div>
 					</TabsContent>
-					<TabsContent className="flex-1" value="all-meetings">
+					<TabsContent className="flex-1 " value="all-meetings">
+						
 						<div className="h-full">
 							{isLoadingEvents ? (
 								<div className="flex items-center justify-center h-full">
@@ -268,6 +269,7 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = () => {
 							) : (
 								<div className="h-full flex-1">
 									<ScrollArea className="h-full px-6 py-4">
+										<h1 className="text-xl font-bold border-b border-gray-200 pb-4">Select a meeting Date to view the minutes</h1>
 										<EventScheduleList
 											graphs={getCurrentMeetingInstances()}
 											onWorkflowSelect={() => {
