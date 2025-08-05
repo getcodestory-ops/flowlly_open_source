@@ -35,7 +35,7 @@ export const MeetingsList: React.FC<MeetingsListProps> = ({
 		<div className={`h-full flex-1 ${className}`}>
 			<ScrollArea className="h-full px-6">
 				<div className="py-6">
-					{filteredMeetings.map((meeting, index, array) => {
+					{filteredMeetings && filteredMeetings.reverse().map((meeting, index, array) => {
 						// Group meetings by date
 						const date = new Date(meeting.created_at);
 						const today = new Date();

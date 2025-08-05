@@ -68,8 +68,8 @@ export const MinutesViewer: React.FC<MinutesViewerProps> = ({
 			// Try to parse if it's a JSON string
 			try {
 				const parsed = JSON.parse(distributeNode.output);
-				if (Array.isArray(parsed)) {
-					emails = parsed.filter((item: unknown) => 
+				if (parsed?.email_list && Array.isArray(parsed.email_list)) {
+					emails = parsed.email_list.filter((item: unknown) => 
 						typeof item === "string" && item.includes("@"),
 					);
 				}
@@ -80,6 +80,11 @@ export const MinutesViewer: React.FC<MinutesViewerProps> = ({
 					.map((email: string) => email.trim())
 					.filter((email: string) => email.includes("@"));
 			}
+		} else if (distributeNode.output?.email_list && Array.isArray(distributeNode.output.email_list)) {
+			// Handle case where output is an object with email_list property
+			emails = distributeNode.output.email_list.filter((item: unknown) => 
+				typeof item === "string" && item.includes("@"),
+			);
 		} else if (distributeNode.output?.emails && Array.isArray(distributeNode.output.emails)) {
 			emails = distributeNode.output.emails;
 		}
