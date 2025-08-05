@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useRef } from "react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Video, Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import MarkDownDisplay from "@/components/Markdown/MarkDownDisplay";
 import { renderJsonValue } from "../utils";
@@ -17,7 +16,7 @@ export const MeetingRecording: React.FC<MeetingRecordingProps> = ({
 	currentResult,
 }) => {
 	const videoRef = useRef<HTMLVideoElement>(null);
-	const [activeTranscriptTab, setActiveTranscriptTab] = useState<"interactive" | "enhanced">("interactive");
+	const [activeTranscriptTab, setActiveTranscriptTab] = useState<"transcript" | "analysis">("transcript");
   
 	const hasVideo = recordingNode?.output?.video?.url || recordingNode?.output?.url;
 	const hasRawTranscript = recordingNode?.output?.raw_transcript_data;
@@ -77,40 +76,38 @@ export const MeetingRecording: React.FC<MeetingRecordingProps> = ({
 			{(hasRawTranscript || enhancedTranscript) && (
 				<div className={`flex flex-col ${hasVideo ? "lg:w-1/2 xl:w-3/5" : "w-full"} min-h-0`}>
 					{/* Transcript Tabs */}
-					<div className="flex items-center gap-1 mb-3 flex-shrink-0">
-						<h3 className="text-lg font-medium mr-4">Transcript</h3>
-						{hasRawTranscript && (
-							<Button
-								className={`h-8 px-3 text-xs ${
-									activeTranscriptTab === "interactive"
-										? "bg-blue-100 text-blue-800 border-blue-200"
-										: "bg-gray-100 text-gray-600 border-gray-200"
-								}`}
-								onClick={() => setActiveTranscriptTab("interactive")}
-								size="sm"
-								variant="outline"
-							>
-                Interactive
-							</Button>
-						)}
-						{enhancedTranscript && (
-							<Button
-								className={`h-8 px-3 text-xs ${
-									activeTranscriptTab === "enhanced"
-										? "bg-blue-100 text-blue-800 border-blue-200"
-										: "bg-gray-100 text-gray-600 border-gray-200"
-								}`}
-								onClick={() => setActiveTranscriptTab("enhanced")}
-								size="sm"
-								variant="outline"
-							>
-                AI Enhanced
-							</Button>
-						)}
+					<div className="flex flex-col mb-3 flex-shrink-0">
+						<h3 className="text-lg font-medium mb-3">Recording Content</h3>
+						<div className="flex border-b border-gray-200">
+							{hasRawTranscript && (
+								<button
+									className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+										activeTranscriptTab === "transcript"
+											? "border-blue-500 text-blue-600"
+											: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+									}`}
+									onClick={() => setActiveTranscriptTab("transcript")}
+								>
+									Transcript
+								</button>
+							)}
+							{enhancedTranscript && (
+								<button
+									className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+										activeTranscriptTab === "analysis"
+											? "border-blue-500 text-blue-600"
+											: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+									}`}
+									onClick={() => setActiveTranscriptTab("analysis")}
+								>
+									Video Analysis
+								</button>
+							)}
+						</div>
 					</div>
 					<ScrollArea className="flex-1 border rounded-lg min-h-0">
 						<div className="p-4 h-full overflow-auto">
-							{activeTranscriptTab === "interactive" && hasRawTranscript && (
+							{activeTranscriptTab === "transcript" && hasRawTranscript && (
 								<div className="space-y-4">
 									{(() => {
 										// Group consecutive segments by the same participant
@@ -172,7 +169,7 @@ export const MeetingRecording: React.FC<MeetingRecordingProps> = ({
 									})()}
 								</div>
 							)}
-							{activeTranscriptTab === "enhanced" && enhancedTranscript && (
+							{activeTranscriptTab === "analysis" && enhancedTranscript && (
 								<div className="h-full">
 									{typeof enhancedTranscript === "string" ? (
 										<div className="text-sm text-gray-700 whitespace-pre-line">
