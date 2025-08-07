@@ -156,7 +156,7 @@ function CreateJob(): React.ReactNode {
 			const params = new URLSearchParams({
 				client_id: "5f3afbcd-94ce-4a50-9721-79136b5d4c1e",
 				response_type: "code",
-				redirect_uri: "https://flowlly.eastus.cloudapp.azure.com/microsoft/integration",
+				redirect_uri: "https://prod.api.flowlly.com/microsoft/integration",
 				response_mode: "query",
 				scope: "openid profile Sites.Read.All Files.ReadWrite.All OnlineMeetings.Read Calendars.ReadWrite ",
 				state: sessionToken + "___" + userId + "___" + projectId,
