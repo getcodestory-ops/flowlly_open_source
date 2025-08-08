@@ -188,9 +188,43 @@ const HTMLViewer = ({ resourceId }: { resourceId: string }) => {
 		);
 	}
 
-	// Create a data URL for the HTML content
-	const htmlContent = resource.metadata.content;
-	const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`;
+	// Create enhanced HTML content with injected CSS if available
+	const createEnhancedHtmlContent = () => {
+		let htmlContent = resource.metadata.content;
+		const cssContent = resource.metadata.style;
+
+		// If CSS is provided, inject it into the HTML
+		if (cssContent) {
+			// Check if HTML already has a <head> section
+			const headRegex = /<head[^>]*>/i;
+			const headMatch = htmlContent.match(headRegex);
+
+			if (headMatch) {
+				// Insert CSS after the opening <head> tag
+				const headEndIndex = headMatch.index! + headMatch[0].length;
+				const styleTag = `\n<style type="text/css">\n${cssContent}\n</style>\n`;
+				htmlContent = htmlContent.slice(0, headEndIndex) + styleTag + htmlContent.slice(headEndIndex);
+			} else {
+				// If no <head> tag exists, check for <html> tag and add <head> section
+				const htmlRegex = /<html[^>]*>/i;
+				const htmlMatch = htmlContent.match(htmlRegex);
+				
+				if (htmlMatch) {
+					const htmlEndIndex = htmlMatch.index! + htmlMatch[0].length;
+					const headSection = `\n<head>\n<style type="text/css">\n${cssContent}\n</style>\n</head>\n`;
+					htmlContent = htmlContent.slice(0, htmlEndIndex) + headSection + htmlContent.slice(htmlEndIndex);
+				} else {
+					// If no <html> tag, wrap the entire content and add <head> with CSS
+					htmlContent = `<!DOCTYPE html>\n<html>\n<head>\n<style type="text/css">\n${cssContent}\n</style>\n</head>\n<body>\n${htmlContent}\n</body>\n</html>`;
+				}
+			}
+		}
+
+		return htmlContent;
+	};
+
+	const enhancedHtmlContent = createEnhancedHtmlContent();
+	const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(enhancedHtmlContent)}`;
 
 	return (
 		<div className="w-full h-full overflow-auto">

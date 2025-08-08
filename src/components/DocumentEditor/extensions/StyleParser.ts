@@ -7,7 +7,7 @@ export const StyleParser = Extension.create({
 	addGlobalAttributes() {
 		return [
 			{
-				types: ["textStyle"],
+				types: ["textStyle", "paragraph", "heading", "span", "div"],
 				attributes: {
 					// Handle individual style properties
 					color: {
@@ -112,6 +112,18 @@ export const StyleParser = Extension.create({
 						renderHTML: (attributes) => {
 							if (!attributes.textDecoration) return {};
 							return { style: `text-decoration: ${attributes.textDecoration}` };
+						},
+					},
+					// Preserve complete style attribute for any unhandled CSS properties
+					fullStyle: {
+						default: null,
+						parseHTML: (element) => {
+							const style = element.getAttribute("style");
+							return style || null;
+						},
+						renderHTML: (attributes) => {
+							if (!attributes.fullStyle) return {};
+							return { style: attributes.fullStyle };
 						},
 					},
 				},
