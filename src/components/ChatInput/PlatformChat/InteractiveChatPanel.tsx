@@ -188,22 +188,31 @@ const HTMLViewer = ({ resourceId }: { resourceId: string }) => {
 		);
 	}
 
-	// Create enhanced HTML content with injected CSS if available
+	// Create enhanced HTML content with injected CSS and header if available
 	const createEnhancedHtmlContent = () => {
 		let htmlContent = resource.metadata.content;
 		const cssContent = resource.metadata.style;
+		const headerContent = resource.metadata.header;
 
-		// If CSS is provided, inject it into the HTML
+		// Build head content with CSS and header
+		let headContent = "";
 		if (cssContent) {
+			headContent += `\n<style type="text/css">\n${cssContent}\n</style>\n`;
+		}
+		if (headerContent) {
+			headContent += `${headerContent}\n`;
+		}
+
+		// If we have content to inject into head
+		if (headContent) {
 			// Check if HTML already has a <head> section
 			const headRegex = /<head[^>]*>/i;
 			const headMatch = htmlContent.match(headRegex);
 
 			if (headMatch) {
-				// Insert CSS after the opening <head> tag
+				// Insert content after the opening <head> tag
 				const headEndIndex = headMatch.index! + headMatch[0].length;
-				const styleTag = `\n<style type="text/css">\n${cssContent}\n</style>\n`;
-				htmlContent = htmlContent.slice(0, headEndIndex) + styleTag + htmlContent.slice(headEndIndex);
+				htmlContent = htmlContent.slice(0, headEndIndex) + headContent + htmlContent.slice(headEndIndex);
 			} else {
 				// If no <head> tag exists, check for <html> tag and add <head> section
 				const htmlRegex = /<html[^>]*>/i;
@@ -211,11 +220,11 @@ const HTMLViewer = ({ resourceId }: { resourceId: string }) => {
 				
 				if (htmlMatch) {
 					const htmlEndIndex = htmlMatch.index! + htmlMatch[0].length;
-					const headSection = `\n<head>\n<style type="text/css">\n${cssContent}\n</style>\n</head>\n`;
+					const headSection = `\n<head>${headContent}</head>\n`;
 					htmlContent = htmlContent.slice(0, htmlEndIndex) + headSection + htmlContent.slice(htmlEndIndex);
 				} else {
-					// If no <html> tag, wrap the entire content and add <head> with CSS
-					htmlContent = `<!DOCTYPE html>\n<html>\n<head>\n<style type="text/css">\n${cssContent}\n</style>\n</head>\n<body>\n${htmlContent}\n</body>\n</html>`;
+					// If no <html> tag, wrap the entire content and add <head> with content
+					htmlContent = `<!DOCTYPE html>\n<html>\n<head>${headContent}</head>\n<body>\n${htmlContent}\n</body>\n</html>`;
 				}
 			}
 		}
