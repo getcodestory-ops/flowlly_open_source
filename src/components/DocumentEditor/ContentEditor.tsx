@@ -64,6 +64,11 @@ const ContentEditor = ({
 		createThread: storeCreateThread,
 	} = useEditorStore();
 
+	// Helper function to check if document should use Markdown
+	const shouldUseMarkdown = (docName?: string): boolean => {
+		return docName?.toLowerCase().endsWith(".md") || false;
+	};
+
 
 	useEffect(() => {
 		setCurrentDocument(documentId || null, projectAccessId);
@@ -76,16 +81,19 @@ const ContentEditor = ({
 
 	const editorInstance = useEditor({
 		extensions: [
-			Markdown.configure({
-				html: true,
-				transformPastedText: false,
-				transformCopiedText: false,
-			}),
 			StarterKit.configure({
 			}),
-			ClassPreservationExtension,
 			DivExtension,
 			SpanExtension,
+			// Conditionally include Markdown extension only for .md files
+			...(shouldUseMarkdown(documentName) ? [
+				Markdown.configure({
+					html: true,
+					transformPastedText: false,
+					transformCopiedText: false,
+				}),
+			] : []),
+			ClassPreservationExtension,
 			StyleParser,
 			TextStyle,
 			Color.configure({
