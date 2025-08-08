@@ -17,6 +17,9 @@ import Toolbar from "./ToolBar";
 import { HoverExtension } from "./extensions/HoverExtension";
 import { CompoundDiffExtension } from "./extensions/CompoundDiffExtension";
 import { StyleParser } from "./extensions/StyleParser";
+import { ClassPreservationExtension } from "./extensions/ClassPreservationExtension";
+import { DivExtension } from "./extensions/DivExtension";
+import { SpanExtension } from "./extensions/SpanExtension";
 import Image from "@tiptap/extension-image";
 import EditorProvider from "./EditorProvider";
 import ReactChartDisplayExtension from "./extensions/ReactChartDisplayExtension";
@@ -80,6 +83,9 @@ const ContentEditor = ({
 			}),
 			StarterKit.configure({
 			}),
+			ClassPreservationExtension,
+			DivExtension,
+			SpanExtension,
 			StyleParser,
 			TextStyle,
 			Color.configure({

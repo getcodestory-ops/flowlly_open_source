@@ -160,8 +160,8 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = () => {
 	const roleBadge = getRoleBadge();
 
 	return (
-		<div className="container h-full overflow-auto">
-			<div className="p-6 h-full max-w-7xl mx-auto">
+		<div className="h-full overflow-auto">
+			<div className="p-6 h-full ">
 
 				<Tabs className="h-full flex flex-col justify-start" defaultValue="all-meetings">
 		

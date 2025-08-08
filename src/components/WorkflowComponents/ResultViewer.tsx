@@ -152,13 +152,12 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 	return (
 		<>
 			{/* Always show tabs - no conditional rendering */}
-			<div className="h-full min-h-0 overflow-hidden">
+			<div className="h-full  min-h-0 overflow-hidden">
 				<Tabs 
 					className="flex-1 flex flex-col min-h-0 h-full" 
 					onValueChange={setActiveTab} 
 					value={activeTab}
 				>
-					{/* Gmail-style tabs with back button */}
 					<div className="border-b border-gray-200 bg-white flex-shrink-0">
 						<div className="flex items-center gap-4 px-4">
 							<div className="flex items-center">
