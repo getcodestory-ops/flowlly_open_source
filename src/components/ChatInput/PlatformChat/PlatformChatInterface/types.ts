@@ -27,11 +27,53 @@ export type PlatformChatInterfaceProps = {
 export type ModelType = {
   id: string;
   name: string;
+  speed: number; // 1-5 scale (5 = fastest)
+  performance: number; // 1-5 scale (5 = highest)
+  cost: "low" | "medium" | "high";
+  description: string;
+  bestFor: string;
+  contextSize: "small" | "medium" | "large" | "extra-large";
 };
 
 export const MODELS: ModelType[] = [
-	{ id: "gemini-2.5-pro", name: "Gemini high" },
-	{ id: "gemini-2.5-flash", name: "Gemini Flash" },
-	{ id: "claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
-	{ id: "gpt-4o", name: "GPT-4.0" },
+	{ 
+		id: "gemini-2.5-pro", 
+		name: "Gemini 2.5 Pro",
+		speed: 2,
+		performance: 4,
+		cost: "medium",
+		description: "Advanced model for complex reasoning and analysis",
+		bestFor: "Long complex tasks with lots of data",
+		contextSize: "extra-large",
+	},
+	{ 
+		id: "gemini-2.5-flash", 
+		name: "Gemini 2.5 Flash",
+		speed: 4,
+		performance: 3,
+		cost: "low",
+		description: "Fast and efficient for quick responses",
+		bestFor: "Small tasks that need faster results, ideal for chat",
+		contextSize: "medium",
+	},
+	{ 
+		id: "claude-3-7-sonnet", 
+		name: "Claude 3.7 Sonnet",
+		speed: 3,
+		performance: 4,
+		cost: "high",
+		description: "Balanced model with excellent reasoning capabilities",
+		bestFor: "Mid-level complex tasks requiring high quality",
+		contextSize: "large",
+	},
+	{ 
+		id: "claude-sonnet-4", 
+		name: "Claude Sonnet 4",
+		speed: 3,
+		performance: 5,
+		cost: "high",
+		description: "Top-tier model for the most demanding tasks",
+		bestFor: "Highly complex tasks requiring maximum intelligence",
+		contextSize: "medium",
+	},
 ]; 

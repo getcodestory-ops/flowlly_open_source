@@ -10,7 +10,6 @@ import { useChatStore } from "@/hooks/useChatStore";
 export function usePlatformChat(
 	folderId: string,
 	chatTarget: string,
-	selectedModel: string = "gemini-2.5-pro",
 	includeContext: boolean = false,
 ) {
 	const { toast } = useToast();
@@ -30,6 +29,8 @@ export function usePlatformChat(
 	const setIsWaitingForResponse = useChatStore((state) => state.setIsWaitingForResponse);
 	const isWaitingForResponse = useChatStore((state) => state.isWaitingForResponse);
 	const chatTypeTags = useChatStore((state) => state.chatTypeTags);
+	const selectedModel = useChatStore((state) => state.selectedModel);
+
 
 	// Use localChats from the store instead of local state
 	const localChats = useStore((state) => state.localChats);

@@ -36,7 +36,6 @@ export default function PlatformChatComponent({
 					folderId={folderId}
 					includeContext={includeContext}
 					onContentUpdate={onContentUpdate}
-					selectedModel={selectedModel}
 				/>
 			</div>
 		</div>

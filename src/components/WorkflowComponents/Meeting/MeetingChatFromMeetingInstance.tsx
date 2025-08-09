@@ -24,7 +24,6 @@ export default function MeetingChatFromMeetingInstance({
 	const { isWaitingForResponse } = usePlatformChat(
 		activeProject?.project_id || "", 
 		"agent", 
-		"gemini-2.5-pro", 
 		false,
 	);
 	
