@@ -57,6 +57,8 @@ interface ChatStore {
 	getCombinedMessage: () => string;
 	chatDirectiveType: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "none";
 	setChatDirectiveType: (directiveType: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "none") => void;
+	selectedModel: string;
+	setSelectedModel: (model: string) => void;
 	// Chat type tags for new chats
 	chatTypeTags: {
 		name: string;
@@ -64,7 +66,7 @@ interface ChatStore {
 	}[];
 	setChatTypeTags: (tags: { name: string; parent: string; }[]) => void;
 	clearChatTypeTags: () => void;
-	// Set meeting-specific tags
+
 	setMeetingChatTags: (meetingName: string) => void;
 	// Set meeting chat directive with specific meeting ID
 	setMeetingChatDirective: (meetingId?: string) => void;
@@ -237,6 +239,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 				break;
 		}
 	},
+	selectedModel: "gemini-2.5-pro",
+	setSelectedModel: (model) => set({ selectedModel: model }),
 	// Chat type tags management
 	chatTypeTags: [],
 	setChatTypeTags: (tags) => set({ chatTypeTags: tags }),

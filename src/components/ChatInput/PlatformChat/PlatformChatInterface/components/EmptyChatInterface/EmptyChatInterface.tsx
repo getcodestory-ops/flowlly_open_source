@@ -6,6 +6,7 @@ import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, M
 import Image from "next/image";
 import AtSelectorComponent from "../../../components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
+import ModelSelector from "../../../components/ModelSelector";
 import BidLevelling from "./FormDirectives/BidLevelling";
 import DailyReport from "./FormDirectives/DailyReport";
 import ReportWriting from "./FormDirectives/ReportWriting";
@@ -88,7 +89,7 @@ export default function EmptyChatInterface({
 	handleSubmit,
 	loadDocumentPanel,
 }: EmptyChatInterfaceProps) {
-	const { chatDirectiveType, setChatDirectiveType } = useChatStore();
+	const { chatDirectiveType, setChatDirectiveType, selectedModel, setSelectedModel } = useChatStore();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
 	// Auto-expand textarea as text grows
@@ -306,10 +307,16 @@ export default function EmptyChatInterface({
 						value={chatInput}
 					/>
 				</div>
-				<div className="flex items-center p-3 pt-0">
-					{loadDocumentPanel()}
+				<div className="flex items-center justify-between p-6 pt-0">
+					<div className="flex items-center gap-2">
+						{loadDocumentPanel()}
+						<ModelSelector 
+							onModelChange={setSelectedModel}
+							selectedModel={selectedModel}
+						/>
+					</div>
 					<Button
-						className="ml-auto gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
+						className="gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
 						disabled={
 							isWaitingForResponse ||
 							(!chatInput.trim())

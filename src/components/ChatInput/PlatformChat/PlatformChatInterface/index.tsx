@@ -35,7 +35,7 @@ export default function PlatformChatInterface({
 		isWaitingForResponse,
 		googleSearch,
 		setGoogleSearch,
-	} = usePlatformChat(folderId, chatTarget, selectedModel, includeContext);
+	} = usePlatformChat(folderId, chatTarget, includeContext);
 
 	const [uploadingFiles, setUploadingFiles] = useState<FileUploadStatus[]>([]);
 	const [showUploadProgress, setShowUploadProgress] = useState(false);

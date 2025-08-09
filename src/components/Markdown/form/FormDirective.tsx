@@ -100,7 +100,7 @@ const FormDirective: React.FC<FormDirectiveProps> = ({
 	const activeProject = useStore((state) => state.activeProject);
 	const activeChatEntity = useStore((state) => state.activeChatEntity);
 	const currentChatId = activeChatEntity?.id || "untitled";
-	const { handleChatSubmit, isWaitingForResponse, isPending } = usePlatformChat(activeProject?.project_id || "", "agent", "gemini-2.5-pro", false);
+	const { handleChatSubmit, isWaitingForResponse, isPending } = usePlatformChat(activeProject?.project_id || "", "agent", false);
 	const { setSidePanel, setCollapsed, selectedContexts, setSelectedContexts } = useChatStore();
 	const [formId] = useState(() => `form_${Date.now()}_${Math.random().toString(36)
 		.substr(2, 9)}`);
