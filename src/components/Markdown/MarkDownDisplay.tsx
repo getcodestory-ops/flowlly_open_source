@@ -255,8 +255,10 @@ const VALID_DIRECTIVES = [
 interface Attachment {
 	name: string;
 	uuid: string;
-	type: string;
+	type?: string;
 	url?: string;
+	extension?: string;
+	is_sandbox_file?: boolean;
 }
 
 // Update AttachmentsComponent to use AttachmentViewer
@@ -281,8 +283,9 @@ const AttachmentsComponent: React.FC<{ attachments: string }> = ({ attachments }
 		const files = parsedAttachments.map((attachment: Attachment) => ({	
 			resource_id: attachment.uuid,
 			resource_name: attachment.name,
-			extension: attachment.type,
+			extension: attachment.type || attachment.extension,
 			url: attachment.url, // Include URL if present
+			type: attachment.is_sandbox_file ? "sandbox" : "storage",
 		}));
 		
 		return <AttachmentViewer files={files} />;

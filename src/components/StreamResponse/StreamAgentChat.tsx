@@ -1,11 +1,19 @@
 import React, { useEffect, useState, useRef } from "react";
 import MarkdownTerminal from "../Markdown/style/MarkdownTerminal";
+import { useChatStore } from "@/hooks/useChatStore";
 
 interface StreamComponentProps {
   streamingKey: string;
   authToken: string;
   taskId?: string;
   onStreamComplete?: (content: string) => void;
+}
+
+interface AttachmentData {
+  resource_id: string;
+  resource_name: string;
+  extension?: string;
+  type?: string;
 }
 
 const LoadingDots: React.FC<{ showThinking?: boolean; centered?: boolean }> = ({ 
@@ -37,6 +45,25 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	const [_STREAM_COMPLETE, setStreamComplete] = useState(false);
 	const [isThinking, setIsThinking] = useState(false);
 	const eventSourceRef = useRef<EventSource | null>(null);
+	const { setSidePanel, setCollapsed } = useChatStore();
+
+	// Helper function to handle attachment events
+	const handleAttachmentEvent = (attachmentDataString: string): void => {
+		try {
+			// Parse the attachment data from the stream
+			const attachment = JSON.parse(attachmentDataString);
+			const fileType = attachment.is_sandbox_file === "sandbox" ? "sandbox" : "sandbox"; 
+			setSidePanel({
+				isOpen: true,
+				type: fileType,
+				resourceId: attachment.uuid,
+				filename: attachment.name,
+			});
+			setCollapsed(true);
+		} catch (error) {
+			console.error("Error parsing attachment data:", error);
+		}
+	};
 
 	// Reset state when streamingKey changes
 	useEffect(() => {
@@ -74,6 +101,16 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 					return; // Don't add this to displayValue
 				}
 
+				// Check if this is an ATTACHMENT event that came through as regular message data
+				if (event.data.includes("event: ATTACHMENT")) {
+					// Extract the data part after "data: "
+					const dataPart = event.data.split("data: ")[1];
+					if (dataPart) {
+						handleAttachmentEvent(dataPart.trim());
+					}
+					return; // Don't add this to displayValue
+				}
+
 				// Clear thinking state when regular data comes in
 				setIsThinking(false);
 
@@ -93,6 +130,13 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 		// Handle thinking events
 		eventSource.addEventListener("THINKING", (_event) => {
 			setIsThinking(true);
+		});
+
+		// Handle attachment events
+		eventSource.addEventListener("ATTACHMENT", (event) => {
+			if (event.data) {
+				handleAttachmentEvent(event.data);
+			}
 		});
 
 		eventSource.onerror = (error) => {
@@ -128,7 +172,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			eventSource.close();
 			eventSourceRef.current = null;
 		};
-	}, [streamingKey, authToken, onStreamComplete]);
+	}, [streamingKey, authToken, onStreamComplete, setSidePanel, setCollapsed]);
 
 	// Continue displaying content even after streaming is complete
 	return (

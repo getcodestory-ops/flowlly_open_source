@@ -5,17 +5,51 @@ import ContentEditor from "../DocumentEditor/ContentEditor";
 import { useStorageTextFileSave } from "../DocumentEditor/useStorageTextSave";
 import LoaderAnimation from "../Animations/LoaderAnimation";
 
-export function ResourceTextViewer({ resource_id, showComments = false }: { resource_id: string, showComments?: boolean }) {
+export function ResourceTextViewer({ 
+	resource_id, 
+	showComments = false, 
+	isSandboxFile = false, 
+	fileName, 
+}: { 
+	resource_id: string, 
+	showComments?: boolean,
+	isSandboxFile?: boolean,
+	fileName?: string 
+}) {
 	const activeProject = useStore((state) => state.activeProject);
 	const session = useStore((state) => state.session);
 	const { onSubmit, isPending } = useStorageTextFileSave(resource_id);
 
 	const { data, isLoading, error } = useQuery({
-		queryKey: ["aiJobResource", resource_id],
+		queryKey: ["aiJobResource", resource_id, isSandboxFile, fileName],
 		queryFn: () =>
-			fetchResource(session, activeProject?.project_id, resource_id),
+			fetchResource(session, activeProject?.project_id, resource_id, isSandboxFile, fileName),
 		staleTime: 0, // Always fetch fresh data
 	});
+
+	// For sandbox files, the backend might return content directly as a string
+	// For regular files, content is in data.metadata.content
+	const getContent = () => {
+		if (isSandboxFile) {
+			// For sandbox files, check if data is a string directly
+			if (typeof data === "string") {
+				return data;
+			}
+			// Or if it's in the standard metadata structure
+			if (data?.metadata?.content !== undefined) {
+				return data.metadata.content;
+			}
+		} else {
+			// For regular storage files, always use metadata.content
+			if (data?.metadata?.content !== undefined) {
+				return data.metadata.content;
+			}
+		}
+		return null;
+	};
+
+	const content = getContent();
+	const documentName = data?.file_name || fileName || "Untitled";
 
 	return (
 		<div className="h-full ">
@@ -23,18 +57,27 @@ export function ResourceTextViewer({ resource_id, showComments = false }: { reso
 				<div className="flex justify-center items-center h-full">
 					<LoaderAnimation />
 				</div>
-			) : data?.metadata?.content !== undefined ? (
+			) : content !== null ? (
 				<div className="h-full">
 					<ContentEditor
-						content={data.metadata.content}
+						content={content}
 						documentId={resource_id}
-						documentName={data.file_name}
+						documentName={documentName}
 						projectAccessId={activeProject?.project_id}
 						saveFunction={onSubmit}
 						showComments={showComments}
 					/>
 				</div>
-			) : null}
+			) : (
+				<div className="flex justify-center items-center h-full">
+					<div className="text-center">
+						<p className="text-gray-500">No content available</p>
+						{error && (
+							<p className="text-red-500 text-sm mt-2">Error: {error.message}</p>
+						)}
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

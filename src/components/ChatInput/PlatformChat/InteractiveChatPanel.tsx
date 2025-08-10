@@ -24,7 +24,7 @@ const microsoftExtensions = ["doc", "docx", "xlsx", "xls", "ppt", "pptx"];
 const csvExtensions = ["csv"];
 
 // CSV Viewer Component
-const CSVViewer = ({ resourceId }: { resourceId: string }) => {
+const CSVViewer = ({ resourceId, isSandboxFile, fileName }: { resourceId: string, isSandboxFile?: boolean, fileName?: string }) => {
 	const [csvData, setCsvData] = useState<string[][]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -32,19 +32,28 @@ const CSVViewer = ({ resourceId }: { resourceId: string }) => {
 	const { activeProject } = useStore();
 
 	const { data: resource, isLoading, isError } = useQuery({
-		queryKey: ["csvResource", session, activeProject, resourceId],
+		queryKey: ["csvResource", session, activeProject, resourceId, isSandboxFile, fileName],
 		queryFn: () => {
 			if (!session || !activeProject?.project_id) {
 				return Promise.reject("No session or active project");
 			}
-			return fetchResource(session, activeProject.project_id, resourceId);
+			return fetchResource(session, activeProject.project_id, resourceId, isSandboxFile, fileName);
 		},
 		enabled: !!session && !!activeProject?.project_id && !!resourceId,
 	});
 
 	React.useEffect(() => {
 		const parseCsvContent = async() => {
-			if (!resource?.metadata?.content) {
+			// Handle both string response (sandbox) and metadata structure (storage)
+			let csvText: string | null = null;
+			
+			if (isSandboxFile && typeof resource === "string") {
+				csvText = resource;
+			} else if (resource?.metadata?.content) {
+				csvText = resource.metadata.content;
+			}
+			
+			if (!csvText) {
 				if (!isLoading && !isError) {
 					setError("No CSV content available");
 				}
@@ -54,7 +63,6 @@ const CSVViewer = ({ resourceId }: { resourceId: string }) => {
 
 			try {
 				setLoading(true);
-				const csvText = resource.metadata.content;
 				
 				// Simple CSV parser - handles basic CSV format
 				const lines = csvText.split("\n").filter((line: string) => line.trim());
@@ -156,17 +164,17 @@ const CSVViewer = ({ resourceId }: { resourceId: string }) => {
 };
 
 // HTML Viewer Component
-const HTMLViewer = ({ resourceId }: { resourceId: string }) => {
+const HTMLViewer = ({ resourceId, isSandboxFile, fileName }: { resourceId: string, isSandboxFile?: boolean, fileName?: string }) => {
 	const { session } = useStore();
 	const { activeProject } = useStore();
 
 	const { data: resource, isLoading, isError } = useQuery({
-		queryKey: ["htmlResource", session, activeProject, resourceId],
+		queryKey: ["htmlResource", session, activeProject, resourceId, isSandboxFile, fileName],
 		queryFn: () => {
 			if (!session || !activeProject?.project_id) {
 				return Promise.reject("No session or active project");
 			}
-			return fetchResource(session, activeProject.project_id, resourceId);
+			return fetchResource(session, activeProject.project_id, resourceId, isSandboxFile, fileName);
 		},
 		enabled: !!session && !!activeProject?.project_id && !!resourceId,
 	});
@@ -179,7 +187,20 @@ const HTMLViewer = ({ resourceId }: { resourceId: string }) => {
 		);
 	}
 
-	if (isError || !resource?.metadata?.content) {
+	// Handle both string response (sandbox) and metadata structure (storage)
+	let htmlContent: string | null = null;
+	let cssContent: string | null = null;
+	let headerContent: string | null = null;
+	
+	if (isSandboxFile && typeof resource === "string") {
+		htmlContent = resource;
+	} else if (resource?.metadata?.content) {
+		htmlContent = resource.metadata.content;
+		cssContent = resource.metadata.style;
+		headerContent = resource.metadata.header;
+	}
+
+	if (isError || !htmlContent) {
 		return (
 			<div className="flex flex-col items-center justify-center p-8">
 				<FileText className="h-16 w-16 text-gray-400" />
@@ -189,11 +210,12 @@ const HTMLViewer = ({ resourceId }: { resourceId: string }) => {
 	}
 
 	// Create enhanced HTML content with injected CSS and header if available
-	const createEnhancedHtmlContent = () => {
-		let htmlContent = resource.metadata.content;
-		const cssContent = resource.metadata.style;
-		const headerContent = resource.metadata.header;
-
+	const createEnhancedHtmlContent = (): string => {
+		// Ensure htmlContent is not null at this point
+		if (!htmlContent) return "";
+		
+		let workingHtmlContent = htmlContent;
+		
 		// Build head content with CSS and header
 		let headContent = "";
 		if (cssContent) {
@@ -207,29 +229,29 @@ const HTMLViewer = ({ resourceId }: { resourceId: string }) => {
 		if (headContent) {
 			// Check if HTML already has a <head> section
 			const headRegex = /<head[^>]*>/i;
-			const headMatch = htmlContent.match(headRegex);
+			const headMatch = workingHtmlContent.match(headRegex);
 
 			if (headMatch) {
 				// Insert content after the opening <head> tag
 				const headEndIndex = headMatch.index! + headMatch[0].length;
-				htmlContent = htmlContent.slice(0, headEndIndex) + headContent + htmlContent.slice(headEndIndex);
+				workingHtmlContent = workingHtmlContent.slice(0, headEndIndex) + headContent + workingHtmlContent.slice(headEndIndex);
 			} else {
 				// If no <head> tag exists, check for <html> tag and add <head> section
 				const htmlRegex = /<html[^>]*>/i;
-				const htmlMatch = htmlContent.match(htmlRegex);
+				const htmlMatch = workingHtmlContent.match(htmlRegex);
 				
 				if (htmlMatch) {
 					const htmlEndIndex = htmlMatch.index! + htmlMatch[0].length;
 					const headSection = `\n<head>${headContent}</head>\n`;
-					htmlContent = htmlContent.slice(0, htmlEndIndex) + headSection + htmlContent.slice(htmlEndIndex);
+					workingHtmlContent = workingHtmlContent.slice(0, htmlEndIndex) + headSection + workingHtmlContent.slice(htmlEndIndex);
 				} else {
 					// If no <html> tag, wrap the entire content and add <head> with content
-					htmlContent = `<!DOCTYPE html>\n<html>\n<head>${headContent}</head>\n<body>\n${htmlContent}\n</body>\n</html>`;
+					workingHtmlContent = `<!DOCTYPE html>\n<html>\n<head>${headContent}</head>\n<body>\n${workingHtmlContent}\n</body>\n</html>`;
 				}
 			}
 		}
 
-		return htmlContent;
+		return workingHtmlContent;
 	};
 
 	const enhancedHtmlContent = createEnhancedHtmlContent();
@@ -247,19 +269,25 @@ const HTMLViewer = ({ resourceId }: { resourceId: string }) => {
 	);
 };
 
-const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string, fileExtension: string}) : React.ReactNode => {
+const InlineDocumentViewer = ({ resourceId, fileExtension, isSandboxFile, fileName }: {resourceId: string, fileExtension: string, isSandboxFile?: boolean, fileName?: string}) : React.ReactNode => {
 	const { session } = useStore();
 	const { activeProject } = useStore();
 	
 	const needsInlineUrl = !csvExtensions.includes(fileExtension) && !htmlExtensions.includes(fileExtension);
 	
 	const { data: resource } = useQuery({
-		queryKey: ["getInlineFileUrl", session, activeProject, resourceId],
+		queryKey: ["getInlineFileUrl", session, activeProject, resourceId, isSandboxFile, fileName],
 		queryFn: () => {
 			if (!session || !activeProject?.project_id) {
 				return Promise.reject("No session or active project");
 			}
-			return getInlineDocument({ session, projectId: activeProject.project_id, resourceId });
+			return getInlineDocument({ 
+				session, 
+				projectId: activeProject.project_id, 
+				resourceId,
+				isSandboxFile,
+				fileName,
+			});
 		},
 		enabled: needsInlineUrl && !!session && !!activeProject?.project_id,
 	});
@@ -268,7 +296,11 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 	if (csvExtensions.includes(fileExtension)) {
 		return (
 			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
-				<CSVViewer resourceId={resourceId} />
+				<CSVViewer 
+					fileName={fileName}
+					isSandboxFile={isSandboxFile} 
+					resourceId={resourceId} 
+				/>
 			</div>
 		);
 	}
@@ -276,7 +308,11 @@ const InlineDocumentViewer = ({ resourceId, fileExtension }: {resourceId: string
 	if (htmlExtensions.includes(fileExtension)) {
 		return (
 			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
-				<HTMLViewer resourceId={resourceId} />
+				<HTMLViewer 
+					fileName={fileName}
+					isSandboxFile={isSandboxFile} 
+					resourceId={resourceId} 
+				/>
 			</div>
 		);
 	}
@@ -364,12 +400,19 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 
 	// Query to get resource data for download functionality
 	const { data: downloadResource } = useQuery({
-		queryKey: ["downloadResource", session, activeProject, activeTab?.resourceId],
+		queryKey: ["downloadResource", session, activeProject, activeTab?.resourceId, activeTab?.type],
 		queryFn: () => {
 			if (!session || !activeProject?.project_id || !activeTab?.resourceId) {
 				return Promise.reject("No session, active project, or resource ID");
 			}
-			return getInlineDocument({ session, projectId: activeProject.project_id, resourceId: activeTab.resourceId });
+			const isSandboxFile = activeTab.type === "sandbox";
+			return getInlineDocument({ 
+				session, 
+				projectId: activeProject.project_id, 
+				resourceId: activeTab.resourceId,
+				isSandboxFile,
+				fileName: activeTab.filename,
+			});
 		},
 		enabled: !!session && !!activeProject?.project_id && !!activeTab?.resourceId,
 	});
@@ -472,23 +515,30 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 		if (!session || !activeProject) return;
 		
 		const tab = tabs.find((t) => t.id === tabId);
-		if (!tab || tab.type !== "sources") return;
+		if (!tab || (tab.type !== "sources" && tab.type !== "sandbox")) return;
 
 		try {
-			const response = await updateDocumentName(session, tab.resourceId, newName);
-			if (response) {
-				toast({
-					title: "File name updated",
-					description: `File name updated to ${newName}`,
-				});
-				
-				// Update the tab title in the store (we'll need to add this function)
-				// For now, we can update local state and it will refresh on next load
+			// Only try to update document name for storage files, not sandbox files
+			if (tab.type === "sources") {
+				const response = await updateDocumentName(session, tab.resourceId, newName);
+				if (response) {
+					toast({
+						title: "File name updated",
+						description: `File name updated to ${newName}`,
+					});
+				} else {
+					toast({
+						title: "Error",
+						description: "Failed to update file name",
+						variant: "destructive",
+					});
+				}
 			} else {
+				// For sandbox files, just show a message that rename is not supported
 				toast({
-					title: "Error",
-					description: "Failed to update file name",
-					variant: "destructive",
+					title: "Info",
+					description: "Renaming sandbox files is not supported",
+					variant: "default",
 				});
 			}
 		} catch (error) {
@@ -503,7 +553,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 	};
 
 	const handleFileNameDoubleClick = (tab: any) => {
-		if (tab.type === "sources") {
+		if (tab.type === "sources" || tab.type === "sandbox") {
 			setEditingTabId(tab.id);
 			setEditedName(tab.filename || tab.title || "");
 		}
@@ -740,7 +790,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 												<div className="flex-shrink-0">{getFileIcon(fileExtension)}</div>
 											)}
 											<span className="truncate min-w-0 flex-1 overflow-hidden" title={tab.title}>
-												{editingTabId === tab.id && tab.type === "sources" ? (
+												{editingTabId === tab.id && (tab.type === "sources" || tab.type === "sandbox") ? (
 													<input
 														autoFocus
 														className="text-sm bg-transparent border border-gray-300 rounded px-1 py-0 min-w-0 max-w-[150px] focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -751,11 +801,12 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 													/>
 												) : (
 													<span 
-														className={tab.type === "sources" ? "cursor-pointer hover:bg-gray-100 px-1 rounded" : ""}
+														className={(tab.type === "sources" || tab.type === "sandbox") ? "cursor-pointer hover:bg-gray-100 px-1 rounded" : ""}
 														onDoubleClick={() => handleFileNameDoubleClick(tab)}
-														title={tab.type === "sources" ? "Double-click to edit filename" : tab.title}
+														title={(tab.type === "sources" || tab.type === "sandbox") ? "Double-click to edit filename" : tab.title}
 													>
 														{tab.filename || tab.title}
+														{tab.type === "sandbox" && <span className="text-xs text-blue-600 ml-1">[sandbox]</span>}
 														{unsavedChanges[tab.resourceId || tab.id] && (
 															<span className="text-orange-600 ml-1">•</span>
 														)}
@@ -780,51 +831,51 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 						<div className="flex items-center gap-1">
 							<Button 
 								className="h-8 w-8 p-0"
-								disabled={!activeTab || activeTab.type !== "sources"}
+								disabled={!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox")}
 								onClick={() => activeTab && handleFileNameDoubleClick(activeTab)}
 								size="icon"
-								title={activeTab?.type === "sources" ? "Rename file" : "Rename not available"}
+								title={(activeTab?.type === "sources" || activeTab?.type === "sandbox") ? "Rename file" : "Rename not available"}
 								variant="ghost"
 							>
 								<Edit3 className="h-4 w-4" />
 							</Button>
 							<Button 
 								className="h-8 w-8 p-0"
-								disabled={!activeTab || activeTab.type !== "sources" || !downloadResource?.url}
+								disabled={!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox") || !downloadResource?.url}
 								onClick={handleDownload}
 								size="icon"
-								title={activeTab?.type === "sources" ? "Download file" : "Download not available"}
+								title={(activeTab?.type === "sources" || activeTab?.type === "sandbox") ? "Download file" : "Download not available"}
 								variant="ghost"
 							>
 								<Download className="h-4 w-4" />
 							</Button>
 							<Button 
 								className="h-8 w-8 p-0"
-								disabled={!activeTab || activeTab.type !== "sources"}
+								disabled={!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox")}
 								onClick={() => setShowSaveAsDialog(true)}
 								size="icon"
-								title={activeTab?.type === "sources" ? "Save as copy" : "Save not available"}
+								title={(activeTab?.type === "sources" || activeTab?.type === "sandbox") ? "Save as copy" : "Save not available"}
 								variant="ghost"
 							>
 								<Save className="h-4 w-4" />
 							</Button>
 							<Button 
 								className={`gap-1 px-2 h-8 transition-all duration-200 relative ${
-									activeTab?.type === "sources" && getCurrentViewMode(activeTab.id) === "text" 
+									(activeTab?.type === "sources" || activeTab?.type === "sandbox") && getCurrentViewMode(activeTab.id) === "text" 
 										? "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100" 
 										: "hover:bg-gray-100 border border-transparent"
-								} ${activeTab?.type !== "sources" ? "opacity-50" : ""}`}
-								disabled={!activeTab || activeTab.type !== "sources"}
+								} ${(activeTab?.type !== "sources" && activeTab?.type !== "sandbox") ? "opacity-50" : ""}`}
+								disabled={!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox")}
 								onClick={() => activeTab && handleModeSwitch(activeTab.id)}
 								size="sm"
 								title={
-									!activeTab || activeTab.type !== "sources" 
+									!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox")
 										? "Edit mode not available" 
 										: (getCurrentViewMode(activeTab.id) === "original" ? "Switch to edit mode" : "Switch to view mode")
 								}
 								variant="ghost"
 							>
-								{!activeTab || activeTab.type !== "sources" || getCurrentViewMode(activeTab.id) === "original" ? (
+								{!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox") || getCurrentViewMode(activeTab.id) === "original" ? (
 									<>
 										<Pencil className="h-4 w-4" />
 										<span className="text-xs font-medium">Edit</span>
@@ -835,7 +886,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 										<span className="text-xs font-medium">View</span>
 									</>
 								)}
-								{activeTab && unsavedChanges[activeTab.resourceId || activeTab.id] && activeTab.type === "sources" && getCurrentViewMode(activeTab.id) === "text" && (
+								{activeTab && unsavedChanges[activeTab.resourceId || activeTab.id] && (activeTab.type === "sources" || activeTab.type === "sandbox") && getCurrentViewMode(activeTab.id) === "text" && (
 									<div className="absolute -top-1 -right-1 h-3 w-3 bg-orange-500 rounded-full border-2 border-white animate-pulse" />
 								)}
 							</Button>
@@ -920,6 +971,44 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 								)}
 								{getFileExtension(tab.filename) === "txt" && (
 									<ResourceTextViewer resource_id={tab.resourceId} />
+								)}
+							</>
+						)}
+						{tab.type === "sandbox" && (
+							<>
+								{inLineViewableExtensions.includes(getFileExtension(tab.filename)) && (
+									<>
+										{getCurrentViewMode(tab.id) === "original" ? (
+											
+											getFileExtension(tab.filename) === "md" ? (
+												<ResourceTextViewer 
+													fileName={tab.filename}
+													isSandboxFile
+													resource_id={tab.resourceId}
+												/>
+											) : (
+												<InlineDocumentViewer 
+													fileExtension={getFileExtension(tab.filename)} 
+													fileName={tab.filename}
+													isSandboxFile
+													resourceId={tab.resourceId}
+												/>
+											)
+										) : (
+											<ResourceTextViewer 
+												fileName={tab.filename}
+												isSandboxFile
+												resource_id={tab.resourceId}
+											/>
+										)}
+									</>
+								)}
+								{getFileExtension(tab.filename) === "txt" && (
+									<ResourceTextViewer 
+										fileName={tab.filename}
+										isSandboxFile
+										resource_id={tab.resourceId} 
+									/>
 								)}
 							</>
 						)}

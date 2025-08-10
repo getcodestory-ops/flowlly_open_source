@@ -78,8 +78,29 @@ const Toolbar: React.FC<ToolbarProps> = ({
 	// Track content changes for unsaved state
 	useEffect(() => {
 		if (editor) {
+			let isInitialized = false;
+			let initializationTimer: NodeJS.Timeout | null = null;
+			
+			const initializeContent = () => {
+				if (!isInitialized) {
+					lastSavedContent.current = editor.getHTML();
+					isInitialized = true;
+					// Clear any existing unsaved changes when initializing
+					if (documentId) {
+						clearUnsavedChanges(documentId);
+					}
+				}
+			};
+			
 			const handleUpdate = () => {
 				const currentContent = editor.getHTML();
+				
+				// Initialize on first real update if not already done
+				if (!isInitialized) {
+					initializeContent();
+					return;
+				}
+				
 				const hasChanges = currentContent !== lastSavedContent.current;
 				if (documentId) {
 					setUnsavedChanges(documentId, hasChanges);
@@ -92,14 +113,26 @@ const Toolbar: React.FC<ToolbarProps> = ({
 
 			editor.on("update", handleUpdate);
 			
-			// Set initial content
-			lastSavedContent.current = editor.getHTML();
+			// Initialize content after a delay to ensure editor is fully loaded
+			initializationTimer = setTimeout(initializeContent, 200);
 			
 			return () => {
 				editor.off("update", handleUpdate);
+				if (initializationTimer) {
+					clearTimeout(initializationTimer);
+				}
 			};
 		}
-	}, [editor, saveStatus]);
+	}, [editor, documentId]);
+
+	// Clean up unsaved changes when component unmounts or documentId changes
+	useEffect(() => {
+		return () => {
+			if (documentId) {
+				clearUnsavedChanges(documentId);
+			}
+		};
+	}, [documentId, clearUnsavedChanges]);
 
 	// Manual save function
 	const handleSave = useCallback(async() => {
