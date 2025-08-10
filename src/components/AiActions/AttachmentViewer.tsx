@@ -1,12 +1,15 @@
-import React from "react";
-import { File, FileImage, FileText, FileArchive, FileSpreadsheet } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import React, { useState } from "react";
+import { File, FileImage, FileText, FileArchive, FileSpreadsheet, ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/hooks/useChatStore";
+import { cn } from "@/lib/utils";
 
 interface Attachment {
     resource_id: string;
     resource_name: string;
     extension?: string;
+    focus?: boolean; // New focus parameter for highlighting important files
+	type?: "storage" | "sandbox"; // Type of file: storage (default) or sandbox
 }
 
 interface AttachmentViewerProps {
@@ -18,20 +21,21 @@ interface AttachmentViewerProps {
 const getFileIcon = (extension: string) => {
 	const ext = extension.toLowerCase();
 	if (["jpg", "jpeg", "png", "gif", "bmp", "svg", "webp", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp"].includes(ext)) {
-		return <FileImage className="h-4 w-4 mr-1" />;
+		return <FileImage className="h-5 w-5" />;
 	} else if (["doc", "docx", "txt", "rtf", "pdf", ".doc", ".docx", ".txt", ".rtf", ".pdf"].includes(ext)) {
-		return <FileText className="h-4 w-4 mr-1" />;
+		return <FileText className="h-5 w-5" />;
 	} else if (["xls", "xlsx", "csv", ".xls", ".xlsx", ".csv"].includes(ext)) {
-		return <FileSpreadsheet className="h-4 w-4 mr-1" />;
+		return <FileSpreadsheet className="h-5 w-5" />;
 	} else if (["zip", "rar", "7z", "tar", "gz", ".zip", ".rar", ".7z", ".tar", ".gz"].includes(ext)) {
-		return <FileArchive className="h-4 w-4 mr-1" />;
+		return <FileArchive className="h-5 w-5" />;
 	} else {
-		return <File className="h-4 w-4 mr-1" />;
+		return <File className="h-5 w-5" />;
 	}
 };
 
 const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ files, onFileClick }) => {
 	const { setSidePanel, setCollapsed } = useChatStore();
+	const [isExpanded, setIsExpanded] = useState(false);
 
 	const handleFileClick = (file: Attachment) => {
 		if (onFileClick) {
@@ -39,7 +43,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ files, onFileClick 
 		} else {
 			setSidePanel({
 				isOpen: true,
-				type: "sources",
+				type: file.type === "sandbox" ? "sandbox" : "sources",
 				resourceId: file.resource_id,
 				filename: file.resource_name,
 			});
@@ -49,24 +53,98 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ files, onFileClick 
 
 	if (!files || files.length === 0) return null;
 
+	// Sort files to show focused ones first
+	const sortedFiles = [...files].sort((a, b) => {
+		if (a.focus && !b.focus) return -1;
+		if (!a.focus && b.focus) return 1;
+		return 0;
+	});
+
+	const INITIAL_DISPLAY_COUNT = 2;
+	const shouldShowExpandButton = files.length > INITIAL_DISPLAY_COUNT;
+	const displayedFiles = isExpanded || !shouldShowExpandButton 
+		? sortedFiles 
+		: sortedFiles.slice(0, INITIAL_DISPLAY_COUNT);
+
+	const hiddenCount = files.length - INITIAL_DISPLAY_COUNT;
+
 	return (
-		<div className="mt-2 mb-2">
-			<div className="text-xs text-gray-500 mb-1">Attachments:</div>
-			<div className="flex flex-wrap gap-2">
-				{files.map((file, index) => (
-					<Badge
-						className="py-1 px-2 flex items-center cursor-pointer"
+		<div className="mt-3 mb-3">
+			<div className="flex items-center justify-between mb-2">
+				<div className="text-xs font-medium text-gray-600">
+					Attachments ({files.length})
+				</div>
+				{shouldShowExpandButton && (
+					<Button
+						className="h-6 px-2 text-xs text-gray-500 hover:text-gray-700"
+						onClick={() => setIsExpanded(!isExpanded)}
+						size="sm"
+						variant="ghost"
+					>
+						{isExpanded ? (
+							<>
+								<ChevronUp className="h-3 w-3 mr-1" />
+								Show Less
+							</>
+						) : (
+							<>
+								<ChevronDown className="h-3 w-3 mr-1" />
+								Show {hiddenCount} More
+							</>
+						)}
+					</Button>
+				)}
+			</div>			
+			<div className={cn(
+				"grid gap-2 transition-all duration-300 ease-in-out",
+				isExpanded || files.length <= INITIAL_DISPLAY_COUNT
+					? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+					: "grid-cols-1 sm:grid-cols-2",
+			)}
+			>
+				{displayedFiles.map((file, index) => (
+					<div
+						className={cn(
+							"group relative flex items-center p-3 rounded-lg border transition-all duration-200 cursor-pointer",
+							"hover:shadow-md hover:border-blue-300 ",
+							"bg-white border-gray-200 ",
+							file.focus && [
+								"ring-2 ring-blue-500 ring-opacity-50",
+								"border-blue-300  shadow-sm",
+							],
+						)}
 						key={index}
 						onClick={() => handleFileClick(file)}
-						variant="secondary"
-					>
-						{getFileIcon(file.extension || "")}
-						<span className="truncate max-w-[150px]">
-							{file.resource_name || file.resource_id}
-						</span>
-					</Badge>
+					>					
+						{/* File icon */}
+						<div className={cn(
+							"flex-shrink-0 mr-3 transition-transform duration-200 group-hover:scale-110",
+							file.focus ? "text-blue-600" : "text-gray-500 ",
+						)}
+						>
+							{getFileIcon(file.extension || "")}
+						</div>						
+						{/* File info */}
+						<div className="flex-1 min-w-0">
+							<div className={cn(
+								"text-sm font-medium truncate transition-colors duration-200",
+								file.focus 
+									? "text-blue-900" 
+									: "text-gray-900 group-hover:text-blue-600 ",
+							)}
+							>
+								{file.resource_name || file.resource_id}
+							</div>
+							{file.extension && (
+								<div className="text-xs text-gray-500 uppercase">
+									{file.extension.replace(".", "")} file
+								</div>
+							)}
+						</div>
+					</div>
 				))}
 			</div>
+
 		</div>
 	);
 };

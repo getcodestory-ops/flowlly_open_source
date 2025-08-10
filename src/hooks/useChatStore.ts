@@ -3,7 +3,7 @@ import { create } from "zustand";
 interface SidePanel {
 	id: string;
 	isOpen: boolean;
-	type: "sources" | "editor" | "pdfViewer" | "log" | "folder";
+	type: "sources" | "editor" | "pdfViewer" | "log" | "folder" | "sandbox";
 	resourceId: string;
 	filename?: string;
 	title?: string;

@@ -36,12 +36,27 @@ export const fetchResource = async(
 	session: Session | null,
 	projectId: string | undefined,
 	resourceId: string,
+	isSandboxFile?: boolean,
+	fileName?: string,
 ): Promise<StorageResourceEntity | undefined> => {
 	if (!session || !projectId) {
 		return;
 	}
 
-	const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/resource/${projectId}/${resourceId}`;
+	let baseUrl: string;
+	if (isSandboxFile) {
+		// For sandbox files, use the file/view endpoint with query parameters
+		baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/file/view/${projectId}/${resourceId}`;
+		const params = new URLSearchParams();
+		params.append("is_sandbox_file", "true");
+		if (fileName) {
+			params.append("file_name", fileName);
+		}
+		baseUrl = `${baseUrl}?${params.toString()}`;
+	} else {
+		// For regular storage files, use the resource endpoint
+		baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/resource/${projectId}/${resourceId}`;
+	}
 
 	const response = await axios.get(baseUrl, {
 		headers: {
@@ -393,15 +408,30 @@ export const getInlineDocument = async({
 	session,
 	projectId,
 	resourceId,
+	isSandboxFile,
+	fileName,
 }: {
 	session: Session;
 	projectId: string;
 	resourceId: string;
+	isSandboxFile?: boolean;
+	fileName?: string;
 }) : Promise<StorageResourceEntity | null> => {
 	const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/file/view/${projectId}/${resourceId}`;
+	
+	// Build query parameters for sandbox files
+	const params = new URLSearchParams();
+	if (isSandboxFile) {
+		params.append("is_sandbox_file", "true");
+		if (fileName) {
+			params.append("file_name", fileName);
+		}
+	}
+	
+	const fullUrl = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
 
 	try {
-		const response = await axios.get(baseUrl, {
+		const response = await axios.get(fullUrl, {
 			headers: {
 				Authorization: `Bearer ${session.access_token}`,
 			},

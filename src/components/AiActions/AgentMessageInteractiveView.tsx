@@ -308,7 +308,14 @@ function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: {
 		<div className="flex flex-col">
 			{getMessageContent()}
 			{typeof message !== "string" && message.files && message.files.length > 0 && (
-				<AttachmentViewer files={message.files} />
+				<AttachmentViewer 
+					files={message.files.map((file) => ({
+						resource_id: file.resource_id,
+						resource_name: file.resource_name,
+						extension: file.extension,
+						type: file.type === "sandbox" ? "sandbox" : "storage" as "sandbox" | "storage",
+					}))} 
+				/>
 			)}
 		</div>
 	);
