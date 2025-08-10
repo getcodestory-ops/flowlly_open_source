@@ -2,6 +2,12 @@ import { create } from "zustand";
 import { type Editor } from "@tiptap/react";
 import { CommentAPI, type Thread as BackendThread, type Comment as BackendComment } from "@/api/commentRoutes";
 
+// UUID validation helper function
+const isValidUUID = (str: string): boolean => {
+	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+	return uuidRegex.test(str);
+};
+
 interface Comment {
   id: string;
   content: string;
@@ -113,8 +119,8 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 			error: null,
 		});
 
-		// Fetch threads from API if we have both documentId and projectAccessId
-		if (documentId && projectAccessId) {
+		// Fetch threads from API if we have both documentId and projectAccessId, and documentId is a valid UUID
+		if (documentId && projectAccessId && isValidUUID(documentId)) {
 			get().fetchThreads(documentId, projectAccessId);
 		}
 	},
