@@ -259,6 +259,7 @@ interface Attachment {
 	url?: string;
 	extension?: string;
 	is_sandbox_file?: boolean;
+	focus?: boolean;
 }
 
 // Update AttachmentsComponent to use AttachmentViewer
@@ -286,6 +287,7 @@ const AttachmentsComponent: React.FC<{ attachments: string }> = ({ attachments }
 			extension: attachment.type || attachment.extension,
 			url: attachment.url, // Include URL if present
 			type: attachment.is_sandbox_file ? "sandbox" : "storage",
+			focus: attachment.focus,
 		}));
 		
 		return <AttachmentViewer files={files} />;
