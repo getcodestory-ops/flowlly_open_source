@@ -8,6 +8,8 @@ interface SidePanel {
 	filename?: string;
 	title?: string;
 	contextId?: string;
+	// Force reload timestamp for content refresh
+	lastReloadTime?: number;
 }
 
 interface ChatStore {
@@ -21,7 +23,7 @@ interface ChatStore {
 	activeTabId: string | null;
 	isWaitingForResponse: boolean;
 	setIsWaitingForResponse: (isWaitingForResponse: boolean) => void;	
-	addTab: (tab: Omit<SidePanel, "id">) => void;
+	addTab: (tab: Omit<SidePanel, "id">, forceReload?: boolean) => void;
 	removeTab: (tabId: string) => void;
 	setActiveTab: (tabId: string) => void;
 	clearAllTabs: () => void;
@@ -105,18 +107,19 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		
 		// Also add to tabs for the new interface
 		const { addTab } = get();
-		addTab(sidePanel);
+		addTab(sidePanel, true); // Force reload for setSidePanel calls
 	},
 	tabs: [],
 	activeTabId: null,
 	isWaitingForResponse: false,
 	setIsWaitingForResponse: (isWaitingForResponse) => set({ isWaitingForResponse }),
-	addTab: (tab) => set((state) => {
+	addTab: (tab, forceReload = false) => set((state) => {
 		const tabId = generateTabId();
 		const newTab = {
 			...tab,
 			id: tabId,
 			title: tab.title || tab.filename || `${tab.type} ${tab.resourceId.slice(0, 8)}`,
+			lastReloadTime: Date.now(),
 		};
 		
 		// Check if a tab with the same resourceId and type already exists
@@ -125,10 +128,23 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		);
 		
 		if (existingTab) {
-			// If it exists, just make it active
-			return {
-				activeTabId: existingTab.id,
-			};
+			if (forceReload) {
+				// Force reload by updating the existing tab's reload time
+				const updatedTabs = state.tabs.map((t) => 
+					t.id === existingTab.id 
+						? { ...t, lastReloadTime: Date.now() }
+						: t,
+				);
+				return {
+					tabs: updatedTabs,
+					activeTabId: existingTab.id,
+				};
+			} else {
+				// If it exists and no force reload, just make it active
+				return {
+					activeTabId: existingTab.id,
+				};
+			}
 		}
 		
 		// Add new tab and make it active

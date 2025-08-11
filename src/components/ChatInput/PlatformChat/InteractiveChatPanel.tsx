@@ -24,7 +24,7 @@ const microsoftExtensions = ["doc", "docx", "xlsx", "xls", "ppt", "pptx"];
 const csvExtensions = ["csv"];
 
 // CSV Viewer Component
-const CSVViewer = ({ resourceId, isSandboxFile, fileName }: { resourceId: string, isSandboxFile?: boolean, fileName?: string }) => {
+const CSVViewer = ({ resourceId, isSandboxFile, fileName, lastReloadTime }: { resourceId: string, isSandboxFile?: boolean, fileName?: string, lastReloadTime?: number }) => {
 	const [csvData, setCsvData] = useState<string[][]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -32,7 +32,7 @@ const CSVViewer = ({ resourceId, isSandboxFile, fileName }: { resourceId: string
 	const { activeProject } = useStore();
 
 	const { data: resource, isLoading, isError } = useQuery({
-		queryKey: ["csvResource", session, activeProject, resourceId, isSandboxFile, fileName],
+		queryKey: ["csvResource", session, activeProject, resourceId, isSandboxFile, fileName, lastReloadTime],
 		queryFn: () => {
 			if (!session || !activeProject?.project_id) {
 				return Promise.reject("No session or active project");
@@ -164,12 +164,12 @@ const CSVViewer = ({ resourceId, isSandboxFile, fileName }: { resourceId: string
 };
 
 // HTML Viewer Component
-const HTMLViewer = ({ resourceId, isSandboxFile, fileName }: { resourceId: string, isSandboxFile?: boolean, fileName?: string }) => {
+const HTMLViewer = ({ resourceId, isSandboxFile, fileName, lastReloadTime }: { resourceId: string, isSandboxFile?: boolean, fileName?: string, lastReloadTime?: number }) => {
 	const { session } = useStore();
 	const { activeProject } = useStore();
 
 	const { data: resource, isLoading, isError } = useQuery({
-		queryKey: ["htmlResource", session, activeProject, resourceId, isSandboxFile, fileName],
+		queryKey: ["htmlResource", session, activeProject, resourceId, isSandboxFile, fileName, lastReloadTime],
 		queryFn: () => {
 			if (!session || !activeProject?.project_id) {
 				return Promise.reject("No session or active project");
@@ -269,14 +269,14 @@ const HTMLViewer = ({ resourceId, isSandboxFile, fileName }: { resourceId: strin
 	);
 };
 
-const InlineDocumentViewer = ({ resourceId, fileExtension, isSandboxFile, fileName }: {resourceId: string, fileExtension: string, isSandboxFile?: boolean, fileName?: string}) : React.ReactNode => {
+const InlineDocumentViewer = ({ resourceId, fileExtension, isSandboxFile, fileName, lastReloadTime }: {resourceId: string, fileExtension: string, isSandboxFile?: boolean, fileName?: string, lastReloadTime?: number}) : React.ReactNode => {
 	const { session } = useStore();
 	const { activeProject } = useStore();
 	
 	const needsInlineUrl = !csvExtensions.includes(fileExtension) && !htmlExtensions.includes(fileExtension);
 	
 	const { data: resource } = useQuery({
-		queryKey: ["getInlineFileUrl", session, activeProject, resourceId, isSandboxFile, fileName],
+		queryKey: ["getInlineFileUrl", session, activeProject, resourceId, isSandboxFile, fileName, lastReloadTime],
 		queryFn: () => {
 			if (!session || !activeProject?.project_id) {
 				return Promise.reject("No session or active project");
@@ -299,7 +299,8 @@ const InlineDocumentViewer = ({ resourceId, fileExtension, isSandboxFile, fileNa
 				<CSVViewer 
 					fileName={fileName}
 					isSandboxFile={isSandboxFile} 
-					resourceId={resourceId} 
+					lastReloadTime={lastReloadTime}
+					resourceId={resourceId}
 				/>
 			</div>
 		);
@@ -311,7 +312,8 @@ const InlineDocumentViewer = ({ resourceId, fileExtension, isSandboxFile, fileNa
 				<HTMLViewer 
 					fileName={fileName}
 					isSandboxFile={isSandboxFile} 
-					resourceId={resourceId} 
+					lastReloadTime={lastReloadTime}
+					resourceId={resourceId}
 				/>
 			</div>
 		);
@@ -954,23 +956,29 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 											
 											getFileExtension(tab.filename) === "md" ? (
 												<ResourceTextViewer 
+													lastReloadTime={tab.lastReloadTime}
 													resource_id={tab.resourceId}
 												/>
 											) : (
 												<InlineDocumentViewer 
 													fileExtension={getFileExtension(tab.filename)} 
+													lastReloadTime={tab.lastReloadTime}
 													resourceId={tab.resourceId}
 												/>
 											)
 										) : (
 											<ResourceTextViewer 
+												lastReloadTime={tab.lastReloadTime}
 												resource_id={tab.resourceId}
 											/>
 										)}
 									</>
 								)}
 								{getFileExtension(tab.filename) === "txt" && (
-									<ResourceTextViewer resource_id={tab.resourceId} />
+									<ResourceTextViewer 
+										lastReloadTime={tab.lastReloadTime} 
+										resource_id={tab.resourceId}
+									/>
 								)}
 							</>
 						)}
@@ -984,6 +992,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 												<ResourceTextViewer 
 													fileName={tab.filename}
 													isSandboxFile
+													lastReloadTime={tab.lastReloadTime}
 													resource_id={tab.resourceId}
 												/>
 											) : (
@@ -991,6 +1000,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 													fileExtension={getFileExtension(tab.filename)} 
 													fileName={tab.filename}
 													isSandboxFile
+													lastReloadTime={tab.lastReloadTime}
 													resourceId={tab.resourceId}
 												/>
 											)
@@ -998,6 +1008,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 											<ResourceTextViewer 
 												fileName={tab.filename}
 												isSandboxFile
+												lastReloadTime={tab.lastReloadTime}
 												resource_id={tab.resourceId}
 											/>
 										)}
@@ -1007,14 +1018,17 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 									<ResourceTextViewer 
 										fileName={tab.filename}
 										isSandboxFile
-										resource_id={tab.resourceId} 
+										lastReloadTime={tab.lastReloadTime}
+										resource_id={tab.resourceId}
 									/>
 								)}
 							</>
 						)}
 						{tab.type === "editor" && (
-							<ResourceTextViewer resource_id={tab.resourceId} /> 
-						
+							<ResourceTextViewer 
+								lastReloadTime={tab.lastReloadTime}
+								resource_id={tab.resourceId}
+							/> 
 						)}
 						{tab.type === "log" && (
 							<RunningLogViewer logId={tab.resourceId} />
