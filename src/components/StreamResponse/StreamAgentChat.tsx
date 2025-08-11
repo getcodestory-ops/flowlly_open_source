@@ -14,6 +14,7 @@ interface AttachmentData {
   resource_name: string;
   extension?: string;
   type?: string;
+  focus?: boolean;
 }
 
 const LoadingDots: React.FC<{ showThinking?: boolean; centered?: boolean }> = ({ 
