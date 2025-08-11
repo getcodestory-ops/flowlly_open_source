@@ -9,19 +9,21 @@ export function ResourceTextViewer({
 	resource_id, 
 	showComments = false, 
 	isSandboxFile = false, 
-	fileName, 
+	fileName,
+	lastReloadTime, 
 }: { 
 	resource_id: string, 
 	showComments?: boolean,
 	isSandboxFile?: boolean,
-	fileName?: string 
+	fileName?: string,
+	lastReloadTime?: number 
 }) {
 	const activeProject = useStore((state) => state.activeProject);
 	const session = useStore((state) => state.session);
 	const { onSubmit, isPending } = useStorageTextFileSave(resource_id);
 
 	const { data, isLoading, error } = useQuery({
-		queryKey: ["aiJobResource", resource_id, isSandboxFile, fileName],
+		queryKey: ["aiJobResource", resource_id, isSandboxFile, fileName, lastReloadTime],
 		queryFn: () =>
 			fetchResource(session, activeProject?.project_id, resource_id, isSandboxFile, fileName),
 		staleTime: 0, // Always fetch fresh data
