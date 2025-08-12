@@ -18,7 +18,7 @@ interface AttachmentViewerProps {
 }
 
 // Function to get appropriate file icon based on extension
-const getFileIcon = (extension: string) => {
+const getFileIcon = (extension: string): JSX.Element => {
 	const ext = extension.toLowerCase();
 	if (["jpg", "jpeg", "png", "gif", "bmp", "svg", "webp", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp"].includes(ext)) {
 		return <FileImage className="h-5 w-5" />;
@@ -37,7 +37,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ files, onFileClick 
 	const { setSidePanel, setCollapsed } = useChatStore();
 	const [isExpanded, setIsExpanded] = useState(false);
 
-	const handleFileClick = (file: Attachment) => {
+	const handleFileClick = (file: Attachment): void => {
 		if (onFileClick) {
 			onFileClick(file);
 		} else {
@@ -53,10 +53,16 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ files, onFileClick 
 
 	if (!files || files.length === 0) return null;
 
-	// Sort files to show focused ones first
+	// Sort files to show focused ones first, then storage files, then sandbox/temp files
 	const sortedFiles = [...files].sort((a, b) => {
+		// First priority: focused files
 		if (a.focus && !b.focus) return -1;
 		if (!a.focus && b.focus) return 1;
+		
+		// Second priority: file type (storage before sandbox)
+		if (a.type !== "sandbox" && b.type === "sandbox") return -1;
+		if (a.type === "sandbox" && b.type !== "sandbox") return 1;
+		
 		return 0;
 	});
 
@@ -106,20 +112,31 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ files, onFileClick 
 					<div
 						className={cn(
 							"group relative flex items-center p-3 rounded-lg border transition-all duration-200 cursor-pointer",
-							"hover:shadow-md hover:border-blue-300 ",
-							"bg-white border-gray-200 ",
-							file.focus && [
+							file.type === "sandbox" 
+								? "bg-gray-50/70 border-dashed border-gray-300 hover:bg-gray-100/70 opacity-75" 
+								: "bg-white border-gray-200 hover:shadow-md hover:border-blue-300",
+							file.focus && file.type !== "sandbox" && [
 								"ring-2 ring-blue-500 ring-opacity-50",
-								"border-blue-300  shadow-sm",
+								"border-blue-300 shadow-sm",
 							],
 						)}
 						key={index}
 						onClick={() => handleFileClick(file)}
 					>					
+						{file.type === "sandbox" && (
+							<span className="absolute -top-1 -right-1 rounded-sm px-1 py-0.5 text-[9px] font-medium bg-gray-200/80 text-gray-500 italic">
+								temp
+							</span>
+						)}
 						{/* File icon */}
 						<div className={cn(
-							"flex-shrink-0 mr-3 transition-transform duration-200 group-hover:scale-110",
-							file.focus ? "text-blue-600" : "text-gray-500 ",
+							"flex-shrink-0 mr-3 transition-transform duration-200",
+							file.type === "sandbox" 
+								? "text-gray-400 opacity-70"
+								: "group-hover:scale-110",
+							file.focus && file.type !== "sandbox"
+								? "text-blue-600"
+								: file.type !== "sandbox" && "text-gray-500",
 						)}
 						>
 							{getFileIcon(file.extension || "")}
@@ -127,16 +144,23 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ files, onFileClick 
 						{/* File info */}
 						<div className="flex-1 min-w-0">
 							<div className={cn(
-								"text-sm font-medium truncate transition-colors duration-200",
-								file.focus 
-									? "text-blue-900" 
-									: "text-gray-900 group-hover:text-blue-600 ",
+								"text-sm truncate transition-colors duration-200",
+								file.type === "sandbox"
+									? "text-gray-600 italic font-normal"
+									: "font-medium",
+								file.focus && file.type !== "sandbox"
+									? "text-blue-900"
+									: file.type !== "sandbox" && "text-gray-900 group-hover:text-blue-600",
 							)}
 							>
 								{file.resource_name || file.resource_id}
 							</div>
 							{file.extension && (
-								<div className="text-xs text-gray-500 uppercase">
+								<div className={cn(
+									"text-xs uppercase",
+									file.type === "sandbox" ? "text-gray-400" : "text-gray-500",
+								)}
+								>
 									{file.extension.replace(".", "")} file
 								</div>
 							)}
