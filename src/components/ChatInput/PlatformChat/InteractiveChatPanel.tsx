@@ -5,7 +5,10 @@ import { getInlineDocument, saveDocumentAs, fetchResource } from "@/api/folderRo
 import { updateDocumentName } from "@/api/documentRoutes";
 import { useStore } from "@/utils/store";
 import { useQuery } from "@tanstack/react-query";
-import { X, FileText, FileImage, FileAudio, FileVideo, FileCode, File, Pencil, Download, Folder, Plus, Save, Edit3, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, FileText, FileImage, FileAudio, FileVideo, FileCode, File, Pencil, Download, Folder, Plus, Save, Edit3, ChevronLeft, ChevronRight, Printer } from "lucide-react";
+import TopToolbar from "./ChatPanel/TopToolbar";
+import InlineDocumentViewer from "./ChatPanel/InlineDocumentViewer";
+import { htmlExtensions } from "./ChatPanel/fileExtensions";
 import { ResourceTextViewer } from "@/components/DocumentEditor/ResourceTextViewer";
 import RunningLogViewer from "@/components/WorkflowComponents/RunningLogViewer";
 import { DocumentSelector } from "@/components/DocumentSelector";
@@ -17,352 +20,7 @@ import {
 import FolderSelector from "@/components/ProjectEvent/FolderSelector";
 import { UnsavedChangesDialog } from "@/components/DocumentEditor/ToolBarItems";
 
-const imageExtensions = ["jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff"];
-const tifExtensions = ["tif", "tiff"];
-const htmlExtensions = ["html", "htm"];
-const microsoftExtensions = ["doc", "docx", "xlsx", "xls", "ppt", "pptx"];
-const csvExtensions = ["csv"];
 
-// CSV Viewer Component
-const CSVViewer = ({ resourceId, isSandboxFile, fileName, lastReloadTime }: { resourceId: string, isSandboxFile?: boolean, fileName?: string, lastReloadTime?: number }) => {
-	const [csvData, setCsvData] = useState<string[][]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-	const { session } = useStore();
-	const { activeProject } = useStore();
-
-	const { data: resource, isLoading, isError } = useQuery({
-		queryKey: ["csvResource", session, activeProject, resourceId, isSandboxFile, fileName, lastReloadTime],
-		queryFn: () => {
-			if (!session || !activeProject?.project_id) {
-				return Promise.reject("No session or active project");
-			}
-			return fetchResource(session, activeProject.project_id, resourceId, isSandboxFile, fileName);
-		},
-		enabled: !!session && !!activeProject?.project_id && !!resourceId,
-	});
-
-	React.useEffect(() => {
-		const parseCsvContent = async() => {
-			// Handle both string response (sandbox) and metadata structure (storage)
-			let csvText: string | null = null;
-			
-			if (isSandboxFile && typeof resource === "string") {
-				csvText = resource;
-			} else if (resource?.metadata?.content) {
-				csvText = resource.metadata.content;
-			}
-			
-			if (!csvText) {
-				if (!isLoading && !isError) {
-					setError("No CSV content available");
-				}
-				setLoading(false);
-				return;
-			}
-
-			try {
-				setLoading(true);
-				
-				// Simple CSV parser - handles basic CSV format
-				const lines = csvText.split("\n").filter((line: string) => line.trim());
-				const parsedData = lines.map((line: string) => {
-					// Handle quoted fields and commas within quotes
-					const result = [];
-					let current = "";
-					let inQuotes = false;
-					
-					for (let i = 0; i < line.length; i++) {
-						const char = line[i];
-						if (char === "\"") {
-							inQuotes = !inQuotes;
-						} else if (char === "," && !inQuotes) {
-							result.push(current.trim());
-							current = "";
-						} else {
-							current += char;
-						}
-					}
-					result.push(current.trim());
-					return result;
-				});
-				
-				setCsvData(parsedData);
-			} catch (err) {
-				setError("Failed to parse CSV content");
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		parseCsvContent();
-	}, [resource, isLoading, isError]);
-
-	if (isLoading || loading) {
-		return (
-			<div className="flex items-center justify-center p-8">
-				<div className="text-sm text-gray-600">Loading CSV...</div>
-			</div>
-		);
-	}
-
-	if (isError || error) {
-		return (
-			<div className="flex flex-col items-center justify-center p-8">
-				<FileText className="h-16 w-16 text-gray-400" />
-				<p className="mt-2 text-sm text-gray-600">{error || "Failed to load CSV file"}</p>
-			</div>
-		);
-	}
-
-	if (csvData.length === 0) {
-		return (
-			<div className="flex flex-col items-center justify-center p-8">
-				<FileText className="h-16 w-16 text-gray-400" />
-				<p className="mt-2 text-sm text-gray-600">No data found in CSV</p>
-			</div>
-		);
-	}
-
-	return (
-		<div className="w-full h-full overflow-auto">
-			<div className="min-w-full">
-				<table className="w-full border-collapse border border-gray-300">
-					<thead>
-						{csvData.length > 0 && (
-							<tr className="bg-gray-50">
-								{csvData[0].map((header, index) => (
-									<th 
-										className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold text-gray-900 sticky top-0 bg-gray-50"
-										key={index}
-									>
-										{header}
-									</th>
-								))}
-							</tr>
-						)}
-					</thead>
-					<tbody>
-						{csvData.slice(1).map((row, rowIndex) => (
-							<tr className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"} key={rowIndex}>
-								{row.map((cell, cellIndex) => (
-									<td 
-										className="border border-gray-300 px-3 py-2 text-sm text-gray-900 max-w-xs truncate"
-										key={cellIndex}
-										title={cell}
-									>
-										{cell}
-									</td>
-								))}
-							</tr>
-						))}
-					</tbody>
-				</table>
-			</div>
-		</div>
-	);
-};
-
-// HTML Viewer Component
-const HTMLViewer = ({ resourceId, isSandboxFile, fileName, lastReloadTime }: { resourceId: string, isSandboxFile?: boolean, fileName?: string, lastReloadTime?: number }) => {
-	const { session } = useStore();
-	const { activeProject } = useStore();
-
-	const { data: resource, isLoading, isError } = useQuery({
-		queryKey: ["htmlResource", session, activeProject, resourceId, isSandboxFile, fileName, lastReloadTime],
-		queryFn: () => {
-			if (!session || !activeProject?.project_id) {
-				return Promise.reject("No session or active project");
-			}
-			return fetchResource(session, activeProject.project_id, resourceId, isSandboxFile, fileName);
-		},
-		enabled: !!session && !!activeProject?.project_id && !!resourceId,
-	});
-
-	if (isLoading) {
-		return (
-			<div className="flex items-center justify-center p-8">
-				<div className="text-sm text-gray-600">Loading HTML...</div>
-			</div>
-		);
-	}
-
-	// Handle both string response (sandbox) and metadata structure (storage)
-	let htmlContent: string | null = null;
-	let cssContent: string | null = null;
-	let headerContent: string | null = null;
-	
-	if (isSandboxFile && typeof resource === "string") {
-		htmlContent = resource;
-	} else if (resource?.metadata?.content) {
-		htmlContent = resource.metadata.content;
-		cssContent = resource.metadata.style;
-		headerContent = resource.metadata.header;
-	}
-
-	if (isError || !htmlContent) {
-		return (
-			<div className="flex flex-col items-center justify-center p-8">
-				<FileText className="h-16 w-16 text-gray-400" />
-				<p className="mt-2 text-sm text-gray-600">Failed to load HTML file</p>
-			</div>
-		);
-	}
-
-	// Create enhanced HTML content with injected CSS and header if available
-	const createEnhancedHtmlContent = (): string => {
-		// Ensure htmlContent is not null at this point
-		if (!htmlContent) return "";
-		
-		let workingHtmlContent = htmlContent;
-		
-		// Build head content with CSS and header
-		let headContent = "";
-		if (cssContent) {
-			headContent += `\n<style type="text/css">\n${cssContent}\n</style>\n`;
-		}
-		if (headerContent) {
-			headContent += `${headerContent}\n`;
-		}
-
-		// If we have content to inject into head
-		if (headContent) {
-			// Check if HTML already has a <head> section
-			const headRegex = /<head[^>]*>/i;
-			const headMatch = workingHtmlContent.match(headRegex);
-
-			if (headMatch) {
-				// Insert content after the opening <head> tag
-				const headEndIndex = headMatch.index! + headMatch[0].length;
-				workingHtmlContent = workingHtmlContent.slice(0, headEndIndex) + headContent + workingHtmlContent.slice(headEndIndex);
-			} else {
-				// If no <head> tag exists, check for <html> tag and add <head> section
-				const htmlRegex = /<html[^>]*>/i;
-				const htmlMatch = workingHtmlContent.match(htmlRegex);
-				
-				if (htmlMatch) {
-					const htmlEndIndex = htmlMatch.index! + htmlMatch[0].length;
-					const headSection = `\n<head>${headContent}</head>\n`;
-					workingHtmlContent = workingHtmlContent.slice(0, htmlEndIndex) + headSection + workingHtmlContent.slice(htmlEndIndex);
-				} else {
-					// If no <html> tag, wrap the entire content and add <head> with content
-					workingHtmlContent = `<!DOCTYPE html>\n<html>\n<head>${headContent}</head>\n<body>\n${workingHtmlContent}\n</body>\n</html>`;
-				}
-			}
-		}
-
-		return workingHtmlContent;
-	};
-
-	const enhancedHtmlContent = createEnhancedHtmlContent();
-	const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(enhancedHtmlContent)}`;
-
-	return (
-		<div className="w-full h-full overflow-auto">
-			<iframe 
-				className="border-0 bg-white w-full h-full"
-				sandbox="allow-same-origin"
-				src={dataUrl}
-				title="HTML Document"
-			/>
-		</div>
-	);
-};
-
-const InlineDocumentViewer = ({ resourceId, fileExtension, isSandboxFile, fileName, lastReloadTime }: {resourceId: string, fileExtension: string, isSandboxFile?: boolean, fileName?: string, lastReloadTime?: number}) : React.ReactNode => {
-	const { session } = useStore();
-	const { activeProject } = useStore();
-	
-	const needsInlineUrl = !csvExtensions.includes(fileExtension) && !htmlExtensions.includes(fileExtension);
-	
-	const { data: resource } = useQuery({
-		queryKey: ["getInlineFileUrl", session, activeProject, resourceId, isSandboxFile, fileName, lastReloadTime],
-		queryFn: () => {
-			if (!session || !activeProject?.project_id) {
-				return Promise.reject("No session or active project");
-			}
-			return getInlineDocument({ 
-				session, 
-				projectId: activeProject.project_id, 
-				resourceId,
-				isSandboxFile,
-				fileName,
-			});
-		},
-		enabled: needsInlineUrl && !!session && !!activeProject?.project_id,
-	});
-
-
-	if (csvExtensions.includes(fileExtension)) {
-		return (
-			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
-				<CSVViewer 
-					fileName={fileName}
-					isSandboxFile={isSandboxFile} 
-					lastReloadTime={lastReloadTime}
-					resourceId={resourceId}
-				/>
-			</div>
-		);
-	}
-
-	if (htmlExtensions.includes(fileExtension)) {
-		return (
-			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
-				<HTMLViewer 
-					fileName={fileName}
-					isSandboxFile={isSandboxFile} 
-					lastReloadTime={lastReloadTime}
-					resourceId={resourceId}
-				/>
-			</div>
-		);
-	}
-
-	return (
-		<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
-			{resource && imageExtensions.includes(fileExtension) && !tifExtensions.includes(fileExtension) && (
-				<img 
-					alt="Resource" 
-					className="max-w-full max-h-full object-contain" 
-					src={resource?.url}
-				/>
-			)}
-			{resource && tifExtensions.includes(fileExtension) && (
-				<div className="flex flex-col items-center justify-center p-4">
-					<FileImage className="h-16 w-16 text-gray-400" />
-					<p className="mt-2 text-sm text-gray-600">TIF viewer not supported in browser</p>
-					<a 
-						className="mt-2 text-blue-500 hover:underline text-sm"
-						download
-						href={resource?.url}
-					>
-						Download file to view
-					</a>
-				</div>
-			)}
-			{resource && microsoftExtensions.includes(fileExtension) && (
-				<div className="h-full w-full">
-					<iframe 
-						className="border-0 bg-white"
-						height="100%"
-						src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(resource?.url)}`}
-						title="Word Document"
-						width="100%"
-					/>
-				</div>
-			)}
-			{resource && !imageExtensions.includes(fileExtension) && !microsoftExtensions.includes(fileExtension) && (
-				<iframe 
-					className="border-0"
-					height="100%"
-					src={resource?.url}
-					width="100%"
-				/>
-			)}
-		</div>
-	);
-};
 
 const getFileIcon = (extension: string) : React.ReactNode => {
 	const imageExts = ["jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff"];
@@ -419,6 +77,94 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 		enabled: !!session && !!activeProject?.project_id && !!activeTab?.resourceId,
 	});
 
+	const handlePrintActiveHtml = async(): Promise<void> => {
+		try {
+			if (!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox")) return;
+			const extension = getFileExtension(activeTab.filename);
+			if (!htmlExtensions.includes(extension)) return;
+			if (!session || !activeProject?.project_id || !activeTab.resourceId) return;
+
+			const isSandboxFile = activeTab.type === "sandbox";
+			const resource = await fetchResource(
+				session,
+				activeProject.project_id,
+				activeTab.resourceId,
+				isSandboxFile,
+				activeTab.filename,
+			);
+
+			let htmlContent: string | null = null;
+			let cssContent: string | null = null;
+			let headerContent: string | null = null;
+
+			if (isSandboxFile && typeof resource === "string") {
+				htmlContent = resource;
+			} else if ((resource as any)?.metadata?.content) {
+				htmlContent = (resource as any).metadata.content;
+				cssContent = (resource as any).metadata.style;
+				headerContent = (resource as any).metadata.header;
+			}
+
+			if (!htmlContent) return;
+
+			let workingHtmlContent = htmlContent;
+			let headContent = "";
+			try {
+				const hasBaseTag = /<base\s[^>]*href=/i.test(workingHtmlContent);
+				const baseHref = typeof document !== "undefined" ? document.baseURI : "/";
+				if (!hasBaseTag && baseHref) {
+					headContent += `\n<base href="${baseHref}">\n`;
+				}
+			} catch {}
+			if (cssContent) {
+				headContent += `\n<style type="text/css">\n${cssContent}\n</style>\n`;
+			}
+			if (headerContent) {
+				headContent += `${headerContent}\n`;
+			}
+
+			if (headContent) {
+				const headRegex = /<head[^>]*>/i;
+				const headMatch = workingHtmlContent.match(headRegex);
+				if (headMatch) {
+					const headEndIndex = headMatch.index! + headMatch[0].length;
+					workingHtmlContent = workingHtmlContent.slice(0, headEndIndex) + headContent + workingHtmlContent.slice(headEndIndex);
+				} else {
+					const htmlRegex = /<html[^>]*>/i;
+					const htmlMatch = workingHtmlContent.match(htmlRegex);
+					if (htmlMatch) {
+						const htmlEndIndex = htmlMatch.index! + htmlMatch[0].length;
+						const headSection = `\n<head>${headContent}</head>\n`;
+						workingHtmlContent = workingHtmlContent.slice(0, htmlEndIndex) + headSection + workingHtmlContent.slice(htmlEndIndex);
+					} else {
+						workingHtmlContent = `<!DOCTYPE html>\n<html>\n<head>${headContent}</head>\n<body>\n${workingHtmlContent}\n</body>\n</html>`;
+					}
+				}
+			}
+
+			const printWindow = window.open("", "_blank");
+			if (!printWindow) return;
+			const hasHtmlTag = /<html[^>]*>/i.test(workingHtmlContent);
+			const htmlToPrint = hasHtmlTag
+				? workingHtmlContent
+				: `<!DOCTYPE html><html><head></head><body>${workingHtmlContent}</body></html>`;
+			printWindow.document.open();
+			printWindow.document.write(htmlToPrint);
+			printWindow.document.close();
+			const triggerPrint = () => {
+				try {
+					printWindow.focus();
+					printWindow.print();
+				} catch {}
+			};
+			if (printWindow.document.readyState === "complete") {
+				setTimeout(triggerPrint, 100);
+			} else {
+				printWindow.onload = () => setTimeout(triggerPrint, 100);
+			}
+		} catch {}
+	};
+
 	const handleDownload = () => {
 		if (downloadResource?.url && activeTab?.filename) {
 			const link = document.createElement("a");
@@ -432,19 +178,19 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 		}
 	};
 
-	const getFileExtension = (filename?: string) => {
+	const getFileExtension = (filename?: string): string => {
 		if (!filename) return "txt";
 		const parts = filename.split(".");
 		return parts.length > 1 && parts[parts.length - 1] ? parts[parts.length - 1] : "txt";
 	};
 
-	const getCurrentViewMode = (tabId: string) => viewModes[tabId] || "original";
+	const getCurrentViewMode = (tabId: string): "original" | "text" => viewModes[tabId] || "original";
 	
-	const setCurrentViewMode = (tabId: string, mode: "original" | "text") => {
+	const setCurrentViewMode = (tabId: string, mode: "original" | "text"): void => {
 		setViewModes((prev) => ({ ...prev, [tabId]: mode }));
 	};
 
-	const checkUnsavedChanges = (tabId: string, action: () => void) => {
+	const checkUnsavedChanges = (tabId: string, action: () => void): void => {
 		const tab = tabs.find((t) => t.id === tabId);
 		const documentId = tab?.resourceId || tabId; 
 		
@@ -456,13 +202,13 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 		}
 	};
 
-	const clearTabUnsavedChanges = (tabId: string) => {
+	const clearTabUnsavedChanges = (tabId: string): void => {
 		const tab = tabs.find((t) => t.id === tabId);
 		const documentId = tab?.resourceId || tabId;
 		clearUnsavedChanges(documentId);
 	};
 
-	const handleTabClose = (tabId: string, e: React.MouseEvent) => {
+	const handleTabClose = (tabId: string, e: React.MouseEvent): void => {
 		e.stopPropagation();
 		checkUnsavedChanges(tabId, () => {
 			removeTab(tabId);
@@ -471,7 +217,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 	};
 
 	// Handle mode switching with unsaved changes check
-	const handleModeSwitch = (tabId: string) => {
+	const handleModeSwitch = (tabId: string): void => {
 		const currentMode = getCurrentViewMode(tabId);
 		const newMode = currentMode === "original" ? "text" : "original";
 		
@@ -488,7 +234,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 	};
 
 	// Dialog handlers for unsaved changes
-	const handleSaveAndContinue = async() => {
+	const handleSaveAndContinue = async(): Promise<void> => {
 		// For now, we'll just proceed with the action
 		// In a full implementation, you'd want to save the content first
 		if (pendingAction) {
@@ -498,7 +244,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 		setShowUnsavedDialog(false);
 	};
 
-	const handleDiscardChanges = () => {
+	const handleDiscardChanges = (): void => {
 		if (pendingAction) {
 			pendingAction();
 			setPendingAction(null);
@@ -506,7 +252,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 		setShowUnsavedDialog(false);
 	};
 
-	const handleCancelAction = () => {
+	const handleCancelAction = (): void => {
 		setPendingAction(null);
 		setShowUnsavedDialog(false);
 	};
@@ -829,102 +575,32 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 							</div>
 						</div>
 					</div>
-					<div className="flex items-center gap-1 px-3 bg-gray-100 border-l border-gray-200 rounded-tr-lg">
-						<div className="flex items-center gap-1">
-							<Button 
-								className="h-8 w-8 p-0"
-								disabled={!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox")}
-								onClick={() => activeTab && handleFileNameDoubleClick(activeTab)}
-								size="icon"
-								title={(activeTab?.type === "sources" || activeTab?.type === "sandbox") ? "Rename file" : "Rename not available"}
-								variant="ghost"
-							>
-								<Edit3 className="h-4 w-4" />
-							</Button>
-							<Button 
-								className="h-8 w-8 p-0"
-								disabled={!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox") || !downloadResource?.url}
-								onClick={handleDownload}
-								size="icon"
-								title={(activeTab?.type === "sources" || activeTab?.type === "sandbox") ? "Download file" : "Download not available"}
-								variant="ghost"
-							>
-								<Download className="h-4 w-4" />
-							</Button>
-							<Button 
-								className="h-8 w-8 p-0"
-								disabled={!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox")}
-								onClick={() => setShowSaveAsDialog(true)}
-								size="icon"
-								title={(activeTab?.type === "sources" || activeTab?.type === "sandbox") ? "Save as copy" : "Save not available"}
-								variant="ghost"
-							>
-								<Save className="h-4 w-4" />
-							</Button>
-							<Button 
-								className={`gap-1 px-2 h-8 transition-all duration-200 relative ${
-									(activeTab?.type === "sources" || activeTab?.type === "sandbox") && getCurrentViewMode(activeTab.id) === "text" 
-										? "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100" 
-										: "hover:bg-gray-100 border border-transparent"
-								} ${(activeTab?.type !== "sources" && activeTab?.type !== "sandbox") ? "opacity-50" : ""}`}
-								disabled={!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox")}
-								onClick={() => activeTab && handleModeSwitch(activeTab.id)}
-								size="sm"
-								title={
-									!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox")
-										? "Edit mode not available" 
-										: (getCurrentViewMode(activeTab.id) === "original" ? "Switch to edit mode" : "Switch to view mode")
-								}
-								variant="ghost"
-							>
-								{!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox") || getCurrentViewMode(activeTab.id) === "original" ? (
-									<>
-										<Pencil className="h-4 w-4" />
-										<span className="text-xs font-medium">Edit</span>
-									</>
-								) : (
-									<>
-										<FileText className="h-4 w-4" />
-										<span className="text-xs font-medium">View</span>
-									</>
-								)}
-								{activeTab && unsavedChanges[activeTab.resourceId || activeTab.id] && (activeTab.type === "sources" || activeTab.type === "sandbox") && getCurrentViewMode(activeTab.id) === "text" && (
-									<div className="absolute -top-1 -right-1 h-3 w-3 bg-orange-500 rounded-full border-2 border-white animate-pulse" />
-								)}
-							</Button>
-						</div>
-						{/* Universal actions */}
-						<Button
-							className="h-8 w-8 p-0"
-							onClick={handleAddFolderSelector}
-							size="icon"
-							title="Add Files and Folders"
-							variant="ghost"
-						>
-							<Folder className="h-4 w-4" />
-						</Button>
-						<Button
-							className="h-8 w-8 p-0"
-							onClick={() => {
-								// Check if any tab has unsaved changes
-								const hasAnyUnsavedChanges = Object.values(unsavedChanges).some(Boolean);
-								if (hasAnyUnsavedChanges) {
-									setPendingAction(() => () => {
-										clearAllTabs();
-										clearAllUnsavedChanges();
-									});
-									setShowUnsavedDialog(true);
-								} else {
+					<TopToolbar
+						canDownload={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox") && !!downloadResource?.url}
+						canPrint={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox") && htmlExtensions.includes(getFileExtension(activeTab.filename))}
+						canRename={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox")}
+						canSaveAs={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox")}
+						hasUnsavedInEdit={!!(activeTab && unsavedChanges[activeTab.resourceId || activeTab.id] && (activeTab.type === "sources" || activeTab.type === "sandbox") && getCurrentViewMode(activeTab.id) === "text")}
+						isEditMode={!!activeTab && getCurrentViewMode(activeTab.id) === "text"}
+						onAddFolder={handleAddFolderSelector}
+						onCloseAll={() => {
+							const hasAnyUnsavedChanges = Object.values(unsavedChanges).some(Boolean);
+							if (hasAnyUnsavedChanges) {
+								setPendingAction(() => () => {
 									clearAllTabs();
-								}
-							}}
-							size="icon"
-							title="Close All Tabs"
-							variant="ghost"
-						>
-							<X className="h-4 w-4" />
-						</Button>
-					</div>
+									clearAllUnsavedChanges();
+								});
+								setShowUnsavedDialog(true);
+							} else {
+								clearAllTabs();
+							}
+						}}
+						onDownload={handleDownload}
+						onPrint={handlePrintActiveHtml}
+						onRename={() => activeTab && handleFileNameDoubleClick(activeTab)}
+						onSaveAs={() => setShowSaveAsDialog(true)}
+						onToggleMode={() => activeTab && handleModeSwitch(activeTab.id)}
+					/>
 				</div>
 			)}
 			<div className="flex-1 overflow-auto relative">
