@@ -1,15 +1,20 @@
 import React, { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import MarkdownTerminal from "../Markdown/style/MarkdownTerminal";
 import { useChatStore } from "@/hooks/useChatStore";
+
 
 interface StreamComponentProps {
   streamingKey: string;
   authToken: string;
   taskId?: string;
   onStreamComplete?: (content: string) => void;
+  onThinkingChange?: (thinking: boolean) => void;
+  onThinkingContentChange?: (content: string) => void;
+  isExpanded?: boolean;
 }
 
-interface AttachmentData {
+interface ATTACHMENT_DATA {
   resource_id: string;
   resource_name: string;
   extension?: string;
@@ -40,11 +45,15 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	authToken,
 	taskId: _taskId,
 	onStreamComplete,
+	onThinkingChange,
+	onThinkingContentChange,
+	isExpanded = false,
 }) => {
 	const [displayValue, setDisplayValue] = useState<string>("");
 	const [isPending, setIsPending] = useState(true);
-	const [_STREAM_COMPLETE, setStreamComplete] = useState(false);
+	const [STREAM_COMPLETE, setStreamComplete] = useState(false);
 	const [isThinking, setIsThinking] = useState(false);
+	const [THINKING_CONTENT, setThinkingContent] = useState<string>("");
 	const eventSourceRef = useRef<EventSource | null>(null);
 	const { setSidePanel, setCollapsed } = useChatStore();
 
@@ -72,6 +81,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 		setIsPending(true);
 		setStreamComplete(false);
 		setIsThinking(false);
+		setThinkingContent("");
 		
 		// Clean up previous EventSource if it exists
 		if (eventSourceRef.current) {
@@ -98,7 +108,33 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 
 				// Check if this is a THINKING event that came through as regular message data
 				if (event.data.includes("event: THINKING")) {
-					setIsThinking(true);
+					// Extract the data part after "data: "
+					const dataPart = event.data.split("data: ")[1];
+					if (dataPart) {
+						const thinkingData = dataPart.trim();
+						if (thinkingData === "STARTED") {
+							setIsThinking(true);
+							setThinkingContent("");
+							onThinkingChange?.(true);
+							onThinkingContentChange?.("");
+						} else if (thinkingData === "ENDED") {
+							setIsThinking(false);
+							setThinkingContent("");
+							onThinkingChange?.(false);
+							onThinkingContentChange?.("");
+						} else {
+							// This is thinking content - accumulate it
+							setIsThinking(true);
+							setThinkingContent((prev) => {
+								// Convert escaped newlines to actual newlines
+								const processedData = thinkingData.replace(/\\n/g, "\n");
+								const newContent = prev + processedData;
+								onThinkingContentChange?.(newContent);
+								return newContent;
+							});
+							onThinkingChange?.(true);
+						}
+					}
 					return; // Don't add this to displayValue
 				}
 
@@ -129,8 +165,32 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 		});
 
 		// Handle thinking events
-		eventSource.addEventListener("THINKING", (_event) => {
-			setIsThinking(true);
+		eventSource.addEventListener("THINKING", (event) => {
+			if (event.data) {
+				const thinkingData = event.data;
+				if (thinkingData === "STARTED") {
+					setIsThinking(true);
+					setThinkingContent("");
+					onThinkingChange?.(true);
+					onThinkingContentChange?.("");
+				} else if (thinkingData === "ENDED") {
+					setIsThinking(false);
+					setThinkingContent("");
+					onThinkingChange?.(false);
+					onThinkingContentChange?.("");
+				} else {
+					// This is thinking content - accumulate it
+					setIsThinking(true);
+					setThinkingContent((prev) => {
+						// Convert escaped newlines to actual newlines
+						const processedData = thinkingData.replace(/\\n/g, "\n");
+						const newContent = prev + processedData;
+						onThinkingContentChange?.(newContent);
+						return newContent;
+					});
+					onThinkingChange?.(true);
+				}
+			}
 		});
 
 		// Handle attachment events
@@ -173,25 +233,29 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			eventSource.close();
 			eventSourceRef.current = null;
 		};
-	}, [streamingKey, authToken, onStreamComplete, setSidePanel, setCollapsed]);
+	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, isExpanded]);
 
-	// Continue displaying content even after streaming is complete
-	return (
+	// Render content into the appropriate container based on expanded state
+	const targetContainerId = isExpanded ? `stream-expanded-${streamingKey}` : `stream-preview-${streamingKey}`;
+	const targetContainer = document.getElementById(targetContainerId);
+
+	const content = (
 		<div className="mb-4">
-			{displayValue ? (
+			{displayValue && (
 				<div className="pb-4">
 					<MarkdownTerminal content={displayValue} />
-					{(isThinking || isPending) && (
-						<LoadingDots showThinking={isThinking} />
-					)}
 				</div>
-			) : isPending || isThinking ? (
+			)}
+			{(isThinking || isPending) && (
 				<div className="pb-4">
 					<LoadingDots centered showThinking={isThinking} />
 				</div>
-			) : null}
+			)}
 		</div>
 	);
+
+	// Use portal to render content in the target container, fallback to normal render if container not found
+	return targetContainer ? createPortal(content, targetContainer) : content;
 };
 
 export default StreamComponent;

@@ -2,8 +2,7 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, MessageSquare } from "lucide-react";
-import Image from "next/image";
+import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, MessageSquare, Users, ArrowLeft, Sparkles, Plus } from "lucide-react";
 import AtSelectorComponent from "../../../components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
 import ModelSelector from "../../../components/ModelSelector";
@@ -12,9 +11,30 @@ import DailyReport from "./FormDirectives/DailyReport";
 import ReportWriting from "./FormDirectives/ReportWriting";
 import KnowledgeManager from "./FormDirectives/KnowledgeManager";
 import MeetingChat from "./FormDirectives/MeetingChat";
+import { useTemplatesByUseCase } from "@/hooks/useTemplates";
+import type { TemplatePreview, StorageResourceEntity } from "@/api/templateRoutes";
+import { useStore } from "@/utils/store";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import TemplateBuilder from "./TemplateBuilder";
+import TemplateFromExistingReport from "./FormDirectives/TemplateFromExistingReport";
+
+// Icon mapping for dynamic loading
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+	MessageSquare,
+	FileSpreadsheet,
+	FileText,
+	FileCode,
+	Search,
+	Users,
+};
+
+// Helper function to get icon component from string
+const GET_ICON_COMPONENT = (iconName: string): React.ComponentType<{ className?: string }> => {
+	return iconMap[iconName] || MessageSquare;
+};
 
 // Animated Placeholder Component
-const AnimatedPlaceholder = ({ isEmpty }: { isEmpty: boolean }) => {
+const AnimatedPlaceholder = ({ isEmpty }: { isEmpty: boolean }): React.JSX.Element | null => {
 	const [currentText, setCurrentText] = React.useState("");
 	const [currentIndex, setCurrentIndex] = React.useState(0);
 	const [isTyping, setIsTyping] = React.useState(true);
@@ -88,9 +108,23 @@ export default function EmptyChatInterface({
 	isWaitingForResponse,
 	handleSubmit,
 	loadDocumentPanel,
-}: EmptyChatInterfaceProps) {
-	const { chatDirectiveType, setChatDirectiveType, selectedModel, setSelectedModel } = useChatStore();
+}: EmptyChatInterfaceProps): React.JSX.Element {
+	const { 
+		chatDirectiveType, 
+		setChatDirectiveType, 
+		selectedModel, 
+		setSelectedModel,
+		// selectedTemplateId, // No longer needed
+		setSelectedTemplateId,
+		addTab,
+		selectedContexts,
+		setSelectedContexts,
+		// chatContext,
+		setChatContext,
+	} = useChatStore();
+	const { activeChatEntity } = useStore();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+	const [activeTab, setActiveTab] = React.useState("chat");
 
 	// Auto-expand textarea as text grows
 	React.useEffect(() => {
@@ -104,60 +138,193 @@ export default function EmptyChatInterface({
 		}
 	}, [chatInput]);
 
-	const chatTypes: Array<{
-		id: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "none";
+	// Template hooks - must be declared before any conditional returns
+	const { data: templatesByUseCase, isLoading: templatesLoading, templates: allTemplates } = useTemplatesByUseCase();
+
+	// Chat types for each tab
+	interface ChatTypeCard {
+		id: "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "template" | "templateCreate" | "templateCreateAI" | "none";
 		title: string;
 		description: string;
-		icon: any;
-		color: string;
-		iconColor: string;
-	}> = [
+		icon: React.ComponentType<{ className?: string }>;
+		templateId?: string;
+		useCase?: string;
+	}
+
+	const chatTypes: Record<string, Array<ChatTypeCard>> = {
+		bidLevelling: [
+			{
+				id: "bidLevelling",
+				title: "Bid Levelling",
+				description: "Analyze and compare bids",
+				icon: FileSpreadsheet,
+			},
+		],
+		reports: [
+			{
+				id: "dailyReport",
+				title: "Daily Report",
+				description: "Generate daily progress reports",
+				icon: FileText,
+			},
+		],
+		search: [
+			{
+				id: "knowledgeManager",
+				title: "Knowledge Search",
+				description: "Search project documents",
+				icon: Search,
+			},
+		],
+		meeting: [
+			{
+				id: "meetingChat",
+				title: "Meeting Assistant",
+				description: "Ask about meetings and transcripts",
+				icon: Users,
+			},
+		],
+		templates: [], // Will be populated dynamically
+	};
+
+	// Create dynamic chat types with templates (hook: useMemo)
+	const dynamicChatTypes = React.useMemo(() => {
+		const baseTypes = { ...chatTypes };
+		
+		// Add dynamic templates
+		if (!templatesLoading && templatesByUseCase) {
+			const templateCards: ChatTypeCard[] = Object.entries(templatesByUseCase).flatMap(([useCase, templates]) => 
+				(templates as TemplatePreview[]).map((template: TemplatePreview) => ({
+					id: "template" as const,
+					title: template.name,
+					description: template.description || useCase,
+					icon: Sparkles,
+					templateId: template.id,
+					useCase,
+				})),
+			);
+			// Prepend a "Create Template" card
+			baseTypes.templates = [
+				{
+					id: "templateCreate",
+					title: "Create Template (Manual)",
+					description: "Design a new report template with the builder",
+					icon: Plus,
+				},
+				{
+					id: "templateCreateAI",
+					title: "Create Template (AI)",
+					description: "Attach an existing report; AI drafts the template",
+					icon: Sparkles,
+				},
+				...templateCards,
+			];
+		}
+		
+		return baseTypes;
+	}, [chatTypes, templatesByUseCase, templatesLoading]);
+
+	// Tab configuration
+	const tabTypes = [
 		{
 			id: "bidLevelling",
-			title: "Bid Levelling Chat",
-			description: "Analyze and compare bids, pricing strategies, and project costs",
+			label: "Bid Levelling",
 			icon: FileSpreadsheet,
-			color: "bg-emerald-50 hover:bg-emerald-100 border-emerald-200",
-			iconColor: "text-emerald-600",
 		},
 		{
-			id: "dailyReport",
-			title: "Daily Report Generator",
-			description: "Generate comprehensive daily reports with weather, images, and progress analysis",
+			id: "reports",
+			label: "Reports",
 			icon: FileText,
-			color: "bg-blue-50 hover:bg-blue-100 border-blue-200",
-			iconColor: "text-blue-600",
 		},
 		{
-			id: "reportWriting",
-			title: "Report Writing Assistant",
-			description: "Create professional reports using templates, reference documents, and data sources",
-			icon: FileCode,
-			color: "bg-purple-50 hover:bg-purple-100 border-purple-200",
-			iconColor: "text-purple-600",
-		},
-		{
-			id: "knowledgeManager",
-			title: "Knowledge Search & Discovery",
-			description: "Search and find specific information across your project documents and folders",
+			id: "search",
+			label: "Search",
 			icon: Search,
-			color: "bg-orange-50 hover:bg-orange-100 border-orange-200",
-			iconColor: "text-orange-600",
 		},
 		{
-			id: "meetingChat",
-			title: "Meeting Chat Assistant",
-			description: "Ask questions about meeting transcripts, action items, and decisions made",
-			icon: MessageSquare,
-			color: "bg-green-50 hover:bg-green-100 border-green-200",
-			iconColor: "text-green-600",
+			id: "meeting",
+			label: "Meeting",
+			icon: Users,
+		},
+		{
+			id: "templates",
+			label: "Templates",
+			icon: Sparkles,
 		},
 	];
 
-	// If bid levelling is selected, show only the form
+	// Static fallback configuration (current system)
+	const staticTabTypes = tabTypes;
+	const staticChatTypes = dynamicChatTypes;
+
+	// Template selection handler (hook: useCallback)
+	const handleTemplateSelection = React.useCallback((template: StorageResourceEntity) => {
+		const currentChatId = activeChatEntity?.id || "untitled";
+		
+		// Add template as attachment to the chat panel
+		addTab({
+			isOpen: true,
+			type: "sources",
+			resourceId: template.id,
+			filename: template.file_name,
+			title: template.metadata.template_name || template.file_name,
+		});
+
+		// Add template to selected contexts (this will automatically create the attachment directive)
+		const currentContexts = selectedContexts[currentChatId] || [];
+		const templateContext = {
+			id: template.id,
+			name: template.file_name,
+			extension: "html", // Templates are HTML files
+		};
+		
+		// Check if template is already selected to avoid duplicates
+		const isAlreadySelected = currentContexts.some((ctx) => ctx.id === template.id);
+		if (!isAlreadySelected) {
+			setSelectedContexts(currentChatId, [...currentContexts, templateContext]);
+		}
+
+		setChatDirectiveType("chat");
+
+		const templateInstruction =
+			":::instructions\n" +
+			`Use this template (${template.metadata.template_name || template.file_name}) to write the report as instructed.\n\n` +
+			"1) Copy the template and read it carefully. The template is an HTML file with predefined styling and layout.\n" +
+			"2) Edit only the body content. Do not change the head, styles, or outer containers; changing them will break the styling.\n" +
+			"3) Keep the HTML body flat: avoid nesting elements (no nested divs or other tags). This ensures the template can be edited later in a simple text editor.\n" +
+			"4) Read the entire template to understand the overall structure, the different sections, and what content belongs in each section.\n" +
+			"5) Use the provided editing tools to make your updates.\n" +
+			":::\n";
+		setChatContext(templateInstruction);
+
+		// Reset template selection
+		setSelectedTemplateId(null);
+	}, [
+		addTab,
+		setChatInput,
+		chatInput,
+		setSelectedTemplateId,
+		setChatDirectiveType,
+		activeChatEntity,
+		selectedContexts,
+		setSelectedContexts,
+		setChatContext,
+	]);
+
+	
+
+
 	if (chatDirectiveType === "bidLevelling") {
 		return (
 			<div className="flex flex-col items-center px-4 py-6">
+				<div className="w-full max-w-3xl mb-4">
+					<button
+						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+						onClick={() => setChatDirectiveType("none")}
+					>
+						<ArrowLeft className="h-4 w-4" /> Back
+					</button>
+				</div>
 				<BidLevelling
 					handleSubmit={handleSubmit}
 					isPending={isPending}
@@ -169,10 +336,18 @@ export default function EmptyChatInterface({
 		);
 	}
 
-	// If daily report is selected, show only the form
+	// If daily report is selected, show only the form with back
 	if (chatDirectiveType === "dailyReport") {
 		return (
 			<div className="flex flex-col items-center px-4 py-6">
+				<div className="w-full max-w-3xl mb-4">
+					<button
+						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+						onClick={() => setChatDirectiveType("none")}
+					>
+						<ArrowLeft className="h-4 w-4" /> Back
+					</button>
+				</div>
 				<DailyReport
 					handleSubmit={handleSubmit}
 					isPending={isPending}
@@ -184,10 +359,18 @@ export default function EmptyChatInterface({
 		);
 	}
 
-	// If report writing is selected, show only the form
+	// If report writing is selected, show only the form with back
 	if (chatDirectiveType === "reportWriting") {
 		return (
 			<div className="flex flex-col items-center px-4 py-6">
+				<div className="w-full max-w-3xl mb-4">
+					<button
+						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+						onClick={() => setChatDirectiveType("none")}
+					>
+						<ArrowLeft className="h-4 w-4" /> Back
+					</button>
+				</div>
 				<ReportWriting
 					handleSubmit={handleSubmit}
 					isPending={isPending}
@@ -199,10 +382,18 @@ export default function EmptyChatInterface({
 		);
 	}
 
-	// If knowledge manager is selected, show only the form
+	// If knowledge manager is selected, show only the form with back
 	if (chatDirectiveType === "knowledgeManager") {
 		return (
 			<div className="flex flex-col items-center px-4 py-6">
+				<div className="w-full max-w-3xl mb-4">
+					<button
+						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+						onClick={() => setChatDirectiveType("none")}
+					>
+						<ArrowLeft className="h-4 w-4" /> Back
+					</button>
+				</div>
 				<KnowledgeManager
 					handleSubmit={handleSubmit}
 					isPending={isPending}
@@ -214,11 +405,65 @@ export default function EmptyChatInterface({
 		);
 	}
 
-	// If meeting chat is selected, show only the form
+	// If meeting chat is selected, show only the form with back
 	if (chatDirectiveType === "meetingChat") {
 		return (
 			<div className="flex flex-col items-center px-4 py-6">
+				<div className="w-full max-w-3xl mb-4">
+					<button
+						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+						onClick={() => setChatDirectiveType("none")}
+					>
+						<ArrowLeft className="h-4 w-4" /> Back
+					</button>
+				</div>
 				<MeetingChat
+					handleSubmit={handleSubmit}
+					isPending={isPending}
+					isWaitingForResponse={isWaitingForResponse}
+					loadDocumentPanel={loadDocumentPanel}
+					setChatInput={setChatInput}
+				/>
+			</div>
+		);
+	}
+
+	// If user wants to create a template, show Template Builder
+	if (chatDirectiveType === "templateCreate") {
+		return (
+			<div className="flex flex-col items-center px-4 py-6 ">
+				<div className="w-full mb-4">
+					<button
+						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+						onClick={() => setChatDirectiveType("none")}
+					>
+						<ArrowLeft className="h-4 w-4" /> Back
+					</button>
+				</div>
+				<div className="w-full">
+					<TemplateBuilder
+						onCreated={(template) => {
+							handleTemplateSelection(template);
+						}}
+					/>
+				</div>
+			</div>
+		);
+	}
+
+	// If AI template creation is selected, show only the form with back
+	if (chatDirectiveType === "templateCreateAI") {
+		return (
+			<div className="flex flex-col items-center px-4 py-6 ">
+				<div className="w-full max-w-3xl mb-4">
+					<button
+						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+						onClick={() => setChatDirectiveType("none")}
+					>
+						<ArrowLeft className="h-4 w-4" /> Back
+					</button>
+				</div>
+				<TemplateFromExistingReport 
 					handleSubmit={handleSubmit}
 					isPending={isPending}
 					isWaitingForResponse={isWaitingForResponse}
@@ -231,111 +476,155 @@ export default function EmptyChatInterface({
 
 	// Otherwise, show the full chat interface
 	return (
-		<div className="flex flex-col items-center px-4 py-6">
-			<div className="max-w-2xl w-full bg-white rounded-xl p-6 mb-6 shadow-sm">
-				<div className="text-center mb-8">
-					<Image 
-						alt="Flowlly AI" 
-						className="mx-auto mb-3" 
-						height={96} 
-						src="/logos/FlowllyGuy.png" 
-						width={96}
-					/>
-					<h3 className="text-lg font-medium text-indigo-900 mb-2">
-						Chat with Flowlly
-					</h3>
-					<p className="text-slate-500 text-sm mb-6">
-						🚀 Hey there! I&apos;m your AI assistant, ready to help with your 
-						project tasks, docs, and workflows. Choose your chat type below! ✨
+		<div className="flex flex-col items-center justify-center  px-4 py-6 w-full">
+
+			<div className="w-full max-w-3xl mb-8"> {/* Centered Chat Input */}
+				<div className="w-full mb-12"> 
+					<h1 className="text-4xl font-bold text-gray-500 mb-4">
+					Hi, What can I do for you?
+					</h1>
+					<p className="text-gray-600 text-lg">
+					Start by typing your task and providing necessary files and folders...
+					</p>
+					<p className="text-gray-400 text-md">
+						or select a chat type below to get started
 					</p>
 				</div>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-					{chatTypes.map((type) => {
-						const IconComponent = type.icon;
-						const isSelected = chatDirectiveType === type.id;
-						
-						return <div
-							className={`cursor-pointer p-4 rounded-lg border-2 transition-all duration-200 ${isSelected 
-								? `${type.color} border-current` 
-								: "bg-gray-50 hover:bg-gray-100 border-gray-200 hover:border-gray-300"
-							}`}
-							key={type.id}
-							onClick={() => setChatDirectiveType(type.id)}
-						       >
-							<div className="flex items-start space-x-3">
-								<div className={`p-2 rounded-lg ${isSelected ? type.color : "bg-white"}`}>
-									<IconComponent 
-										className={`h-5 w-5 ${isSelected ? type.iconColor : "text-gray-600"}`} 
-									/>
-								</div>
-								<div className="flex-1">
-									<h4 className={`font-medium text-sm mb-1 ${isSelected ? type.iconColor : "text-gray-900"}`}>
-										{type.title}
-									</h4>
-									<p className="text-xs text-gray-600 leading-relaxed">
-										{type.description}
-									</p>
-								</div>
-							</div>
-						</div>;
-					})}
-				</div>
-			</div>
-			<div className="w-full relative overflow-hidden rounded-xl bg-white border border-slate-100 shadow-sm focus-within:ring-1 focus-within:ring-indigo-300 transition-shadow">
-				<Label className="sr-only" htmlFor="empty-message">
-					Message
-				</Label>
-				<div className="absolute top-0 left-2 z-10 pt-2">
-					<AtSelectorComponent />
-				</div>
-				<div className="relative">
-					<AnimatedPlaceholder isEmpty={!chatInput.trim()} />
-					<Textarea
-						className="min-h-20 resize-none border-0 p-4 pl-12 mt-4 shadow-none focus-visible:ring-0 text-slate-800 bg-transparent"
-						disabled={isPending}
-						id="empty-message"
-						onChange={(e) => setChatInput(e.target.value)}
-						onKeyDown={(e) => {
-							if (e.key === "Enter" && !e.shiftKey) {
-								e.preventDefault();
-								handleSubmit();
-							}
-						}}
-						placeholder=""
-						ref={textareaRef}
-						style={{ height: "auto" }}
-						value={chatInput}
-					/>
-				</div>
-				<div className="flex items-center justify-between p-6 pt-0">
-					<div className="flex items-center gap-2">
-						{loadDocumentPanel()}
-						<ModelSelector 
-							onModelChange={setSelectedModel}
-							selectedModel={selectedModel}
+				<div className="relative overflow-hidden rounded-xl bg-white border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-300 transition-all">
+					<Label className="sr-only" htmlFor="empty-message">
+						Message
+					</Label>
+					<div className="absolute top-0 left-2 z-10 pt-2">
+						<AtSelectorComponent />
+					</div>
+					<div className="relative">
+						<AnimatedPlaceholder isEmpty={!chatInput.trim()} />
+						<Textarea
+							className="min-h-20 resize-none border-0 p-4 pl-12 mt-4 shadow-none focus-visible:ring-0 text-slate-800 bg-transparent text-base"
+							disabled={isPending}
+							id="empty-message"
+							onChange={(e) => setChatInput(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" && !e.shiftKey) {
+									e.preventDefault();
+									handleSubmit();
+								}
+							}}
+							placeholder=""
+							ref={textareaRef}
+							style={{ height: "auto" }}
+							value={chatInput}
 						/>
 					</div>
-					<Button
-						className="gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
-						disabled={
-							isWaitingForResponse ||
-							(!chatInput.trim())
-						}
-						onClick={handleSubmit}
-						size="sm"
-						type="submit"
-					>
-						{isWaitingForResponse ? (
-							<>
-								<Loader2 className="h-3.5 w-3.5 animate-spin" />
-							</>
-						) : (
-							<>
-								Send
-								<CornerDownLeft className="h-3.5 w-3.5" />
-							</>
-						)}
-					</Button>
+					<div className="flex items-center justify-between p-6 pt-0">
+						<div className="flex items-center gap-2">
+							{loadDocumentPanel()}
+							<ModelSelector 
+								onModelChange={setSelectedModel}
+								selectedModel={selectedModel}
+							/>
+						</div>
+						<Button
+							className="gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
+							disabled={
+								isWaitingForResponse ||
+								(!chatInput.trim())
+							}
+							onClick={handleSubmit}
+							size="sm"
+							type="submit"
+						>
+							{isWaitingForResponse ? (
+								<>
+									<Loader2 className="h-3.5 w-3.5 animate-spin" />
+								</>
+							) : (
+								<>
+									Send
+									<CornerDownLeft className="h-3.5 w-3.5" />
+								</>
+							)}
+						</Button>
+					</div>
+				</div>
+				<div className="mt-6"> {/* Tab System */}
+					<div className="flex justify-center mb-6">
+						<div className="inline-flex bg-gray-100 rounded-lg p-1">
+							{staticTabTypes.map((tab) => {
+								const IconComponent = tab.icon;
+								const isActive = activeTab === tab.id;
+								
+								return (
+									<button
+										className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+											isActive 
+												? "bg-white text-indigo-600 shadow-sm" 
+												: "text-gray-600 hover:text-gray-900"
+										}`}
+										key={tab.id}
+										onClick={() => setActiveTab(tab.id)}
+									>
+										<IconComponent className="h-4 w-4" />
+										{tab.label}
+									</button>
+								);
+							})}
+						</div>
+					</div>
+					<ScrollArea className="flex justify-center h-64"> 
+						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl h-32 items-stretch">
+							{staticChatTypes[activeTab]?.map((type) => {
+								const IconComponent = type.icon;
+								const isSelected = chatDirectiveType === type.id;
+								
+								return (
+									<div
+										className={`cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 ${
+											isSelected 
+												? "border-indigo-500 bg-indigo-50" 
+												: "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md"
+										}`}
+										key={`${type.id}-${type.templateId || "default"}`}
+										onClick={() => {
+											if (type.id === "template" && type.templateId) {
+												// Find the full template data from the templates array
+												const fullTemplate = allTemplates?.find((t) => t.id === type.templateId);
+												if (fullTemplate) {
+													handleTemplateSelection(fullTemplate);
+												}
+											} else {
+												setChatDirectiveType(type.id);
+											}
+										}}
+									>
+										<div className="flex flex-col items-center text-center space-y-3">
+											<div className={`p-3 rounded-lg ${
+												isSelected ? "bg-indigo-100" : "bg-gray-50"
+											}`}
+											>
+												<IconComponent 
+													className={`h-6 w-6 ${
+														isSelected ? "text-indigo-600" : "text-gray-600"
+													}`} 
+												/>
+											</div>
+											<div>
+												<h4 className={`font-semibold text-sm mb-1 ${
+													isSelected ? "text-indigo-900" : "text-gray-900"
+												}`}
+												>
+													{type.title}
+												</h4>
+												<p className="text-xs text-gray-600 leading-relaxed">
+													{type.description}
+												</p>
+											</div>
+										</div>
+									</div>
+								);
+							})}
+						</div>
+					</ScrollArea>
 				</div>
 			</div>
 		</div>

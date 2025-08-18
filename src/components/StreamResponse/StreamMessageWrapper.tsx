@@ -12,6 +12,26 @@ import {
 	AccordionTrigger,
 } from "@/components/ui/accordion";
 import { StopCircle } from "lucide-react";
+import { useChatStore } from "@/hooks/useChatStore";
+import MarkDownDisplay from "../Markdown/MarkDownDisplay";
+
+const LoadingDots: React.FC<{ showThinking?: boolean; centered?: boolean }> = ({ 
+	showThinking = false, 
+	centered = false, 
+}) => (
+	<div className={`flex gap-2 items-center ${centered ? "justify-center" : ""} ${showThinking ? "mt-2" : "mt-2"}`}>
+		<div className="flex gap-0.5 items-center">
+			<div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" />
+			<div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce delay-75" />
+			<div className="w-1.5 h-1.5 bg-pink-500 rounded-full animate-bounce delay-150" />
+		</div>
+		{showThinking && (
+			<span className="text-xs text-gray-600 font-medium">
+        thinking...
+			</span>
+		)}
+	</div>
+);
 
 // Notification utility functions
 const requestNotificationPermission = async(): Promise<boolean> => {
@@ -74,18 +94,22 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 	const { toast } = useToast();
 	const queryClient = useQueryClient();
 	const session = useStore((state) => state.session);
-	const localChats = useStore((state) => state.localChats);
 	const setLocalChats = useStore((state) => state.setLocalChats);
 	const activeChatEntity = useStore((state) => state.activeChatEntity);
+	const setStreamingKey = useChatStore((state) => state.setStreamingKey);
 	
 	// Add state for expand/collapse functionality - default to preview mode
 	const [isFullyExpanded, setIsFullyExpanded] = useState(false);
-	const [isLoading, setIsLoading] = useState(true);
 	const [taskStatus, setTaskStatus] = useState<string>("pending");
 	const [isStopping, setIsStopping] = useState(false);
 	
+	// Add thinking state at wrapper level
+	const [isThinking, setIsThinking] = useState(false);
+	const [thinkingContent, setThinkingContent] = useState<string>("");
+	
+
+	
 	// Add state to track stream completion for optimized polling
-	const [isStreamComplete, setIsStreamComplete] = useState(false);
 	const streamCompleteRef = useRef(false);
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const checkTaskStatusRef = useRef<(() => Promise<void>) | null>(null);
@@ -104,8 +128,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 	}, []);
 
 	// Handle stream completion callback - memoized to prevent unnecessary re-renders
-	const handleStreamComplete = useCallback((content: string) => {
-		setIsStreamComplete(true);
+	const handleStreamComplete = useCallback((_content: string) => {
 		streamCompleteRef.current = true;
 		
 		// Clear current timeout and immediately schedule a fast poll
@@ -124,8 +147,22 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 		}
 	}, []);
 
+	// Handle thinking state callbacks
+	const handleThinkingChange = useCallback((thinking: boolean) => {
+		setIsThinking(thinking);
+	}, []);
+
+	const handleThinkingContentChange = useCallback((content: string) => {
+		setThinkingContent(content);
+	}, []);
+
+
+
 	useEffect(() => {
 		if (!streamingKey || !session) return;
+
+		// Set the streaming key in the chat store when streaming starts
+		setStreamingKey(streamingKey);
 
 		let isUnmounted = false;
 		let pollCount = 0;
@@ -137,7 +174,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 				if (pollCount >= MAX_POLL_ATTEMPTS) {
 					console.warn(`Polling timeout for task ${streamingKey} after ${MAX_POLL_ATTEMPTS} attempts`);
 					if (!isUnmounted) {
-						setIsLoading(false);
 						setTaskStatus("timeout");
 						toast({
 							title: "Request Timeout",
@@ -157,7 +193,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 				if (!response || typeof response.status !== "string") {
 					console.error("Invalid response structure from getTaskStatus:", response);
 					if (!isUnmounted) {
-						setIsLoading(false);
 						setTaskStatus("error");
 						toast({
 							title: "Error",
@@ -171,8 +206,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 				setTaskStatus(response.status);
 
 				if (response.status === "completed" && response.result) {
-					setIsLoading(false);
-					
 					// Send notification to user
 					if (notificationsEnabled) {
 						sendNotification("Task Completed! 🎉", {
@@ -254,7 +287,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 					const pollInterval = 500; // 500ms after stream ends
 					timeoutRef.current = setTimeout(checkTaskStatus, pollInterval);
 				} else if (response.status === "failed") {
-					setIsLoading(false);
 					setIsWaitingForResponse(false); // Allow sending new messages when task fails
 					
 					// Handle failed task - replace streaming message with error
@@ -279,7 +311,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 						variant: "destructive",
 					});
 				} else if (response.status === "error") {
-					setIsLoading(false);
 					// Handle error - replace streaming message with error
 					const currentLocalChats = useStore.getState().localChats;
 					const updatedChats = currentLocalChats.map((chat) => {
@@ -305,7 +336,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 					// Handle unknown status
 					console.warn(`Unknown task status: ${response.status}`);
 					if (!isUnmounted) {
-						setIsLoading(false);
 						setTaskStatus("unknown");
 						toast({
 							title: "Error",
@@ -344,8 +374,10 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 				clearTimeout(timeoutRef.current);
 				timeoutRef.current = null;
 			}
+			// Clear streaming key when component unmounts
+			setStreamingKey(null);
 		};
-	}, [streamingKey, session, messageId, activeChatEntity?.id, queryClient, setLocalChats, toast, notificationsEnabled]);
+	}, [streamingKey, session, messageId, activeChatEntity?.id, queryClient, setLocalChats, toast, notificationsEnabled, setStreamingKey]);
 
 	const handleStopAgent = async() => {
 		if (!session || !streamingKey || isStopping) return;
@@ -411,6 +443,11 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 
 	return (
 		<div className="w-full">
+			{isThinking && thinkingContent && (
+				<div className="mb-4">
+					<MarkDownDisplay content={thinkingContent} />
+				</div>
+			)}
 			<Accordion 
 				className="rounded-lg"
 				collapsible
@@ -446,34 +483,37 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 							</div>
 						</div>
 					</AccordionTrigger>
-					{!isFullyExpanded && (
-						<div 
-							className="relative max-h-32 overflow-hidden cursor-pointer hover:bg-gray-25 transition-colors"
-							onClick={() => setIsFullyExpanded(true)}
-						>
-							<div className="p-4 text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
-								<StreamComponent
-									authToken={authToken}
-									onStreamComplete={handleStreamComplete}
-									streamingKey={streamingKey}
-								/>
+					{/* Stream content - single component with conditional styling */}
+					<div className={isFullyExpanded ? "hidden" : "relative max-h-32 overflow-hidden cursor-pointer hover:bg-gray-25 transition-colors"} 
+						 onClick={!isFullyExpanded ? () => setIsFullyExpanded(true) : undefined}
+					>
+						<div className="p-4 text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
+							<div className="stream-content-preview" id={`stream-preview-${streamingKey}`}>
+								{/* Content will be rendered by the single StreamComponent below */}
 							</div>
-							<div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none" />
 						</div>
-					)}
+						{!isFullyExpanded && (
+							<div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+						)}
+					</div>
 					<AccordionContent className="px-4 pb-4">
-						{isFullyExpanded && (
-							<div className="bg-gray-50 rounded-md p-3 ">
-								<div className="text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
-									<StreamComponent
-										authToken={authToken}
-										onStreamComplete={handleStreamComplete}
-										streamingKey={streamingKey}
-									/>
+						<div className="bg-gray-50 rounded-md p-3">
+							<div className="text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
+								<div className="stream-content-expanded" id={`stream-expanded-${streamingKey}`}>
+									{/* Content will be rendered by the single StreamComponent below */}
 								</div>
 							</div>
-						)}
+						</div>
 					</AccordionContent>
+					<StreamComponent
+						authToken={authToken}
+						isExpanded={isFullyExpanded}
+						key={streamingKey}
+						onStreamComplete={handleStreamComplete}
+						onThinkingChange={handleThinkingChange}
+						onThinkingContentChange={handleThinkingContentChange}
+						streamingKey={streamingKey}
+					/>
 				</AccordionItem>
 			</Accordion>
 		</div>
