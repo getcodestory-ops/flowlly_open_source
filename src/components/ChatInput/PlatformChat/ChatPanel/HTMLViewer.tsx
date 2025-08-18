@@ -60,7 +60,8 @@ export const HTMLViewer = ({
 	} else if ((resource as any)?.metadata?.content) {
 		htmlContent = (resource as any).metadata.content;
 		cssContent = (resource as any).metadata.style;
-		headerContent = (resource as any).metadata.header;
+		// Support both 'header' and 'headers' for backward compatibility
+		headerContent = (resource as any).metadata.header || (resource as any).metadata.headers;
 	}
 
 	if (isError || !htmlContent) {

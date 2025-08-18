@@ -22,7 +22,10 @@ interface ChatStore {
 	tabs: SidePanel[];
 	activeTabId: string | null;
 	isWaitingForResponse: boolean;
-	setIsWaitingForResponse: (isWaitingForResponse: boolean) => void;	
+	setIsWaitingForResponse: (isWaitingForResponse: boolean) => void;
+	// Streaming key for active agent stream
+	streamingKey: string | null;
+	setStreamingKey: (streamingKey: string | null) => void;	
 	addTab: (tab: Omit<SidePanel, "id">, forceReload?: boolean) => void;
 	removeTab: (tabId: string) => void;
 	setActiveTab: (tabId: string) => void;
@@ -57,8 +60,8 @@ interface ChatStore {
 	clearChatContext: () => void;
 	// Get combined message (chatInput + chatContext)
 	getCombinedMessage: () => string;
-	chatDirectiveType: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "none";
-	setChatDirectiveType: (directiveType: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "none") => void;
+	chatDirectiveType: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "template" | "templateCreate" | "templateCreateAI" | "none";
+	setChatDirectiveType: (directiveType: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "template" | "templateCreate" | "templateCreateAI" | "none") => void;
 	selectedModel: string;
 	setSelectedModel: (model: string) => void;
 	// Chat type tags for new chats
@@ -81,6 +84,9 @@ interface ChatStore {
 	// Track if we're coming from MeetingChatFromMeetingInstance
 	isFromMeetingInstance: boolean;
 	setIsFromMeetingInstance: (value: boolean) => void;
+	// Store selected template ID for template preview
+	selectedTemplateId: string | null;
+	setSelectedTemplateId: (templateId: string | null) => void;
 	// Reset function for new chats
 	resetForNewChat: () => void;
 }
@@ -113,6 +119,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	activeTabId: null,
 	isWaitingForResponse: false,
 	setIsWaitingForResponse: (isWaitingForResponse) => set({ isWaitingForResponse }),
+	streamingKey: null,
+	setStreamingKey: (streamingKey) => set({ streamingKey }),
 	addTab: (tab, forceReload = false) => set((state) => {
 		const tabId = generateTabId();
 		const newTab = {
@@ -220,7 +228,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		const { chatInput, chatContext } = get();
 		// If there's context, prepend it to the chat input
 		if (chatContext.trim()) {
-			return chatContext.trim() + (chatInput.trim() ? "\n\n" + chatInput.trim() : "");
+			return   chatInput.trim()  + (chatContext.trim() ? "\n\n" + chatContext.trim() : "");
 		}
 		return chatInput;
 	},
@@ -249,6 +257,15 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 				break;
 			case "meetingChat":
 				setChatTypeTags([{ name: "meeting-chat", parent: "root" }]);
+				break;
+			case "template":
+				setChatTypeTags([{ name: "template", parent: "root" }]);
+				break;
+			case "templateCreate":
+				setChatTypeTags([{ name: "template-create", parent: "root" }]);
+				break;
+			case "templateCreateAI":
+				setChatTypeTags([{ name: "template-create-ai", parent: "root" }]);
 				break;
 			default:
 				setChatTypeTags([]);
@@ -290,6 +307,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	// Track if we're coming from MeetingChatFromMeetingInstance
 	isFromMeetingInstance: false,
 	setIsFromMeetingInstance: (value) => set({ isFromMeetingInstance: value }),
+	// Store selected template ID for template preview
+	selectedTemplateId: null,
+	setSelectedTemplateId: (templateId) => set({ selectedTemplateId: templateId }),
 	// Reset function for new chats
 	resetForNewChat: () => set({ 
 		chatInput: "",
@@ -300,6 +320,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		selectedMeetingId: null,
 		meetingWorkflowData: null,
 		isFromMeetingInstance: false,
+		selectedTemplateId: null,
+		streamingKey: null,
 	}),
 }));
 

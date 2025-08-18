@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useStore } from "@/utils/store";
-import { talkToAgent, ProcessedFile } from "@/api/agentRoutes";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { talkToAgent, ProcessedFile, sendMessageToStreamingAgent } from "@/api/agentRoutes";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { createPlatformChatEntity } from "@/api/agentRoutes";
 import { AgentChat, AgentChatEntity } from "@/types/agentChats";
@@ -30,6 +30,7 @@ export function usePlatformChat(
 	const isWaitingForResponse = useChatStore((state) => state.isWaitingForResponse);
 	const chatTypeTags = useChatStore((state) => state.chatTypeTags);
 	const selectedModel = useChatStore((state) => state.selectedModel);
+	const streamingKey = useChatStore((state) => state.streamingKey);
 
 
 	// Use localChats from the store instead of local state
@@ -42,7 +43,7 @@ export function usePlatformChat(
 	const onClose = () => setIsOpen(false);
 	const onOpen = () => setIsOpen(true);
 
-	const { mutate, isPending, data } = useMutation({
+	const { mutate, isPending } = useMutation({
 		mutationFn: talkToAgent,
 		onError: (error) => {
 			console.error("Chat submission error:", error);
@@ -57,7 +58,7 @@ export function usePlatformChat(
 				setLocalChats(localChats.slice(0, -1));
 			}
 		},
-		onSuccess: (data, variables) => {
+		onSuccess: (data, _variables) => {
 			if (!data || !data.agent_response) {
 				console.error("Invalid response from talkToAgent:", data);
 				toast({
@@ -135,6 +136,43 @@ export function usePlatformChat(
 		},
 	});
 
+	// Handle sending message to streaming agent
+	const handleStreamingMessage = async(message: string) => {
+		if (!session || !streamingKey) {
+			toast({
+				title: "Error",
+				description: "No session or streaming key available",
+				variant: "destructive",
+			});
+			return;
+		}
+
+		try {
+			// Clear input and context
+			setChatInput("");
+			clearChatContext();
+
+			// Send message to streaming agent
+			const response = await sendMessageToStreamingAgent({
+				session,
+				streamingKey,
+				message,
+			});
+
+			toast({
+				title: "Message added to queue",
+				description: response.message || "Message sent to agent queue",
+			});
+		} catch (error) {
+			console.error("Error sending message to streaming agent:", error);
+			toast({
+				title: "Error",
+				description: "Failed to send message to agent. Please try again.",
+				variant: "destructive",
+			});
+		}
+	};
+
 	const handleChatSubmit = async({
 		message,
 		files,
@@ -151,7 +189,13 @@ export function usePlatformChat(
 			return;
 		}
 
-		if ( isWaitingForResponse) {
+		// If we're in streaming mode, send message to streaming agent instead
+		if (streamingKey && isWaitingForResponse) {
+			await handleStreamingMessage(message);
+			return;
+		}
+
+		if (isWaitingForResponse) {
 			console.warn("Chat submission blocked - already processing");
 			return;
 		}
@@ -232,6 +276,7 @@ export function usePlatformChat(
 		isOpen,
 		onClose,
 		handleChatSubmit,
+		handleStreamingMessage,
 		setChatInput,
 		chatInput,
 		getCombinedMessage,

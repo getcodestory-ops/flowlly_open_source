@@ -10,10 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
 	CornerDownLeft,
-	Loader2,
 	Paperclip,
 	Bird,
-	FolderOpen
+	FolderOpen,
+	StopCircle
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -23,7 +23,7 @@ import clsx from "clsx";
 import AtSelectorComponent from "./components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
 import EmptyChatInterface from "./PlatformChatInterface/components/EmptyChatInterface/EmptyChatInterface";
-import { requestHelp } from "@/api/agentRoutes";
+import { requestHelp, stopAgent } from "@/api/agentRoutes";
 import ModelSelector from "./components/ModelSelector";
 
 
@@ -53,8 +53,34 @@ export default function PlatformChatInterface({
 		activeChatEntity,
 		setIsWaitingForResponse,
 	} = usePlatformChat(folderId, chatTarget, includeContext);
-	const { setSidePanel, setCollapsed, contextFolder, selectedModel, setSelectedModel } = useChatStore();
+	const { setSidePanel, setCollapsed, contextFolder, selectedModel, setSelectedModel, streamingKey } = useChatStore();
+	const [isStopping, setIsStopping] = React.useState(false);
 	
+	const handleStopAgent = async() => {
+		if (!session || !streamingKey || isStopping) return;
+		
+		setIsStopping(true);
+		try {
+			const response = await stopAgent({
+				session,
+				streamingId: streamingKey,
+			});
+			
+			toast({
+				title: "Stopping agent gracefully!",
+				description: response.message || "Stop signal sent to agent",
+			});
+		} catch (error) {
+			console.error("Error stopping agent:", error);
+			toast({
+				title: "Error",
+				description: "Failed to send stop signal. Please try again.",
+				variant: "destructive",
+			});
+		} finally {
+			setIsStopping(false);
+		}
+	};
 
 	const scrollToBottom = () => {
 		if (chatContainerRef.current) {
@@ -265,18 +291,22 @@ export default function PlatformChatInterface({
 				</div>
 				<Textarea
 					className="min-h-10 resize-none border-0 p-3 pb-4 mt-4 shadow-none focus-visible:ring-0"
-					disabled={isPending}
+					disabled={isPending || (isWaitingForResponse && !streamingKey)}
 					id="message"
 					onChange={(e) => setChatInput(e.target.value)}
 					onKeyDown={(e) => {
 						if (e.key === "Enter" && !e.shiftKey) {
 							e.preventDefault();
-							if (chatInput.trim() && !isPending) {
+							if (chatInput.trim() && (!isPending && (!isWaitingForResponse || streamingKey))) {
 								handleSubmit();
 							}
 						}
 					}}
-					placeholder="Type message here or attach relevant files and set chat output folder using the clip icon below..."
+					placeholder={
+						isWaitingForResponse && streamingKey 
+							? "Type message to add to agent queue..." 
+							: "Type message here or attach relevant files and set chat output folder using the clip icon below..."
+					}
 					value={chatInput}
 				/>
 				<div className="flex items-center justify-between p-3 pt-0">
@@ -288,18 +318,28 @@ export default function PlatformChatInterface({
 						/>
 					</div>
 					<Button
-						className="gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
+						className={`gap-1.5 transition-colors ${
+							isWaitingForResponse && streamingKey && !chatInput.trim()
+								? "bg-red-500 hover:bg-red-600 text-white animate-pulse" 
+								: "bg-indigo-500 hover:bg-indigo-600 text-white"
+						}`}
 						disabled={
-							isWaitingForResponse ||
-							(!chatInput.trim() )
+							(!chatInput.trim() && (!isWaitingForResponse || !streamingKey)) ||
+							(isWaitingForResponse && !streamingKey) ||
+							isStopping
 						}
-						onClick={handleSubmit}
+						onClick={
+							isWaitingForResponse && streamingKey && !chatInput.trim() 
+								? handleStopAgent 
+								: handleSubmit
+						}
 						size="sm"
 						type="submit"
 					>
-						{isWaitingForResponse ? (
+						{isWaitingForResponse && streamingKey && !chatInput.trim() ? (
 							<>
-								<Loader2 className="h-3.5 w-3.5 animate-spin" />
+								<StopCircle className="h-3.5 w-3.5" />
+								{isStopping ? "Stopping..." : "Stop"}
 							</>
 						) : (
 							<>
