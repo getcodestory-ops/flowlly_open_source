@@ -161,7 +161,6 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 		// Handle heartbeat events separately
 		eventSource.addEventListener("heartbeat", (_event) => {
 			// Heartbeat received, can be used for connection monitoring if needed
-			// //console.log("Heartbeat received");
 		});
 
 		// Handle thinking events
