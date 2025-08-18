@@ -1,0 +1,192 @@
+/* TipTap Editor Custom Styles */
+
+/* Image Resize Handles */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.ProseMirror img:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Image resize handles from tiptap-extension-resize-image */
+.ProseMirror .image-resizer {
+  display: inline-block;
+  position: relative;
+}
+
+.ProseMirror .image-resizer img {
+  margin: 0;
+  display: block;
+}
+
+.ProseMirror .image-resizer .resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #3b82f6;
+  border: 2px solid white;
+  border-radius: 50%;
+  cursor: nw-resize;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ProseMirror .image-resizer .resize-handle.bottom-right {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+}
+
+.ProseMirror .image-resizer .resize-handle.bottom-left {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
+}
+
+.ProseMirror .image-resizer .resize-handle.top-right {
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
+}
+
+.ProseMirror .image-resizer .resize-handle.top-left {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+
+/* Table Styles */
+.ProseMirror table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  margin: 1rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ProseMirror th,
+.ProseMirror td {
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  text-align: left;
+  vertical-align: top;
+  position: relative;
+}
+
+.ProseMirror th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+}
+
+.ProseMirror td {
+  background-color: white;
+  color: #6b7280;
+  transition: background-color 0.2s ease;
+}
+
+.ProseMirror td:hover {
+  background-color: #f9fafb;
+}
+
+.ProseMirror .selectedCell {
+  background-color: #dbeafe !important;
+  position: relative;
+}
+
+.ProseMirror .selectedCell::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(59, 130, 246, 0.1);
+  pointer-events: none;
+}
+
+/* Table resize handles */
+.ProseMirror .tableWrapper {
+  position: relative;
+  overflow-x: auto;
+}
+
+.ProseMirror .resize-cursor {
+  cursor: col-resize;
+}
+
+/* Column resize handle */
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: #3b82f6;
+  cursor: col-resize;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.ProseMirror .column-resize-handle.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Focus and selection styles */
+.ProseMirror:focus {
+  outline: none;
+}
+
+.ProseMirror .ProseMirror-selectednode {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Drag handle for tables */
+.ProseMirror .tableWrapper .drag-handle {
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  width: 12px;
+  height: 12px;
+  background: #3b82f6;
+  border: 2px solid white;
+  border-radius: 3px;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.ProseMirror .tableWrapper:hover .drag-handle {
+  opacity: 1;
+}
+
+.ProseMirror .tableWrapper .drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Responsive table styles */
+@media (max-width: 768px) {
+  .ProseMirror table {
+    font-size: 12px;
+  }
+  
+  .ProseMirror th,
+  .ProseMirror td {
+    padding: 8px;
+  }
+}
