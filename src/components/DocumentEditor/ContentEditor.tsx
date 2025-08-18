@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useCallback } from "react";
 import { useEditor } from "@tiptap/react";
 import { StarterKit } from "@tiptap/starter-kit";
 import { TextStyle } from "@tiptap/extension-text-style";
@@ -20,16 +20,17 @@ import { StyleParser } from "./extensions/StyleParser";
 import { ClassPreservationExtension } from "./extensions/ClassPreservationExtension";
 import { DivExtension } from "./extensions/DivExtension";
 import { SpanExtension } from "./extensions/SpanExtension";
-import Image from "@tiptap/extension-image";
+import ResizeImage from "tiptap-extension-resize-image";
 import EditorProvider from "./EditorProvider";
 import ReactChartDisplayExtension from "./extensions/ReactChartDisplayExtension";
 import CommentsPanel from "./CommentsPanel";
 import EditorBubbleMenu from "./BubbleMenu";
 import { useStore } from "@/utils/store";
 import { useEditorStore } from "@/hooks/useEditorStore";
+import "./editor-styles.css";
 
 interface EditorBlockProps {
-  content: string | any;
+  content: string | unknown;
   setContent?: (_: string) => void;
   saveFunction?: (_: string) => void;
   documentType?: string;
@@ -38,7 +39,7 @@ interface EditorBlockProps {
   projectAccessId?: string;
   showDiffButtons?: boolean;
   showComments?: boolean;
-  onCommentsChange?: (threads: any[]) => void;
+  onCommentsChange?: (threads: unknown[]) => void;
 }
 
 const ContentEditor = ({
@@ -49,7 +50,6 @@ const ContentEditor = ({
 	documentId,
 	documentName,
 	projectAccessId,
-	showDiffButtons = true,
 	showComments = false,
 	onCommentsChange,
 }: EditorBlockProps): React.ReactNode => {
@@ -115,7 +115,7 @@ const ContentEditor = ({
 			Table.configure({
 				resizable: true,
 			}),
-			Image.configure({
+			ResizeImage.configure({
 				allowBase64: true,
 				inline: true,
 			}),
