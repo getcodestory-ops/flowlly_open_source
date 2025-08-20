@@ -282,12 +282,15 @@ const AttachmentsComponent: React.FC<{ attachments: string }> = ({ attachments }
 		}
 		
 		const files = parsedAttachments.map((attachment: Attachment) => ({	
-			resource_id: attachment.uuid,
+			resource_id: attachment.is_sandbox_file 
+				? `${attachment.uuid}::${attachment.name}` // Use sandbox_id::filename for unique identification
+				: attachment.uuid,
 			resource_name: attachment.name,
 			extension: attachment.type || attachment.extension,
 			url: attachment.url, // Include URL if present
 			type: attachment.is_sandbox_file ? "sandbox" : "storage",
 			focus: attachment.focus,
+			sandbox_id: attachment.is_sandbox_file ? attachment.uuid : undefined, // Explicit sandbox ID for API calls
 		}));
 		
 		return <AttachmentViewer files={files} />;

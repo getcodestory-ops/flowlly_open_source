@@ -10,6 +10,7 @@ interface Attachment {
     extension?: string;
     focus?: boolean; // New focus parameter for highlighting important files
 	type?: "storage" | "sandbox"; // Type of file: storage (default) or sandbox
+	sandbox_id?: string; // Explicit sandbox ID for API calls (only for sandbox files)
 }
 
 interface AttachmentViewerProps {
@@ -43,9 +44,10 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ files, onFileClick 
 		} else {
 			setSidePanel({
 				isOpen: true,
-				type: file.type === "sandbox" ? "sandbox" : "sources",
+				type: file.type === "sandbox"  ? "sandbox" : "sources",
 				resourceId: file.resource_id,
 				filename: file.resource_name,
+				sandbox_id: file.sandbox_id, // Pass explicit sandbox_id for API calls
 			});
 			setCollapsed(true);
 		}
@@ -53,13 +55,10 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ files, onFileClick 
 
 	if (!files || files.length === 0) return null;
 
-	// Sort files to show focused ones first, then storage files, then sandbox/temp files
 	const sortedFiles = [...files].sort((a, b) => {
-		// First priority: focused files
 		if (a.focus && !b.focus) return -1;
 		if (!a.focus && b.focus) return 1;
 		
-		// Second priority: file type (storage before sandbox)
 		if (a.type !== "sandbox" && b.type === "sandbox") return -1;
 		if (a.type === "sandbox" && b.type !== "sandbox") return 1;
 		
