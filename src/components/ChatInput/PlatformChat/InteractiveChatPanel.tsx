@@ -37,6 +37,16 @@ const getFileIcon = (extension: string) : React.ReactNode => {
 	return <File className="h-4 w-4" />;
 };
 
+// Helper function to get sandbox_id for API calls
+const getSandboxId = (tab: any): string => {
+	// For sandbox files, use the explicit sandbox_id field if available
+	if (tab.type === "sandbox" && tab.sandbox_id) {
+		return tab.sandbox_id;
+	}
+	// Fallback to resourceId for non-sandbox files or if sandbox_id is not available
+	return tab.resourceId;
+};
+
 const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : React.ReactNode => {
 	const { tabs, activeTabId, setActiveTab, removeTab, clearAllTabs, addTab } = useChatStore();
 	const [viewModes, setViewModes] = useState<{[tabId: string]: "original" | "text"}>({});
@@ -66,10 +76,11 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 				return Promise.reject("No session, active project, or resource ID");
 			}
 			const isSandboxFile = activeTab.type === "sandbox";
+			const sandboxId = getSandboxId(activeTab);
 			return getInlineDocument({ 
 				session, 
 				projectId: activeProject.project_id, 
-				resourceId: activeTab.resourceId,
+				resourceId: sandboxId, // Use explicit sandbox_id for API call
 				isSandboxFile,
 				fileName: activeTab.filename,
 			});
@@ -85,10 +96,11 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 			if (!session || !activeProject?.project_id || !activeTab.resourceId) return;
 
 			const isSandboxFile = activeTab.type === "sandbox";
+			const sandboxId = getSandboxId(activeTab);
 			const resource = await fetchResource(
 				session,
 				activeProject.project_id,
-				activeTab.resourceId,
+				sandboxId, // Use explicit sandbox_id for API call
 				isSandboxFile,
 				activeTab.filename,
 			);
@@ -669,7 +681,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 													fileName={tab.filename}
 													isSandboxFile
 													lastReloadTime={tab.lastReloadTime}
-													resource_id={tab.resourceId}
+													resource_id={getSandboxId(tab)}
 												/>
 											) : (
 												<InlineDocumentViewer 
@@ -677,7 +689,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 													fileName={tab.filename}
 													isSandboxFile
 													lastReloadTime={tab.lastReloadTime}
-													resourceId={tab.resourceId}
+													resourceId={getSandboxId(tab)}
 												/>
 											)
 										) : (
@@ -685,7 +697,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 												fileName={tab.filename}
 												isSandboxFile
 												lastReloadTime={tab.lastReloadTime}
-												resource_id={tab.resourceId}
+												resource_id={getSandboxId(tab)}
 											/>
 										)}
 									</>
@@ -695,7 +707,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 										fileName={tab.filename}
 										isSandboxFile
 										lastReloadTime={tab.lastReloadTime}
-										resource_id={tab.resourceId}
+										resource_id={getSandboxId(tab)}
 									/>
 								)}
 							</>

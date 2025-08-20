@@ -66,8 +66,11 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			setSidePanel({
 				isOpen: true,
 				type: fileType,
-				resourceId: attachment.uuid,
+				resourceId: attachment.is_sandbox_file 
+					? `${attachment.uuid}::${attachment.name}` // Use sandbox_id::filename for unique identification
+					: attachment.uuid,
 				filename: attachment.name,
+				sandbox_id: attachment.is_sandbox_file ? attachment.uuid : undefined, // Store original sandbox_id for API calls
 			});
 			setCollapsed(true);
 		} catch (error) {

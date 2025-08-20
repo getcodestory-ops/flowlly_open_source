@@ -8,6 +8,7 @@ interface SidePanel {
 	filename?: string;
 	title?: string;
 	contextId?: string;
+	sandbox_id?: string; // Explicit sandbox ID for API calls (only for sandbox files)
 	// Force reload timestamp for content refresh
 	lastReloadTime?: number;
 }
@@ -110,10 +111,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		};
 		
 		set({ sidePanel: tabWithId });
-		
-		// Also add to tabs for the new interface
+
 		const { addTab } = get();
-		addTab(sidePanel, true); // Force reload for setSidePanel calls
+		addTab(sidePanel, true); 
 	},
 	tabs: [],
 	activeTabId: null,
