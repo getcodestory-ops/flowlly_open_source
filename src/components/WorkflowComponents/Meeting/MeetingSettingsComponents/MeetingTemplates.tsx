@@ -114,7 +114,7 @@ export const MeetingTemplates: React.FC = () => {
 					<AlertDescription className="text-red-800">{error}</AlertDescription>
 				</Alert>
 			)}
-			<div className="space-y-4">
+			<div className="space-y-4 h-[80vh] overflow-y-auto">
 				<ContentEditor 
 					content={minutesContent}
 					documentType="Minutes of the meeting"

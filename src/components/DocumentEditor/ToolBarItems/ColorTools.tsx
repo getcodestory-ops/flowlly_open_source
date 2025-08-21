@@ -52,8 +52,10 @@ const ColorTools: React.FC<ColorToolsProps> = ({ editor }) => {
 								className="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500 transition-colors"
 								key={color}
 								onClick={() => {
+									// First unset any existing color, then set the new color
 									editor.chain()
 										.focus()
+										.unsetColor()
 										.setColor(color)
 										.run();
 								}}
