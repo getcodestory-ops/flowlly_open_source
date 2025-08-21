@@ -3,6 +3,7 @@ import { useStore } from "@/utils/store";
 import { fetchResource } from "@/api/folderRoutes";
 import ContentEditor from "../DocumentEditor/ContentEditor";
 import { useStorageTextFileSave } from "../DocumentEditor/useStorageTextSave";
+import { useSandboxFileSave } from "../DocumentEditor/useSandboxFileSave";
 import LoaderAnimation from "../Animations/LoaderAnimation";
 
 export function ResourceTextViewer({ 
@@ -20,7 +21,12 @@ export function ResourceTextViewer({
 }) {
 	const activeProject = useStore((state) => state.activeProject);
 	const session = useStore((state) => state.session);
-	const { onSubmit, isPending } = useStorageTextFileSave(resource_id);
+	
+	// Use appropriate save hook based on file type
+	const storageFileSave = useStorageTextFileSave(resource_id);
+	const sandboxFileSave = useSandboxFileSave(resource_id, fileName);
+	
+	const { onSubmit, isPending } = isSandboxFile ? sandboxFileSave : storageFileSave;
 
 	const { data, isLoading, error } = useQuery({
 		queryKey: ["aiJobResource", resource_id, isSandboxFile, fileName, lastReloadTime],

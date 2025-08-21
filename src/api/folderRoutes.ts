@@ -404,6 +404,39 @@ const getUrlInput = (
 };
 
 
+export const updateSandboxFile = async({
+	session,
+	projectId,
+	sandboxId,
+	fileName,
+	updatedContent,
+}: {
+	session: Session;
+	projectId: string;
+	sandboxId: string;
+	fileName: string;
+	updatedContent: string;
+}) : Promise<{ message: string }> => {
+	const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/sandbox/${projectId}/${sandboxId}/file`;
+	
+	try {
+		const response = await axios.put(baseUrl, {
+			file_name: fileName,
+			updated_content: updatedContent,
+		}, {
+			headers: {
+				Authorization: `Bearer ${session.access_token}`,
+				"Content-Type": "application/json",
+			},
+		});
+
+		return response.data;
+	} catch (error) {
+		console.error("Error updating sandbox file:", error);
+		throw error;
+	}
+};
+
 export const getInlineDocument = async({
 	session,
 	projectId,

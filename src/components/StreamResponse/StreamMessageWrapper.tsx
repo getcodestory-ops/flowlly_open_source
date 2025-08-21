@@ -11,27 +11,11 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from "@/components/ui/accordion";
-import { StopCircle } from "lucide-react";
+import {  LaptopMinimalIcon } from "lucide-react";
 import { useChatStore } from "@/hooks/useChatStore";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
 
-const LoadingDots: React.FC<{ showThinking?: boolean; centered?: boolean }> = ({ 
-	showThinking = false, 
-	centered = false, 
-}) => (
-	<div className={`flex gap-2 items-center ${centered ? "justify-center" : ""} ${showThinking ? "mt-2" : "mt-2"}`}>
-		<div className="flex gap-0.5 items-center">
-			<div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" />
-			<div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce delay-75" />
-			<div className="w-1.5 h-1.5 bg-pink-500 rounded-full animate-bounce delay-150" />
-		</div>
-		{showThinking && (
-			<span className="text-xs text-gray-600 font-medium">
-        thinking...
-			</span>
-		)}
-	</div>
-);
+
 
 // Notification utility functions
 const requestNotificationPermission = async(): Promise<boolean> => {
@@ -379,37 +363,13 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 		};
 	}, [streamingKey, session, messageId, activeChatEntity?.id, queryClient, setLocalChats, toast, notificationsEnabled, setStreamingKey]);
 
-	const handleStopAgent = async() => {
-		if (!session || !streamingKey || isStopping) return;
-		
-		setIsStopping(true);
-		try {
-			const response = await stopAgent({
-				session,
-				streamingId: streamingKey,
-			});
-			
-			toast({
-				title: "Stopping agent gracefully!",
-				description: response.message || "Stop signal sent to agent",
-			});
-		} catch (error) {
-			console.error("Error stopping agent:", error);
-			toast({
-				title: "Error",
-				description: "Failed to send stop signal. Please try again.",
-				variant: "destructive",
-			});
-		} finally {
-			setIsStopping(false);
-		}
-	};
+
 
 	const getStatusText = () => {
 		switch (taskStatus) {
 			case "pending":
 			case "processing":
-				return "Flowlly is Operating Computer";
+				return <LaptopMinimalIcon className="w-3 h-3 " />;
 			case "completed":
 				return "Complete";
 			case "failed":
@@ -465,18 +425,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 										<AnimatedDots />
 									)}
 								</span>
-								{(taskStatus === "pending" || taskStatus === "processing") && (
-									<button
-										className="px-1 py-0.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-										disabled={isStopping}
-										onClick={(e) => {
-											e.stopPropagation();
-											handleStopAgent();
-										}}
-									>
-										<StopCircle className="h-3 w-3" />
-									</button>
-								)}
 							</div>
 							<div className="text-xs text-gray-400">
 								{isFullyExpanded ? "Hide computer process" : "See computer process"}

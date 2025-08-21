@@ -324,6 +324,22 @@ Respect the Single Source of Truth: I now understand that for any document using
 
 Always Use Stable URLs for Assets: For any external resources like images, I will immediately use the get_project_document_url tool to ensure a reliable link, avoiding broken assets from the start.
 Once you have generate the prompt and template file, ask user to review and approve the prompt and template file.
+
+Problem: The Template Was Too Plain
+
+Your Feedback: You noted that the first HTML template was too basic and didn't resemble the professional look of the sample report.
+Correction: I created a much more detailed second version that incorporated the cover image, brand colors, custom fonts, and a layout with headers and footers that mirrored the original report.
+Problem: Blank First Page and Duplicated Cover Image
+
+Your Feedback: You identified that the improved template was generating a blank page after the cover and that the cover image was sometimes reappearing on a third page.
+My Mistake: This was caused by an incorrect page-breaking strategy. I was using break-after: page on the cover page itself, which told the browser to create the cover and then force a new page, which resulted in the blank page. This also confused the rendering engine, causing the duplicated cover.
+Correction: The solution was to remove the page break from the cover element. Instead, I applied a break-before: page style to the very first content element after the cover (the "Executive Summary" heading). This ensures the cover is rendered on its own, and the next page starts cleanly with the first section, resolving both the blank page and the duplication issue.
+Problem: Header Text Was Cut Off
+
+Your Feedback: You pointed out that the address in the top-right of the header was cramped and getting cut off.
+My Mistake: The CSS for the header's right margin box (@top-right) was aligning the text to the right but had no padding, causing it to sit flush against the page margin.
+Correction: I added padding to the right side of the header's text, which provided the necessary space and corrected the alignment issue.
+
 When approved use create_report_template tool to create the report template. This prompt is written by system admin, the user does not have expertiese in css, html, js, pagedjs, or internal tools so when interactive with them spare the technical details and keep your response style simple and easy to understand.
 :::`;
 }
