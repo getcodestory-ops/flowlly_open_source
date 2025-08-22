@@ -23,7 +23,7 @@ const getFileIcon = (extension: string): JSX.Element => {
 	const ext = extension.toLowerCase();
 	if (["jpg", "jpeg", "png", "gif", "bmp", "svg", "webp", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp"].includes(ext)) {
 		return <FileImage className="h-5 w-5" />;
-	} else if (["doc", "docx", "txt", "rtf", "pdf", ".doc", ".docx", ".txt", ".rtf", ".pdf"].includes(ext)) {
+	} else if (["doc", "docx", "txt", "rtf", "pdf", ".doc", ".docx", ".txt", ".rtf", ".pdf", ".ppt", ".pptx", ".pptx"].includes(ext)) {
 		return <FileText className="h-5 w-5" />;
 	} else if (["xls", "xlsx", "csv", ".xls", ".xlsx", ".csv"].includes(ext)) {
 		return <FileSpreadsheet className="h-5 w-5" />;
