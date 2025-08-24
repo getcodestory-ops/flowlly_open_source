@@ -166,7 +166,7 @@ export default function KnowledgeManager({
 
 	// Use ref to track the last prompt to prevent unnecessary updates
 	const lastPromptRef = useRef<string>("");
-	const debounceTimeoutRef = useRef<NodeJS.Timeout>();
+	const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	const handleInputChange = useCallback((field: keyof KnowledgeManagerFormData, value: string) => {
 		setFormData((prev) => ({

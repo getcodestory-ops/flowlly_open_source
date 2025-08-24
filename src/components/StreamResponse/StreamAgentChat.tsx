@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import MarkdownTerminal from "../Markdown/style/MarkdownTerminal";
 import { useChatStore } from "@/hooks/useChatStore";
+import { ComputerEvent } from "@/types/computerEvents";
 
 
 interface StreamComponentProps {
@@ -11,6 +12,7 @@ interface StreamComponentProps {
   onStreamComplete?: (content: string) => void;
   onThinkingChange?: (thinking: boolean) => void;
   onThinkingContentChange?: (content: string) => void;
+  onComputerEvent?: (event: ComputerEvent) => void;
   isExpanded?: boolean;
 }
 
@@ -47,6 +49,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	onStreamComplete,
 	onThinkingChange,
 	onThinkingContentChange,
+	onComputerEvent,
 	isExpanded = false,
 }) => {
 	const [displayValue, setDisplayValue] = useState<string>("");
@@ -75,6 +78,32 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			setCollapsed(true);
 		} catch (error) {
 			console.error("Error parsing attachment data:", error);
+		}
+	};
+
+	// Helper function to handle computer events
+	const handleComputerEvent = (computerEventString: string): void => {
+		try {
+			// Parse the computer event data from the stream
+			const computerEvent: ComputerEvent = JSON.parse(computerEventString);
+			
+			// Call the callback if provided
+			if (onComputerEvent) {
+				onComputerEvent(computerEvent);
+			}
+
+			// If it's a sandbox started event, also open the computer tab
+			if (computerEvent.action === "sandbox_started") {
+				setSidePanel({
+					isOpen: true,
+					type: "computer",
+					resourceId: "1234",
+					title: "Flowlly Desktop",
+				});
+				setCollapsed(true);
+			}
+		} catch (error) {
+			console.error("Error parsing computer event data:", error);
 		}
 	};
 
@@ -118,13 +147,19 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 						if (thinkingData === "STARTED") {
 							setIsThinking(true);
 							setThinkingContent("");
-							onThinkingChange?.(true);
-							onThinkingContentChange?.("");
+							// Defer the callback to avoid setState during render
+							setTimeout(() => {
+								onThinkingChange?.(true);
+								onThinkingContentChange?.("");
+							}, 0);
 						} else if (thinkingData === "ENDED") {
 							setIsThinking(false);
 							setThinkingContent("");
-							onThinkingChange?.(false);
-							onThinkingContentChange?.("");
+							// Defer the callback to avoid setState during render
+							setTimeout(() => {
+								onThinkingChange?.(false);
+								onThinkingContentChange?.("");
+							}, 0);
 						} else {
 							// This is thinking content - accumulate it
 							setIsThinking(true);
@@ -132,10 +167,16 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 								// Convert escaped newlines to actual newlines
 								const processedData = thinkingData.replace(/\\n/g, "\n");
 								const newContent = prev + processedData;
-								onThinkingContentChange?.(newContent);
+								// Defer the callback to avoid setState during render
+								setTimeout(() => {
+									onThinkingContentChange?.(newContent);
+								}, 0);
 								return newContent;
 							});
-							onThinkingChange?.(true);
+							// Defer the callback to avoid setState during render
+							setTimeout(() => {
+								onThinkingChange?.(true);
+							}, 0);
 						}
 					}
 					return; // Don't add this to displayValue
@@ -147,6 +188,16 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 					const dataPart = event.data.split("data: ")[1];
 					if (dataPart) {
 						handleAttachmentEvent(dataPart.trim());
+					}
+					return; // Don't add this to displayValue
+				}
+
+				// Check if this is a COMPUTER event that came through as regular message data
+				if (event.data.includes("event: COMPUTER")) {
+					// Extract the data part after "data: "
+					const dataPart = event.data.split("data: ")[1];
+					if (dataPart) {
+						handleComputerEvent(dataPart.trim());
 					}
 					return; // Don't add this to displayValue
 				}
@@ -173,13 +224,19 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 				if (thinkingData === "STARTED") {
 					setIsThinking(true);
 					setThinkingContent("");
-					onThinkingChange?.(true);
-					onThinkingContentChange?.("");
+					// Defer the callback to avoid setState during render
+					setTimeout(() => {
+						onThinkingChange?.(true);
+						onThinkingContentChange?.("");
+					}, 0);
 				} else if (thinkingData === "ENDED") {
 					setIsThinking(false);
 					setThinkingContent("");
-					onThinkingChange?.(false);
-					onThinkingContentChange?.("");
+					// Defer the callback to avoid setState during render
+					setTimeout(() => {
+						onThinkingChange?.(false);
+						onThinkingContentChange?.("");
+					}, 0);
 				} else {
 					// This is thinking content - accumulate it
 					setIsThinking(true);
@@ -187,10 +244,16 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 						// Convert escaped newlines to actual newlines
 						const processedData = thinkingData.replace(/\\n/g, "\n");
 						const newContent = prev + processedData;
-						onThinkingContentChange?.(newContent);
+						// Defer the callback to avoid setState during render
+						setTimeout(() => {
+							onThinkingContentChange?.(newContent);
+						}, 0);
 						return newContent;
 					});
-					onThinkingChange?.(true);
+					// Defer the callback to avoid setState during render
+					setTimeout(() => {
+						onThinkingChange?.(true);
+					}, 0);
 				}
 			}
 		});
@@ -199,6 +262,13 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 		eventSource.addEventListener("ATTACHMENT", (event) => {
 			if (event.data) {
 				handleAttachmentEvent(event.data);
+			}
+		});
+
+		// Handle computer events
+		eventSource.addEventListener("COMPUTER", (event) => {
+			if (event.data) {
+				handleComputerEvent(event.data);
 			}
 		});
 

@@ -61,7 +61,7 @@ const ExportTools: React.FC<ExportToolsProps> = ({ editor, onShowSaveAsDialog })
 	return (
 		<Menubar className="bg-transparent border-none p-0 m-0 shadow-none">
 			<MenubarMenu>
-				<MenubarTrigger className="bg-transparent border-none p-0 m-0 shadow-none">
+				<MenubarTrigger asChild>
 					<ToolTipedButton onClick={() => {}} tooltip="Export">
 						<FaFileDownload /> <RxTriangleDown />
 					</ToolTipedButton>

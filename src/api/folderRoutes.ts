@@ -90,7 +90,7 @@ export const fetchFolders = async(
 	isProjectWide: boolean,
 	callBack?: (data: any) => void,
 ): Promise<GetFolderSubFolderProp[]> => {
-	if (!session || !session.access_token) {
+	if (!session || !session.access_token || folderId === "root") {
 		return [];
 	}
 	const { baseUrl, data } = getUrlInput(
@@ -124,8 +124,8 @@ export const fetchFiles = async(
 	isProjectWide: boolean,
 	callBack?: (data: any) => void,
 ) => {
-	if (!session) {
-		return;
+	if (!session || folderId === "root") {
+		return [];
 	}
 	const { baseUrl, data } = getUrlInput(
 		session,

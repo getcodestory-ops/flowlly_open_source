@@ -1,9 +1,10 @@
 import { create } from "zustand";
+import { ComputerEvent } from "@/types/computerEvents";
 
 interface SidePanel {
 	id: string;
 	isOpen: boolean;
-	type: "sources" | "editor" | "pdfViewer" | "log" | "folder" | "sandbox";
+	type: "sources" | "editor" | "pdfViewer" | "log" | "folder" | "sandbox" | "computer";
 	resourceId: string;
 	filename?: string;
 	title?: string;
@@ -11,6 +12,8 @@ interface SidePanel {
 	sandbox_id?: string; // Explicit sandbox ID for API calls (only for sandbox files)
 	// Force reload timestamp for content refresh
 	lastReloadTime?: number;
+	// For computer tabs - whether terminal should be expanded initially
+	initialTerminalExpanded?: boolean;
 }
 
 interface ChatStore {
@@ -27,6 +30,9 @@ interface ChatStore {
 	// Streaming key for active agent stream
 	streamingKey: string | null;
 	setStreamingKey: (streamingKey: string | null) => void;	
+	// Virtual computer event handler
+	virtualComputerEventHandler: ((event: ComputerEvent) => void) | null;
+	setVirtualComputerEventHandler: (handler: ((event: ComputerEvent) => void) | null) => void;
 	addTab: (tab: Omit<SidePanel, "id">, forceReload?: boolean) => void;
 	removeTab: (tabId: string) => void;
 	setActiveTab: (tabId: string) => void;
@@ -121,6 +127,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	setIsWaitingForResponse: (isWaitingForResponse) => set({ isWaitingForResponse }),
 	streamingKey: null,
 	setStreamingKey: (streamingKey) => set({ streamingKey }),
+	virtualComputerEventHandler: null,
+	setVirtualComputerEventHandler: (handler) => set({ virtualComputerEventHandler: handler }),
 	addTab: (tab, forceReload = false) => set((state) => {
 		const tabId = generateTabId();
 		const newTab = {

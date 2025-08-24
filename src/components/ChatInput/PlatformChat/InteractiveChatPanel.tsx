@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import FolderSelector from "@/components/ProjectEvent/FolderSelector";
 import { UnsavedChangesDialog } from "@/components/DocumentEditor/ToolBarItems";
+import VirtualComputerTab from "@/components/VirtualComputer/VirtualComputerTab";
 
 
 
@@ -85,7 +86,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 				fileName: activeTab.filename,
 			});
 		},
-		enabled: !!session && !!activeProject?.project_id && !!activeTab?.resourceId,
+		enabled: !!session && !!activeProject?.project_id && !!activeTab?.resourceId && activeTab?.type !== "computer",
 	});
 
 	const handlePrintActiveHtml = async(): Promise<void> => {
@@ -380,6 +381,19 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 		});
 	};
 
+	const handleOpenComputer = () => {
+		// Generate a unique sandbox ID for the fake computer
+		const fakeSandboxId = `fake_${Date.now()}_${Math.random().toString(36)
+			.substr(2, 9)}`;
+		
+		addTab({
+			isOpen: true,
+			type: "computer",
+			resourceId: fakeSandboxId,
+			title: "Virtual Computer",
+		});
+	};
+
 	// Tab scrolling functions
 	const checkScrollButtons = () => {
 		if (!scrollContainerRef.current) return;
@@ -510,13 +524,11 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 							</div>
 						)}
 						<div 
-							className="overflow-x-auto"
+							className="overflow-x-auto scrollbar-hide"
 							ref={scrollContainerRef}
 							style={{
 								scrollbarWidth: "none",
 								msOverflowStyle: "none",
-								// @ts-ignore
-								"&::-webkit-scrollbar": { display: "none" },
 							}}
 						>
 							<div className="flex items-end pb-1 px-2 gap-1 h-[51px]">
@@ -573,14 +585,12 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 													</span>
 												)}
 											</span>
-											<Button
-												className="h-4 w-4 p-0 hover:bg-gray-200 flex-shrink-0 ml-1"
+											<div
+												className="h-4 w-4 p-0 hover:bg-gray-200 flex-shrink-0 ml-1 inline-flex items-center justify-center rounded cursor-pointer"
 												onClick={(e) => handleTabClose(tab.id, e)}
-												size="icon"
-												variant="ghost"
 											>
 												<X className="h-3 w-3" />
-											</Button>
+											</div>
 										</button>
 									);
 								})}
@@ -608,6 +618,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 							}
 						}}
 						onDownload={handleDownload}
+						onOpenComputer={handleOpenComputer}
 						onPrint={handlePrintActiveHtml}
 						onRename={() => activeTab && handleFileNameDoubleClick(activeTab)}
 						onSaveAs={() => setShowSaveAsDialog(true)}
@@ -720,6 +731,13 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 						)}
 						{tab.type === "log" && (
 							<RunningLogViewer logId={tab.resourceId} />
+						)}
+						{tab.type === "computer" && (
+							<VirtualComputerTab 
+								initialTerminalExpanded={tab.initialTerminalExpanded}
+								sandbox_id={tab.resourceId}
+								title={tab.title}
+							/>
 						)}
 					</div>
 				))}

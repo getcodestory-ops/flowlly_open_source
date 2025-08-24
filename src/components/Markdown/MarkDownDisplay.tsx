@@ -228,11 +228,11 @@ const UUIDViewer: React.FC<{ content: string }> = ({ content }) => {
 	};
 
 	return (
-		<div className="inline-block text-xs text-gray-500 font-mono cursor-pointer"
+		<span className="inline-block text-xs text-gray-500 font-mono cursor-pointer"
 			onClick={handleClick}
 		>
 			<ExternalLink className="w-3 h-3" />
-		</div>
+		</span>
 	);
 };
 

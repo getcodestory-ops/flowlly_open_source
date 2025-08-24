@@ -81,6 +81,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 	const setLocalChats = useStore((state) => state.setLocalChats);
 	const activeChatEntity = useStore((state) => state.activeChatEntity);
 	const setStreamingKey = useChatStore((state) => state.setStreamingKey);
+	const { addTab, setCollapsed } = useChatStore();
 	
 	// Add state for expand/collapse functionality - default to preview mode
 	const [isFullyExpanded, setIsFullyExpanded] = useState(false);
@@ -90,6 +91,23 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 	// Add thinking state at wrapper level
 	const [isThinking, setIsThinking] = useState(false);
 	const [thinkingContent, setThinkingContent] = useState<string>("");
+
+	// Function to open virtual computer tab
+	const handleOpenVirtualComputer = useCallback(() => {
+		// Generate a unique sandbox ID for the virtual computer
+		const virtualSandboxId = `stream_${streamingKey}_${Date.now()}`;
+		
+		// Add virtual computer tab
+		addTab({
+			isOpen: true,
+			type: "computer",
+			resourceId: virtualSandboxId,
+			title: "Virtual Computer - Stream Process",
+		});
+		
+		// Collapse the chat panel to show the virtual computer
+		setCollapsed(true);
+	}, [streamingKey, addTab, setCollapsed]);
 	
 
 	
@@ -416,7 +434,13 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 				value={isFullyExpanded ? "stream-content" : undefined}
 			>
 				<AccordionItem className="border-0" value="stream-content">
-					<AccordionTrigger className="px-4 py-3 rounded-lg transition-colors justify-end [&>svg]:hidden">
+					<AccordionTrigger 
+						className="px-4 py-3 rounded-lg transition-colors justify-end [&>svg]:hidden"
+						onClick={(e) => {
+							e.preventDefault();
+							handleOpenVirtualComputer();
+						}}
+					>
 						<div className="flex items-center gap-2 w-full justify-between">
 							<div className="flex items-center gap-2">
 								<span className="text-xs text-gray-500 flex items-center">
@@ -426,8 +450,9 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 									)}
 								</span>
 							</div>
-							<div className="text-xs text-gray-400">
-								{isFullyExpanded ? "Hide computer process" : "See computer process"}
+							<div className="text-xs text-gray-400 flex items-center gap-1">
+								<LaptopMinimalIcon className="w-3 h-3" />
+								Open Virtual Computer
 							</div>
 						</div>
 					</AccordionTrigger>

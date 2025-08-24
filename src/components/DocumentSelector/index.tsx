@@ -6,7 +6,7 @@ export { FileRow as DocumentFileRow } from "../Folder/FilesTable/FileRow";
 export { FolderRow as DocumentFolderRow } from "../Folder/FilesTable/FolderRow";
 export { FileUploadButton as DocumentUploadButton } from "../Folder/FilesTable/FileUploadButton";
 export { FileUploadProgress as DocumentUploadProgress } from "../Folder/FilesTable/FileUploadProgress";
-export { EmptyFilesDisplay as EmptyDocumentsDisplay } from "../Folder/FilesTable/EmptyFilesDisplay";
+export { EmptyDocumentDisplay } from "./EmptyDocumentDisplay";
 export { AddFolderButton as DocumentAddFolderButton } from "../Folder/FilesTable/AddFolderButton";
 
 // Only new components needed

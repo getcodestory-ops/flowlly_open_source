@@ -14,7 +14,7 @@ interface EmptyStateInputProps {
   isPending: boolean;
   isWaitingForResponse: boolean;
   onSubmit: () => void;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   examplePrompts: string[];
   setExamplePrompt: (prompt: string) => void;
   uploadingFiles: FileUploadStatus[];

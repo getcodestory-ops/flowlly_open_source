@@ -13,7 +13,7 @@ interface ChatInputAreaProps {
   isPending: boolean;
   isWaitingForResponse: boolean;
   onSubmit: () => void;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   selectedModel: string;
   includeContext: boolean;
   googleSearch: boolean;

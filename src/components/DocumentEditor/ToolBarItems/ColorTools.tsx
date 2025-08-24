@@ -14,7 +14,7 @@ interface ColorToolsProps {
 const ColorTools: React.FC<ColorToolsProps> = ({ editor }) => {
 	return (
 		<Popover>
-			<PopoverTrigger>
+			<PopoverTrigger asChild>
 				<ToolTipedButton onClick={() => {}} tooltip="Text Color">
 					<div className="flex items-center gap-1">
 						<div 

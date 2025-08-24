@@ -5,9 +5,9 @@ import ChatMessage from "./ChatMessage";
 
 interface ChatMessageListProps {
   chats: any[];
-  chatContainerRef: React.RefObject<HTMLDivElement>;
+  chatContainerRef: React.RefObject<HTMLDivElement | null>;
   messageRefs: React.MutableRefObject<{
-    [key: string]: React.RefObject<HTMLDivElement>;
+    [key: string]: React.RefObject<HTMLDivElement | null>;
   }>;
   onCopyContent: (index: number) => void;
   chatTarget: string;
