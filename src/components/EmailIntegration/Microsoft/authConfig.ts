@@ -2,7 +2,7 @@
 export const msalConfig = {
 	auth: {
 		grantType: "client_credentials",
-		clientId: process.env.NEXT_PUBLIC_graph_client_id ?? "",
+		clientId: process.env.NEXT_PUBLIC_GRAPH_CLIENT_ID ?? "",
 		clientSecret: process.env.NEXT_PUBLIC_graph_client_secret ?? "",
 		authority: process.env.NEXT_PUBLIC_graph_authority ?? "",
 		redirectUri: process.env.NEXT_PUBLIC_redirect_uri ?? "",

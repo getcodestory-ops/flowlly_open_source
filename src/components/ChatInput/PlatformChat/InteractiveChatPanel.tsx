@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/dialog";
 import FolderSelector from "@/components/ProjectEvent/FolderSelector";
 import { UnsavedChangesDialog } from "@/components/DocumentEditor/ToolBarItems";
-import VirtualComputerTab from "@/components/VirtualComputer/VirtualComputerTab";
 
 
 
@@ -86,7 +85,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 				fileName: activeTab.filename,
 			});
 		},
-		enabled: !!session && !!activeProject?.project_id && !!activeTab?.resourceId && activeTab?.type !== "computer",
+		enabled: !!session && !!activeProject?.project_id && !!activeTab?.resourceId,
 	});
 
 	const handlePrintActiveHtml = async(): Promise<void> => {
@@ -381,19 +380,6 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 		});
 	};
 
-	const handleOpenComputer = () => {
-		// Generate a unique sandbox ID for the fake computer
-		const fakeSandboxId = `fake_${Date.now()}_${Math.random().toString(36)
-			.substr(2, 9)}`;
-		
-		addTab({
-			isOpen: true,
-			type: "computer",
-			resourceId: fakeSandboxId,
-			title: "Virtual Computer",
-		});
-	};
-
 	// Tab scrolling functions
 	const checkScrollButtons = () => {
 		if (!scrollContainerRef.current) return;
@@ -618,7 +604,6 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 							}
 						}}
 						onDownload={handleDownload}
-						onOpenComputer={handleOpenComputer}
 						onPrint={handlePrintActiveHtml}
 						onRename={() => activeTab && handleFileNameDoubleClick(activeTab)}
 						onSaveAs={() => setShowSaveAsDialog(true)}
@@ -731,13 +716,6 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 						)}
 						{tab.type === "log" && (
 							<RunningLogViewer logId={tab.resourceId} />
-						)}
-						{tab.type === "computer" && (
-							<VirtualComputerTab 
-								initialTerminalExpanded={tab.initialTerminalExpanded}
-								sandbox_id={tab.resourceId}
-								title={tab.title}
-							/>
 						)}
 					</div>
 				))}

@@ -77,9 +77,9 @@ const IntegrationDirective: React.FC<IntegrationDirectiveProps> = ({ data }) => 
 
 			// Redirect to Microsoft OAuth login with specific scopes
 			const params = new URLSearchParams({
-				client_id: "5f3afbcd-94ce-4a50-9721-79136b5d4c1e",
+				client_id: process.env.NEXT_PUBLIC_GRAPH_CLIENT_ID ?? "",
 				response_type: "code",
-				redirect_uri: "https://prod.api.flowlly.com/microsoft/integration",
+				redirect_uri: process.env.NEXT_PUBLIC_GRAPH_REDIRECT_URI ?? "",
 				response_mode: "query",
 				scope: "openid profile Sites.Read.All Files.ReadWrite.All OnlineMeetings.Read Calendars.ReadWrite ",
 				state: sessionToken + "___" + userId + "___" + projectId,

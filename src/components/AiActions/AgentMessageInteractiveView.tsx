@@ -10,8 +10,7 @@ import {
 	Eye,
 	Database,
 	EyeOff,
-	Logs,
-	Laptop2Icon
+	Logs
 } from "lucide-react";
 import Image from "next/image";
 import ContextSourceViewer from "../Folder/ContextSourceViewer";
@@ -19,38 +18,22 @@ import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/hooks/useChatStore";
 import AttachmentViewer from "./AttachmentViewer";
 import { useStore } from "@/utils/store";
-// Accordion imports removed - now using virtual computer for logs
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@/components/ui/accordion";
 
 
 function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: { id?: string, message: AgentMessage | string, setIsWaitingForResponse: (value: boolean) => void }) : React.ReactNode {
-	const { setSidePanel, setCollapsed, sidePanel, addTab } = useChatStore();
+	const { setSidePanel, setCollapsed, sidePanel } = useChatStore();
 	const { setDocumentDisplayMap, documentDisplayMap } = useChatStore();
 	const localChats = useStore((state) => state.localChats);
 	
 	// Check if this is the last message in the chat
 	const isLastMessage = localChats && localChats.length > 0 && 
 		localChats[localChats.length - 1].id === id;
-
-	// Function to open virtual computer with logs
-	const handleOpenLogsInVirtualComputer = (logContent: string) => {
-		// Generate a unique sandbox ID for the virtual computer
-		const logSandboxId = `logs_${id}_${Date.now()}`;
-		
-		// Add virtual computer tab with terminal expanded
-		addTab({
-			isOpen: true,
-			type: "computer",
-			resourceId: logSandboxId,
-			title: "Virtual Computer - Logs",
-			initialTerminalExpanded: true,
-		});
-		
-		// Collapse the chat panel to show the virtual computer
-		setCollapsed(true);
-		
-		// Send the log content to the virtual computer terminal
-		// This will be handled by the MarkdownTerminal component automatically
-	};
 
 	useEffect(() => {
 		if (!id || typeof message !== "object" || !("function_response" in message) ||
@@ -227,23 +210,22 @@ function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: {
 								<>
 									{result.log && (
 										<div className="m-0">
-											<div className="flex justify-end">
-												<Button
-													className="flex px-4 py-3 rounded-lg transition-colors -mt-8 ml-8 h-auto"
-													onClick={() => handleOpenLogsInVirtualComputer(result.log)}
-													size="sm"
-													title="View logs in Virtual Computer"
-													variant="ghost"
-												>
-													<div className="flex items-center gap-2 hover:bg-gray-50">
-														<Laptop2Icon className="h-4 w-4 text-gray-500 text-xs" />
-													</div>
-												</Button>
-											</div>
-											{/* Hidden MarkdownTerminal to still send content to virtual computer */}
-											<div className="hidden">
-												<MarkdownTerminal content={result.log} />
-											</div>
+											<Accordion 
+												className=""
+												collapsible
+												type="single"
+											>
+												<AccordionItem className="border-0" value="logs">
+													<AccordionTrigger className="px-4 py-3 rounded-lg transition-colors justify-end -mt-8 ml-8 [&>svg]:hidden">
+														<div className="flex items-center gap-2 hover:bg-gray-50" title="View logs">
+															<Logs className="h-4 w-4 text-gray-500 text-xs " />
+														</div>
+													</AccordionTrigger>
+													<AccordionContent className="">
+														<MarkdownTerminal content={result.log} />
+													</AccordionContent>
+												</AccordionItem>
+											</Accordion>
 										</div>
 									)}
 									{result.body && (

@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Edit3, Download, Save, Pencil, FileText, Folder, X, Printer, Monitor } from "lucide-react";
+import { Edit3, Download, Save, Pencil, FileText, Folder, X, Printer } from "lucide-react";
 
 export interface TopToolbarProps {
   canRename: boolean;
@@ -14,7 +14,6 @@ export interface TopToolbarProps {
   onSaveAs: () => void;
   onToggleMode: () => void;
   onAddFolder: () => void;
-  onOpenComputer: () => void;
   onCloseAll: () => void;
   onPrint: () => void;
 }
@@ -31,7 +30,6 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 	onSaveAs,
 	onToggleMode,
 	onAddFolder,
-	onOpenComputer,
 	onCloseAll,
 	onPrint,
 }) => {
@@ -115,15 +113,6 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 				variant="ghost"
 			>
 				<Folder className="h-4 w-4" />
-			</Button>
-			<Button
-				className="h-8 w-8 p-0"
-				onClick={onOpenComputer}
-				size="icon"
-				title="Open Virtual Computer"
-				variant="ghost"
-			>
-				<Monitor className="h-4 w-4" />
 			</Button>
 			<Button
 				className="h-8 w-8 p-0"
