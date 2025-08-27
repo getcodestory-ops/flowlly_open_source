@@ -134,9 +134,6 @@
     "zod": "^3.23.8",
     "zustand": "^4.3.8"
   },
-  "engines": {
-    "node": ">=20.0.0"
-  },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
     "@types/diff": "^7.0.1",
