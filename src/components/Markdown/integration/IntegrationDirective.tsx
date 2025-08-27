@@ -81,7 +81,7 @@ const IntegrationDirective: React.FC<IntegrationDirectiveProps> = ({ data }) => 
 				response_type: "code",
 				redirect_uri: process.env.NEXT_PUBLIC_GRAPH_REDIRECT_URI ?? "",
 				response_mode: "query",
-				scope: "openid profile Sites.Read.All Files.ReadWrite.All OnlineMeetings.Read Calendars.ReadWrite ",
+				scope: "openid profile Sites.Read.All Files.ReadWrite.All OnlineMeetings.Read Calendars.ReadWrite Mail.Read Mail.ReadWrite Mail.Send email User.Read",
 				state: sessionToken + "___" + userId + "___" + projectId,
 			});
 
