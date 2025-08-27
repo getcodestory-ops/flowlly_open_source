@@ -2,6 +2,17 @@ import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
 import pluginReact from "eslint-plugin-react";
+import { FlatCompat } from "@eslint/eslintrc";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const compat = new FlatCompat({
+	baseDirectory: __dirname,
+});
+
 const config = {
 	files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
 	languageOptions: {
@@ -89,4 +100,7 @@ const config = {
 		},
 	},
 };
-export default [config];
+export default [
+	...compat.extends("next/core-web-vitals"),
+	config,
+];
