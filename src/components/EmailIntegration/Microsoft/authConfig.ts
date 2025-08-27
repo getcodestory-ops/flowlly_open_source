@@ -14,7 +14,7 @@ export const msalConfig = {
 };
 
 export const loginRequest = {
-	scopes: ["User.Read", "Mail.Read", "email"],
+	scopes: ["User.Read", "Mail.Read", "Mail.ReadWrite", "email", "Mail.Send", "Sites.Read.All", "Files.ReadWrite.All", "OnlineMeetings.Read", "Calendars.ReadWrite"],
 };
 
 export const graphConfig = {
