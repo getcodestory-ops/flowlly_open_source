@@ -13,7 +13,7 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			{/* <CSPostHogProvider> */}
-			<body className="bg-background text-foreground">{children}</body>
+			<body className="bg-background text-foreground relative">{children}</body>
 			{/* </CSPostHogProvider> */}
 		</html>
 	);

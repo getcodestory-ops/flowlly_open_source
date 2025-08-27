@@ -26,7 +26,7 @@ const TextFormatting: React.FC<TextFormattingProps> = ({ editor }) => {
 	return (
 		<Menubar className="bg-transparent border-none p-0 m-0 shadow-none">
 			<MenubarMenu>
-				<MenubarTrigger className="bg-transparent border-none p-0 m-0 shadow-none">
+				<MenubarTrigger asChild>
 					<ToolTipedButton onClick={() => {}} tooltip="Text Formatting">
 						<div className="flex items-center gap-1">
 							<FaBold className={`${editor.isActive("bold") ? "text-indigo-600" : ""}`} />

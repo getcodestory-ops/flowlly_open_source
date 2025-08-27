@@ -13,7 +13,7 @@ interface ChatMessageProps {
   chatTarget: string;
   applyingChanges: { [key: number]: boolean };
   onApplyChanges: (index: number) => void;
-  messageRef: React.RefObject<HTMLDivElement>;
+  messageRef: React.RefObject<HTMLDivElement | null>;
   chatId?: string;
 }
 

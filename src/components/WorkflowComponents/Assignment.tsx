@@ -121,11 +121,7 @@ export default function AssignmentHome(): React.ReactNode {
 									Meetings
 										</CardTitle>
 										<CardDescription>
-											<div className="flex justify-between items-start">
-												{/* <div className="flex flex-col gap-2">
-											Manage  meetings for your project
-												</div> */}
-											</div>
+											{/* Manage meetings for your project */}
 										</CardDescription>
 									</div>
 									<div className="justify-end flex items-center h-full">

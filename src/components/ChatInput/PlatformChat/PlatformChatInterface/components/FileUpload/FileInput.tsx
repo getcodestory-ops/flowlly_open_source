@@ -5,7 +5,7 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import clsx from "clsx";
 
 interface FileInputProps {
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   isPending: boolean;
   isWaitingForResponse: boolean;
   onFileClick: () => void;

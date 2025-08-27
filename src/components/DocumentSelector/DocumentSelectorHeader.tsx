@@ -41,6 +41,7 @@ import { createSubFolder } from "@/api/folderRoutes";
 import { useDocumentStore } from "@/hooks/useDocumentStore";
 import { useToast } from "@/components/ui/use-toast";
 import { FileUploadButton } from "../Folder/FilesTable/FileUploadButton";
+import { FileUploadMenuItems } from "../Folder/FilesTable/FileUploadMenuItems";
 import clsx from "clsx";
 import { DocumentSelectorHeaderProps, SortField } from "./types";
 
@@ -163,11 +164,10 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 											New folder
 										</DropdownMenuItem>
 									</AddNewFolderModal>
-									<FileUploadButton
+									<FileUploadMenuItems
 										activeProject={activeProject}
 										folderId={currentFolderId}
 										session={session}
-										showInToolbar
 									/>
 									{shouldCollapseViewOps && <DropdownMenuSeparator />}
 								</>

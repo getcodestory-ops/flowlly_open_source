@@ -12,12 +12,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
 	return (
-		<body className="bg-background text-foreground relative">
+		<div className="relative">
 			<Providers>
 				<WorkflowStack />
 				{children}
 			</Providers>
 			{/* <TemporaryButtonForWorkflowStack /> */}
-		</body>
+		</div>
 	);
 }

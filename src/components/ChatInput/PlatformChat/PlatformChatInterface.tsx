@@ -163,7 +163,7 @@ export default function PlatformChatInterface({
 
 	// Create a map of refs for message content elements
 	const messageRefs = useRef<{
-    [key: string]: React.RefObject<HTMLDivElement>;
+    [key: string]: React.RefObject<HTMLDivElement | null>;
   }>({});
 
 	// Ensure refs are created for each message

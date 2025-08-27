@@ -510,13 +510,11 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 							</div>
 						)}
 						<div 
-							className="overflow-x-auto"
+							className="overflow-x-auto scrollbar-hide"
 							ref={scrollContainerRef}
 							style={{
 								scrollbarWidth: "none",
 								msOverflowStyle: "none",
-								// @ts-ignore
-								"&::-webkit-scrollbar": { display: "none" },
 							}}
 						>
 							<div className="flex items-end pb-1 px-2 gap-1 h-[51px]">
@@ -573,14 +571,12 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 													</span>
 												)}
 											</span>
-											<Button
-												className="h-4 w-4 p-0 hover:bg-gray-200 flex-shrink-0 ml-1"
+											<div
+												className="h-4 w-4 p-0 hover:bg-gray-200 flex-shrink-0 ml-1 inline-flex items-center justify-center rounded cursor-pointer"
 												onClick={(e) => handleTabClose(tab.id, e)}
-												size="icon"
-												variant="ghost"
 											>
 												<X className="h-3 w-3" />
-											</Button>
+											</div>
 										</button>
 									);
 								})}

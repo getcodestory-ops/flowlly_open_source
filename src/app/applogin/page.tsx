@@ -1,4 +1,4 @@
-import "@/styles/globals.css";
+import "../globals.css";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { LoginLayout } from "@/components/LoginLayout/LoginLayout";
@@ -29,7 +29,7 @@ const signIn = async(formData: FormData) => {
 export default async function Login({
 	searchParams,
 }: {
-  searchParams: { message: string };
+  searchParams: Promise<{ message?: string }>;
 }) {
 	const supabase = createClient();
 	const { data } = await supabase.auth.getUser();

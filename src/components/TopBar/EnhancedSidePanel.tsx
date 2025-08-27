@@ -557,10 +557,10 @@ const AllMenuButtons = ({
 	onWorkflowHoverEnter,
 	onWorkflowHoverLeave,
 }: {
-	chatButtonRef: React.RefObject<HTMLDivElement>;
+	chatButtonRef: React.RefObject<HTMLDivElement | null>;
 	onChatHoverEnter: () => void;
 	onChatHoverLeave: () => void;
-	workflowButtonRef: React.RefObject<HTMLDivElement>;
+	workflowButtonRef: React.RefObject<HTMLDivElement | null>;
 	onWorkflowHoverEnter: () => void;
 	onWorkflowHoverLeave: () => void;
 }): React.ReactNode => {

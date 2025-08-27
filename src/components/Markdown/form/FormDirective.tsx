@@ -36,6 +36,8 @@ const parseFormConfig = (jsonString: string) => {
 	
 	try {
 		// First try to parse as-is (valid JSON)
+
+		JSON.parse(jsonString);
 		return JSON.parse(jsonString);
 	} catch (firstError) {
 		try {

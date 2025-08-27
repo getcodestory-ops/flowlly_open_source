@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import supabase from "@/utils/supabaseClient";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 import { useStore } from "@/utils/store";
 function Login() {
@@ -44,7 +45,8 @@ function Login() {
 			duration: 5000,
 		});
 
-		router.push("/").then(() => window.location.reload());
+		router.push("/");
+		window.location.reload();
 	};
 
 	//password reset request

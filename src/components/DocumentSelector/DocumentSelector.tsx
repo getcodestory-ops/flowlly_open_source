@@ -15,7 +15,7 @@ import { StorageResourceEntity } from "@/types/document";
 // Import components directly to avoid circular dependency
 import { DocumentSelectorHeader } from "./DocumentSelectorHeader";
 import { SelectedItemsList } from "./SelectedItemsList";
-import { EmptyFilesDisplay as EmptyDocumentsDisplay } from "../Folder/FilesTable/EmptyFilesDisplay";
+import { EmptyDocumentDisplay } from "./EmptyDocumentDisplay";
 import { DocumentSelectorProps, SelectedItem, SortField, SortDirection, DocumentSelectorItem } from "./types";
 
 export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
@@ -556,7 +556,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 										}
 									})}
 									{sortedAndFilteredItems.length === 0 && !isLoading && (
-										<EmptyDocumentsDisplay />
+										<EmptyDocumentDisplay />
 									)}
 								</div>
 							)}

@@ -25,6 +25,8 @@ export const microsoftExtensions = [
 
 export const csvExtensions = ["csv"];
 
+export const gltfExtensions = ["gltf", "glb"];
+
 export const inlineViewableExtensions = [
 	"pdf",
 	"oga",
@@ -61,6 +63,8 @@ export const inlineViewableExtensions = [
 	"js",
 	"ts",
 	"tsx",
+	"gltf",
+	"glb",
 ];
 
 

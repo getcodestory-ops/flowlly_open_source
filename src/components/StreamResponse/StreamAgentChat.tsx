@@ -118,13 +118,19 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 						if (thinkingData === "STARTED") {
 							setIsThinking(true);
 							setThinkingContent("");
-							onThinkingChange?.(true);
-							onThinkingContentChange?.("");
+							// Defer the callback to avoid setState during render
+							setTimeout(() => {
+								onThinkingChange?.(true);
+								onThinkingContentChange?.("");
+							}, 0);
 						} else if (thinkingData === "ENDED") {
 							setIsThinking(false);
 							setThinkingContent("");
-							onThinkingChange?.(false);
-							onThinkingContentChange?.("");
+							// Defer the callback to avoid setState during render
+							setTimeout(() => {
+								onThinkingChange?.(false);
+								onThinkingContentChange?.("");
+							}, 0);
 						} else {
 							// This is thinking content - accumulate it
 							setIsThinking(true);
@@ -132,10 +138,16 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 								// Convert escaped newlines to actual newlines
 								const processedData = thinkingData.replace(/\\n/g, "\n");
 								const newContent = prev + processedData;
-								onThinkingContentChange?.(newContent);
+								// Defer the callback to avoid setState during render
+								setTimeout(() => {
+									onThinkingContentChange?.(newContent);
+								}, 0);
 								return newContent;
 							});
-							onThinkingChange?.(true);
+							// Defer the callback to avoid setState during render
+							setTimeout(() => {
+								onThinkingChange?.(true);
+							}, 0);
 						}
 					}
 					return; // Don't add this to displayValue
@@ -173,13 +185,19 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 				if (thinkingData === "STARTED") {
 					setIsThinking(true);
 					setThinkingContent("");
-					onThinkingChange?.(true);
-					onThinkingContentChange?.("");
+					// Defer the callback to avoid setState during render
+					setTimeout(() => {
+						onThinkingChange?.(true);
+						onThinkingContentChange?.("");
+					}, 0);
 				} else if (thinkingData === "ENDED") {
 					setIsThinking(false);
 					setThinkingContent("");
-					onThinkingChange?.(false);
-					onThinkingContentChange?.("");
+					// Defer the callback to avoid setState during render
+					setTimeout(() => {
+						onThinkingChange?.(false);
+						onThinkingContentChange?.("");
+					}, 0);
 				} else {
 					// This is thinking content - accumulate it
 					setIsThinking(true);
@@ -187,10 +205,16 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 						// Convert escaped newlines to actual newlines
 						const processedData = thinkingData.replace(/\\n/g, "\n");
 						const newContent = prev + processedData;
-						onThinkingContentChange?.(newContent);
+						// Defer the callback to avoid setState during render
+						setTimeout(() => {
+							onThinkingContentChange?.(newContent);
+						}, 0);
 						return newContent;
 					});
-					onThinkingChange?.(true);
+					// Defer the callback to avoid setState during render
+					setTimeout(() => {
+						onThinkingChange?.(true);
+					}, 0);
 				}
 			}
 		});
