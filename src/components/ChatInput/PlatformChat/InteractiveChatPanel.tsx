@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import FolderSelector from "@/components/ProjectEvent/FolderSelector";
 import { UnsavedChangesDialog } from "@/components/DocumentEditor/ToolBarItems";
+import TodoPanel from "@/components/StreamResponse/TodoPanel";
 
 
 
@@ -75,6 +76,9 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 			if (!session || !activeProject?.project_id || !activeTab?.resourceId) {
 				return Promise.reject("No session, active project, or resource ID");
 			}
+			if (!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox")) {
+				return Promise.reject("Unsupported tab type for download");
+			}
 			const isSandboxFile = activeTab.type === "sandbox";
 			const sandboxId = getSandboxId(activeTab);
 			return getInlineDocument({ 
@@ -85,7 +89,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 				fileName: activeTab.filename,
 			});
 		},
-		enabled: !!session && !!activeProject?.project_id && !!activeTab?.resourceId,
+		enabled: !!session && !!activeProject?.project_id && !!activeTab?.resourceId && (activeTab?.type === "sources" || activeTab?.type === "sandbox"),
 	});
 
 	const handlePrintActiveHtml = async(): Promise<void> => {
@@ -716,6 +720,9 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 						)}
 						{tab.type === "log" && (
 							<RunningLogViewer logId={tab.resourceId} />
+						)}
+						{tab.type === "todo" && (
+							<TodoPanel file={tab.resourceId} />
 						)}
 					</div>
 				))}

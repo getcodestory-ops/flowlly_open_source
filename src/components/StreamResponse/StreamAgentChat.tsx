@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import MarkdownTerminal from "../Markdown/style/MarkdownTerminal";
 import { useChatStore } from "@/hooks/useChatStore";
@@ -50,15 +50,21 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	isExpanded = false,
 }) => {
 	const [displayValue, setDisplayValue] = useState<string>("");
+	const displayValueRef = useRef<string>("");
 	const [isPending, setIsPending] = useState(true);
 	const [STREAM_COMPLETE, setStreamComplete] = useState(false);
 	const [isThinking, setIsThinking] = useState(false);
 	const [THINKING_CONTENT, setThinkingContent] = useState<string>("");
 	const eventSourceRef = useRef<EventSource | null>(null);
-	const { setSidePanel, setCollapsed } = useChatStore();
+	const { setSidePanel, setCollapsed, setTodoState } = useChatStore();
+
+	// Keep ref in sync with state
+	useEffect(() => {
+		displayValueRef.current = displayValue;
+	}, [displayValue]);
 
 	// Helper function to handle attachment events
-	const handleAttachmentEvent = (attachmentDataString: string): void => {
+	const handleAttachmentEvent = useCallback((attachmentDataString: string): void => {
 		try {
 			// Parse the attachment data from the stream
 			const attachment = JSON.parse(attachmentDataString);
@@ -76,7 +82,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 		} catch (error) {
 			console.error("Error parsing attachment data:", error);
 		}
-	};
+	}, [setSidePanel, setCollapsed]);
 
 	// Reset state when streamingKey changes
 	useEffect(() => {
@@ -163,6 +169,30 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 					return; // Don't add this to displayValue
 				}
 
+				// Check if this is a TODO event that came through as regular message data
+				if (event.data.includes("event: TODO")) {
+					const dataPart = event.data.split("data: ")[1];
+					if (dataPart) {
+						try {
+							const todoPayload = JSON.parse(dataPart.trim());
+							const fileId = todoPayload.file || "todo_state.json";
+							if (todoPayload.state) {
+								setTodoState(fileId, todoPayload.state);
+							}
+							setSidePanel({
+								isOpen: true,
+								type: "todo",
+								resourceId: fileId,
+								title: "Task Progress",
+							});
+							setCollapsed(true);
+						} catch (e) {
+							console.error("Error parsing TODO data:", e);
+						}
+					}
+					return; // Don't add this to displayValue
+				}
+
 				// Clear thinking state when regular data comes in
 				setIsThinking(false);
 
@@ -226,6 +256,28 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			}
 		});
 
+		// Handle TODO events
+		eventSource.addEventListener("TODO", (event) => {
+			if (event.data) {
+				try {
+					const todoPayload = JSON.parse(event.data);
+					const fileId = todoPayload.file || "todo_state.json";
+					if (todoPayload.state) {
+						setTodoState(fileId, todoPayload.state);
+					}
+					setSidePanel({
+						isOpen: true,
+						type: "todo",
+						resourceId: fileId,
+						title: "Task Progress",
+					});
+					setCollapsed(true);
+				} catch (e) {
+					console.error("Error parsing TODO event:", e);
+				}
+			}
+		});
+
 		eventSource.onerror = (error) => {
 			console.error("EventSource failed:", error);
 			setIsPending(false);
@@ -235,7 +287,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 
 			// Call the callback if provided, regardless of displayValue content
 			if (onStreamComplete) {
-				onStreamComplete(displayValue);
+				onStreamComplete(displayValueRef.current);
 			}
 		};
 
@@ -246,7 +298,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 
 			// Call the callback if provided, regardless of displayValue content
 			if (onStreamComplete) {
-				onStreamComplete(displayValue);
+				onStreamComplete(displayValueRef.current);
 			}
 
 			eventSource.close();
@@ -259,7 +311,8 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			eventSource.close();
 			eventSourceRef.current = null;
 		};
-	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, isExpanded]);
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, setTodoState, handleAttachmentEvent, isExpanded]);
 
 	// Render content into the appropriate container based on expanded state
 	const targetContainerId = isExpanded ? `stream-expanded-${streamingKey}` : `stream-preview-${streamingKey}`;

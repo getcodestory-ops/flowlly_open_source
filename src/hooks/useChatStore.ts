@@ -3,7 +3,7 @@ import { create } from "zustand";
 interface SidePanel {
 	id: string;
 	isOpen: boolean;
-	type: "sources" | "editor" | "pdfViewer" | "log" | "folder" | "sandbox";
+	type: "sources" | "editor" | "pdfViewer" | "log" | "folder" | "sandbox" | "todo";
 	resourceId: string;
 	filename?: string;
 	title?: string;
@@ -31,6 +31,9 @@ interface ChatStore {
 	removeTab: (tabId: string) => void;
 	setActiveTab: (tabId: string) => void;
 	clearAllTabs: () => void;
+	// TODO stream states keyed by resourceId (e.g., filename)
+	todoStates: { [resourceId: string]: any };
+	setTodoState: (resourceId: string, state: any) => void;
 	documentDisplayMap: { [resourceId: string]: string };
 	setDocumentDisplayMap: (resourceId: string, chatId: string) => void;
 	clearDocumentDisplayMap: () => void;
@@ -121,6 +124,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	setIsWaitingForResponse: (isWaitingForResponse) => set({ isWaitingForResponse }),
 	streamingKey: null,
 	setStreamingKey: (streamingKey) => set({ streamingKey }),
+	// TODO stream state
+	todoStates: {},
+	setTodoState: (resourceId, state) => set((prev) => ({
+		todoStates: {
+			...prev.todoStates,
+			[resourceId]: state,
+		},
+	})),
 	addTab: (tab, forceReload = false) => set((state) => {
 		const tabId = generateTabId();
 		const newTab = {
