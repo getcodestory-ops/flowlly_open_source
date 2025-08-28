@@ -11,6 +11,7 @@ import InlineDocumentViewer from "./ChatPanel/InlineDocumentViewer";
 import { htmlExtensions } from "./ChatPanel/fileExtensions";
 import { ResourceTextViewer } from "@/components/DocumentEditor/ResourceTextViewer";
 import RunningLogViewer from "@/components/WorkflowComponents/RunningLogViewer";
+import FileProgressPanel from "../../StreamResponse/FileProgressPanel";
 import { DocumentSelector } from "@/components/DocumentSelector";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -723,6 +724,9 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 						)}
 						{tab.type === "todo" && (
 							<TodoPanel file={tab.resourceId} />
+						)}
+						{tab.type === "fileProgress" && (
+							<FileProgressPanel fileName={tab.resourceId} />
 						)}
 					</div>
 				))}

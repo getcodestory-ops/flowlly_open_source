@@ -3,7 +3,7 @@ import { create } from "zustand";
 interface SidePanel {
 	id: string;
 	isOpen: boolean;
-	type: "sources" | "editor" | "pdfViewer" | "log" | "folder" | "sandbox" | "todo";
+	type: "sources" | "editor" | "pdfViewer" | "log" | "folder" | "sandbox" | "todo" | "fileProgress";
 	resourceId: string;
 	filename?: string;
 	title?: string;
@@ -34,6 +34,18 @@ interface ChatStore {
 	// TODO stream states keyed by resourceId (e.g., filename)
 	todoStates: { [resourceId: string]: any };
 	setTodoState: (resourceId: string, state: any) => void;
+	// FILE_PROGRESS stream states keyed by filename
+	fileProgress: {
+		[fileName: string]: {
+			action: "create" | "append" | "edit";
+			status: "started" | "delta" | "ended";
+			content: string;
+			fileName: string;
+		};
+	};
+	initFileProgress: (fileName: string, action: "create" | "append" | "edit") => void;
+	appendFileProgressDelta: (fileName: string, delta: string, status?: "delta" | "ended") => void;
+	endFileProgress: (fileName: string) => void;
 	documentDisplayMap: { [resourceId: string]: string };
 	setDocumentDisplayMap: (resourceId: string, chatId: string) => void;
 	clearDocumentDisplayMap: () => void;
@@ -130,6 +142,38 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		todoStates: {
 			...prev.todoStates,
 			[resourceId]: state,
+		},
+	})),
+	// FILE_PROGRESS stream state
+	fileProgress: {},
+	initFileProgress: (fileName, action) => set((prev) => ({
+		fileProgress: {
+			...prev.fileProgress,
+			[fileName]: {
+				action,
+				status: "started",
+				content: "",
+				fileName,
+			},
+		},
+	})),
+	appendFileProgressDelta: (fileName, delta, status = "delta") => set((prev) => ({
+		fileProgress: {
+			...prev.fileProgress,
+			[fileName]: {
+				...(prev.fileProgress[fileName] || { action: "create", status: "started", content: "", fileName }),
+				status,
+				content: ((prev.fileProgress[fileName]?.content) || "") + delta,
+			},
+		},
+	})),
+	endFileProgress: (fileName) => set((prev) => ({
+		fileProgress: {
+			...prev.fileProgress,
+			[fileName]: {
+				...(prev.fileProgress[fileName] || { action: "create", status: "started", content: "", fileName }),
+				status: "ended",
+			},
 		},
 	})),
 	addTab: (tab, forceReload = false) => set((state) => {

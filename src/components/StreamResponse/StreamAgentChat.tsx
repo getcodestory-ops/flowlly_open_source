@@ -56,7 +56,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	const [isThinking, setIsThinking] = useState(false);
 	const [THINKING_CONTENT, setThinkingContent] = useState<string>("");
 	const eventSourceRef = useRef<EventSource | null>(null);
-	const { setSidePanel, setCollapsed, setTodoState } = useChatStore();
+	const { setSidePanel, setCollapsed, setTodoState, initFileProgress, appendFileProgressDelta, endFileProgress } = useChatStore() as any;
 
 	// Keep ref in sync with state
 	useEffect(() => {
@@ -278,6 +278,39 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			}
 		});
 
+		// Handle FILE_PROGRESS events
+		eventSource.addEventListener("FILE_PROGRESS", (event) => {
+			if (!event.data) return;
+			try {
+				const payload = JSON.parse(event.data);
+				const action = payload.action as string;
+				const status = payload.status as string;
+				const fileName = payload.file_name as string;
+				const delta = (payload.delta as string) || "";
+
+				if (!fileName || !action || !status) return;
+
+				if (action === "create") {
+					if (status === "started") {
+						initFileProgress(fileName, "create");
+						setSidePanel({
+							isOpen: true,
+							type: "fileProgress",
+							resourceId: fileName,
+							title: fileName,
+						});
+						setCollapsed(true);
+					} else if (status === "delta") {
+						appendFileProgressDelta(fileName, delta, "delta");
+					} else if (status === "ended") {
+						endFileProgress(fileName);
+					}
+				}
+			} catch (e) {
+				console.error("Error parsing FILE_PROGRESS:", e);
+			}
+		});
+
 		eventSource.onerror = (error) => {
 			console.error("EventSource failed:", error);
 			setIsPending(false);
@@ -312,7 +345,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			eventSourceRef.current = null;
 		};
 	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, setTodoState, handleAttachmentEvent, isExpanded]);
+	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, setTodoState, handleAttachmentEvent, initFileProgress, appendFileProgressDelta, endFileProgress, isExpanded]);
 
 	// Render content into the appropriate container based on expanded state
 	const targetContainerId = isExpanded ? `stream-expanded-${streamingKey}` : `stream-preview-${streamingKey}`;
