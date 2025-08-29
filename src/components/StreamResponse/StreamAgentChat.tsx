@@ -290,9 +290,9 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 
 				if (!fileName || !action || !status) return;
 
-				if (action === "create") {
+				if (action === "create" || action === "append") {
 					if (status === "started") {
-						initFileProgress(fileName, "create");
+						initFileProgress(fileName, action);
 						setSidePanel({
 							isOpen: true,
 							type: "fileProgress",
