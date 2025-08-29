@@ -58,6 +58,16 @@ export const InlineDocumentViewer = ({
 		enabled: needsInlineUrl && !!session && !!activeProject?.project_id,
 	});
 
+	if (typeof resource === "string") {
+		return (
+			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
+				<pre className="h-full w-full p-4 overflow-auto text-sm whitespace-pre-wrap break-words">
+					{resource}
+				</pre>
+			</div>
+		);
+	}
+
 	if (csvExtensions.includes(fileExtension)) {
 		return (
 			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
