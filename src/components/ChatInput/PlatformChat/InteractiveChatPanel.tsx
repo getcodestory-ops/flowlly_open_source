@@ -642,19 +642,27 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 								{inLineViewableExtensions.includes(getFileExtension(tab.filename)) && (
 									<>
 										{getCurrentViewMode(tab.id) === "original" ? (
-											
-											getFileExtension(tab.filename) === "md" ? (
-												<ResourceTextViewer 
-													lastReloadTime={tab.lastReloadTime}
-													resource_id={tab.resourceId}
-												/>
-											) : (
-												<InlineDocumentViewer 
-													fileExtension={getFileExtension(tab.filename)} 
-													lastReloadTime={tab.lastReloadTime}
-													resourceId={tab.resourceId}
-												/>
-											)
+											[
+												"md",
+												"py",
+												"js",
+												"ts",
+												"tsx",
+												"css",
+												"json",
+												"jsonl",
+											].includes(getFileExtension(tab.filename)) ? (
+													<ResourceTextViewer 
+														lastReloadTime={tab.lastReloadTime}
+														resource_id={tab.resourceId}
+													/>
+												) : (
+													<InlineDocumentViewer 
+														fileExtension={getFileExtension(tab.filename)} 
+														lastReloadTime={tab.lastReloadTime}
+														resourceId={tab.resourceId}
+													/>
+												)
 										) : (
 											<ResourceTextViewer 
 												lastReloadTime={tab.lastReloadTime}
@@ -676,23 +684,32 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 								{inLineViewableExtensions.includes(getFileExtension(tab.filename)) && (
 									<>
 										{getCurrentViewMode(tab.id) === "original" ? (
-											
-											getFileExtension(tab.filename) === "md" ? (
-												<ResourceTextViewer 
-													fileName={tab.filename}
-													isSandboxFile
-													lastReloadTime={tab.lastReloadTime}
-													resource_id={getSandboxId(tab)}
-												/>
-											) : (
-												<InlineDocumentViewer 
-													fileExtension={getFileExtension(tab.filename)} 
-													fileName={tab.filename}
-													isSandboxFile
-													lastReloadTime={tab.lastReloadTime}
-													resourceId={getSandboxId(tab)}
-												/>
-											)
+											[
+												"md",
+												"py",
+												"js",
+												"ts",
+												"tsx",
+												"css",
+												"json",
+												"jsonl",
+												"txt",
+											].includes(getFileExtension(tab.filename)) ? (
+													<ResourceTextViewer 
+														fileName={tab.filename}
+														isSandboxFile
+														lastReloadTime={tab.lastReloadTime}
+														resource_id={getSandboxId(tab)}
+													/>
+												) : (
+													<InlineDocumentViewer 
+														fileExtension={getFileExtension(tab.filename)} 
+														fileName={tab.filename}
+														isSandboxFile
+														lastReloadTime={tab.lastReloadTime}
+														resourceId={getSandboxId(tab)}
+													/>
+												)
 										) : (
 											<ResourceTextViewer 
 												fileName={tab.filename}
