@@ -5,6 +5,7 @@ import ContentEditor from "../DocumentEditor/ContentEditor";
 import { useStorageTextFileSave } from "../DocumentEditor/useStorageTextSave";
 import { useSandboxFileSave } from "../DocumentEditor/useSandboxFileSave";
 import LoaderAnimation from "../Animations/LoaderAnimation";
+import CodeEditor from "../DocumentEditor/CodeEditor";
 
 export function ResourceTextViewer({ 
 	resource_id, 
@@ -58,6 +59,10 @@ export function ResourceTextViewer({
 
 	const content = getContent();
 	const documentName = data?.file_name || fileName || "Untitled";
+	const isCodeFile = (name?: string) => {
+		const lower = (name || "").toLowerCase();
+		return [".py", ".js", ".ts", ".tsx", ".css", ".json", ".jsonl", ".md", ".txt"].some((ext) => lower.endsWith(ext));
+	};
 
 	return (
 		<div className="h-full ">
@@ -67,14 +72,23 @@ export function ResourceTextViewer({
 				</div>
 			) : content !== null ? (
 				<div className="h-full">
-					<ContentEditor
-						content={content}
-						documentId={resource_id}
-						documentName={documentName}
-						projectAccessId={activeProject?.project_id}
-						saveFunction={onSubmit}
-						showComments={showComments}
-					/>
+					{isCodeFile(documentName) ? (
+						<CodeEditor
+							content={typeof content === "string" ? content : String(content)}
+							documentName={documentName}
+							isSaving={isPending}
+							onSave={(updated) => onSubmit(updated)}
+						/>
+					) : (
+						<ContentEditor
+							content={content}
+							documentId={resource_id}
+							documentName={documentName}
+							projectAccessId={activeProject?.project_id}
+							saveFunction={onSubmit}
+							showComments={showComments}
+						/>
+					)}
 				</div>
 			) : (
 				<div className="flex justify-center items-center h-full">

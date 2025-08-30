@@ -41,11 +41,13 @@ interface ChatStore {
 			status: "started" | "delta" | "ended";
 			content: string;
 			fileName: string;
+			lastUpdated: number;
 		};
 	};
 	initFileProgress: (fileName: string, action: "create" | "append" | "edit") => void;
 	appendFileProgressDelta: (fileName: string, delta: string, status?: "delta" | "ended") => void;
 	endFileProgress: (fileName: string) => void;
+	setFileProgressContent: (fileName: string, content: string, status?: "delta" | "ended") => void;
 	documentDisplayMap: { [resourceId: string]: string };
 	setDocumentDisplayMap: (resourceId: string, chatId: string) => void;
 	clearDocumentDisplayMap: () => void;
@@ -154,6 +156,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 				status: "started",
 				content: "",
 				fileName,
+				lastUpdated: Date.now(),
 			},
 		},
 	})),
@@ -161,9 +164,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		fileProgress: {
 			...prev.fileProgress,
 			[fileName]: {
-				...(prev.fileProgress[fileName] || { action: "create", status: "started", content: "", fileName }),
+				...(prev.fileProgress[fileName] || { action: "create", status: "started", content: "", fileName, lastUpdated: Date.now() }),
 				status,
 				content: ((prev.fileProgress[fileName]?.content) || "") + delta,
+				lastUpdated: Date.now(),
 			},
 		},
 	})),
@@ -171,8 +175,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		fileProgress: {
 			...prev.fileProgress,
 			[fileName]: {
-				...(prev.fileProgress[fileName] || { action: "create", status: "started", content: "", fileName }),
+				...(prev.fileProgress[fileName] || { action: "create", status: "started", content: "", fileName, lastUpdated: Date.now() }),
 				status: "ended",
+				lastUpdated: Date.now(),
 			},
 		},
 	})),
@@ -238,6 +243,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	}),
 	setActiveTab: (tabId) => set({ activeTabId: tabId }),
 	clearAllTabs: () => set({ tabs: [], activeTabId: null }),
+	setFileProgressContent: (fileName: string, content: string, status: "delta" | "ended" = "delta") => set((prev) => ({
+		fileProgress: {
+			...prev.fileProgress,
+			[fileName]: {
+				...(prev.fileProgress[fileName] || { action: "edit", status: "started", content: "", fileName: fileName, lastUpdated: Date.now() }),
+				status,
+				content,
+				lastUpdated: Date.now(),
+			},
+		},
+	})),
 	documentDisplayMap: {},
 	setDocumentDisplayMap: (resourceId, chatId) => 
 		set((state) => ({

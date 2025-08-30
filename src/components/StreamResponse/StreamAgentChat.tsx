@@ -287,21 +287,50 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 				const status = payload.status as string;
 				const fileName = payload.file_name as string;
 				const delta = (payload.delta as string) || "";
+				const op = (payload.op as string) || undefined;
 
 				if (!fileName || !action || !status) return;
+
+				const consolidatedId = "file-progress";
+				const openConsolidatedTab = () => setSidePanel({
+					isOpen: true,
+					type: "fileProgress",
+					resourceId: consolidatedId,
+					title: fileName,
+				});
 
 				if (action === "create" || action === "append") {
 					if (status === "started") {
 						initFileProgress(fileName, action);
-						setSidePanel({
-							isOpen: true,
-							type: "fileProgress",
-							resourceId: fileName,
-							title: fileName,
-						});
+						openConsolidatedTab();
 						setCollapsed(true);
 					} else if (status === "delta") {
 						appendFileProgressDelta(fileName, delta, "delta");
+					} else if (status === "ended") {
+						endFileProgress(fileName);
+					}
+				} else if (action === "edit") {
+					if (status === "started") {
+						initFileProgress(fileName, "edit");
+						openConsolidatedTab();
+						setCollapsed(true);
+					} else if (status === "delta") {
+						// Simple text ops: delete removes first occurrence; insert appends
+						const state = (useChatStore.getState() as any);
+						const current = state.fileProgress[fileName]?.content || "";
+						if (op === "delete" && delta) {
+							const idx = current.indexOf(delta);
+							if (idx !== -1) {
+								const updated = current.slice(0, idx) + current.slice(idx + delta.length);
+								state.setFileProgressContent(fileName, updated, "delta");
+							} else {
+								state.setFileProgressContent(fileName, current, "delta");
+							}
+						} else if (op === "insert") {
+							state.setFileProgressContent(fileName, current + delta, "delta");
+						} else {
+							state.setFileProgressContent(fileName, current + delta, "delta");
+						}
 					} else if (status === "ended") {
 						endFileProgress(fileName);
 					}
