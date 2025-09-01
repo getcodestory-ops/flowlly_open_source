@@ -61,7 +61,8 @@ export function ResourceTextViewer({
 	const documentName = data?.file_name || fileName || "Untitled";
 	const isCodeFile = (name?: string) => {
 		const lower = (name || "").toLowerCase();
-		return [".py", ".js", ".ts", ".tsx", ".css", ".json", ".jsonl", ".md", ".txt"].some((ext) => lower.endsWith(ext));
+		// Exclude .md so it renders in TipTap ContentEditor
+		return [".py", ".js", ".ts", ".tsx", ".css", ".json", ".jsonl", ".txt"].some((ext) => lower.endsWith(ext));
 	};
 
 	return (
