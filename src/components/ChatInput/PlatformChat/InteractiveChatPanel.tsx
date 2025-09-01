@@ -642,29 +642,22 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 								{inLineViewableExtensions.includes(getFileExtension(tab.filename)) && (
 									<>
 										{getCurrentViewMode(tab.id) === "original" ? (
-											[
-												"md",
-												"py",
-												"js",
-												"ts",
-												"tsx",
-												"css",
-												"json",
-												"jsonl",
-											].includes(getFileExtension(tab.filename)) ? (
-													<ResourceTextViewer 
-														lastReloadTime={tab.lastReloadTime}
-														resource_id={tab.resourceId}
-													/>
-												) : (
-													<InlineDocumentViewer 
-														fileExtension={getFileExtension(tab.filename)} 
-														lastReloadTime={tab.lastReloadTime}
-														resourceId={tab.resourceId}
-													/>
-												)
+											["md", "py", "js", "ts", "tsx", "css", "json", "jsonl"].includes(getFileExtension(tab.filename)) ? (
+												<ResourceTextViewer 
+													fileName={tab.filename}
+													lastReloadTime={tab.lastReloadTime}
+													resource_id={tab.resourceId}
+												/>
+											) : (
+												<InlineDocumentViewer 
+													fileExtension={getFileExtension(tab.filename)} 
+													lastReloadTime={tab.lastReloadTime}
+													resourceId={tab.resourceId}
+												/>
+											)
 										) : (
 											<ResourceTextViewer 
+												fileName={tab.filename}
 												lastReloadTime={tab.lastReloadTime}
 												resource_id={tab.resourceId}
 											/>
