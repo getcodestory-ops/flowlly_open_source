@@ -257,25 +257,25 @@ export default function EmptyChatInterface({
 	const staticTabTypes = tabTypes;
 	const staticChatTypes = dynamicChatTypes;
 
-	// Template selection handler (hook: useCallback)
+
 	const handleTemplateSelection = React.useCallback((template: StorageResourceEntity) => {
 		const currentChatId = activeChatEntity?.id || "untitled";
 		
 		// Add template as attachment to the chat panel
-		addTab({
-			isOpen: true,
-			type: "sources",
-			resourceId: template.id,
-			filename: template.file_name,
-			title: template.metadata.template_name || template.file_name,
-		});
+		// addTab({
+		// 	isOpen: true,
+		// 	type: "sources",
+		// 	resourceId: template.id,
+		// 	filename: template.file_name,
+		// 	title: template.metadata.template_name || template.file_name,
+		// });
 
 		// Add template to selected contexts (this will automatically create the attachment directive)
 		const currentContexts = selectedContexts[currentChatId] || [];
 		const templateContext = {
 			id: template.id,
 			name: template.file_name,
-			extension: "html", // Templates are HTML files
+			extension: "template", // Templates are .template files
 		};
 		
 		// Check if template is already selected to avoid duplicates
@@ -286,16 +286,8 @@ export default function EmptyChatInterface({
 
 		setChatDirectiveType("chat");
 
-		const templateInstruction =
-			":::instructions\n" +
-			`Use this template (${template.metadata.template_name || template.file_name}) to write the report as instructed.\n\n` +
-			"1) Copy the template and read it carefully. The template is an HTML file with predefined styling and layout.\n" +
-			"2) Edit only the body content. Do not change the head, styles, or outer containers; changing them will break the styling.\n" +
-			"3) Keep the HTML body flat: avoid nesting elements (no nested divs or other tags). This ensures the template can be edited later in a simple text editor.\n" +
-			"4) Read the entire template to understand the overall structure, the different sections, and what content belongs in each section.\n" +
-			"5) Use the provided editing tools to make your updates.\n" +
-			":::\n";
-		setChatContext(templateInstruction);
+		// Add instruction directly to chat input
+		setChatInput("Read and execute attached instruction");
 
 		// Reset template selection
 		setSelectedTemplateId(null);

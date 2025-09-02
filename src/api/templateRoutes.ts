@@ -97,7 +97,7 @@ export const createProjectTemplate = async(
 export const transformToTemplatePreview = (resource: StorageResourceEntity): TemplatePreview => {
 	return {
 		id: resource.id,
-		name: resource.metadata.template_name || resource.file_name.replace(".html", ""),
+		name: resource.metadata.template_name || resource.file_name.replace(".template", ""),
 		useCase: resource.metadata.use_case || "general",
 		icon: resource.metadata.icon,
 		description: `Template for ${resource.metadata.use_case || "general use"}`,
