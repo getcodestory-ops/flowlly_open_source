@@ -2,7 +2,7 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, MessageSquare, Users, ArrowLeft, Sparkles, Plus } from "lucide-react";
+import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, MessageSquare, Users, ArrowLeft, Sparkles, Plus, X } from "lucide-react";
 import AtSelectorComponent from "../../../components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
 import ModelSelector from "../../../components/ModelSelector";
@@ -13,8 +13,8 @@ import KnowledgeManager from "./FormDirectives/KnowledgeManager";
 import MeetingChat from "./FormDirectives/MeetingChat";
 import { useTemplatesByUseCase } from "@/hooks/useTemplates";
 import type { TemplatePreview, StorageResourceEntity } from "@/api/templateRoutes";
-import { useStore } from "@/utils/store";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import TemplateBuilder from "./TemplateBuilder";
 import TemplateFromExistingReport from "./FormDirectives/TemplateFromExistingReport";
 
@@ -33,25 +33,26 @@ const GET_ICON_COMPONENT = (iconName: string): React.ComponentType<{ className?:
 	return iconMap[iconName] || MessageSquare;
 };
 
+// Placeholder texts constant
+const PLACEHOLDER_TEXTS = [
+	"✨ Type your task and provide necessary files and folders...",
+	"📎 Click the clip icon below to select files for the agent to analyze...",
+	"📁 Set your output folder by clicking the clip icon and choosing 'Chat Folder'...",
+	"☁️ Upload documents to your project folders via the document panel...",
+	"🚀 Describe what you need help with - reports, analysis, estimates...",
+	"💼 Attach blueprints, contracts, or specifications for better results...",
+];
+
 // Animated Placeholder Component
 const AnimatedPlaceholder = ({ isEmpty }: { isEmpty: boolean }): React.JSX.Element | null => {
 	const [currentText, setCurrentText] = React.useState("");
 	const [currentIndex, setCurrentIndex] = React.useState(0);
 	const [isTyping, setIsTyping] = React.useState(true);
 
-	const placeholderTexts = [
-		"✨ Type your task and provide necessary files and folders...",
-		"📎 Click the clip icon below to select files for the agent to analyze...",
-		"📁 Set your output folder by clicking the clip icon and choosing 'Chat Folder'...",
-		"☁️ Upload documents to your project folders via the document panel...",
-		"🚀 Describe what you need help with - reports, analysis, estimates...",
-		"💼 Attach blueprints, contracts, or specifications for better results...",
-	];
-
 	React.useEffect(() => {
 		if (!isEmpty) return;
 
-		const currentFullText = placeholderTexts[currentIndex];
+		const currentFullText = PLACEHOLDER_TEXTS[currentIndex];
 		
 		if (isTyping) {
 			if (currentText.length < currentFullText.length) {
@@ -72,7 +73,7 @@ const AnimatedPlaceholder = ({ isEmpty }: { isEmpty: boolean }): React.JSX.Eleme
 				}, 25);
 				return () => clearTimeout(timeout);
 			} else {
-				setCurrentIndex((prev) => (prev + 1) % placeholderTexts.length);
+				setCurrentIndex((prev) => (prev + 1) % PLACEHOLDER_TEXTS.length);
 				setIsTyping(true);
 			}
 		}
@@ -116,13 +117,10 @@ export default function EmptyChatInterface({
 		setSelectedModel,
 		// selectedTemplateId, // No longer needed
 		setSelectedTemplateId,
-		addTab,
-		selectedContexts,
-		setSelectedContexts,
-		// chatContext,
+		chatContext,
 		setChatContext,
+		clearChatContext,
 	} = useChatStore();
-	const { activeChatEntity } = useStore();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const [activeTab, setActiveTab] = React.useState("chat");
 
@@ -151,44 +149,44 @@ export default function EmptyChatInterface({
 		useCase?: string;
 	}
 
-	const chatTypes: Record<string, Array<ChatTypeCard>> = {
-		bidLevelling: [
-			{
-				id: "bidLevelling",
-				title: "Bid Levelling",
-				description: "Analyze and compare bids",
-				icon: FileSpreadsheet,
-			},
-		],
-		reports: [
-			{
-				id: "dailyReport",
-				title: "Daily Report",
-				description: "Generate daily progress reports",
-				icon: FileText,
-			},
-		],
-		search: [
-			{
-				id: "knowledgeManager",
-				title: "Knowledge Search",
-				description: "Search project documents",
-				icon: Search,
-			},
-		],
-		meeting: [
-			{
-				id: "meetingChat",
-				title: "Meeting Assistant",
-				description: "Ask about meetings and transcripts",
-				icon: Users,
-			},
-		],
-		templates: [], // Will be populated dynamically
-	};
-
 	// Create dynamic chat types with templates (hook: useMemo)
 	const dynamicChatTypes = React.useMemo(() => {
+		const chatTypes: Record<string, Array<ChatTypeCard>> = {
+			bidLevelling: [
+				{
+					id: "bidLevelling",
+					title: "Bid Levelling",
+					description: "Analyze and compare bids",
+					icon: FileSpreadsheet,
+				},
+			],
+			reports: [
+				{
+					id: "dailyReport",
+					title: "Daily Report",
+					description: "Generate daily progress reports",
+					icon: FileText,
+				},
+			],
+			search: [
+				{
+					id: "knowledgeManager",
+					title: "Knowledge Search",
+					description: "Search project documents",
+					icon: Search,
+				},
+			],
+			meeting: [
+				{
+					id: "meetingChat",
+					title: "Meeting Assistant",
+					description: "Ask about meetings and transcripts",
+					icon: Users,
+				},
+			],
+			templates: [], // Will be populated dynamically
+		};
+
 		const baseTypes = { ...chatTypes };
 		
 		// Add dynamic templates
@@ -222,7 +220,7 @@ export default function EmptyChatInterface({
 		}
 		
 		return baseTypes;
-	}, [chatTypes, templatesByUseCase, templatesLoading]);
+	}, [templatesByUseCase, templatesLoading]);
 
 	// Tab configuration
 	const tabTypes = [
@@ -259,8 +257,6 @@ export default function EmptyChatInterface({
 
 
 	const handleTemplateSelection = React.useCallback((template: StorageResourceEntity) => {
-		const currentChatId = activeChatEntity?.id || "untitled";
-		
 		// Add template as attachment to the chat panel
 		// addTab({
 		// 	isOpen: true,
@@ -271,35 +267,31 @@ export default function EmptyChatInterface({
 		// });
 
 		// Add template to selected contexts (this will automatically create the attachment directive)
-		const currentContexts = selectedContexts[currentChatId] || [];
-		const templateContext = {
-			id: template.id,
-			name: template.file_name,
-			extension: "template", // Templates are .template files
-		};
+		// const currentContexts = selectedContexts[currentChatId] || [];
+		// const templateContext = {
+		// 	id: template.id,
+		// 	name: template.file_name,
+		// 	extension: "template", // Templates are .template files
+		// };
 		
 		// Check if template is already selected to avoid duplicates
-		const isAlreadySelected = currentContexts.some((ctx) => ctx.id === template.id);
-		if (!isAlreadySelected) {
-			setSelectedContexts(currentChatId, [...currentContexts, templateContext]);
-		}
+		// const isAlreadySelected = currentContexts.some((ctx) => ctx.id === template.id);
+		// if (!isAlreadySelected) {
+		// 	setSelectedContexts(currentChatId, [...currentContexts, templateContext]);
+		// }
 
 		setChatDirectiveType("chat");
 
 		// Add instruction directly to chat input
-		setChatInput("Read and execute attached instruction");
+		const templateContent = template.metadata.content || "";
+		setChatContext(":::instructions\n" + templateContent + "\n:::\n");
+		setChatInput("Execute instructions");
 
 		// Reset template selection
 		setSelectedTemplateId(null);
 	}, [
-		addTab,
-		setChatInput,
-		chatInput,
 		setSelectedTemplateId,
 		setChatDirectiveType,
-		activeChatEntity,
-		selectedContexts,
-		setSelectedContexts,
 		setChatContext,
 	]);
 
@@ -487,7 +479,20 @@ export default function EmptyChatInterface({
 						Message
 					</Label>
 					<div className="absolute top-0 left-2 z-10 pt-2">
-						<AtSelectorComponent />
+						<div className="flex items-center gap-2">
+							<AtSelectorComponent />
+							{chatContext.trim() && (
+								<Badge 
+									className="h-5 px-2 text-xs font-medium bg-indigo-50 text-indigo-700 hover:bg-indigo-100 flex items-center gap-1 cursor-pointer max-w-[200px] group"
+									onClick={() => clearChatContext()}
+									variant="secondary"
+								>
+									<X className="h-3 w-3 text-indigo-600 flex-shrink-0" />
+									<Sparkles className="h-3 w-3 text-indigo-600 flex-shrink-0" />
+									<span className="truncate" title="Template Instructions">Template</span>
+								</Badge>
+							)}
+						</div>
 					</div>
 					<div className="relative">
 						<AnimatedPlaceholder isEmpty={!chatInput.trim()} />

@@ -35,6 +35,7 @@ export function ResourceTextViewer({
 			fetchResource(session, activeProject?.project_id, resource_id, isSandboxFile, fileName),
 		staleTime: 0, // Always fetch fresh data
 	});
+	
 
 	// For sandbox files, the backend might return content directly as a string
 	// For regular files, content is in data.metadata.content
@@ -56,6 +57,7 @@ export function ResourceTextViewer({
 		}
 		return null;
 	};
+	
 
 	const content = getContent();
 	const documentName = data?.file_name || fileName || "Untitled";
