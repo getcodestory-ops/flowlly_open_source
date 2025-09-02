@@ -66,7 +66,7 @@ const ContentEditor = ({
 
 	// Helper function to check if document should use Markdown
 	const shouldUseMarkdown = (docName?: string): boolean => {
-		return docName?.toLowerCase().endsWith(".md") || false;
+		return docName?.toLowerCase().endsWith(".md") || docName?.toLowerCase().endsWith(".template") || false;
 	};
 
 
