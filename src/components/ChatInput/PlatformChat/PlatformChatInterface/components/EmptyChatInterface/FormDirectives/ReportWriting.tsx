@@ -149,7 +149,7 @@ export default function ReportWriting({
 			if (formData.hasExistingTemplate) {
 				// When user has existing template, these files are templates
 				// Templates should be document formats that can define structure/layout
-				if (["html", "htm", "pdf", "doc", "docx", "txt", "md", "rtf", "odt"].includes(extension) || 
+				if (["template", "html", "htm", "pdf", "doc", "docx", "txt", "md", "rtf", "odt"].includes(extension) || 
 					doc.name.toLowerCase().includes("template") ||
 					doc.name.toLowerCase().includes("format")) {
 					templates.push(doc);

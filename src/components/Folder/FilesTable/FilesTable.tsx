@@ -150,7 +150,7 @@ export const FilesTable: React.FC<FilesTableProps> = ({
 					</div>
 				</CardContent>
 			</Card>
-			<ChatButton
+			{/* <ChatButton
 				isOpen={isChatOpen}
 				onClick={() => setIsChatOpen(!isChatOpen)}
 				openText={`Chat about ${folderName}`}
@@ -159,9 +159,9 @@ export const FilesTable: React.FC<FilesTableProps> = ({
 						? "Close chat assistant"
 						: `Chat with Flowlly AI about ${folderName}`
 				}
-			/>
+			/> */}
 			{/* Chat component*/}
-			{(isChatOpen || isClosing) && (
+			{/* {(isChatOpen || isClosing) && (
 				<div
 					className={`fixed bottom-2 right-4 w-[calc(100vw-200px)] z-30 bg-white border border-gray-200 rounded-lg  overflow-hidden transition-opacity duration-300 ${
 						isClosing ? "opacity-0" : "opacity-100"
@@ -188,7 +188,7 @@ export const FilesTable: React.FC<FilesTableProps> = ({
 						</Button>
 					</div>
 				</div>
-			)}
+			)} */}
 		</div>
 	);
 };
