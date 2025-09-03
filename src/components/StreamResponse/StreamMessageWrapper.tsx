@@ -4,13 +4,8 @@ import { getTaskStatusById } from "@/api/taskQueue";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import StreamComponent from "./StreamAgentChat";
-import { stopAgent } from "@/api/agentRoutes";
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from "@/components/ui/accordion";
+
+
 import {  LaptopMinimalIcon } from "lucide-react";
 import { useChatStore } from "@/hooks/useChatStore";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
@@ -85,7 +80,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 	// Add state for expand/collapse functionality - default to preview mode
 	const [isFullyExpanded, setIsFullyExpanded] = useState(false);
 	const [taskStatus, setTaskStatus] = useState<string>("pending");
-	const [isStopping, setIsStopping] = useState(false);
+
 	
 	// Add thinking state at wrapper level
 	const [isThinking, setIsThinking] = useState(false);
@@ -361,7 +356,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 			// Clear streaming key when component unmounts
 			setStreamingKey(null);
 		};
-	}, [streamingKey, session, messageId, activeChatEntity?.id, queryClient, setLocalChats, toast, notificationsEnabled, setStreamingKey]);
+	}, [streamingKey, session, messageId, activeChatEntity?.id, queryClient, setLocalChats, toast, notificationsEnabled, setStreamingKey, setIsWaitingForResponse]);
 
 
 
@@ -408,62 +403,51 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 					<MarkDownDisplay content={thinkingContent} />
 				</div>
 			)}
-			<Accordion 
-				className="rounded-lg"
-				collapsible
-				onValueChange={(value) => setIsFullyExpanded(value === "stream-content")}
-				type="single"
-				value={isFullyExpanded ? "stream-content" : undefined}
-			>
-				<AccordionItem className="border-0" value="stream-content">
-					<AccordionTrigger className="px-4 py-3 rounded-lg transition-colors justify-end [&>svg]:hidden">
-						<div className="flex items-center gap-2 w-full justify-between">
-							<div className="flex items-center gap-2">
-								<span className="text-xs text-gray-500 flex items-center">
-									{getStatusText()}
-									{(taskStatus === "pending" || taskStatus === "processing") && (
-										<AnimatedDots />
-									)}
-								</span>
-							</div>
-							<div className="text-xs text-gray-400">
-								{isFullyExpanded ? "Hide computer process" : "See computer process"}
-							</div>
-						</div>
-					</AccordionTrigger>
-					{/* Stream content - single component with conditional styling */}
-					<div className={isFullyExpanded ? "hidden" : "relative max-h-32 overflow-hidden cursor-pointer hover:bg-gray-25 transition-colors"} 
-						 onClick={!isFullyExpanded ? () => setIsFullyExpanded(true) : undefined}
-					>
-						<div className="p-4 text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
-							<div className="stream-content-preview" id={`stream-preview-${streamingKey}`}>
-								{/* Content will be rendered by the single StreamComponent below */}
-							</div>
-						</div>
-						{!isFullyExpanded && (
-							<div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none" />
-						)}
+			<div className="rounded-lg border border-gray-200">
+				<div 
+					className="px-4 py-3 rounded-t-lg transition-colors cursor-pointer hover:bg-gray-50 flex items-center justify-between"
+					onClick={() => setIsFullyExpanded(!isFullyExpanded)}
+				>
+					<div className="flex items-center gap-2">
+						<span className="text-xs text-gray-500 flex items-center">
+							{getStatusText()}
+							{(taskStatus === "pending" || taskStatus === "processing") && (
+								<AnimatedDots />
+							)}
+						</span>
 					</div>
-					<AccordionContent className="px-4 pb-4">
-						<div className="bg-gray-50 rounded-md p-3">
-							<div className="text-slate-700 prose prose-slate max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1">
-								<div className="stream-content-expanded" id={`stream-expanded-${streamingKey}`}>
-									{/* Content will be rendered by the single StreamComponent below */}
-								</div>
-							</div>
-						</div>
-					</AccordionContent>
-					<StreamComponent
-						authToken={authToken}
-						isExpanded={isFullyExpanded}
-						key={streamingKey}
-						onStreamComplete={handleStreamComplete}
-						onThinkingChange={handleThinkingChange}
-						onThinkingContentChange={handleThinkingContentChange}
-						streamingKey={streamingKey}
-					/>
-				</AccordionItem>
-			</Accordion>
+					<div className="text-xs text-gray-400">
+						{isFullyExpanded ? "Hide computer process" : "See computer process"}
+					</div>
+				</div>
+				<div 
+					className={`
+						transition-all duration-300 ease-in-out overflow-hidden
+						${isFullyExpanded ? "max-h-[800px]" : "max-h-32"}
+					`}
+				>
+					<div 
+						className={`
+							relative p-4 text-slate-700 prose prose-slate max-w-none 
+							prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1
+							${isFullyExpanded ? "" : " cursor-pointer"}
+						`}
+						onClick={!isFullyExpanded ? () => setIsFullyExpanded(true) : undefined}
+					>
+						<StreamComponent
+							authToken={authToken}
+							key={streamingKey}
+							onStreamComplete={handleStreamComplete}
+							onThinkingChange={handleThinkingChange}
+							onThinkingContentChange={handleThinkingContentChange}
+							streamingKey={streamingKey}
+						/>
+					</div>
+					{!isFullyExpanded && (
+						<div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+					)}
+				</div>
+			</div>
 		</div>
 	);
 };

@@ -86,8 +86,8 @@ function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: {
 			return <MarkDownDisplay content={message} />;
 		}
 
-		// Handle special streaming message type - only for the last message
-		if (typeof message === "object" && message.type === "stream" && message.streaming_key && isLastMessage) {
+		// Handle special streaming message type
+		if (typeof message === "object" && message.type === "stream" && message.streaming_key) {
 			const session = useStore.getState().session;
 			
 			return session ? (

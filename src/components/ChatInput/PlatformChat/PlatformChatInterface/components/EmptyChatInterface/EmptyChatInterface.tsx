@@ -524,14 +524,14 @@ export default function EmptyChatInterface({
 						<Button
 							className="gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
 							disabled={
-								isWaitingForResponse ||
+								isPending ||
 								(!chatInput.trim())
 							}
 							onClick={handleSubmit}
 							size="sm"
 							type="submit"
 						>
-							{isWaitingForResponse ? (
+							{isPending ? (
 								<>
 									<Loader2 className="h-3.5 w-3.5 animate-spin" />
 								</>

@@ -40,6 +40,7 @@ import { RiTeamLine } from "react-icons/ri";
 import { MembersModal } from "@/components/MembersModal/MembersModal";
 // import { getAgentChatEntities } from "@/api/agentRoutes";
 import { ProjectEntity } from "@/types/projects";
+import { useChatStore } from "@/hooks/useChatStore";
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
@@ -61,6 +62,7 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) : JSX.Element 
 		setMembers,
 		setActiveChatEntity,
 		setChatEntities,
+		setLocalChats,
 	} = useStore((state) => ({
 		session: state.session,
 		userProjects: state.userProjects,
@@ -70,7 +72,9 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) : JSX.Element 
 		setMembers: state.setMembers,
 		setActiveChatEntity: state.setActiveChatEntity,
 		setChatEntities: state.setChatEntities,
+		setLocalChats: state.setLocalChats,
 	}));
+	const { resetForNewChat } = useChatStore();
 
 	const [isMembersOpen, setIsMembersOpen] = useState(false);
 
@@ -148,6 +152,12 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) : JSX.Element 
 	// }, [chatEntitities, setActiveChatEntity]);
 
 	const switchProject = (project: ProjectEntity) :void => {
+		// Reset all chat state when switching projects
+		setActiveChatEntity(null);
+		setChatEntities([]);
+		setLocalChats([]);
+		resetForNewChat();
+		
 		const projectId = params ? params?.projectId : null;
 
 		if (projectId && pathname && pathname.includes(`/${projectId}/`)) {

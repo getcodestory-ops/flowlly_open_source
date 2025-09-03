@@ -18,6 +18,7 @@ import { useStore } from "@/utils/store";
 import { ActivityEntity } from "@/types/activities";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useRouter } from "next/router";
+import { useChatStore } from "@/hooks/useChatStore";
 
 interface TopBarMenuItemsProps {
   taskToView: ActivityEntity;
@@ -33,10 +34,14 @@ const TopBarProjects = ({
 	const [activeProjectMenu, setActiveProjectMenu] =
     useState<ProjectEntity | null>(null);
 
-	const { session, setActiveProject } = useStore((state) => ({
+	const { session, setActiveProject, setActiveChatEntity, setChatEntities, setLocalChats } = useStore((state) => ({
 		session: state.session,
 		setActiveProject: state.setActiveProject,
+		setActiveChatEntity: state.setActiveChatEntity,
+		setChatEntities: state.setChatEntities,
+		setLocalChats: state.setLocalChats,
 	}));
+	const { resetForNewChat } = useChatStore();
 
 	const { data: projects, isLoading } = useQuery({
 		queryKey: ["initialProjectList", session, taskToView],
@@ -73,6 +78,12 @@ const TopBarProjects = ({
 				query: { ...router.query, projectId: project.project_id },
 			});
 		} else {
+			// Reset all chat state when switching projects
+			setActiveChatEntity(null);
+			setChatEntities([]);
+			setLocalChats([]);
+			resetForNewChat();
+			
 			setActiveProjectMenu(project);
 			setActiveProject(project);
 		}

@@ -53,17 +53,35 @@ export default function PlatformChatInterface({
 		activeChatEntity,
 		setIsWaitingForResponse,
 	} = usePlatformChat(folderId, chatTarget, includeContext);
-	const { setSidePanel, setCollapsed, contextFolder, selectedModel, setSelectedModel, streamingKey } = useChatStore();
+	const { setSidePanel, setCollapsed, contextFolder, selectedModel, setSelectedModel } = useChatStore();
+	
+	// Check if current chat has an active streaming message
+	const getActiveStreamingKey = () => {
+		if (!chats || chats.length === 0) return null;
+		
+		// Look for the most recent streaming message
+		for (let i = chats.length - 1; i >= 0; i--) {
+			const chat = chats[i];
+			if (typeof chat.message === "object" && 
+				chat.message.type === "stream" && 
+				chat.message.streaming_key) {
+				return chat.message.streaming_key;
+			}
+		}
+		return null;
+	};
+	
+	const activeStreamingKey = getActiveStreamingKey();
 	const [isStopping, setIsStopping] = React.useState(false);
 	
 	const handleStopAgent = async() => {
-		if (!session || !streamingKey || isStopping) return;
+		if (!session || !activeStreamingKey || isStopping) return;
 		
 		setIsStopping(true);
 		try {
 			const response = await stopAgent({
 				session,
-				streamingId: streamingKey,
+				streamingId: activeStreamingKey,
 			});
 			
 			toast({
@@ -291,19 +309,19 @@ export default function PlatformChatInterface({
 				</div>
 				<Textarea
 					className="min-h-10 resize-none border-0 p-3 pb-4 mt-4 shadow-none focus-visible:ring-0"
-					disabled={isPending || (isWaitingForResponse && !streamingKey)}
+					disabled={isPending}
 					id="message"
 					onChange={(e) => setChatInput(e.target.value)}
 					onKeyDown={(e) => {
 						if (e.key === "Enter" && !e.shiftKey) {
 							e.preventDefault();
-							if (chatInput.trim() && (!isPending && (!isWaitingForResponse || streamingKey))) {
+							if (chatInput.trim() && !isPending) {
 								handleSubmit();
 							}
 						}
 					}}
 					placeholder={
-						isWaitingForResponse && streamingKey 
+						activeStreamingKey 
 							? "Type message to add to agent queue..." 
 							: "Type message here or attach relevant files and set chat output folder using the clip icon below..."
 					}
@@ -319,24 +337,23 @@ export default function PlatformChatInterface({
 					</div>
 					<Button
 						className={`gap-1.5 transition-colors ${
-							isWaitingForResponse && streamingKey && !chatInput.trim()
+							activeStreamingKey && !chatInput.trim()
 								? "bg-red-500 hover:bg-red-600 text-white animate-pulse" 
 								: "bg-indigo-500 hover:bg-indigo-600 text-white"
 						}`}
 						disabled={
-							(!chatInput.trim() && (!isWaitingForResponse || !streamingKey)) ||
-							(isWaitingForResponse && !streamingKey) ||
+							(!chatInput.trim() && !activeStreamingKey) ||
 							isStopping
 						}
 						onClick={
-							isWaitingForResponse && streamingKey && !chatInput.trim() 
+							activeStreamingKey && !chatInput.trim() 
 								? handleStopAgent 
 								: handleSubmit
 						}
 						size="sm"
 						type="submit"
 					>
-						{isWaitingForResponse && streamingKey && !chatInput.trim() ? (
+						{activeStreamingKey && !chatInput.trim() ? (
 							<>
 								<StopCircle className="h-3.5 w-3.5" />
 								{isStopping ? "Stopping..." : "Stop"}

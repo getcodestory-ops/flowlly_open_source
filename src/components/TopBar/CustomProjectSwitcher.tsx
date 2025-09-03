@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/command";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { Building } from "lucide-react";
+import { useChatStore } from "@/hooks/useChatStore";
 
 
 export function CustomProjectSwitcher({
@@ -70,17 +71,25 @@ const ProjectLineItem = ({
 	const params = useParams();
 	const pathname = usePathname();
 
-	const {  setActiveProject, setActiveChatEntity } = useStore(
+	const {  setActiveProject, setActiveChatEntity, setChatEntities, setLocalChats } = useStore(
 		(state) => ({
 			setActiveProject: state.setActiveProject,
 			setActiveChatEntity: state.setActiveChatEntity,
+			setChatEntities: state.setChatEntities,
+			setLocalChats: state.setLocalChats,
 		}),
 	);
+	const { resetForNewChat } = useChatStore();
 
 	const switchProject = (project: ProjectEntity): void => {
+		// Reset all chat state when switching projects
+		setActiveChatEntity(null);
+		setChatEntities([]);
+		setLocalChats([]);
+		resetForNewChat();
+		
 		// Update URL if needed
 		const projectId = params ? params?.projectId : null;
-		setActiveChatEntity(null);
 
 
 		if (projectId && pathname && pathname.includes(`/${projectId}/`)) {
