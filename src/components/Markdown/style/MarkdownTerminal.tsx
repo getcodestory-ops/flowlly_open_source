@@ -7,7 +7,7 @@ interface MarkdownTerminalProps {
 
 const MarkdownTerminal: React.FC<MarkdownTerminalProps> = ({ content }) => {
 	return (
-		<div className="rounded-md p-3 border border-gray-300 font-mono bg-gray-50 shadow-sm">
+		<div className="rounded-md p-3  font-mono  shadow-sm">
 			<div className="text-gray-800">
 				<style>{`
 					.terminal-log-container {

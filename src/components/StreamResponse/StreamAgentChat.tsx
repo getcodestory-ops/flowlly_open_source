@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { createPortal } from "react-dom";
 import MarkdownTerminal from "../Markdown/style/MarkdownTerminal";
 import { useChatStore } from "@/hooks/useChatStore";
 
@@ -11,7 +10,6 @@ interface StreamComponentProps {
   onStreamComplete?: (content: string) => void;
   onThinkingChange?: (thinking: boolean) => void;
   onThinkingContentChange?: (content: string) => void;
-  isExpanded?: boolean;
 }
 
 interface ATTACHMENT_DATA {
@@ -47,7 +45,6 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	onStreamComplete,
 	onThinkingChange,
 	onThinkingContentChange,
-	isExpanded = false,
 }) => {
 	const [displayValue, setDisplayValue] = useState<string>("");
 	const displayValueRef = useRef<string>("");
@@ -374,13 +371,9 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			eventSourceRef.current = null;
 		};
 	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, setTodoState, handleAttachmentEvent, initFileProgress, appendFileProgressDelta, endFileProgress, isExpanded]);
+	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, setTodoState, handleAttachmentEvent, initFileProgress, appendFileProgressDelta, endFileProgress]);
 
-	// Render content into the appropriate container based on expanded state
-	const targetContainerId = isExpanded ? `stream-expanded-${streamingKey}` : `stream-preview-${streamingKey}`;
-	const targetContainer = document.getElementById(targetContainerId);
-
-	const content = (
+	return (
 		<div className="mb-4">
 			{displayValue && (
 				<div className="pb-4">
@@ -394,9 +387,6 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			)}
 		</div>
 	);
-
-	// Use portal to render content in the target container, fallback to normal render if container not found
-	return targetContainer ? createPortal(content, targetContainer) : content;
 };
 
 export default StreamComponent;

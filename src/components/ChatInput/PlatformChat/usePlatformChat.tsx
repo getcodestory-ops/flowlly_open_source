@@ -30,7 +30,7 @@ export function usePlatformChat(
 	const isWaitingForResponse = useChatStore((state) => state.isWaitingForResponse);
 	const chatTypeTags = useChatStore((state) => state.chatTypeTags);
 	const selectedModel = useChatStore((state) => state.selectedModel);
-	const streamingKey = useChatStore((state) => state.streamingKey);
+	// Note: streamingKey is now detected per-chat instead of using global state
 
 
 	// Use localChats from the store instead of local state
@@ -136,8 +136,24 @@ export function usePlatformChat(
 		},
 	});
 
+	// Check if current chat has an active streaming message
+	const hasActiveStreamingMessage = () => {
+		if (!localChats || localChats.length === 0) return null;
+		
+		// Look for the most recent streaming message
+		for (let i = localChats.length - 1; i >= 0; i--) {
+			const chat = localChats[i];
+			if (typeof chat.message === "object" && 
+				chat.message.type === "stream" && 
+				chat.message.streaming_key) {
+				return chat.message.streaming_key;
+			}
+		}
+		return null;
+	};
+
 	// Handle sending message to streaming agent
-	const handleStreamingMessage = async(message: string) => {
+	const handleStreamingMessage = async(message: string, streamingKey: string) => {
 		if (!session || !streamingKey) {
 			toast({
 				title: "Error",
@@ -189,9 +205,10 @@ export function usePlatformChat(
 			return;
 		}
 
-		// If we're in streaming mode, send message to streaming agent instead
-		if (streamingKey && isWaitingForResponse) {
-			await handleStreamingMessage(message);
+		// Check if current chat has an active streaming message
+		const activeStreamingKey = hasActiveStreamingMessage();
+		if (activeStreamingKey) {
+			await handleStreamingMessage(message, activeStreamingKey);
 			return;
 		}
 
