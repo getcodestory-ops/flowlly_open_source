@@ -8,6 +8,7 @@ import { deleteProject } from "@/api/projectRoutes";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { AddNewProjectButton } from "../Schedule/AddNewProjectModal";
 import { usePathname, useRouter, useParams } from "next/navigation";
+import { useChatStore } from "@/hooks/useChatStore";
 import { Button } from "../ui/button";
 import {
 	Card,
@@ -44,14 +45,18 @@ function ProjectBoard() {
 	const router = useRouter();
 	const toast = useToast();
 	const queryClient = useQueryClient();
-	const { userProjects, activeProject, setActiveProject, session } = useStore(
+	const { userProjects, activeProject, setActiveProject, session, setActiveChatEntity, setChatEntities, setLocalChats } = useStore(
 		(state) => ({
 			userProjects: state.userProjects,
 			activeProject: state.activeProject,
 			setActiveProject: state.setActiveProject,
 			session: state.session,
+			setActiveChatEntity: state.setActiveChatEntity,
+			setChatEntities: state.setChatEntities,
+			setLocalChats: state.setLocalChats,
 		}),
 	);
+	const { resetForNewChat } = useChatStore();
 
 	const mutation = useMutation({
 		mutationFn: ({ selectedProjectId }: { selectedProjectId: string }) =>
@@ -80,6 +85,12 @@ function ProjectBoard() {
 	});
 
 	const switchProject = (project: ProjectEntity) => {
+		// Reset all chat state when switching projects
+		setActiveChatEntity(null);
+		setChatEntities([]);
+		setLocalChats([]);
+		resetForNewChat();
+		
 		const projectId = params ? params?.projectId : null;
 
 		if (projectId && pathname && pathname.includes(`/${projectId}/`)) {
