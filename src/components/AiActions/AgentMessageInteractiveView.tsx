@@ -221,7 +221,7 @@ function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: {
 															<Logs className="h-4 w-4 text-gray-500 text-xs " />
 														</div>
 													</AccordionTrigger>
-													<AccordionContent className="">
+													<AccordionContent className="border border-gray-200 rounded-md bg-gray-50">
 														<MarkdownTerminal content={result.log} />
 													</AccordionContent>
 												</AccordionItem>
