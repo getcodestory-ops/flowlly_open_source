@@ -343,7 +343,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 				break;
 		}
 	},
-	selectedModel: "gemini-2.5-pro",
+	selectedModel: "claude-sonnet-4",
 	setSelectedModel: (model) => set({ selectedModel: model }),
 	// Chat type tags management
 	chatTypeTags: [],

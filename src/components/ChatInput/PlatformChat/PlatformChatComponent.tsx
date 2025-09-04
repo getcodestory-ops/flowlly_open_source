@@ -20,7 +20,7 @@ export default function PlatformChatComponent({
   onContentUpdate?: (newContent: string) => void;
   heightOffset?: number;
 }): React.ReactNode {
-	const [selectedModel] = useState<string>("gemini-2.5-pro");
+	const [selectedModel] = useState<string>("claude-sonnet-4");
 	const [includeContext] = useState<boolean>(false);
 
 	return (

@@ -37,6 +37,16 @@ export type ModelType = {
 
 export const MODELS: ModelType[] = [
 	{ 
+		id: "claude-sonnet-4", 
+		name: "Claude Sonnet 4",
+		speed: 3,
+		performance: 5,
+		cost: "high",
+		description: "Top-tier model for the most demanding tasks",
+		bestFor: "Highly complex tasks requiring maximum intelligence",
+		contextSize: "medium",
+	},
+	{ 
 		id: "gemini-2.5-pro", 
 		name: "Gemini 2.5 Pro",
 		speed: 2,
@@ -66,16 +76,7 @@ export const MODELS: ModelType[] = [
 		bestFor: "Mid-level complex tasks requiring high quality",
 		contextSize: "large",
 	},
-	{ 
-		id: "claude-sonnet-4", 
-		name: "Claude Sonnet 4",
-		speed: 3,
-		performance: 5,
-		cost: "high",
-		description: "Top-tier model for the most demanding tasks",
-		bestFor: "Highly complex tasks requiring maximum intelligence",
-		contextSize: "medium",
-	},
+
 	{
 		id: "claude-opus-4",
 		name: "claude opus 4",
