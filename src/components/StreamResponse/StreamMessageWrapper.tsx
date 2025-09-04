@@ -4,8 +4,6 @@ import { getTaskStatusById } from "@/api/taskQueue";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import StreamComponent from "./StreamAgentChat";
-
-
 import {  LaptopMinimalIcon } from "lucide-react";
 import { useChatStore } from "@/hooks/useChatStore";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
@@ -405,8 +403,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 			)}
 			<div className="rounded-lg border border-gray-200">
 				<div 
-					className="px-4 py-3 rounded-t-lg transition-colors cursor-pointer hover:bg-gray-50 flex items-center justify-between"
-					onClick={() => setIsFullyExpanded(!isFullyExpanded)}
+					className="px-4 py-3 rounded-t-lg transition-colors  flex items-center justify-between"
 				>
 					<div className="flex items-center gap-2">
 						<span className="text-xs text-gray-500 flex items-center">
@@ -416,36 +413,18 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 							)}
 						</span>
 					</div>
-					<div className="text-xs text-gray-400">
-						{isFullyExpanded ? "Hide computer process" : "See computer process"}
-					</div>
 				</div>
 				<div 
-					className={`
-						transition-all duration-300 ease-in-out overflow-hidden
-						${isFullyExpanded ? "max-h-[800px]" : "max-h-32"}
-					`}
+					className="max-h-56"
 				>
-					<div 
-						className={`
-							relative p-4 text-slate-700 prose prose-slate max-w-none 
-							prose-p:my-2 prose-p:leading-relaxed prose-headings:text-indigo-900 prose-li:my-1
-							${isFullyExpanded ? "" : " cursor-pointer"}
-						`}
-						onClick={!isFullyExpanded ? () => setIsFullyExpanded(true) : undefined}
-					>
-						<StreamComponent
-							authToken={authToken}
-							key={streamingKey}
-							onStreamComplete={handleStreamComplete}
-							onThinkingChange={handleThinkingChange}
-							onThinkingContentChange={handleThinkingContentChange}
-							streamingKey={streamingKey}
-						/>
-					</div>
-					{!isFullyExpanded && (
-						<div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none" />
-					)}
+					<StreamComponent
+						authToken={authToken}
+						key={streamingKey}
+						onStreamComplete={handleStreamComplete}
+						onThinkingChange={handleThinkingChange}
+						onThinkingContentChange={handleThinkingContentChange}
+						streamingKey={streamingKey}
+					/>
 				</div>
 			</div>
 		</div>

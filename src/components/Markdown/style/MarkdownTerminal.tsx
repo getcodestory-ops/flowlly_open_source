@@ -1,15 +1,22 @@
 import React from "react";
 import MarkDownDisplay from "../MarkDownDisplay";
-
+import { ScrollArea } from "@/components/ui/scroll-area";
 interface MarkdownTerminalProps {
 	content: string;
 }
 
 const MarkdownTerminal: React.FC<MarkdownTerminalProps> = ({ content }) => {
 	return (
-		<div className="rounded-md p-3  font-mono  shadow-sm">
+		<div className="font-mono p-3 max-h-32 overflow-y-auto hide-scrollbar">
 			<div className="text-gray-800">
 				<style>{`
+					.hide-scrollbar {
+						scrollbar-width: none; /* Firefox */
+						-ms-overflow-style: none; /* Internet Explorer 10+ */
+					}
+					.hide-scrollbar::-webkit-scrollbar {
+						display: none; /* Safari and Chrome */
+					}
 					.terminal-log-container {
 						font-size: 10px;
 						line-height: 1.4;

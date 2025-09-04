@@ -374,17 +374,14 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, setTodoState, handleAttachmentEvent, initFileProgress, appendFileProgressDelta, endFileProgress]);
 
 	return (
-		<div className="mb-4">
-			{displayValue && (
-				<div className="pb-4">
-					<MarkdownTerminal content={displayValue} />
-				</div>
-			)}
+		<div className="pb-4">
 			{(isThinking || isPending) && (
-				<div className="pb-4">
-					<LoadingDots centered showThinking={isThinking} />
-				</div>
+				<LoadingDots centered showThinking={isThinking} />
 			)}
+			{displayValue && (
+				<MarkdownTerminal content={displayValue} />
+			)}
+
 		</div>
 	);
 };
