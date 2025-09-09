@@ -223,6 +223,7 @@ Finally, use the report creation tool with:
   - **Base Document Integration**: Embed logos, headers, and standard images directly into the template for consistent formatting
   - **Script-Based Assets**: Include dynamic images, user-specific logos, or variable graphics through the automation script
   - **Hybrid Approach**: Combine both methods based on content type and update frequency requirements
+  Remember creating this rempalte is a journey , you should interact with user and ask for guidance and feedback so you can create a solid template that can automate future report generation for user. cheers !
 :::`;
 }
 
