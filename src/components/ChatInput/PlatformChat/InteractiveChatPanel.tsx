@@ -276,7 +276,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 		setShowUnsavedDialog(false);
 	};
 
-	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "wav", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", ".xlsx", ".docx", ".doc", "docx", "doc", "xlsx", "md", "json", "jsonl", "py", "css", "js", "ts", "tsx", "ppt", "pptx", "template"];
+	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "wav", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", ".xlsx", ".docx", ".doc", "docx", "doc", "xlsx", "md", "json", "jsonl", "py", "css", "js", "ts", "tsx", "ppt", "pptx", "template", "database"];
 
 	const handleFileNameEdit = async(tabId: string, newName: string) => {
 		if (!session || !activeProject) return;
@@ -644,7 +644,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 								{inLineViewableExtensions.includes(getFileExtension(tab.filename)) && (
 									<>
 										{getCurrentViewMode(tab.id) === "original" ? (
-											["md", "py", "js", "ts", "tsx", "css", "json", "jsonl", "template"].includes(getFileExtension(tab.filename)) ? (
+											["md", "py", "js", "ts", "tsx", "css", "json", "jsonl", "template", "database"].includes(getFileExtension(tab.filename)) ? (
 												<ResourceTextViewer 
 													fileName={tab.filename}
 													lastReloadTime={tab.lastReloadTime}
@@ -690,6 +690,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 												"jsonl",
 												"txt",
 												"template",
+												"database",
 											].includes(getFileExtension(tab.filename)) ? (
 													<ResourceTextViewer 
 														fileName={tab.filename}

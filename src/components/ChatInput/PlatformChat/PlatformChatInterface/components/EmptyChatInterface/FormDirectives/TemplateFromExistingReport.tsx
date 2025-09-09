@@ -135,18 +135,9 @@ export default function TemplateFromExistingReport({ isPending = false, isWaitin
 	}, []);
 
 	const getPrompt = useCallback((): string => {
-		const hasLogo = logoImages.length > 0;
-		const hasCover = coverImages.length > 0;
-		
 		// Generate the main prompt using the comprehensive template
 		const mainPrompt = generateTemplatePrompt({
 			templateName,
-			hasLogo,
-			hasCover,
-			primaryColor: primaryColor.trim() || undefined,
-			stylePreset,
-			additionalNotes: additionalNotes.trim() || undefined,
-			baseHtmlTemplate,
 		});
 
 		// Generate attachments section
@@ -177,37 +168,19 @@ export default function TemplateFromExistingReport({ isPending = false, isWaitin
 		<ScrollArea className="w-full space-y-6 bg-white rounded-xl border border-slate-100 p-6 shadow-sm h-[85vh]">
 			<div className="text-center">
 				<h3 className="text-lg font-semibold text-gray-900 mb-1">AI-Assisted Template Builder</h3>
-				<p className="text-sm text-gray-600">Attach an existing report along with brand assets and we will draft a reusable HTML template for you.</p>
+				<p className="text-sm text-gray-600">Attach an existing report along with brand assets and we will draft a reusable  template for you.</p>
 			</div>
 			<div className="space-y-6">
 				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-					<div className="space-y-2 md:col-span-2">
-						<Label className="text-sm font-medium text-gray-700">Template Name <span className="text-red-500">*</span></Label>
+					<div className="space-y-2 md:col-span-2 p-2">
+						<Label className="text-sm font-medium text-gray-700 p-2">Template Name <span className="text-red-500">*</span></Label>
 						<Input disabled={isPending}
 							onChange={(e) => setTemplateName(e.target.value)}
 							placeholder="e.g., Monthly Progress Report"
 							value={templateName}
 						/>
 					</div>
-					<div className="space-y-2">
-						<Label className="text-sm font-medium text-gray-700 flex items-center gap-2"><Palette className="h-4 w-4 text-gray-600" /> Style Preset</Label>
-						<div className="flex items-center gap-4">
-							<label className="flex items-center gap-2 text-sm">
-								<input checked={stylePreset === "modern"}
-									className="w-4 h-4"
-									onChange={() => setStylePreset("modern")}
-									type="radio"
-								/> Modern
-							</label>
-							<label className="flex items-center gap-2 text-sm">
-								<input checked={stylePreset === "classic"}
-									className="w-4 h-4"
-									onChange={() => setStylePreset("classic")}
-									type="radio"
-								/> Classic
-							</label>
-						</div>
-					</div>
+
 				</div>
 				<div className="space-y-2">
 					<Label className="text-sm font-medium text-gray-700 flex items-center gap-2"><FileText className="h-4 w-4 text-gray-600" /> Existing Report(s) <span className="text-red-500">*</span></Label>
@@ -232,101 +205,6 @@ export default function TemplateFromExistingReport({ isPending = false, isWaitin
 								<div className="text-sm text-gray-500 italic p-3 border-2 border-dashed border-gray-200 rounded-md text-center">Attach one or more reports (PDF, DOCX, etc.)</div>
 							)}
 						</div>
-					</div>
-				</div>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div className="space-y-2">
-						<Label className="text-sm font-medium text-gray-700 flex items-center gap-2"><ImageIcon className="h-4 w-4 text-gray-600" /> Company Logo (optional)</Label>
-						<div className="flex gap-3 items-start">
-							<div className="flex-shrink-0">{loadSectionDocumentPanel("logo", "Select logo image")}</div>
-							<div className="flex-1 space-y-2">
-								{logoImages.length > 0 ? logoImages.map((doc) => (
-									<div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-md border border-gray-200" key={doc.id}>
-										<ImageIcon className="h-4 w-4 text-gray-600 flex-shrink-0" />
-										<span className="text-sm text-gray-900 truncate flex-1" title={doc.name}>{doc.name}</span>
-										<Button className="h-6 w-6 p-0"
-											disabled={isPending}
-											onClick={() => removeDocument("logo", doc.id)}
-											size="sm"
-											type="button"
-											variant="ghost"
-										>
-											<X className="h-3 w-3 text-gray-600" />
-										</Button>
-									</div>
-								)) : (
-									<div className="text-sm text-gray-500 italic p-3 border-2 border-dashed border-gray-200 rounded-md text-center">Optional: attach a logo image</div>
-								)}
-							</div>
-						</div>
-					</div>
-					<div className="space-y-2">
-						<Label className="text-sm font-medium text-gray-700 flex items-center gap-2"><ImageIcon className="h-4 w-4 text-gray-600" /> Cover Image (optional)</Label>
-						<div className="flex gap-3 items-start">
-							<div className="flex-shrink-0">{loadSectionDocumentPanel("cover", "Select cover image")}</div>
-							<div className="flex-1 space-y-2">
-								{coverImages.length > 0 ? coverImages.map((doc) => (
-									<div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-md border border-gray-200" key={doc.id}>
-										<ImageIcon className="h-4 w-4 text-gray-600 flex-shrink-0" />
-										<span className="text-sm text-gray-900 truncate flex-1" title={doc.name}>{doc.name}</span>
-										<Button className="h-6 w-6 p-0"
-											disabled={isPending}
-											onClick={() => removeDocument("cover", doc.id)}
-											size="sm"
-											type="button"
-											variant="ghost"
-										>
-											<X className="h-3 w-3 text-gray-600" />
-										</Button>
-									</div>
-								)) : (
-									<div className="text-sm text-gray-500 italic p-3 border-2 border-dashed border-gray-200 rounded-md text-center">Optional: attach a cover background image</div>
-								)}
-							</div>
-						</div>
-					</div>
-				</div>
-				<div className="space-y-2">
-					<Label className="text-sm font-medium text-gray-700">Additional references (optional)</Label>
-					<div className="flex gap-3 items-start">
-						<div className="flex-shrink-0">{loadSectionDocumentPanel("additional", "Select additional references")}</div>
-						<div className="flex-1 space-y-2">
-							{additionalRefs.length > 0 ? additionalRefs.map((doc) => (
-								<div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-md border border-gray-200" key={doc.id}>
-									<FileText className="h-4 w-4 text-gray-600 flex-shrink-0" />
-									<span className="text-sm text-gray-900 truncate flex-1" title={doc.name}>{doc.name}</span>
-									<Button className="h-6 w-6 p-0"
-										disabled={isPending}
-										onClick={() => removeDocument("additional", doc.id)}
-										size="sm"
-										type="button"
-										variant="ghost"
-									>
-										<X className="h-3 w-3 text-gray-600" />
-									</Button>
-								</div>
-							)) : (
-								<div className="text-sm text-gray-500 italic p-3 border-2 border-dashed border-gray-200 rounded-md text-center">Optional: attach any other helpful references</div>
-							)}
-						</div>
-					</div>
-				</div>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<div className="space-y-2">
-						<Label className="text-sm font-medium text-gray-700">Preferred Brand Primary (hex, optional)</Label>
-						<Input disabled={isPending}
-							onChange={(e) => setPrimaryColor(e.target.value)}
-							placeholder="#3b82f6"
-							value={primaryColor}
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label className="text-sm font-medium text-gray-700">Additional Notes</Label>
-						<Textarea disabled={isPending}
-							onChange={(e) => setAdditionalNotes(e.target.value)}
-							placeholder="Anything specific about colors, typography, sections, or layout..."
-							value={additionalNotes}
-						/>
 					</div>
 				</div>
 				{!isFormValid && templateName && (
