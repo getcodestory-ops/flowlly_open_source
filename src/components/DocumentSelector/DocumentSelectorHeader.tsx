@@ -2,18 +2,6 @@ import React, { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
-import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -22,14 +10,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { 
 	ArrowLeft, 
-	Target, 
 	RefreshCw, 
 	FolderPlus, 
-	Upload,
 	Search,
 	SortAsc,
 	SortDesc,
-	FileText,
 	Building2,
 	User,
 	Menu,
@@ -39,9 +24,10 @@ import { Separator } from "@/components/ui/separator";
 import { AddNewFolderModal } from "../CreateNewFolderModal/CreateNewFolderModal";
 import { createSubFolder } from "@/api/folderRoutes";
 import { useDocumentStore } from "@/hooks/useDocumentStore";
-import { useToast } from "@/components/ui/use-toast";
 import { FileUploadButton } from "../Folder/FilesTable/FileUploadButton";
 import { FileUploadMenuItems } from "../Folder/FilesTable/FileUploadMenuItems";
+import { useFileUpload } from "../Folder/FilesTable/useFileUpload";
+import { FileUploadProgress } from "../Folder/FilesTable/FileUploadProgress";
 import clsx from "clsx";
 import { DocumentSelectorHeaderProps, SortField } from "./types";
 
@@ -51,7 +37,6 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 	searchTerm,
 	setSearchTerm,
 	navigateBack,
-	onCreateFolder,
 	onScopeChange,
 	onRefresh,
 	session,
@@ -63,8 +48,19 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 }) => {
 	const toolbarRef = useRef<HTMLDivElement>(null);
 	const { addFolder } = useDocumentStore();
-	const { toast } = useToast();
 	const [containerWidth, setContainerWidth] = useState(1200);
+	
+	// File upload state management - lifted to this level so it persists when dropdown closes
+	const {
+		textFileName,
+		uploadingFiles,
+		showUploadProgress,
+		fileInputRef,
+		setTextFileName,
+		handleFileUpload,
+		handleCreateTextFile,
+		closeUploadProgress,
+	} = useFileUpload(currentFolderId, session, activeProject);
 
 	const COLLAPSE_BREAKPOINT = 750; // Start collapsing at this container width (more conservative)
 	const FULL_COLLAPSE_BREAKPOINT = 500; // Collapse everything except essentials
@@ -86,7 +82,7 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 	}, []);
 
 	// Build breadcrumb path from current folder structure
-	const getBreadcrumbPath = () => {
+	const getBreadcrumbPath = (): string => {
 		const path = [];
 		let current = currentFolderStructure;
 		while (current) {
@@ -96,7 +92,7 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 		return path.length > 1 ? `/${path.slice(1).join("/")}` : "/";
 	};
 
-	const handleAddFolder = (name: string) => {
+	const handleAddFolder = (name: string): void => {
 		if (!activeProject) return;
 		
 		createSubFolder(
@@ -166,8 +162,13 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 									</AddNewFolderModal>
 									<FileUploadMenuItems
 										activeProject={activeProject}
+										fileInputRef={fileInputRef}
 										folderId={currentFolderId}
+										handleCreateTextFile={handleCreateTextFile}
+										handleFileUpload={handleFileUpload}
 										session={session}
+										setTextFileName={setTextFileName}
+										textFileName={textFileName}
 									/>
 									{shouldCollapseViewOps && <DropdownMenuSeparator />}
 								</>
@@ -314,6 +315,13 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 					))}
 				</div>
 			</div>
+			{/* File upload progress modal - rendered at header level so it persists */}
+			{showUploadProgress && uploadingFiles.length > 0 && (
+				<FileUploadProgress
+					files={uploadingFiles}
+					onClose={closeUploadProgress}
+				/>
+			)}
 		</div>
 	);
 }; 

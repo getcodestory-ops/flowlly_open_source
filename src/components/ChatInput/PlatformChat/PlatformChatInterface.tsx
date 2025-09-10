@@ -3,6 +3,7 @@ import React, {
 	useEffect,
 	useLayoutEffect,
 	createRef,
+	useState,
 } from "react";
 import AgentMessageInteractiveView from "@/components/AiActions/AgentMessageInteractiveView";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { usePlatformChat } from "./usePlatformChat";
 import { useToast } from "@/components/ui/use-toast";
+import { usePasteUpload } from "@/hooks/usePasteUpload";
+import { FileUploadProgress } from "@/components/Folder/FilesTable/FileUploadProgress";
+import { FileUploadStatus as FolderFileUploadStatus } from "@/components/Folder/FilesTable/types";
+import { FileUploadStatus } from "./PlatformChatInterface/types";
+// Removed Badge, File, X imports since we no longer render separate file attachments
 import clsx from "clsx";
 import AtSelectorComponent from "./components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
@@ -36,9 +42,15 @@ export default function PlatformChatInterface({
   chatTarget: string;
   onContentUpdate?: (newContent: string) => void;
   includeContext: boolean;
-}) {
+}): React.ReactNode {
 	const chatContainerRef = useRef<HTMLDivElement>(null);
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const emptyTextareaRef = useRef<HTMLTextAreaElement>(null);
 	const { toast } = useToast();
+	
+	// File upload state for pasted images
+	const [uploadingFiles, setUploadingFiles] = useState<FileUploadStatus[]>([]);
+	const [showUploadProgress, setShowUploadProgress] = useState(false);
 
 	const {
 		chats,
@@ -53,10 +65,84 @@ export default function PlatformChatInterface({
 		activeChatEntity,
 		setIsWaitingForResponse,
 	} = usePlatformChat(folderId, chatTarget, includeContext);
-	const { setSidePanel, setCollapsed, contextFolder, selectedModel, setSelectedModel } = useChatStore();
+	const { setSidePanel, setCollapsed, contextFolder, selectedModel, setSelectedModel, selectedContexts, setSelectedContexts } = useChatStore();
+	
+	// Paste upload functionality
+	const { handlePasteEvent } = usePasteUpload({
+		session,
+		activeProject,
+		onUploadStart: (file) => {
+			const fileStatus: FileUploadStatus = {
+				file,
+				status: "uploading",
+				progress: 0,
+			};
+			setUploadingFiles([fileStatus]);
+			setShowUploadProgress(true);
+		},
+		onUploadProgress: (progress) => {
+			setUploadingFiles((prev) =>
+				prev.map((item) => ({ ...item, progress })),
+			);
+		},
+		onProcessingStart: () => {
+			// Update status to processing when async processing starts
+			setUploadingFiles((prev) =>
+				prev.map((item) => ({ 
+					...item, 
+					status: "processing", 
+					progress: 100,
+				})),
+			);
+		},
+		onUploadComplete: (_result, processedFile) => {
+			setUploadingFiles((prev) =>
+				prev.map((item) => ({ 
+					...item, 
+					status: "success", 
+					progress: 100,
+					result: processedFile,
+				})),
+			);
+			
+			// Add to selectedContexts for consistency with document selector
+			const chatEntityId = activeChatEntity?.id || "untitled";
+			const currentContexts = selectedContexts[chatEntityId] || [];
+			const newContext = {
+				id: processedFile.resource_id,
+				name: processedFile.resource_name,
+				extension: processedFile.extension,
+			};
+			
+			
+			if (!currentContexts.some((ctx) => ctx.id === processedFile.resource_id)) {
+				setSelectedContexts(chatEntityId, [...currentContexts, newContext]);
+			}
+		},
+		onUploadError: (error) => {
+			setUploadingFiles((prev) =>
+				prev.map((item) => ({ ...item, status: "error", error })),
+			);
+		},
+	});
+	
+	// Close upload progress modal
+	const closeUploadProgress = (): void => {
+		const allProcessed = uploadingFiles.every(
+			(file) => file.status === "success" || file.status === "error",
+		);
+		if (allProcessed) {
+			setShowUploadProgress(false);
+			// Don't clear files here - let them be cleared after chat submission
+		}
+	};
+	
+	// Note: We no longer need separate file attachment display since pasted files
+	// are now integrated with selectedContexts and will appear in the standard
+	// attachment system used by the document selector
 	
 	// Check if current chat has an active streaming message
-	const getActiveStreamingKey = () => {
+	const getActiveStreamingKey = (): string | null => {
 		if (!chats || chats.length === 0) return null;
 		
 		// Look for the most recent streaming message
@@ -74,7 +160,7 @@ export default function PlatformChatInterface({
 	const activeStreamingKey = getActiveStreamingKey();
 	const [isStopping, setIsStopping] = React.useState(false);
 	
-	const handleStopAgent = async() => {
+	const handleStopAgent = async(): Promise<void> => {
 		if (!session || !activeStreamingKey || isStopping) return;
 		
 		setIsStopping(true);
@@ -100,7 +186,7 @@ export default function PlatformChatInterface({
 		}
 	};
 
-	const scrollToBottom = () => {
+	const scrollToBottom = (): void => {
 		if (chatContainerRef.current) {
 			const scrollContainer = chatContainerRef.current.querySelector(
 				"[data-radix-scroll-area-viewport]",
@@ -125,11 +211,39 @@ export default function PlatformChatInterface({
 			clearTimeout(timer2);
 		};
 	}, [chats]);
+	
+	// Add paste event listener to both textareas (regular and empty state)
+	useEffect(() => {
+		const handlePaste = (event: ClipboardEvent): void => {
+			handlePasteEvent(event);
+		};
+		
+		// Add listener to regular chat textarea (when chats exist)
+		const regularTextarea = textareaRef.current;
+		if (regularTextarea) {
+			regularTextarea.addEventListener("paste", handlePaste);
+		}
+		
+		// Add listener to empty state textarea (when no chats)
+		const emptyTextarea = emptyTextareaRef.current;
+		if (emptyTextarea) {
+			emptyTextarea.addEventListener("paste", handlePaste);
+		}
+		
+		return () => {
+			if (regularTextarea) {
+				regularTextarea.removeEventListener("paste", handlePaste);
+			}
+			if (emptyTextarea) {
+				emptyTextarea.removeEventListener("paste", handlePaste);
+			}
+		};
+	}, [handlePasteEvent, chats]); // Add chats as dependency to re-run when chats change
 
 
 
 	// Update the button click handlers to use the new handleSubmit function
-	const handleSubmit = () => {
+	const handleSubmit = (): void => {
 		if (!session || !activeProject) {
 			toast({
 				title: "Error",
@@ -141,15 +255,21 @@ export default function PlatformChatInterface({
 
 		// Get combined message (chatInput + chatContext)
 		const combinedMessage = getCombinedMessage();
-
+		
+		// The pasted files are now in selectedContexts, so we don't need to pass them separately
+		// The usePlatformChat hook will handle adding them to the message as ::attachments[...]
 		handleChatSubmit({
 			message: combinedMessage,
-			files: [],
+			files: [], // Empty since we're using selectedContexts system
 		});
+		
+		// Clear uploaded files after submission
+		setUploadingFiles([]);
+		setShowUploadProgress(false);
 	};
 
 
-	const loadDocumentPanel = () => (
+	const loadDocumentPanel = (): React.ReactNode => (
 		<>
 			<div className="flex gap-2">
 			    
@@ -195,40 +315,40 @@ export default function PlatformChatInterface({
 		}
 	}, [chats]);
 
-	// Create a more reliable function to extract text content
-	const getTextFromHtml = (html: string): string => {
-		const tempDiv = document.createElement("div");
-		tempDiv.innerHTML = html;
-		return tempDiv.textContent || tempDiv.innerText || "";
-	};
+	// Create a more reliable function to extract text content (currently unused)
+	// const getTextFromHtml = (html: string): string => {
+	// 	const tempDiv = document.createElement("div");
+	// 	tempDiv.innerHTML = html;
+	// 	return tempDiv.textContent || tempDiv.innerText || "";
+	// };
 
-	// Function to copy formatted content
-	const copyFormattedContent = (index: number) => {
-		const history = chats[index];
-		let textContent = "";
-
-		if (typeof history.message === "string") {
-			textContent = history.message;
-		} else if (history.message && typeof history.message === "object") {
-			// Convert HTML to plain text for copying
-			const tempDiv = document.createElement("div");
-			tempDiv.innerHTML = history.message.toString();
-			textContent = getTextFromHtml(tempDiv.innerHTML);
-		}
-
-		if (textContent) {
-			navigator.clipboard.writeText(textContent)
-				.then(() => {
-					// Successfully copied to clipboard
-				})
-				.catch(() => {
-					// Failed to copy content
-				});
-		}
-	};
+	// Function to copy formatted content (currently unused but kept for future use)
+	// const copyFormattedContent = (index: number): void => {
+	// 	const history = chats[index];
+	// 	let textContent = "";
+	// 
+	// 	if (typeof history.message === "string") {
+	// 		textContent = history.message;
+	// 	} else if (history.message && typeof history.message === "object") {
+	// 		// Convert HTML to plain text for copying
+	// 		const tempDiv = document.createElement("div");
+	// 		tempDiv.innerHTML = history.message.toString();
+	// 		textContent = getTextFromHtml(tempDiv.innerHTML);
+	// 	}
+	// 
+	// 	if (textContent) {
+	// 		navigator.clipboard.writeText(textContent)
+	// 			.then(() => {
+	// 				// Successfully copied to clipboard
+	// 			})
+	// 			.catch(() => {
+	// 				// Failed to copy content
+	// 			});
+	// 	}
+	// };
 
 	// Helper function to determine if we should show "Flowlly" label
-	const shouldShowFlowllyLabel = (currentIndex: number) => {
+	const shouldShowFlowllyLabel = (currentIndex: number): boolean => {
 		const currentMessage = chats[currentIndex];
 		
 		// Only show for non-user messages
@@ -278,7 +398,7 @@ export default function PlatformChatInterface({
 	};
 
 	// Update the regular chat input section
-	const renderChatInput = () => (
+	const renderChatInput = (): React.ReactNode => (
 		<div className="px-4 py-2 flex flex-col justify-end">
 			<div className="relative overflow-hidden rounded-lg border border-black bg-background focus-within:ring-1 focus-within:ring-ring">
 				<Label className="sr-only" htmlFor="message">
@@ -323,8 +443,9 @@ export default function PlatformChatInterface({
 					placeholder={
 						activeStreamingKey 
 							? "Type message to add to agent queue..." 
-							: "Type message here or attach relevant files and set chat output folder using the clip icon below..."
+							: "Type message here, paste images, or attach relevant files using the clip icon below..."
 					}
+					ref={textareaRef}
 					value={chatInput}
 				/>
 				<div className="flex items-center justify-between p-3 pt-0">
@@ -480,6 +601,7 @@ export default function PlatformChatInterface({
 						isWaitingForResponse={isWaitingForResponse}
 						loadDocumentPanel={loadDocumentPanel}
 						setChatInput={setChatInput}
+						textareaRef={emptyTextareaRef}
 					/>
 				</div>
 			)}
@@ -488,6 +610,13 @@ export default function PlatformChatInterface({
 				<div className="sticky bottom-0 px-4 py-3 bg-white border-t border-slate-100 backdrop-blur-sm">
 					{activeProject && renderChatInput()}
 				</div>
+			)}
+			{/* File upload progress modal for pasted images */}
+			{showUploadProgress && uploadingFiles.length > 0 && (
+				<FileUploadProgress
+					files={uploadingFiles as FolderFileUploadStatus[]}
+					onClose={closeUploadProgress}
+				/>
 			)}
 		</div>
 	);

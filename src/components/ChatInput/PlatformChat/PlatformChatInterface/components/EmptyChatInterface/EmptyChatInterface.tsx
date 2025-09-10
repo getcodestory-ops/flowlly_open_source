@@ -100,6 +100,7 @@ interface EmptyChatInterfaceProps {
 	isWaitingForResponse: boolean;
 	handleSubmit: () => void;
 	loadDocumentPanel: () => React.ReactNode;
+	textareaRef?: React.RefObject<HTMLTextAreaElement | null>;
 }
 
 export default function EmptyChatInterface({
@@ -109,6 +110,7 @@ export default function EmptyChatInterface({
 	isWaitingForResponse,
 	handleSubmit,
 	loadDocumentPanel,
+	textareaRef,
 }: EmptyChatInterfaceProps): React.JSX.Element {
 	const { 
 		chatDirectiveType, 
@@ -121,12 +123,13 @@ export default function EmptyChatInterface({
 		setChatContext,
 		clearChatContext,
 	} = useChatStore();
-	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+	const localTextareaRef = React.useRef<HTMLTextAreaElement>(null);
+	const activeTextareaRef = textareaRef || localTextareaRef;
 	const [activeTab, setActiveTab] = React.useState("chat");
 
 	// Auto-expand textarea as text grows
 	React.useEffect(() => {
-		const textarea = textareaRef.current;
+		const textarea = activeTextareaRef.current;
 		if (textarea) {
 			// Reset height to auto to get the correct scrollHeight
 			textarea.style.height = "auto";
@@ -507,8 +510,7 @@ export default function EmptyChatInterface({
 									handleSubmit();
 								}
 							}}
-							placeholder=""
-							ref={textareaRef}
+							ref={activeTextareaRef}
 							style={{ height: "auto" }}
 							value={chatInput}
 						/>

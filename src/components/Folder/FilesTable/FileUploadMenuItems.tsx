@@ -9,32 +9,29 @@ import {
 	DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { useFileUpload } from "./useFileUpload";
-import { FileUploadProgress } from "./FileUploadProgress";
 import { FileText, Upload } from "lucide-react";
 
 interface FileUploadMenuItemsProps {
   folderId: string;
   session: any;
   activeProject: any;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  textFileName: string;
+  setTextFileName: (name: string) => void;
+  handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleCreateTextFile: () => void;
 }
 
 export const FileUploadMenuItems: React.FC<FileUploadMenuItemsProps> = ({
 	folderId,
 	session,
 	activeProject,
+	fileInputRef,
+	textFileName,
+	setTextFileName,
+	handleFileUpload,
+	handleCreateTextFile,
 }) => {
-	const {
-		textFileName,
-		uploadingFiles,
-		showUploadProgress,
-		fileInputRef,
-		setTextFileName,
-		handleFileUpload,
-		handleCreateTextFile,
-		closeUploadProgress,
-	} = useFileUpload(folderId, session, activeProject);
-
 	// Shared file input - always rendered
 	const fileInput = (
 		<input
@@ -79,13 +76,7 @@ export const FileUploadMenuItems: React.FC<FileUploadMenuItemsProps> = ({
 		</PopoverContent>
 	);
 
-	// File upload progress modal
-	const uploadProgressModal = showUploadProgress && uploadingFiles.length > 0 && (
-		<FileUploadProgress
-			files={uploadingFiles}
-			onClose={closeUploadProgress}
-		/>
-	);
+	// No upload progress modal here - it's handled at the parent level
 
 	return (
 		<>
@@ -106,11 +97,11 @@ export const FileUploadMenuItems: React.FC<FileUploadMenuItemsProps> = ({
 				onClick={() => {
 					fileInputRef.current?.click();
 				}}
+				onSelect={(e) => e.preventDefault()}
 			>
 				<Upload className="mr-2" size={14} />
-				Upload files
+				Upload file
 			</DropdownMenuItem>
-			{uploadProgressModal}
 		</>
 	);
 };
