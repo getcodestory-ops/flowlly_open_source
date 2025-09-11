@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Paperclip, FileText, X, CornerDownLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -73,6 +73,8 @@ interface FormField {
 	type: "text" | "textarea" | "attachment" | "select" | "checkbox" | "radio" | "number" | "email" | "password" | "date" | "tel" | "group";
 	required?: boolean;
 	placeholder?: string;
+	value?: string; // Predefined value for the field
+	readonly?: boolean; // Whether the field is read-only
 	options?: string[] | { label: string; value: string }[]; // Support both string arrays and object arrays
 	multiple?: boolean;
 	fields?: FormField[]; // For group type - nested fields
@@ -120,6 +122,52 @@ const FormDirective: React.FC<FormDirectiveProps> = ({
 	
 	// State to store form input values
 	const [formValues, setFormValues] = useState<{ [key: string]: any }>({});
+	
+	// Initialize form values with predefined field values
+	useEffect(() => {
+		try {
+			const parsedConfig = parseFormConfig(data);
+			const formConfig: FormConfig = parsedConfig;
+			
+			// Helper function to collect initial values from fields
+			const collectInitialValues = (fields: FormField[]): { [key: string]: any } => {
+				const initialValues: { [key: string]: any } = {};
+				
+				fields.forEach((field) => {
+					if (field.type === "group" && field.fields) {
+						// Recursively collect values from nested fields in groups
+						const nestedValues = collectInitialValues(field.fields);
+						Object.assign(initialValues, nestedValues);
+					} else if (field.value !== undefined) {
+						// Set initial value if provided
+						initialValues[field.name] = field.value;
+					}
+				});
+				
+				return initialValues;
+			};
+			
+			let initialValues: { [key: string]: any } = {};
+			
+			// Handle both formats: fields array or groups array
+			if (formConfig.fields && Array.isArray(formConfig.fields)) {
+				initialValues = collectInitialValues(formConfig.fields);
+			} else if (formConfig.groups && Array.isArray(formConfig.groups)) {
+				// For groups format, collect initial values from each group's fields
+				formConfig.groups.forEach((group) => {
+					const groupValues = collectInitialValues(group.fields);
+					Object.assign(initialValues, groupValues);
+				});
+			}
+			
+			// Only update state if there are initial values to set
+			if (Object.keys(initialValues).length > 0) {
+				setFormValues(initialValues);
+			}
+		} catch (error) {
+			// Ignore errors in initialization - form will work without initial values
+		}
+	}, [data]);
 
 	// Document panel component with form-specific configuration
 	const loadDocumentPanel = useCallback((fieldName: string, fieldType: string) => {
@@ -283,10 +331,11 @@ ${JSON.stringify(completeFormData, null, 2)}
 		const renderFormField = (field: FormField) => {
 			const fieldId = `field-${field.name}`;
 			const isRequired = field.required || false;
+			const isReadonly = field.readonly || false;
 			const placeholder = field.placeholder || "";
 			const fieldValue = formValues[field.name] || "";
 
-			const inputClasses = "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
+			const inputClasses = `w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isReadonly ? "bg-gray-50 cursor-not-allowed" : ""}`;
 			const labelClasses = `block text-sm font-medium text-gray-700 mb-2 ${isRequired ? "after:content-['*'] after:text-red-500 after:ml-1" : ""}`;
 
 			switch (field.type) {
@@ -303,11 +352,12 @@ ${JSON.stringify(completeFormData, null, 2)}
 							</label>
 							<input
 								className={inputClasses}
-								disabled={isPending}
+								disabled={isPending || isReadonly}
 								id={fieldId}
 								name={field.name}
-								onChange={(e) => handleFormInputChange(field.name, e.target.value)}
+								onChange={(e) => !isReadonly && handleFormInputChange(field.name, e.target.value)}
 								placeholder={placeholder}
+								readOnly={isReadonly}
 								required={isRequired}
 								type={field.type}
 								value={fieldValue}
@@ -323,11 +373,12 @@ ${JSON.stringify(completeFormData, null, 2)}
 							</label>
 							<textarea
 								className={`${inputClasses} resize-vertical`}
-								disabled={isPending}
+								disabled={isPending || isReadonly}
 								id={fieldId}
 								name={field.name}
-								onChange={(e) => handleFormInputChange(field.name, e.target.value)}
+								onChange={(e) => !isReadonly && handleFormInputChange(field.name, e.target.value)}
 								placeholder={placeholder}
+								readOnly={isReadonly}
 								required={isRequired}
 								rows={4}
 								value={fieldValue}
@@ -343,10 +394,10 @@ ${JSON.stringify(completeFormData, null, 2)}
 							</label>
 							<select
 								className={inputClasses}
-								disabled={isPending}
+								disabled={isPending || isReadonly}
 								id={fieldId}
 								name={field.name}
-								onChange={(e) => handleFormInputChange(field.name, e.target.value)}
+								onChange={(e) => !isReadonly && handleFormInputChange(field.name, e.target.value)}
 								required={isRequired}
 								value={fieldValue}
 							>
@@ -372,11 +423,11 @@ ${JSON.stringify(completeFormData, null, 2)}
 							<div className="flex items-center">
 								<input
 									checked={fieldValue === true || fieldValue === "true"}
-									className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-									disabled={isPending}
+									className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded ${isReadonly ? "cursor-not-allowed" : ""}`}
+									disabled={isPending || isReadonly}
 									id={fieldId}
 									name={field.name}
-									onChange={(e) => handleFormInputChange(field.name, e.target.checked)}
+									onChange={(e) => !isReadonly && handleFormInputChange(field.name, e.target.checked)}
 									required={isRequired}
 									type="checkbox"
 								/>
@@ -404,11 +455,11 @@ ${JSON.stringify(completeFormData, null, 2)}
 											<div className="flex items-center" key={radioId}>
 												<input
 													checked={fieldValue === optionValue}
-													className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-													disabled={isPending}
+													className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 ${isReadonly ? "cursor-not-allowed" : ""}`}
+													disabled={isPending || isReadonly}
 													id={radioId}
 													name={field.name}
-													onChange={(e) => handleFormInputChange(field.name, optionValue)}
+													onChange={(e) => !isReadonly && handleFormInputChange(field.name, optionValue)}
 													required={isRequired}
 													type="radio"
 													value={optionValue}
@@ -434,11 +485,11 @@ ${JSON.stringify(completeFormData, null, 2)}
 							<div className="space-y-3">
 								{/* Document selection button */}
 								<div className="flex items-center gap-3">
-									{loadDocumentPanel(field.name, field.type)}
+									{!isReadonly && loadDocumentPanel(field.name, field.type)}
 									<span className="text-sm text-gray-600">
 										{fieldDocuments.length === 0 
-											? "Click to select documents from your folders"
-											: `${fieldDocuments.length} document${fieldDocuments.length !== 1 ? "s" : ""} selected`
+											? (isReadonly ? "No documents attached" : "Click to select documents from your folders")
+											: `${fieldDocuments.length} document${fieldDocuments.length !== 1 ? "s" : ""} ${isReadonly ? "attached" : "selected"}`
 										}
 									</span>
 								</div>
@@ -446,22 +497,24 @@ ${JSON.stringify(completeFormData, null, 2)}
 									<div className="space-y-2">
 										{fieldDocuments.map((document) => (
 											<div 
-												className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-md border border-blue-200"
+												className={`flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-md border border-blue-200 ${isReadonly ? "opacity-75" : ""}`}
 												key={document.id}
 											>
 												<FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
 												<span className="text-sm text-blue-900 truncate flex-1" title={document.name}>
 													{document.name}
 												</span>
-												<Button
-													className="h-6 w-6 p-0 hover:bg-blue-200"
-													onClick={() => removeDocument(document.id, field.name, field.type)}
-													size="sm"
-													type="button"
-													variant="ghost"
-												>
-													<X className="h-3 w-3 text-blue-600" />
-												</Button>
+												{!isReadonly && (
+													<Button
+														className="h-6 w-6 p-0 hover:bg-blue-200"
+														onClick={() => removeDocument(document.id, field.name, field.type)}
+														size="sm"
+														type="button"
+														variant="ghost"
+													>
+														<X className="h-3 w-3 text-blue-600" />
+													</Button>
+												)}
 											</div>
 										))}
 									</div>
