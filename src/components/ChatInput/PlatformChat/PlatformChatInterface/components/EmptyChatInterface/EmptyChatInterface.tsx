@@ -463,7 +463,7 @@ export default function EmptyChatInterface({
 
 	// Otherwise, show the full chat interface
 	return (
-		<div className="flex flex-col items-center justify-center  px-4 py-6 w-full">
+		<ScrollArea className="flex flex-col items-center justify-center  px-4 py-6 w-full">
 
 			<div className="w-full max-w-3xl mb-8"> {/* Centered Chat Input */}
 				<div className="w-full mb-12"> 
@@ -570,62 +570,60 @@ export default function EmptyChatInterface({
 							})}
 						</div>
 					</div>
-					<ScrollArea className="flex justify-center h-64"> 
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl h-32 items-stretch">
-							{staticChatTypes[activeTab]?.map((type) => {
-								const IconComponent = type.icon;
-								const isSelected = chatDirectiveType === type.id;
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl  items-stretch">
+						{staticChatTypes[activeTab]?.map((type) => {
+							const IconComponent = type.icon;
+							const isSelected = chatDirectiveType === type.id;
 								
-								return (
-									<div
-										className={`cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 ${
-											isSelected 
-												? "border-indigo-500 bg-indigo-50" 
-												: "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md"
-										}`}
-										key={`${type.id}-${type.templateId || "default"}`}
-										onClick={() => {
-											if (type.id === "template" && type.templateId) {
-												// Find the full template data from the templates array
-												const fullTemplate = allTemplates?.find((t) => t.id === type.templateId);
-												if (fullTemplate) {
-													handleTemplateSelection(fullTemplate);
-												}
-											} else {
-												setChatDirectiveType(type.id);
+							return (
+								<div
+									className={`cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 ${
+										isSelected 
+											? "border-indigo-500 bg-indigo-50" 
+											: "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md"
+									}`}
+									key={`${type.id}-${type.templateId || "default"}`}
+									onClick={() => {
+										if (type.id === "template" && type.templateId) {
+											// Find the full template data from the templates array
+											const fullTemplate = allTemplates?.find((t) => t.id === type.templateId);
+											if (fullTemplate) {
+												handleTemplateSelection(fullTemplate);
 											}
-										}}
-									>
-										<div className="flex flex-col items-center text-center space-y-3">
-											<div className={`p-3 rounded-lg ${
-												isSelected ? "bg-indigo-100" : "bg-gray-50"
+										} else {
+											setChatDirectiveType(type.id);
+										}
+									}}
+								>
+									<div className="flex flex-col items-center text-center space-y-3">
+										<div className={`p-3 rounded-lg ${
+											isSelected ? "bg-indigo-100" : "bg-gray-50"
+										}`}
+										>
+											<IconComponent 
+												className={`h-6 w-6 ${
+													isSelected ? "text-indigo-600" : "text-gray-600"
+												}`} 
+											/>
+										</div>
+										<div>
+											<h4 className={`font-semibold text-sm mb-1 ${
+												isSelected ? "text-indigo-900" : "text-gray-900"
 											}`}
 											>
-												<IconComponent 
-													className={`h-6 w-6 ${
-														isSelected ? "text-indigo-600" : "text-gray-600"
-													}`} 
-												/>
-											</div>
-											<div>
-												<h4 className={`font-semibold text-sm mb-1 ${
-													isSelected ? "text-indigo-900" : "text-gray-900"
-												}`}
-												>
-													{type.title}
-												</h4>
-												<p className="text-xs text-gray-600 leading-relaxed">
-													{type.description}
-												</p>
-											</div>
+												{type.title}
+											</h4>
+											<p className="text-xs text-gray-600 leading-relaxed">
+												{type.description}
+											</p>
 										</div>
 									</div>
-								);
-							})}
-						</div>
-					</ScrollArea>
+								</div>
+							);
+						})}
+					</div>
 				</div>
 			</div>
-		</div>
+		</ScrollArea>
 	);
 }
