@@ -18,7 +18,7 @@ export const MeetingInformation: React.FC = () => {
 	const [time, setTime] = useState(currentGraph?.metadata?.time || "");
 	const [duration, setDuration] = useState(currentGraph?.metadata?.duration?.toString() || "60");
 	const [timeZone, setTimeZone] = useState(
-		currentGraph?.metadata?.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+		Intl.DateTimeFormat().resolvedOptions().timeZone,
 	);
 	const [onlineLink, setOnlineLink] = useState(currentGraph?.metadata?.online_link || "");
 	const [selectedDays, setSelectedDays] = useState<number[]>(
@@ -34,34 +34,151 @@ export const MeetingInformation: React.FC = () => {
 			setMeetingName(currentGraph.name || "");
 			setDescription(currentGraph.description || "");
 			setFrequency(currentGraph.metadata?.frequency || "weekly");
-			setTime(currentGraph.metadata?.time || "");
+			{
+				const firstSchedule = currentGraph.event_schedule?.[0];
+				const scheduleStart = firstSchedule?.schedule?.start;
+				const scheduleTime = firstSchedule?.schedule?.time as any;
+				const scheduleRunTime = Array.isArray(scheduleTime) ? scheduleTime?.[0]?.run_time : scheduleTime?.run_time;
+				let localHHmm: string | null = null;
+				if (scheduleStart && scheduleRunTime) {
+					let iso: string;
+					if (scheduleRunTime.includes("T")) {
+						const hasZone = /Z|[+-]\d\d:\d\d$/.test(scheduleRunTime);
+						iso = hasZone ? scheduleRunTime : `${scheduleRunTime}Z`;
+					} else {
+						const baseDateStr = extractDatePart(scheduleStart);
+						const norm = normalizeTimeString(scheduleRunTime);
+						iso = baseDateStr && norm ? `${baseDateStr}T${norm}Z` : "";
+					}
+					if (iso) {
+						const d = new Date(iso);
+						if (!Number.isNaN(d.getTime())) {
+							const hh = String(d.getHours()).padStart(2, "0");
+							const mm = String(d.getMinutes()).padStart(2, "0");
+							localHHmm = `${hh}:${mm}`;
+						}
+					}
+				}
+				if (!localHHmm) {
+					const raw = currentGraph.metadata?.time || "";
+					if (raw.includes("T")) {
+						const hasZone = /Z|[+-]\d\d:\d\d$/.test(raw);
+						const iso = hasZone ? raw : `${raw}Z`;
+						const d = new Date(iso);
+						if (!Number.isNaN(d.getTime())) {
+							const hh = String(d.getHours()).padStart(2, "0");
+							const mm = String(d.getMinutes()).padStart(2, "0");
+							localHHmm = `${hh}:${mm}`;
+						}
+					} else {
+						const norm = normalizeTimeString(raw);
+						localHHmm = norm ? `${norm.split(":")[0]}:${norm.split(":")[1]}` : null;
+					}
+				}
+				// Final fallback: use currentGraph.run_time if present
+				if (!localHHmm && currentGraph.run_time) {
+					const grt = currentGraph.run_time as string;
+					const hasZone = /Z|[+-]\d\d:\d\d$/.test(grt);
+					const iso = grt.includes("T") ? (hasZone ? grt : `${grt}Z`) : null;
+					if (iso) {
+						const d = new Date(iso);
+						if (!Number.isNaN(d.getTime())) {
+							const hh = String(d.getHours()).padStart(2, "0");
+							const mm = String(d.getMinutes()).padStart(2, "0");
+							localHHmm = `${hh}:${mm}`;
+						}
+					}
+				}
+				setTime(localHHmm || "");
+			}
 			setDuration(currentGraph.metadata?.duration?.toString() || "60");
-			setTimeZone(currentGraph.metadata?.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone);
+			setTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
 			setOnlineLink(currentGraph.metadata?.online_link || "");
 			setSelectedDays(currentGraph.event_schedule?.[0]?.schedule?.day || []);
 			setWeeklyRecurrenceDay(currentGraph.metadata?.recurrence_day || "Monday");
 		}
 	}, [currentGraph]);
 
-	// Compute a local display datetime based on event schedule start date and run_time/metadata.time
+	// Normalize various time formats to 24h HH:mm:ss (time-only) or return as-is if ISO with 'T'
+	const normalizeTimeString = (val: string): string | null => {
+		if (!val) return null;
+		const input = val.trim();
+		// If it's ISO-like, leave it (handled separately)
+		if (input.includes("T")) return input;
+		// 12-hour format e.g. 8:00 PM or 08:00:30 pm
+		const ampmMatch = input.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])\s*$/);
+		if (ampmMatch) {
+			let hh = parseInt(ampmMatch[1] || "0", 10);
+			const mm = parseInt(ampmMatch[2] || "0", 10);
+			const ss = parseInt(ampmMatch[3] || "0", 10);
+			const ap = ampmMatch[4].toUpperCase();
+			if (ap === "PM" && hh < 12) hh += 12;
+			if (ap === "AM" && hh === 12) hh = 0;
+			const hhS = String(Math.max(0, Math.min(23, hh))).padStart(2, "0");
+			const mmS = String(Math.max(0, Math.min(59, mm))).padStart(2, "0");
+			const ssS = String(Math.max(0, Math.min(59, ss))).padStart(2, "0");
+			return `${hhS}:${mmS}:${ssS}`;
+		}
+		// 24-hour HH:mm or HH:mm:ss
+		const h24Match = input.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*$/);
+		if (h24Match) {
+			const hh = String(Math.max(0, Math.min(23, parseInt(h24Match[1] || "0", 10)))).padStart(2, "0");
+			const mm = String(Math.max(0, Math.min(59, parseInt(h24Match[2] || "0", 10)))).padStart(2, "0");
+			const ss = String(Math.max(0, Math.min(59, parseInt(h24Match[3] || "0", 10)))).padStart(2, "0");
+			return `${hh}:${mm}:${ss}`;
+		}
+		return null;
+	};
+
+	// Extract YYYY-MM-DD from a date or datetime string
+	const extractDatePart = (val?: string): string | null => {
+		if (!val) return null;
+		const m = val.match(/^(\d{4}-\d{2}-\d{2})/);
+		return m ? m[1] : null;
+	};
+
+	// Compute a local display datetime based on schedule.start + schedule.time.run_time when available
 	const formattedMeetingDateTime = useMemo(() => {
 		if (!currentGraph) return "";
 		const firstSchedule = currentGraph.event_schedule?.[0];
 		const scheduleStart = firstSchedule?.schedule?.start;
-		const scheduleRunTime = firstSchedule?.schedule?.time?.[0]?.run_time;
-		const rt = (currentGraph.run_time as string | undefined) || (currentGraph.metadata?.time as string | undefined) || scheduleRunTime;
+		const scheduleTime = firstSchedule?.schedule?.time as any;
+		const scheduleRunTime = Array.isArray(scheduleTime) ? scheduleTime?.[0]?.run_time : scheduleTime?.run_time;
+
+		// Prefer the explicit schedule start date + run_time
+		if (scheduleStart && scheduleRunTime) {
+			let iso: string;
+			if (scheduleRunTime.includes("T")) {
+				const hasZone = /Z|[+-]\d\d:\d\d$/.test(scheduleRunTime);
+				iso = hasZone ? scheduleRunTime : `${scheduleRunTime}Z`;
+			} else {
+				const baseDateStr = extractDatePart(scheduleStart);
+				const norm = normalizeTimeString(scheduleRunTime);
+				if (!norm) return "";
+				if (!baseDateStr) return "";
+				iso = `${baseDateStr}T${norm}Z`;
+			}
+			const d = new Date(iso);
+			if (!Number.isNaN(d.getTime())) {
+				return d.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+			}
+		}
+
+		// Fallbacks: use graph.run_time or metadata.time
+		const rt = (currentGraph.run_time as string | undefined) || (currentGraph.metadata?.time as string | undefined);
 		if (!rt) return "";
-		let date: Date;
 		if (rt.includes("T")) {
 			const hasZone = /Z|[+-]\d\d:\d\d$/.test(rt);
 			const iso = hasZone ? rt : `${rt}Z`;
-			date = new Date(iso);
-		} else {
-			const baseDateStr = (scheduleStart || currentGraph.created_at || new Date().toISOString()).split("T")[0];
-			date = new Date(`${baseDateStr}T${rt}Z`);
+			const d = new Date(iso);
+			return Number.isNaN(d.getTime()) ? "" : d.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
 		}
-		if (Number.isNaN(date.getTime())) return "";
-		return date.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+		const baseDateStr = extractDatePart(scheduleStart || currentGraph.created_at || new Date().toISOString());
+		if (!baseDateStr) return "";
+		const norm = normalizeTimeString(rt);
+		if (!norm) return "";
+		const d = new Date(`${baseDateStr}T${norm}Z`);
+		return Number.isNaN(d.getTime()) ? "" : d.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
 	}, [currentGraph]);
 
 	const handleDayToggle = (dayIndex: number) => {
@@ -78,9 +195,12 @@ export const MeetingInformation: React.FC = () => {
 
 	const formatEndTime = (startTime: string, durationMinutes: string) => {
 		if (!startTime || !durationMinutes) return "";
-		
-		const [hours, minutes] = startTime.split(":").map(Number);
-		const totalMinutes = hours * 60 + minutes + parseInt(durationMinutes);
+		const norm = normalizeTimeString(startTime);
+		if (!norm) return "";
+		const parts = norm.split(":");
+		const hours = parseInt(parts[0] || "0", 10);
+		const minutes = parseInt(parts[1] || "0", 10);
+		const totalMinutes = hours * 60 + minutes + parseInt(durationMinutes, 10);
 		const endHours = Math.floor(totalMinutes / 60) % 24;
 		const endMins = totalMinutes % 60;
 		
@@ -116,7 +236,7 @@ export const MeetingInformation: React.FC = () => {
 					<Clock className="h-5 w-5 text-gray-600" />
 					<div className="flex items-center gap-2 text-sm">
 						<Input
-							className="h-9 w-20 text-center border-none bg-gray-50 hover:bg-gray-100 focus:bg-white"
+							className="h-9  text-center border-none bg-gray-50 hover:bg-gray-100 focus:bg-white"
 							onChange={(e) => setTime(e.target.value)}
 							placeholder="Start"
 							type="time"

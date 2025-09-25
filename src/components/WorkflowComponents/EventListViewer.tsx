@@ -105,104 +105,110 @@ export const EventListViewer: React.FC = ({
 
 
 	const columns = useMemo<ColumnDef<GraphData>[]>(
-		() => [
-			{
-				accessorKey: "name",
-				header: ({ column }) => (
-					<Button
-						className="p-0"
-						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-						variant="ghost"
-					>
-						Name
-					</Button>
-				),
-				cell: (info) => info.getValue(),
-			},
-			{
-				accessorKey: "event_type",
-				header: "Type",
-				cell: (info) => info.getValue(),
-			},
-			{
-				accessorKey: "metadata.frequency",
-				header: "Frequency",
-				cell: (info) => {
-					const metadata = info.row.original.metadata;
-					return metadata?.frequency || "N/A";
+		() => {
+			const cols: ColumnDef<GraphData>[] = [
+				{
+					accessorKey: "name",
+					header: ({ column }) => (
+						<Button
+							className="p-0"
+							onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+							variant="ghost"
+						>
+							Name
+						</Button>
+					),
+					cell: (info) => info.getValue(),
 				},
-			},
-			{
-				accessorKey: "metadata.recurrence_day",
-				header: "Day",
-				cell: (info) => {
-					const metadata = info.row.original.metadata;
-					if (!metadata) return "N/A";
+				{
+					accessorKey: "event_type",
+					header: "Type",
+					cell: (info) => info.getValue(),
+				},
+				{
+					accessorKey: "metadata.frequency",
+					header: "Frequency",
+					cell: (info) => {
+						const metadata = info.row.original.metadata;
+						return metadata?.frequency || "N/A";
+					},
+				},
+			];
 
-					return metadata.frequency === "weekly" ||
-            metadata.frequency === "once"
-						? metadata.recurrence_day
-						: "N/A";
-				},
-			},
-			{
-				accessorKey: "run_time",
-				header: "Meeting Time",
-				cell: (info) => {
-					const g = info.row.original;
-					const firstSchedule = g.event_schedule?.[0];
-					const scheduleStart = firstSchedule?.schedule?.start;
-					const scheduleRunTime = firstSchedule?.schedule?.time?.[0]?.run_time;
-					const rt = g.run_time || g.metadata?.time || scheduleRunTime;
-					if (!rt) return "N/A";
-					if (rt.includes("T")) {
-						// Treat ISO strings as UTC if no timezone is present, then display in local time
-						const hasZone = /Z|[+-]\d\d:\d\d$/.test(rt);
-						const iso = hasZone ? rt : `${rt}Z`;
-						const d = new Date(iso);
-						if (!Number.isNaN(d.getTime())) {
+			const hasWeekly = (graphs || []).some((g) => g.metadata?.frequency === "weekly");
+			if (hasWeekly) {
+				cols.push({
+					accessorKey: "metadata.recurrence_day",
+					header: "Day",
+					cell: (info) => {
+						const metadata = info.row.original.metadata;
+						if (!metadata || metadata.frequency !== "weekly") return "";
+						return metadata.recurrence_day || "";
+					},
+				});
+			}
+
+			cols.push(
+				{
+					accessorKey: "run_time",
+					header: "Meeting Time",
+					cell: (info) => {
+						const g = info.row.original;
+						const firstSchedule = g.event_schedule?.[0];
+						const scheduleStart = firstSchedule?.schedule?.start;
+						const scheduleTime = firstSchedule?.schedule?.time as any;
+						const scheduleRunTime = Array.isArray(scheduleTime) ? scheduleTime?.[0]?.run_time : scheduleTime?.run_time;
+						const rt = g.run_time || g.metadata?.time;
+						const hasZoneRe = /Z|[+-]\d\d:\d\d$/;
+						// Prefer schedule start + schedule run_time when available for exact meeting instance time
+						if (scheduleStart && scheduleRunTime) {
+							let isoFromSchedule: string;
+							if (scheduleRunTime.includes("T")) {
+								isoFromSchedule = hasZoneRe.test(scheduleRunTime) ? scheduleRunTime : `${scheduleRunTime}Z`;
+							} else {
+								const baseDateStr = scheduleStart.split("T")[0];
+								isoFromSchedule = `${baseDateStr}T${scheduleRunTime}Z`;
+							}
+							const d = new Date(isoFromSchedule);
 							return d.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
 						}
-						const timePart = rt.split("T")[1]?.replace("Z", "") || rt;
-						const fallback = new Date(`2000-01-01T${timePart}Z`);
-						return fallback.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
-					}
-					// Time-only: combine with schedule.start date if available; else use created_at date
-					const baseDateStr = (scheduleStart || g.created_at || new Date().toISOString()).split("T")[0];
-					const iso = `${baseDateStr}T${rt}Z`;
-					const d = new Date(iso);
-					if (!Number.isNaN(d.getTime())) {
-						return d.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
-					}
-					return new Date(`2000-01-01T${rt}Z`).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+						// Fallbacks
+						if (rt) {
+							if (rt.includes("T")) {
+								const iso = hasZoneRe.test(rt) ? rt : `${rt}Z`;
+								return new Date(iso).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+							}
+							const baseDateStr = (g.created_at || new Date().toISOString()).split("T")[0];
+							return new Date(`${baseDateStr}T${rt}Z`).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+						}
+						return "N/A";
+					},
 				},
-			},
-			{
-				accessorKey: "id",
-				header: "Edit",
-				cell: (info) => {
-					const eventType = info.row.original.event_type;
-					return (
-						<PencilIcon
-							className="cursor-pointer  hover:text-purple-500 transition-colors"
-							onClick={(e) => {
-								e.stopPropagation();
-								if (
-									["meeting", "document_writing", "custom"].includes(eventType)
-								) {
-									setSelectedEventType(eventType);
-									setSelectedEventData(info.row.original);
-									setIsDialogOpen(true);
-								}
-							}}
-							size={16}
-						/>
-					);
+				{
+					accessorKey: "id",
+					header: "Edit",
+					cell: (info) => {
+						const eventType = info.row.original.event_type;
+						return (
+							<PencilIcon
+								className="cursor-pointer  hover:text-purple-500 transition-colors"
+								onClick={(e) => {
+									e.stopPropagation();
+									if (["meeting", "document_writing", "custom"].includes(eventType)) {
+										setSelectedEventType(eventType);
+										setSelectedEventData(info.row.original);
+										setIsDialogOpen(true);
+									}
+								}}
+								size={16}
+							/>
+						);
+					},
 				},
-			},
-		],
-		[],
-	);
+			);
+
+			return cols;
+		}, [graphs, setIsDialogOpen, setSelectedEventData, setSelectedEventType]);
 
 	const table = useReactTable({
 		data: graphs || [],

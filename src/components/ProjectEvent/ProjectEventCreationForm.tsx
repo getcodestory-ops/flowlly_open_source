@@ -578,24 +578,6 @@ export default function ProjectEventCreationForm({
 											</Select>
 										</div>
 									</div>
-									<div className="space-y-2">
-										<Label>Participation Option</Label>
-										<RadioGroup
-											onValueChange={(value) =>
-												setParticipationOption(value as "join" | "record")
-											}
-											value={participationOption}
-										>
-											<div className="flex items-center space-x-2">
-												<RadioGroupItem id="join" value="join" />
-												<Label htmlFor="join">Join using link</Label>
-											</div>
-											<div className="flex items-center space-x-2">
-												<RadioGroupItem id="record" value="record" />
-												<Label htmlFor="record">Audio recording</Label>
-											</div>
-										</RadioGroup>
-									</div>
 									{participationOption === "join" && (
 										<>
 											<div className="space-y-2">
@@ -626,16 +608,6 @@ export default function ProjectEventCreationForm({
 											)}
 										</>
 									)}
-									<div className="flex items-center space-x-2">
-										<Checkbox
-											checked={isJoining}
-											id="joinNow"
-											onCheckedChange={(checked) =>
-												setIsJoining(checked as boolean)
-											}
-										/>
-										<Label htmlFor="joinNow">Join Now</Label>
-									</div>
 								</CardContent>
 								<CardFooter>
 									<Button
@@ -673,7 +645,7 @@ export default function ProjectEventCreationForm({
 							<CardHeader>
 								<CardTitle>Event Created Successfully!</CardTitle>
 							</CardHeader>
-							<CardContent className="space-y-6">
+							{/* <CardContent className="space-y-6">
 								<div className="space-y-4">
 									<div className="space-y-2">
 										<h3 className="text-lg font-medium">Next Steps</h3>
@@ -700,11 +672,11 @@ export default function ProjectEventCreationForm({
 										</Button>
 									</div>
 								</div>
-							</CardContent>
+							</CardContent> */}
 							<CardFooter className="flex justify-between">
-								<Button onClick={onClose} variant="outline">
+								{/* <Button onClick={onClose} variant="outline">
 									Skip for now
-								</Button>
+								</Button> */}
 								<Button onClick={onClose}>
 									Done
 								</Button>
