@@ -131,10 +131,7 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 		let currentDate = new Date(startDate);
 		currentDate.setDate(
 			currentDate.getDate() +
-          ((dayMapping[meetingDay as keyof typeof dayMapping] +
-            7 -
-            currentDate.getDay()) %
-            7),
+				((dayMapping[meetingDay as keyof typeof dayMapping] + 7 - currentDate.getDay()) % 7),
 		);
 		const { hours, minutes } = extractHoursMinutes(meetingTime);
 
@@ -146,7 +143,17 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 
 			events.push({
 				id: `${graph.id}-${currentDate.toISOString()}`,
-				title: (<div className="flex items-center gap-2">{graph.event_type === "document_writing" ? <FileText size={14} /> : <Video size={14} />}<span className="text-xs opacity-80">{formatLocalTime(eventStart)}</span>{graph.name}</div>),
+				title: (
+					<div className="flex items-center gap-2">
+						{graph.event_type === "document_writing" ? (
+							<FileText size={14} />
+						) : (
+							<Video size={14} />
+						)}
+						<span className="text-xs opacity-80">{formatLocalTime(eventStart)}</span>
+						{graph.name}
+					</div>
+				),
 				start: eventStart,
 				end: eventEnd,
 				allDay: false,
@@ -181,7 +188,17 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 
 		events.push({
 			id: graph.id,
-			title: (<div className="flex items-center gap-2">{graph.event_type === "document_writing" ? <FileText size={14} /> : <Video size={14} />}<span className="text-xs opacity-80">{formatLocalTime(eventStart)}</span>{graph.name}</div>),
+			title: (
+				<div className="flex items-center gap-2">
+					{graph.event_type === "document_writing" ? (
+						<FileText size={14} />
+					) : (
+						<Video size={14} />
+					)}
+					<span className="text-xs opacity-80">{formatLocalTime(eventStart)}</span>
+					{graph.name}
+				</div>
+			),
 			start: eventStart,
 			end: eventEnd,
 			allDay: false,
