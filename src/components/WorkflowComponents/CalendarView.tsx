@@ -129,8 +129,10 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 	const meetingDay = graph.metadata.recurrence_day?.toLowerCase();
 	const firstSchedule = graph.event_schedule?.[0];
 	const scheduleStart = firstSchedule?.schedule?.start;
-	const scheduleRunTime = firstSchedule?.schedule?.time?.[0]?.run_time;
-	const meetingTime = graph.metadata.time || scheduleRunTime;
+	const scheduleTime = firstSchedule?.schedule?.time as any;
+	const scheduleRunTime = Array.isArray(scheduleTime) ? scheduleTime?.[0]?.run_time : scheduleTime?.run_time;
+	// Prefer schedule run_time over metadata time to align with list view
+	const meetingTime = scheduleRunTime || graph.metadata.time;
 
 	if (frequency === "weekly" && meetingDay && meetingTime) {
 		let currentDate = new Date(startDate);
@@ -138,13 +140,45 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 			currentDate.getDate() +
 				((dayMapping[meetingDay as keyof typeof dayMapping] + 7 - currentDate.getDay()) % 7),
 		);
-		const { hours, minutes } = extractHoursMinutes(meetingTime);
+		// const { hours, minutes } = extractHoursMinutes(meetingTime);
 
 		while (currentDate <= endDate) {
-			const eventStart = new Date(currentDate);
-			eventStart.setHours(hours, minutes);
-			const eventEnd = new Date(eventStart);
-			eventEnd.setHours(eventEnd.getHours() + 1);
+			// Compose UTC ISO from the week's date and meeting time, then convert to local
+			let iso: string;
+			if (typeof meetingTime === "string" && meetingTime.includes("T")) {
+				const hasZone = /Z|[+-]\d\d:\d\d$/.test(meetingTime);
+				iso = hasZone ? meetingTime : `${meetingTime}Z`;
+			} else {
+				const baseDateStr = currentDate.toISOString().split("T")[0];
+				const norm = ((): string => {
+					const input = String(meetingTime || "00:00").trim();
+					if (input.includes("T")) return input;
+					const ampm = input.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])\s*$/);
+					if (ampm) {
+						let hh = parseInt(ampm[1] || "0", 10);
+						const mm = parseInt(ampm[2] || "0", 10);
+						const ss = parseInt(ampm[3] || "0", 10);
+						const ap = ampm[4].toUpperCase();
+						if (ap === "PM" && hh < 12) hh += 12;
+						if (ap === "AM" && hh === 12) hh = 0;
+						const hhS = String(Math.max(0, Math.min(23, hh))).padStart(2, "0");
+						const mmS = String(Math.max(0, Math.min(59, mm))).padStart(2, "0");
+						const ssS = String(Math.max(0, Math.min(59, ss))).padStart(2, "0");
+						return `${hhS}:${mmS}:${ssS}`;
+					}
+					const h24 = input.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*$/);
+					if (h24) {
+						const hh = String(Math.max(0, Math.min(23, parseInt(h24[1] || "0", 10)))).padStart(2, "0");
+						const mm = String(Math.max(0, Math.min(59, parseInt(h24[2] || "0", 10)))).padStart(2, "0");
+						const ss = String(Math.max(0, Math.min(59, parseInt(h24[3] || "0", 10)))).padStart(2, "0");
+						return `${hh}:${mm}:${ss}`;
+					}
+					return "00:00:00";
+				})();
+				iso = `${baseDateStr}T${norm}Z`;
+			}
+			const eventStart = new Date(iso);
+			const eventEnd = new Date(eventStart.getTime() + 60 * 60 * 1000);
 
 			events.push({
 				id: `${graph.id}-${currentDate.toISOString()}`,

@@ -173,7 +173,6 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 									<span className="ml-2 text-xs text-muted-foreground">
 										{(() => {
 											const start = schedule.start;
-											const tz = schedule.time_zone;
 											const zonePattern = /Z|[+-]\d\d:\d\d$/;
 											let displayDate: Date;
 											if (run_time.includes("T")) {
@@ -181,13 +180,12 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 												displayDate = new Date(iso);
 											} else if (start) {
 												const datePart = start.split("T")[0];
-												const suffix = tz === "UTC" && !zonePattern.test(run_time) ? "Z" : "";
-												const iso = `${datePart}T${run_time}${suffix}`;
+												const iso = `${datePart}T${run_time}Z`;
 												displayDate = new Date(iso);
 											} else {
 												displayDate = new Date(`2000-01-01T${run_time}Z`);
 											}
-											return displayDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+											return displayDate.toLocaleString([], { dateStyle: compact ? "short" : "long", timeStyle: compact ? "short" : "medium" });
 										})()}
 									</span>
 								</div>

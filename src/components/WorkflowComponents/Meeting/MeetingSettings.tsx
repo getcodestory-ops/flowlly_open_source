@@ -213,14 +213,14 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = () => {
 								{/* Main meeting info takes up 2 columns */}
 								<div className="lg:col-span-2 space-y-8">
 									<MeetingInformation />
-									<DistributionFlow
+									{/* <DistributionFlow
 										allowCommentsHours={allowCommentsHours}
 										sendAgendaDays={sendAgendaDays}
 										setAllowCommentsHours={setAllowCommentsHours}
 										setSendAgendaDays={setSendAgendaDays}
 										setWrapUpHours={setWrapUpHours}
 										wrapUpHours={wrapUpHours}
-									/>
+									/> */}
 								</div>
 								{/* Guests sidebar */}
 								<div className="lg:col-span-1">
