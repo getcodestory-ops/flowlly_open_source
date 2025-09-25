@@ -181,6 +181,24 @@ export const MeetingInformation: React.FC = () => {
 		return Number.isNaN(d.getTime()) ? "" : d.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
 	}, [currentGraph]);
 
+	// Derive day label: prefer schedule.start's weekday (local), else selectedDays, else weeklyRecurrenceDay
+	const dayLabel = useMemo(() => {
+		const firstSchedule = currentGraph?.event_schedule?.[0];
+		const scheduleStart = firstSchedule?.schedule?.start;
+		if (scheduleStart) {
+			const datePart = extractDatePart(scheduleStart);
+			if (datePart) {
+				const d = new Date(`${datePart}T00:00:00Z`);
+				if (!Number.isNaN(d.getTime())) {
+					return daysOfWeek[d.getUTCDay()];
+				}
+			}
+		}
+		if (selectedDays.length > 0) return selectedDays.map((idx) => daysOfWeek[idx]).join(", ");
+		if (weeklyRecurrenceDay) return weeklyRecurrenceDay;
+		return "";
+	}, [currentGraph, selectedDays, weeklyRecurrenceDay]);
+
 	const handleDayToggle = (dayIndex: number) => {
 		setSelectedDays((prev) => 
 			prev.includes(dayIndex) 
@@ -222,13 +240,11 @@ export const MeetingInformation: React.FC = () => {
 					value={meetingName}
 				/>
 				{/* Meeting Schedule Summary - positioned like a caption */}
-				{selectedDays.length > 0 && (
-					<div className="text-sm text-gray-600">
-						{selectedDays.map((d) => daysOfWeek[d]).join(", ")}
-						{formattedMeetingDateTime && ` • ${formattedMeetingDateTime}`}
-						{duration && ` • ${duration === "60" ? "1 hour" : duration === "30" ? "30 min" : duration === "90" ? "1.5 hours" : duration === "120" ? "2 hours" : duration === "180" ? "3 hours" : `${duration} min`}`}
-					</div>
-				)}
+				<div className="text-sm text-gray-600">
+					{dayLabel}
+					{formattedMeetingDateTime && ` • ${formattedMeetingDateTime}`}
+					{duration && ` • ${duration === "60" ? "1 hour" : duration === "30" ? "30 min" : duration === "90" ? "1.5 hours" : duration === "120" ? "2 hours" : duration === "180" ? "3 hours" : `${duration} min`}`}
+				</div>
 			</div>
 			{/* Time and Duration Section */}
 			<div className="space-y-3">
