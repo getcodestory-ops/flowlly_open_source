@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Calendar, Clock, Globe, Link, Repeat } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,6 +43,27 @@ export const MeetingInformation: React.FC = () => {
 		}
 	}, [currentGraph]);
 
+	// Compute a local display datetime based on event schedule start date and run_time/metadata.time
+	const formattedMeetingDateTime = useMemo(() => {
+		if (!currentGraph) return "";
+		const firstSchedule = currentGraph.event_schedule?.[0];
+		const scheduleStart = firstSchedule?.schedule?.start;
+		const scheduleRunTime = firstSchedule?.schedule?.time?.[0]?.run_time;
+		const rt = (currentGraph.run_time as string | undefined) || (currentGraph.metadata?.time as string | undefined) || scheduleRunTime;
+		if (!rt) return "";
+		let date: Date;
+		if (rt.includes("T")) {
+			const hasZone = /Z|[+-]\d\d:\d\d$/.test(rt);
+			const iso = hasZone ? rt : `${rt}Z`;
+			date = new Date(iso);
+		} else {
+			const baseDateStr = (scheduleStart || currentGraph.created_at || new Date().toISOString()).split("T")[0];
+			date = new Date(`${baseDateStr}T${rt}Z`);
+		}
+		if (Number.isNaN(date.getTime())) return "";
+		return date.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+	}, [currentGraph]);
+
 	const handleDayToggle = (dayIndex: number) => {
 		setSelectedDays((prev) => 
 			prev.includes(dayIndex) 
@@ -84,7 +105,7 @@ export const MeetingInformation: React.FC = () => {
 				{selectedDays.length > 0 && (
 					<div className="text-sm text-gray-600">
 						{selectedDays.map((d) => daysOfWeek[d]).join(", ")}
-						{time && ` • ${time}`}
+						{formattedMeetingDateTime && ` • ${formattedMeetingDateTime}`}
 						{duration && ` • ${duration === "60" ? "1 hour" : duration === "30" ? "30 min" : duration === "90" ? "1.5 hours" : duration === "120" ? "2 hours" : duration === "180" ? "3 hours" : `${duration} min`}`}
 					</div>
 				)}

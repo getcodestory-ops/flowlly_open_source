@@ -146,22 +146,36 @@ export const EventListViewer: React.FC = ({
 				},
 			},
 			{
-				accessorKey: "time",
-				header: "Time",
-				cell: (info) => info.getValue(),
-			},
-			{
-				accessorKey: "created_at",
-				header: ({ column }) => (
-					<Button
-						className="p-0"
-						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-						variant="ghost"
-					>
-						Created At
-					</Button>
-				),
-				cell: (info) => new Date(info.getValue() as string).toLocaleString(),
+				accessorKey: "run_time",
+				header: "Meeting Time",
+				cell: (info) => {
+					const g = info.row.original;
+					const firstSchedule = g.event_schedule?.[0];
+					const scheduleStart = firstSchedule?.schedule?.start;
+					const scheduleRunTime = firstSchedule?.schedule?.time?.[0]?.run_time;
+					const rt = g.run_time || g.metadata?.time || scheduleRunTime;
+					if (!rt) return "N/A";
+					if (rt.includes("T")) {
+						// Treat ISO strings as UTC if no timezone is present, then display in local time
+						const hasZone = /Z|[+-]\d\d:\d\d$/.test(rt);
+						const iso = hasZone ? rt : `${rt}Z`;
+						const d = new Date(iso);
+						if (!Number.isNaN(d.getTime())) {
+							return d.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+						}
+						const timePart = rt.split("T")[1]?.replace("Z", "") || rt;
+						const fallback = new Date(`2000-01-01T${timePart}Z`);
+						return fallback.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+					}
+					// Time-only: combine with schedule.start date if available; else use created_at date
+					const baseDateStr = (scheduleStart || g.created_at || new Date().toISOString()).split("T")[0];
+					const iso = `${baseDateStr}T${rt}Z`;
+					const d = new Date(iso);
+					if (!Number.isNaN(d.getTime())) {
+						return d.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+					}
+					return new Date(`2000-01-01T${rt}Z`).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+				},
 			},
 			{
 				accessorKey: "id",

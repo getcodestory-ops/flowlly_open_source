@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { Calendar, View } from "react-big-calendar";
 import { Button } from "@/components/ui/button";
 import { FileText, Video } from "lucide-react";
@@ -8,16 +8,23 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useViewStore } from "@/utils/store";
 import { useWorkflow } from "@/hooks/useWorkflow";
 
-const CustomToolbar = (toolbar: any) => {
-	const goToBack = () => {
+type ToolbarApi = {
+	onNavigate: (action: "PREV" | "NEXT" | "TODAY") => void;
+	onView: (view: string) => void;
+	label: string;
+	view: string;
+};
+
+const CustomToolbar = (toolbar: ToolbarApi): JSX.Element => {
+	const goToBack = (): void => {
 		toolbar.onNavigate("PREV");
 	};
 
-	const goToNext = () => {
+	const goToNext = (): void => {
 		toolbar.onNavigate("NEXT");
 	};
 
-	const goToCurrent = () => {
+	const goToCurrent = (): void => {
 		toolbar.onNavigate("TODAY");
 	};
 
@@ -73,65 +80,74 @@ export const CalendarView: React.FC = ({
 	const { calendarView, setCalendarView } = useViewStore();
 	const [date, setDate] = useState(new Date());
 
-	const generateRecurringEvents = (graph: GraphData) => {
-		const events = [];
-		const startDate = new Date(graph.created_at);
-		const endDate = new Date(startDate);
-		endDate.setDate(endDate.getDate() + 84);
-
-		const frequency = graph.metadata.frequency;
-		const meetingDay = graph.metadata.recurrence_day?.toLowerCase();
-		const meetingTime = graph.metadata.time;
-
-		if (frequency === "weekly" && meetingDay && meetingTime) {
-			let currentDate = new Date(startDate);
-			currentDate.setDate(
-				currentDate.getDate() +
-          ((dayMapping[meetingDay as keyof typeof dayMapping] +
-            7 -
-            currentDate.getDay()) %
-            7),
-			);
-			const [hours, minutes] = meetingTime.split(":").map(Number);
-
-			while (currentDate <= endDate) {
-				const eventStart = new Date(currentDate);
-				eventStart.setHours(hours, minutes);
-				const eventEnd = new Date(eventStart);
-				eventEnd.setHours(eventEnd.getHours() + 1);
-
-				events.push({
-					id: `${graph.id}-${currentDate.toISOString()}`,
-					title: (
-						<div className="flex items-center gap-2">
-							{graph.event_type === "document_writing" ? (
-								<FileText size={14} />
-							) : (
-								<Video size={14} />
-							)}
-							{graph.name}
-						</div>
-					),
-					start: eventStart,
-					end: eventEnd,
-					allDay: false,
-					resource: graph,
-				});
-
-				currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+	const extractHoursMinutes = useCallback((timeString?: string): { hours: number; minutes: number } => {
+		if (!timeString) {
+			return { hours: 0, minutes: 0 };
+		}
+		if (timeString.includes("T")) {
+			const hasZone = /Z|[+-]\d\d:\d\d$/.test(timeString);
+			const iso = hasZone ? timeString : `${timeString}Z`;
+			const parsed = new Date(iso);
+			if (!Number.isNaN(parsed.getTime())) {
+				return { hours: parsed.getHours(), minutes: parsed.getMinutes() };
 			}
-		} else if (frequency === "once") {
-			const eventStart = new Date(startDate);
-			const [hours, minutes] = (graph.metadata.time || "00:00")
-				.split(":")
-				.map(Number);
-			eventStart.setHours(hours, minutes);
+			const rawTime = timeString.split("T")[1]?.replace("Z", "") || "00:00";
+			const [hh, mm] = rawTime.split(":");
+			return { hours: parseInt(hh || "0"), minutes: parseInt(mm || "0") };
+		}
+		const [hh, mm] = timeString.split(":");
+		return { hours: parseInt(hh || "0"), minutes: parseInt(mm || "0") };
+	}, []);
 
+	const formatLocalTime = useCallback((date: Date): string => {
+		try {
+			return new Intl.DateTimeFormat(undefined, {
+				hour: "numeric",
+				minute: "2-digit",
+			}).format(date);
+		} catch {
+			return date.toLocaleTimeString();
+		}
+	}, []);
+
+type RbcEvent = {
+  id: string;
+  title: React.ReactNode;
+  start: Date;
+  end: Date;
+  allDay?: boolean;
+  resource: GraphData;
+};
+
+const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
+	const events = [];
+	const startDate = new Date(graph.created_at);
+	const endDate = new Date(startDate);
+	endDate.setDate(endDate.getDate() + 84);
+
+	const frequency = graph.metadata.frequency || "once";
+	const meetingDay = graph.metadata.recurrence_day?.toLowerCase();
+	const firstSchedule = graph.event_schedule?.[0];
+	const scheduleStart = firstSchedule?.schedule?.start;
+	const scheduleRunTime = firstSchedule?.schedule?.time?.[0]?.run_time;
+	const meetingTime = graph.metadata.time || scheduleRunTime;
+
+	if (frequency === "weekly" && meetingDay && meetingTime) {
+		let currentDate = new Date(startDate);
+		currentDate.setDate(
+			currentDate.getDate() +
+				((dayMapping[meetingDay as keyof typeof dayMapping] + 7 - currentDate.getDay()) % 7),
+		);
+		const { hours, minutes } = extractHoursMinutes(meetingTime);
+
+		while (currentDate <= endDate) {
+			const eventStart = new Date(currentDate);
+			eventStart.setHours(hours, minutes);
 			const eventEnd = new Date(eventStart);
 			eventEnd.setHours(eventEnd.getHours() + 1);
 
 			events.push({
-				id: graph.id,
+				id: `${graph.id}-${currentDate.toISOString()}`,
 				title: (
 					<div className="flex items-center gap-2">
 						{graph.event_type === "document_writing" ? (
@@ -139,6 +155,7 @@ export const CalendarView: React.FC = ({
 						) : (
 							<Video size={14} />
 						)}
+						<span className="text-xs opacity-80">{formatLocalTime(eventStart)}</span>
 						{graph.name}
 					</div>
 				),
@@ -147,24 +164,73 @@ export const CalendarView: React.FC = ({
 				allDay: false,
 				resource: graph,
 			});
+
+			currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+		}
+	} else if (frequency === "once") {
+		const timeString = meetingTime;
+		let eventStart: Date;
+
+		if (timeString && timeString.includes("T")) {
+			const hasZone = /Z|[+-]\d\d:\d\d$/.test(timeString);
+			const iso = hasZone ? timeString : `${timeString}Z`;
+			const parsed = new Date(iso);
+			if (!Number.isNaN(parsed.getTime())) {
+				eventStart = parsed;
+			} else {
+				const datePart = timeString.split("T")[0];
+				const dateParsed = new Date(datePart);
+				eventStart = Number.isNaN(dateParsed.getTime()) ? new Date(startDate) : dateParsed;
+				const { hours, minutes } = extractHoursMinutes(timeString);
+				eventStart.setHours(hours, minutes);
+			}
+		} else {
+			// Time-only: prefer schedule.start's date if available; otherwise fallback to created_at
+			const baseDateStr = scheduleStart ? scheduleStart.split("T")[0] : startDate.toISOString().split("T")[0];
+			const iso = `${baseDateStr}T${timeString ?? "00:00"}Z`;
+			eventStart = new Date(iso);
 		}
 
-		return events;
-	};
+		const eventEnd = new Date(eventStart);
+		eventEnd.setHours(eventEnd.getHours() + 1);
 
-	const events = useMemo(() => {
-		if (!graphs) {
-			return [];
-		}
-		return graphs.flatMap(generateRecurringEvents);
-	}, [graphs]);
+		events.push({
+			id: graph.id,
+			title: (
+				<div className="flex items-center gap-2">
+					{graph.event_type === "document_writing" ? (
+						<FileText size={14} />
+					) : (
+						<Video size={14} />
+					)}
+					<span className="text-xs opacity-80">{formatLocalTime(eventStart)}</span>
+					{graph.name}
+				</div>
+			),
+			start: eventStart,
+			end: eventEnd,
+			allDay: false,
+			resource: graph,
+		});
+	}
 
-	const handleSelectEvent = (event: any) => {
+	return events;
+}, [extractHoursMinutes, formatLocalTime]);
+
+const events = useMemo(() => {
+	if (!graphs) {
+		return [];
+	}
+	return graphs.flatMap(generateRecurringEvents);
+}, [graphs, generateRecurringEvents]);
+
+	type CalendarEvent = { resource: GraphData };
+	const handleSelectEvent = (event: CalendarEvent): void => {
 		const eventResult = event.resource;
 		onSelectGraph(eventResult.id);
 	};
 
-	const eventPropGetter = (event: any) => ({
+	const eventPropGetter = (event: { resource: GraphData }): { style: React.CSSProperties } => ({
 		style: {
 			backgroundColor:
         event.resource.event_type === "document_writing"
@@ -191,7 +257,7 @@ export const CalendarView: React.FC = ({
 				eventPropGetter={eventPropGetter}
 				events={events}
 				localizer={localizer}
-				onNavigate={(date: any) => setDate(date)}
+				onNavigate={(date: Date) => setDate(date)}
 				onSelectEvent={handleSelectEvent}
 				onView={setCalendarView}
 				startAccessor="start"
