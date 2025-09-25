@@ -18,6 +18,7 @@ import  ChartComponent  from "./chart/ChartComponent";
 import { useChatStore } from "@/hooks/useChatStore";
 import FormDirective from "./form/FormDirective";
 import  IntegrationDirective  from "./integration/IntegrationDirective";
+import ApprovalFlow from "./approvalFlow/ApprovalFlow";
 
 interface MarkdownRendererProps {
   content: string;
@@ -249,6 +250,7 @@ const VALID_DIRECTIVES = [
 	"custom-viewer",
 	"integration",
 	"context",
+	"approval",
 ];
 
 // Add Attachment interface
@@ -689,6 +691,12 @@ function remarkDirectiveComponents() {
 							data: extractCompleteContent(node) || "{}",
 						};
 						break;
+					case "approval":
+						data.hName = "custom-approval";
+						data.hProperties = {
+							data: extractCompleteContent(node) || "{}",
+						};
+						break;
 					case "custom-viewer":
 						data.hName = "custom-viewer";
 						try {
@@ -835,6 +843,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 			icon={<ListTodo className="w-4 h-4" />}
 		                                                             />,
 		"custom-integration": ({ data }: { data: string }) => <IntegrationDirective data={data} />,
+		"custom-approval": ({ data }: { data: string }) => <ApprovalFlow data={data} />,
 		// Use a normal paragraph component for li elements
 		li: ({ children, ...props }: any) => {
 			return <li {...props}>{children}</li>;

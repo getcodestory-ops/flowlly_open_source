@@ -33,7 +33,7 @@ export const talkToAgent = async({
 	googleSearch = false,
 }: {
   session: Session;
-  agentTask: string;
+  agentTask: string | object;
   brainId: string | null;
   chatId: string;
   projectId: string;
