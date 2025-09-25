@@ -171,13 +171,24 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 										{compact ? "Select a Meeting to see" : "Scheduled Workflow"}
 									</span>
 									<span className="ml-2 text-xs text-muted-foreground">
-										{new Date(`2000-01-01T${run_time}Z`).toLocaleTimeString(
-											[],
-											{
-												hour: "2-digit",
-												minute: "2-digit",
-											},
-										)}
+										{(() => {
+											const start = schedule.start;
+											const tz = schedule.time_zone;
+											const zonePattern = /Z|[+-]\d\d:\d\d$/;
+											let displayDate: Date;
+											if (run_time.includes("T")) {
+												const iso = zonePattern.test(run_time) ? run_time : `${run_time}Z`;
+												displayDate = new Date(iso);
+											} else if (start) {
+												const datePart = start.split("T")[0];
+												const suffix = tz === "UTC" && !zonePattern.test(run_time) ? "Z" : "";
+												const iso = `${datePart}T${run_time}${suffix}`;
+												displayDate = new Date(iso);
+											} else {
+												displayDate = new Date(`2000-01-01T${run_time}Z`);
+											}
+											return displayDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+										})()}
 									</span>
 								</div>
 							);
@@ -205,19 +216,27 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 									<span className="text-sm">
 										{(() => {
 											const rt = result.run_time;
+											const zonePattern = /Z|[+-]\d\d:\d\d$/;
+											let displayDate: Date | null = null;
 											if (rt) {
 												if (rt.includes("T")) {
-													return new Date(rt).toLocaleString([], {
-														dateStyle: compact ? "short" : "long",
-														timeStyle: compact ? "short" : "medium",
-													});
+													const iso = zonePattern.test(rt) ? rt : `${rt}Z`;
+													displayDate = new Date(iso);
+												} else {
+												// Time-only: combine with the matching schedule.start date if available
+													const parentSchedule = graphs
+														.find((s) => s.event_result.some((er) => er.id === result.id))?.schedule;
+													const baseDateStr = parentSchedule?.start
+														? parentSchedule.start.split("T")[0]
+														: (result.timestamp ? result.timestamp.split("T")[0] : new Date().toISOString()
+															.split("T")[0]);
+													displayDate = new Date(`${baseDateStr}T${rt}Z`);
 												}
-												return new Date(`2000-01-01T${rt}Z`).toLocaleTimeString([], {
-													hour: "2-digit",
-													minute: "2-digit",
-												});
 											}
-											return new Date(result.timestamp).toLocaleString([], {
+											if (!displayDate) {
+												displayDate = new Date(result.timestamp);
+											}
+											return displayDate.toLocaleString([], {
 												dateStyle: compact ? "short" : "long",
 												timeStyle: compact ? "short" : "medium",
 											});

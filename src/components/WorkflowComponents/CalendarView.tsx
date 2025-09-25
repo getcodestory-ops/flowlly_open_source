@@ -85,7 +85,9 @@ export const CalendarView: React.FC = ({
 			return { hours: 0, minutes: 0 };
 		}
 		if (timeString.includes("T")) {
-			const parsed = new Date(timeString);
+			const hasZone = /Z|[+-]\d\d:\d\d$/.test(timeString);
+			const iso = hasZone ? timeString : `${timeString}Z`;
+			const parsed = new Date(iso);
 			if (!Number.isNaN(parsed.getTime())) {
 				return { hours: parsed.getHours(), minutes: parsed.getMinutes() };
 			}
@@ -125,7 +127,10 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 
 	const frequency = graph.metadata.frequency || "once";
 	const meetingDay = graph.metadata.recurrence_day?.toLowerCase();
-	const meetingTime = graph.metadata.time;
+	const firstSchedule = graph.event_schedule?.[0];
+	const scheduleStart = firstSchedule?.schedule?.start;
+	const scheduleRunTime = firstSchedule?.schedule?.time?.[0]?.run_time;
+	const meetingTime = graph.metadata.time || scheduleRunTime;
 
 	if (frequency === "weekly" && meetingDay && meetingTime) {
 		let currentDate = new Date(startDate);
@@ -163,11 +168,13 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 			currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
 		}
 	} else if (frequency === "once") {
-		const timeString = graph.metadata.time;
+		const timeString = meetingTime;
 		let eventStart: Date;
 
 		if (timeString && timeString.includes("T")) {
-			const parsed = new Date(timeString);
+			const hasZone = /Z|[+-]\d\d:\d\d$/.test(timeString);
+			const iso = hasZone ? timeString : `${timeString}Z`;
+			const parsed = new Date(iso);
 			if (!Number.isNaN(parsed.getTime())) {
 				eventStart = parsed;
 			} else {
@@ -178,9 +185,10 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 				eventStart.setHours(hours, minutes);
 			}
 		} else {
-			eventStart = new Date(startDate);
-			const { hours, minutes } = extractHoursMinutes(timeString);
-			eventStart.setHours(hours, minutes);
+			// Time-only: prefer schedule.start's date if available; otherwise fallback to created_at
+			const baseDateStr = scheduleStart ? scheduleStart.split("T")[0] : startDate.toISOString().split("T")[0];
+			const iso = `${baseDateStr}T${timeString ?? "00:00"}Z`;
+			eventStart = new Date(iso);
 		}
 
 		const eventEnd = new Date(eventStart);
