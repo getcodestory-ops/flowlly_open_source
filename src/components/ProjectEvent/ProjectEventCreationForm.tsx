@@ -314,26 +314,49 @@ export default function ProjectEventCreationForm({
 				
 				// Set time from metadata if available
 				if (editData.metadata.time) {
-					// If the time is in a different timezone, convert it to local time for display
-					if (editData.metadata.time_zone && editData.metadata.time_zone !== Intl.DateTimeFormat().resolvedOptions().timeZone) {
-						// Parse the time and convert from stored timezone to local timezone
-						const [hours, minutes] = editData.metadata.time.split(":").map(Number);
-						
-						// Create a date object in the stored timezone
-						const storedDate = new Date();
-						storedDate.setUTCHours(hours, minutes, 0, 0);
-						
-						// If stored timezone is UTC, convert to local
-						if (editData.metadata.time_zone === "UTC") {
-							// Get local time from UTC time
-							const localTime = format(storedDate, "HH:mm");
-							setStartTime(localTime);
+					try {
+						// If the time is in a different timezone, convert it to local time for display
+						if (editData.metadata.time_zone && editData.metadata.time_zone !== Intl.DateTimeFormat().resolvedOptions().timeZone) {
+							// Parse the time and convert from stored timezone to local timezone
+							const timeParts = editData.metadata.time.split(":");
+							
+							// Validate that we have valid time parts
+							if (timeParts.length >= 2) {
+								const hours = Number(timeParts[0]);
+								const minutes = Number(timeParts[1]);
+								
+								// Check if hours and minutes are valid numbers
+								if (!isNaN(hours) && !isNaN(minutes) && hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
+									// Create a date object in the stored timezone
+									const storedDate = new Date();
+									storedDate.setUTCHours(hours, minutes, 0, 0);
+									
+									// If stored timezone is UTC, convert to local
+									if (editData.metadata.time_zone === "UTC") {
+										// Get local time from UTC time
+										const localTime = format(storedDate, "HH:mm");
+										setStartTime(localTime);
+									} else {
+										// For other timezones, just use the time as-is for now
+										setStartTime(editData.metadata.time);
+									}
+								} else {
+									// Invalid time values, use the time as-is
+									console.warn("Invalid time values in metadata:", editData.metadata.time);
+									setStartTime(editData.metadata.time);
+								}
+							} else {
+								// Invalid time format, use the time as-is
+								console.warn("Invalid time format in metadata:", editData.metadata.time);
+								setStartTime(editData.metadata.time);
+							}
 						} else {
-							// For other timezones, just use the time as-is for now
 							setStartTime(editData.metadata.time);
 						}
-					} else {
-						setStartTime(editData.metadata.time);
+					} catch (error) {
+						// If any error occurs during time conversion, fall back to using the time as-is
+						console.error("Error processing time from metadata:", error);
+						setStartTime(editData.metadata.time || format(roundToNearestMinutes(new Date(), { nearestTo: 30 }), "HH:mm"));
 					}
 				}
 				
@@ -429,6 +452,7 @@ export default function ProjectEventCreationForm({
 		}
 		
 		const submissionData: CreateEvent = {
+			id: selectedEvent || undefined, // Top-level ID for backend to identify update vs create
 			project_event: {
 				id: selectedEvent || undefined,
 				name: meetingName,
@@ -438,7 +462,6 @@ export default function ProjectEventCreationForm({
 					location: location,
 					frequency: recurrence,
 					time: submissionTime,
-					triggerType: "ui",
 					duration: parseInt(duration ?? 0),
 					recurrence_day: weeklyRecurrenceDay,
 					time_zone: editData?.metadata?.time_zone || timeZone,
@@ -479,8 +502,6 @@ export default function ProjectEventCreationForm({
 			projectEvent: submissionData,
 		});
 	};
-
-
 
 	return (
 		<ScrollArea className="w-full h-full">
@@ -747,38 +768,7 @@ export default function ProjectEventCreationForm({
 							<CardHeader>
 								<CardTitle>Event Created Successfully!</CardTitle>
 							</CardHeader>
-							{/* <CardContent className="space-y-6">
-								<div className="space-y-4">
-									<div className="space-y-2">
-										<h3 className="text-lg font-medium">Next Steps</h3>
-										<p className="text-sm text-muted-foreground">
-											Would you like to set up additional details for your meeting?
-										</p>
-									</div>
-									<div className="grid gap-4">
-										<Button
-											className="w-full"
-											onClick={() => setEditingDocument("agenda")}
-											variant="outline"
-										>
-											<PlusCircle className="mr-2 h-4 w-4" />
-											{agendaContent ? "Edit Meeting Agenda" : "Create Meeting Agenda"}
-										</Button>
-										<Button
-											className="w-full"
-											onClick={() => setEditingDocument("template")}
-											variant="outline"
-										>
-											<PlusCircle className="mr-2 h-4 w-4" />
-											{templateContent ? "Edit Meeting Template" : "Setup Meeting Template"}
-										</Button>
-									</div>
-								</div>
-							</CardContent> */}
 							<CardFooter className="flex justify-between">
-								{/* <Button onClick={onClose} variant="outline">
-									Skip for now
-								</Button> */}
 								<Button onClick={onClose}>
 									Done
 								</Button>
