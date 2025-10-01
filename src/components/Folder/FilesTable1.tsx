@@ -519,7 +519,7 @@ const FileRow = ({
 							/>
 						</Tooltipped>
 					</DialogTrigger>
-					<DialogContent className="sm:max-w-[425px]">
+					<DialogContent className="sm:max-w-[425px]" title="Confirm Deletion">
 						<div className="grid gap-4">
 							<div className="flex flex-col gap-2">
 								<h3 className="text-lg font-semibold">Confirm Deletion</h3>

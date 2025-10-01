@@ -1,5 +1,6 @@
 import { type Session } from "@supabase/supabase-js";
 import { UpdateProperties } from "@/types/updates";
+import { CalendarEventsResponse, ImportCalendarEventsRequest, ImportCalendarEventsResponse } from "@/types/calendar";
 import axios from "axios";
 
 export const integrateApi = async(
@@ -125,6 +126,73 @@ export const getProcoreProjects = async(
 	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/procore/projects/${project_access_id}`;
 	const response = await axios.get(url, {
 		headers: { Authorization: `Bearer ${session.access_token}` },
+	});
+	return response.data;
+};
+
+export const getCalendarEvents = async(
+	session: Session,
+	project_access_id: string,
+	start_date: string,
+	end_date: string,
+): Promise<CalendarEventsResponse> => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/microsoft/calendar/events/${project_access_id}`;
+	const response = await axios.get(url, {
+		params: {
+			start_date,
+			end_date,
+		},
+		headers: {
+			Authorization: `Bearer ${session.access_token}`,
+		},
+	});
+	return response.data;
+};
+
+export const importCalendarEvents = async(
+	session: Session,
+	project_access_id: string,
+	import_request: ImportCalendarEventsRequest,
+): Promise<ImportCalendarEventsResponse> => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/microsoft/calendar/import/${project_access_id}`;
+	const response = await axios.post(
+		url,
+		import_request,
+		{
+			headers: {
+				Authorization: `Bearer ${session.access_token}`,
+			},
+		},
+	);
+	return response.data;
+};
+
+export const deleteCalendarWebhook = async(
+	session: Session,
+	project_access_id: string,
+	subscription_id: string,
+) => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/microsoft/calendar/webhook/${project_access_id}`;
+	const response = await axios.delete(url, {
+		params: {
+			subscription_id,
+		},
+		headers: {
+			Authorization: `Bearer ${session.access_token}`,
+		},
+	});
+	return response.data;
+};
+
+export const deleteMicrosoftIntegration = async(
+	session: Session,
+	project_access_id: string,
+) => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/integrate/microsoft/${project_access_id}`;
+	const response = await axios.delete(url, {
+		headers: {
+			Authorization: `Bearer ${session.access_token}`,
+		},
 	});
 	return response.data;
 };

@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
-	getApiIntegration,
 	registerOutlookCalendarWebhook,
 	registerOutlookMailWebhook,
-	getMicrosoftWebhook,
+	deleteCalendarWebhook,
+	deleteMicrosoftIntegration,
 } from "@/api/integration_routes";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
@@ -20,6 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Loader2, Settings, Calendar, Mail } from "lucide-react";
 import { useStore } from "@/utils/store";
+import { useIntegrationStore } from "@/hooks/useIntegrationStore";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -27,24 +27,22 @@ export default function Integration(): React.ReactNode {
 	const { toast } = useToast();
 	const session = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
+	
+	// Use integration store
+	const microsoftIntegration = useIntegrationStore((state) => state.microsoftIntegration);
+	const procoreIntegration = useIntegrationStore((state) => state.procoreIntegration);
+	const microsoftCalendarWebhook = useIntegrationStore((state) => state.microsoftCalendarWebhook);
+	const microsoftMailWebhook = useIntegrationStore((state) => state.microsoftMailWebhook);
+	const fetchMicrosoftCalendarWebhook = useIntegrationStore((state) => state.fetchMicrosoftCalendarWebhook);
+	const fetchMicrosoftMailWebhook = useIntegrationStore((state) => state.fetchMicrosoftMailWebhook);
+	const setMicrosoftCalendarWebhook = useIntegrationStore((state) => state.setMicrosoftCalendarWebhook);
+	const setMicrosoftMailWebhook = useIntegrationStore((state) => state.setMicrosoftMailWebhook);
+	const setMicrosoftIntegration = useIntegrationStore((state) => state.setMicrosoftIntegration);
+	
 	const [procoreConnected, setProcoreConnected] = useState(false);
 	const [microsoftConnected, setMicrosoftConnected] = useState(false);
-	const [microsoftWebhook, setMicrosoftWebhook] = useState(null);
-	const [microsoftMailWebhook, setMicrosoftMailWebhook] = useState(null);
-
-	const { data: microsoftIntegration } = useQuery({
-		queryKey: ["integration", activeProject?.project_id, "microsoft"],
-		queryFn: () =>
-			getApiIntegration(session!, activeProject?.project_id!, "microsoft"),
-		enabled: !!session && !!activeProject?.project_id,
-	});
-
-	const { data: procoreIntegration } = useQuery({
-		queryKey: ["integration", activeProject?.project_id, "procore"],
-		queryFn: () =>
-			getApiIntegration(session!, activeProject?.project_id!, "procore"),
-		enabled: !!session && !!activeProject?.project_id,
-	});
+	const [microsoftWebhook, setMicrosoftWebhook] = useState<typeof microsoftCalendarWebhook>(null);
+	const [localMicrosoftMailWebhook, setLocalMicrosoftMailWebhook] = useState<typeof microsoftMailWebhook>(null);
 
 	useEffect(() => {
 		setMicrosoftConnected(!!microsoftIntegration);
@@ -54,28 +52,13 @@ export default function Integration(): React.ReactNode {
 		setProcoreConnected(!!procoreIntegration);
 	}, [procoreIntegration]);
 
-	const { data: microsoftWebhookState } = useQuery({
-		queryKey: ["microsoftWebhook", activeProject?.project_id],
-		queryFn: () =>
-			getMicrosoftWebhook(session!, activeProject?.project_id!, "events"),
-		enabled: !!session && !!activeProject?.project_id,
-	});
-
-	const { data: microsoftMailWebhookState } = useQuery({
-		queryKey: ["microsoftMailWebhook", activeProject?.project_id],
-		queryFn: () =>
-			getMicrosoftWebhook(session!, activeProject?.project_id!, "messages"),
-		enabled: !!session && !!activeProject?.project_id,
-	});
+	useEffect(() => {
+		setMicrosoftWebhook(microsoftCalendarWebhook);
+	}, [microsoftCalendarWebhook]);
 
 	useEffect(() => {
-		setMicrosoftWebhook(microsoftWebhookState);
-	}, [microsoftWebhookState]);
-
-	useEffect(() => {
-		setMicrosoftMailWebhook(microsoftMailWebhookState);
-		//console.log("microsoftMailWebhookState", microsoftMailWebhookState);
-	}, [microsoftMailWebhookState]);
+		setLocalMicrosoftMailWebhook(microsoftMailWebhook);
+	}, [microsoftMailWebhook]);
 
 	const {
 		mutate: registerOutlookCalendarWebhookMutation,
@@ -84,7 +67,11 @@ export default function Integration(): React.ReactNode {
 	} = useMutation({
 		mutationFn: () =>
 			registerOutlookCalendarWebhook(session!, activeProject?.project_id!),
-		onSuccess: () => {
+		onSuccess: async() => {
+			// Refresh webhook state in store
+			if (session && activeProject?.project_id) {
+				await fetchMicrosoftCalendarWebhook(session, activeProject.project_id);
+			}
 			toast({
 				title: "Webhook registered successfully",
 				description: "Your Outlook calendar is now connected to Flowlly",
@@ -105,7 +92,11 @@ export default function Integration(): React.ReactNode {
 	} = useMutation({
 		mutationFn: () =>
 			registerOutlookMailWebhook(session!, activeProject?.project_id!),
-		onSuccess: () => {
+		onSuccess: async() => {
+			// Refresh webhook state in store
+			if (session && activeProject?.project_id) {
+				await fetchMicrosoftMailWebhook(session, activeProject.project_id);
+			}
 			toast({
 				title: "Webhook registered successfully",
 				description: "Your Outlook mail is now connected to Flowlly",
@@ -114,6 +105,59 @@ export default function Integration(): React.ReactNode {
 		onError: () => {
 			toast({
 				title: "Failed to register webhook",
+				description: "Please try again",
+			});
+		},
+	});
+
+	const {
+		mutate: deleteCalendarWebhookMutation,
+		isPending: isPendingDelete,
+	} = useMutation({
+		mutationFn: () =>
+			deleteCalendarWebhook(
+				session!,
+				activeProject?.project_id!,
+				microsoftCalendarWebhook?.subscription_id ?? "",
+			),
+		onSuccess: () => {
+			setMicrosoftWebhook(null);
+			setMicrosoftCalendarWebhook(null);
+			toast({
+				title: "Calendar disconnected",
+				description: "Your Outlook calendar has been disconnected",
+			});
+		},
+		onError: () => {
+			toast({
+				title: "Failed to disconnect calendar",
+				description: "Please try again",
+			});
+		},
+	});
+
+	const {
+		mutate: deleteMicrosoftIntegrationMutation,
+		isPending: isPendingDeleteIntegration,
+	} = useMutation({
+		mutationFn: () =>
+			deleteMicrosoftIntegration(session!, activeProject?.project_id!),
+		onSuccess: () => {
+			// Clear all Microsoft-related state in store
+			setMicrosoftIntegration(null);
+			setMicrosoftCalendarWebhook(null);
+			setMicrosoftMailWebhook(null);
+			setMicrosoftConnected(false);
+			setMicrosoftWebhook(null);
+			setLocalMicrosoftMailWebhook(null);
+			toast({
+				title: "Microsoft integration removed",
+				description: "All Microsoft 365 services have been disconnected",
+			});
+		},
+		onError: () => {
+			toast({
+				title: "Failed to remove integration",
 				description: "Please try again",
 			});
 		},
@@ -275,9 +319,27 @@ export default function Integration(): React.ReactNode {
 											<span className="text-sm font-medium">Outlook Calendar</span>
 										</div>
 										{microsoftWebhook || isSuccess ? (
-											<Badge className="text-green-700 border-green-200" variant="outline">
-												Connected
-											</Badge>
+											<div className="flex items-center gap-2">
+												<Badge className="text-green-700 border-green-200" variant="outline">
+													<CheckCircle2 className="h-3 w-3 mr-1" />
+													Connected
+												</Badge>
+												<Button
+													disabled={isPendingDelete}
+													onClick={() => deleteCalendarWebhookMutation()}
+													size="sm"
+													variant="outline"
+												>
+													{isPendingDelete ? (
+														<>
+															<Loader2 className="h-3 w-3 mr-1 animate-spin" />
+															Disconnecting...
+														</>
+													) : (
+														"Disconnect"
+													)}
+												</Button>
+											</div>
 										) : (
 											<Button
 												disabled={isPending}
@@ -297,13 +359,14 @@ export default function Integration(): React.ReactNode {
 										)}
 									</div>
 									{/* Email Service */}
-									<div className="flex items-center justify-between py-2">
+									<div className="flex items-center justify-between py-2 border-b border-gray-100">
 										<div className="flex items-center gap-2">
 											<Mail className="h-4 w-4 text-gray-500" />
 											<span className="text-sm font-medium">Outlook Mail</span>
 										</div>
-										{microsoftMailWebhook || isSuccessMail ? (
+										{localMicrosoftMailWebhook || isSuccessMail ? (
 											<Badge className="text-green-700 border-green-200" variant="outline">
+												<CheckCircle2 className="h-3 w-3 mr-1" />
 												Connected
 											</Badge>
 										) : (
@@ -316,6 +379,27 @@ export default function Integration(): React.ReactNode {
 												{isPendingMail ? "Connecting..." : "Connect"}
 											</Button>
 										)}
+									</div>
+									{/* Disconnect entire integration */}
+									<div className="pt-4 mt-4 border-t border-gray-200">
+										<Button
+											disabled={isPendingDeleteIntegration}
+											onClick={() => deleteMicrosoftIntegrationMutation()}
+											size="sm"
+											variant="destructive"
+										>
+											{isPendingDeleteIntegration ? (
+												<>
+													<Loader2 className="h-3 w-3 mr-1 animate-spin" />
+													Removing Integration...
+												</>
+											) : (
+												"Remove Microsoft 365 Integration"
+											)}
+										</Button>
+										<p className="text-xs text-gray-500 mt-2">
+											This will disconnect all Microsoft services and remove all webhooks
+										</p>
 									</div>
 								</div>
 							) : (

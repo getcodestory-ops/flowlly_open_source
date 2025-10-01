@@ -248,9 +248,9 @@ export const MeetingInformation: React.FC = () => {
 			</div>
 			{/* Time and Duration Section */}
 			<div className="space-y-3">
-				<div className="flex items-center gap-4">
+				<div className="flex items-center gap-4 ">
 					<Clock className="h-5 w-5 text-gray-600" />
-					<div className="flex items-center gap-2 text-sm">
+					<div className="flex items-center gap-2 text-sm ">
 						<Input
 							className="h-9  text-center border-none bg-gray-50 hover:bg-gray-100 focus:bg-white"
 							onChange={(e) => setTime(e.target.value)}
@@ -259,7 +259,7 @@ export const MeetingInformation: React.FC = () => {
 							value={time}
 						/>
 						<span className="text-gray-500">–</span>
-						<div className="h-9 px-3 bg-gray-50 rounded-md flex items-center text-gray-600 text-sm min-w-20 justify-center">
+						<div className="h-9 flex items-center justify-center text-center min-w-20 rounded-md bg-gray-50 hover:bg-gray-100 focus:bg-white">
 							{formatEndTime(time, duration) || "End"}
 						</div>
 					</div>
@@ -314,7 +314,7 @@ export const MeetingInformation: React.FC = () => {
 					</Select>
 				</div>
 				{/* Day Selection for Weekly/Weekdays */}
-				{(frequency === "weekly" || frequency === "weekdays") && (
+				{( frequency === "weekdays") && (
 					<div className="ml-9 space-y-3">
 						<div className="flex flex-wrap gap-2">
 							{daysOfWeek.map((day, index) => (
@@ -361,7 +361,7 @@ export const MeetingInformation: React.FC = () => {
 					</div>
 				)}
 				{/* Weekly Recurrence Day when no specific days selected */}
-				{frequency === "weekly" && selectedDays.length === 0 && (
+				{frequency === "weekly"  && (
 					<div className="ml-9">
 						<Select onValueChange={setWeeklyRecurrenceDay} value={weeklyRecurrenceDay}>
 							<SelectTrigger className="w-40 h-8 text-sm border-none bg-gray-50 hover:bg-gray-100">

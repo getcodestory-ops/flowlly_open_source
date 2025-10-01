@@ -6,8 +6,6 @@ import {
 	PencilIcon,
 	Calendar,
 	Trash2,
-	Sparkles,
-	ArrowUpRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,8 +31,6 @@ import { DataTablePagination } from "@/components/Schedule/ScheduleTable/DataTab
 import { CalendarView } from "./CalendarView";
 import type { GraphData } from "./types";
 import ProjectEventCreationForm from "@/components/ProjectEvent/ProjectEventCreationForm";
-import DocumentWriterForm from "@/components/ProjectEvent/DocumentWriterForm";
-import CustomWorkflowForm from "@/components/ProjectEvent/CustomWorkFlow/CustomWorkflowForm";
 import {
 	Card,
 	CardContent,
@@ -48,26 +44,25 @@ import { convertIsoToTimeAgo } from "@/utils/dateUtils";
 import { ViewMode } from "./types";
 import { WorkflowViewModeSwitcher } from "./WorkflowViewModeSwitcher";
 import { useWorkflow } from "@/hooks/useWorkflow";
-import { TriggerUI } from "@/components/WorkflowComponents/TriggerUI";
 import {
 	Dialog,
 	DialogContent,
-	DialogTrigger,
 } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { useStore } from "@/utils/store";
 import { deleteProjectEvent } from "@/api/taskQueue";
-
+import ImportMeetingsDialog from "./ImportMeetingsDialog";
+import CreateJob from "./CreateJob";
 const localeText = {
 	searchWorkflows: "Filter meetings by name or type...",
 };
-import { PlayIcon } from "lucide-react";
 
 
 export const EventListViewer: React.FC = ({
 }) => {
-	const { setCurrentGraphId, viewMode, graphs, setSelectedEventResourceId } = useWorkflow();
+	const { setCurrentGraphId, viewMode, graphs } = useWorkflow();
 	const onSelectGraph = (id: string): void => {
 		setCurrentGraphId(id);
 	};
@@ -76,10 +71,15 @@ export const EventListViewer: React.FC = ({
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [selectedEventType, setSelectedEventType] = useState<string | null>( null );
 	const [selectedEventData, setSelectedEventData] = useState<GraphData | null>( null );
-	const [isTriggerDialogOpen, setIsTriggerDialogOpen] = useState(false);
+	const [isCreateMeetingOpen, setIsCreateMeetingOpen] = useState(false);
+	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 	const queryClient = useQueryClient();
 	const { toast } = useToast();
 	const { session, activeProject } = useStore();
+
+
+
+
 
 	const { mutate: deleteProjectEventMutation } = useMutation({
 		mutationFn: async(eventId: string) => {
@@ -102,6 +102,10 @@ export const EventListViewer: React.FC = ({
 		setSelectedEventData(info);
 		setIsDialogOpen(true);
 	};
+
+
+
+
 
 
 	const columns = useMemo<ColumnDef<GraphData>[]>(
@@ -328,108 +332,7 @@ export const EventListViewer: React.FC = ({
 			)}
 			{viewMode === ViewMode.GRID && (
 				<div>
-					{/* Non-meeting events section */}
-					{/* <div className="mb-8">
-						<h2 className="text-xl font-semibold mb-4 border-b border-gray-200 pb-2">Workflows</h2>
-						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-							{filteredGraphs.filter((graph) => graph.event_type !== "meeting").length > 0 ? (
-								filteredGraphs
-									.filter((graph) => graph.event_type !== "meeting")
-									.map((graph) => (
-										<Card
-											className="hover:shadow-md transition-shadow cursor-pointer border border-gray-200"
-											key={graph.id}
-											onClick={() => onSelectGraph(graph.id)}
-										>
-											<CardHeader className="pb-2">
-												<div className="flex justify-between items-center gap-4">
-													<CardTitle className="text-lg font-medium truncate whitespace-nowrap overflow-hidden w-full">
-														<Tooltipped tooltip={graph.name}>
-															<div className="truncate">{graph.name}</div>
-														</Tooltipped>
-													</CardTitle>
-													<Badge variant="outline">{graph.event_type}</Badge>
-												</div>
-											</CardHeader>
-											<CardContent>
-												<p className="text-sm text-muted-foreground line-clamp-2">
-													{graph.description}
-												</p>
-											</CardContent>
-											<CardFooter className="pt-2 flex justify-between text-xs text-muted-foreground">
-												<div className="flex items-center gap-1">
-													<Calendar className="h-3 w-3" />
-													<span>
-														Created
-													</span>
-													<span className="">
-														{formatTimeAgo(convertIsoToTimeAgo(graph.created_at) ?? "")}
-													</span>
-												</div>
-												<div className="flex items-center gap-1">
-													{graph.event_resources && graph.event_resources.length > 0 &&
-													<Button
-														onClick={(e) => {
-															e.stopPropagation();
-															if(!graph.event_resources) return;
-															setSelectedEventResourceId(graph?.event_resources[0]?.id ?? null);
-														}}
-														size="icon"
-														variant="ghost"
-													>
-														<Database className="h-3 w-3" />
-													</Button>
-													}
-													<Button
-														onClick={(e) => {
-															e.stopPropagation();
-															onClickEdit(graph);
-														}}
-														size="icon"
-														variant="ghost"
-													>
-														<PencilIcon className="h-3 w-3" />
-													</Button>
-													<Button
-														onClick={(e) => {
-															e.stopPropagation();
-															deleteProjectEventMutation(graph.id);
-														}}
-														size="icon"
-														variant="ghost"
-													>
-														<Trash2 className="h-3 w-3" />
-													</Button>
-													<div onClick={(e) => {
-														e.stopPropagation();
-													}}
-													>
-														<Dialog>
-															<DialogTrigger asChild>
-																<Button size="icon" variant="ghost">
-																	<PlayIcon className="h-3 w-3" />
-																</Button>
-															</DialogTrigger>
-															<DialogContent>
-																<TriggerUI 
-																	eventId={graph.id}
-																	name={graph.name}
-																	onTrigger={() => setIsTriggerDialogOpen(false)}
-																/>
-															</DialogContent>
-														</Dialog>
-													</div>
-												</div>
-											</CardFooter>
-										</Card>
-									))
-							) : (
-								<div className="col-span-full text-center p-4">
-									<p className="text-muted-foreground">No other events found</p>
-								</div>
-							)}
-						</div>
-					</div> */}
+					
 					<div>
 						{/* <h2 className="text-xl font-semibold mb-4 border-b border-gray-200 pb-2">Meetings</h2> */}
 						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -494,47 +397,24 @@ export const EventListViewer: React.FC = ({
 										</Card>
 									))
 							) : (
-								<div className="col-span-full flex flex-col items-center justify-center p-12 space-y-6">
-									{/* Animated Arrow pointing to top-left */}
+								<div className="col-span-full flex flex-col items-center justify-center p-12 space-y-8">
+									{/* Main Icon */}
 									<div className="relative">
-										<div className="animate-bounce">
-											<ArrowUpRight className="h-16 w-16  transform rotate-12" />
-										</div>
-										<div className="absolute -top-2 -right-2 animate-pulse">
-											<Sparkles className="h-6 w-6 text-yellow-500" />
+										<div className="">
+											<Calendar className="h-8 w-8 text-gray-400" />
 										</div>
 									</div>
-									{/* Encouraging Text */}
+									{/* Title and Description */}
 									<div className="text-center space-y-3 max-w-md">
-										<h3 className="text-xl font-semibold text-gray-900">
-											Get Started with Your First Meeting
+										<h3 className="text-2xl font-bold text-gray-900">
+										No Meetings Yet
 										</h3>
-										<div className="space-y-2">
-											<p className="text-gray-600">
-												🎯 <span className="font-medium">Create a new meeting</span> to collaborate with your team
-											</p>
-											<p className="text-gray-600">
-												📅 <span className="font-medium">Connect your calendar</span> to sync existing meetings
-											</p>
-										</div>
-										<div className="text-sm text-gray-500 mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-											👆 Use the buttons above to get started
-										</div>
+										<p className="text-gray-600">
+										Get started by creating a new meeting or importing from your Microsoft Calendar
+										</p>
 									</div>
-									{/* Floating animation elements */}
-									<div className="absolute inset-0 pointer-events-none overflow-hidden">
-										<div 
-											className="animate-ping absolute top-4 left-1/4 w-2 h-2 bg-blue-400 rounded-full opacity-20" 
-											style={{ animationDelay: "0s" }}
-										/>
-										<div 
-											className="animate-ping absolute top-8 right-1/3 w-1 h-1 bg-green-400 rounded-full opacity-30" 
-											style={{ animationDelay: "1s" }}
-										/>
-										<div 
-											className="animate-ping absolute bottom-6 left-1/3 w-1.5 h-1.5 bg-purple-400 rounded-full opacity-25" 
-											style={{ animationDelay: "2s" }}
-										/>
+									<div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+										<CreateJob />
 									</div>
 								</div>
 							)}
@@ -544,7 +424,7 @@ export const EventListViewer: React.FC = ({
 			)}
 			{isDialogOpen && (
 				<Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
-					<DialogContent className="max-w-[90vw]">
+					<DialogContent className="max-w-[90vw]" title="edit event">
 						{selectedEventType === "meeting" && (
 							<>
 								<h2 className="text-lg font-semibold">Edit Meeting</h2>
@@ -554,24 +434,19 @@ export const EventListViewer: React.FC = ({
 								/>
 							</>
 						)}
-						{selectedEventType === "document_writing" && (
-							<>
-								<h2 className="text-lg font-semibold">Edit Document</h2>
-								<DocumentWriterForm
-									editData={selectedEventData!}
-									onClose={() => setIsDialogOpen(false)}
-								/>
-							</>
-						)}
-						{selectedEventType === "custom" && (
-							<CustomWorkflowForm
-								editData={selectedEventData!}
-								onClose={() => setIsDialogOpen(false)}
-							/>
-						)}
 					</DialogContent>
 				</Dialog>
 			)}
+			<Sheet onOpenChange={setIsCreateMeetingOpen} open={isCreateMeetingOpen}>
+				<SheetContent className="w-[50vw]" side="right">
+					<SheetTitle>Create New Meeting</SheetTitle>
+					<ProjectEventCreationForm onClose={() => setIsCreateMeetingOpen(false)} />
+				</SheetContent>
+			</Sheet>
+			<ImportMeetingsDialog 
+				isOpen={isImportDialogOpen} 
+				onClose={() => setIsImportDialogOpen(false)} 
+			/>
 		</div>
 	);
 };

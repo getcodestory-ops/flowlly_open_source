@@ -129,10 +129,23 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 	const meetingDay = graph.metadata.recurrence_day?.toLowerCase();
 	const firstSchedule = graph.event_schedule?.[0];
 	const scheduleStart = firstSchedule?.schedule?.start;
-	const scheduleTime = firstSchedule?.schedule?.time as any;
+	const scheduleTime = firstSchedule?.schedule?.time as Record<string, unknown> | Array<Record<string, unknown>>;
 	const scheduleRunTime = Array.isArray(scheduleTime) ? scheduleTime?.[0]?.run_time : scheduleTime?.run_time;
 	// Prefer schedule run_time over metadata time to align with list view
 	const meetingTime = scheduleRunTime || graph.metadata.time;
+
+	// Get exceptions from the schedule
+	const exceptions = (firstSchedule?.schedule as Record<string, unknown>)?.exceptions as Array<Record<string, unknown>> || [];
+	const exceptionMap = new Map();
+	
+	// Build a map of original occurrence times to exceptions
+	exceptions.forEach((exception: Record<string, unknown>) => {
+		if (exception.original_occurrence_time) {
+			const originalDate = new Date(exception.original_occurrence_time as string);
+			const dateKey = originalDate.toISOString().split("T")[0];
+			exceptionMap.set(dateKey, exception);
+		}
+	});
 
 	if (frequency === "weekly" && meetingDay && meetingTime) {
 		let currentDate = new Date(startDate);
@@ -143,13 +156,52 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 		// const { hours, minutes } = extractHoursMinutes(meetingTime);
 
 		while (currentDate <= endDate) {
+			const baseDateStr = currentDate.toISOString().split("T")[0];
+			const exception = exceptionMap.get(baseDateStr);
+
+			// Check if this occurrence has an exception
+			if (exception) {
+				// Handle different exception types
+				if (exception.exception_type === "moved" && exception.new_start_time && exception.new_end_time) {
+					// For moved meetings, show the event at the new time
+					const exceptionStart = new Date(exception.new_start_time);
+					const exceptionEnd = new Date(exception.new_end_time);
+
+					events.push({
+						id: `${graph.id}-${currentDate.toISOString()}-exception`,
+						title: (
+							<div className="flex items-center gap-2">
+								{graph.event_type === "document_writing" ? (
+									<FileText size={14} />
+								) : (
+									<Video size={14} />
+								)}
+								<span className="text-xs opacity-80">{formatLocalTime(exceptionStart)}</span>
+								{graph.name}
+								<span className="text-xs bg-orange-100 text-orange-700 px-1 rounded">Moved</span>
+							</div>
+						),
+						start: exceptionStart,
+						end: exceptionEnd,
+						allDay: false,
+						resource: graph,
+					});
+				} else if (exception.exception_type === "cancelled") {
+					// For cancelled meetings, skip adding the event
+					// You could also show a strikethrough version if desired
+				}
+				// Skip to next occurrence
+				currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+				continue;
+			}
+
+			// Regular occurrence (no exception)
 			// Compose UTC ISO from the week's date and meeting time, then convert to local
 			let iso: string;
 			if (typeof meetingTime === "string" && meetingTime.includes("T")) {
 				const hasZone = /Z|[+-]\d\d:\d\d$/.test(meetingTime);
 				iso = hasZone ? meetingTime : `${meetingTime}Z`;
 			} else {
-				const baseDateStr = currentDate.toISOString().split("T")[0];
 				const norm = ((): string => {
 					const input = String(meetingTime || "00:00").trim();
 					if (input.includes("T")) return input;
@@ -202,7 +254,7 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 			currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
 		}
 	} else if (frequency === "once") {
-		const timeString = meetingTime;
+		const timeString = String(meetingTime || "");
 		let eventStart: Date;
 
 		if (timeString && timeString.includes("T")) {
@@ -221,7 +273,7 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 		} else {
 			// Time-only: prefer schedule.start's date if available; otherwise fallback to created_at
 			const baseDateStr = scheduleStart ? scheduleStart.split("T")[0] : startDate.toISOString().split("T")[0];
-			const iso = `${baseDateStr}T${timeString ?? "00:00"}Z`;
+			const iso = `${baseDateStr}T${timeString || "00:00"}Z`;
 			eventStart = new Date(iso);
 		}
 

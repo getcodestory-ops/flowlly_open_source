@@ -194,7 +194,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 						return (
 							<div className="flex items-center">
 								<span className="font-medium">
-									{compact ? "Running" : "Running Workflow"}
+									{compact ? "Meetings" : "Running Workflow"}
 								</span>
 							</div>
 						);
