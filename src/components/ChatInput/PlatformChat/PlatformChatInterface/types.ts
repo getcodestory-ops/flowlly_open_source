@@ -37,6 +37,17 @@ export type ModelType = {
 
 export const MODELS: ModelType[] = [
 	{ 
+		id: "claude-sonnet-4-5", 
+		name: "Claude Sonnet 4.5",
+		speed: 3,
+		performance: 5,
+		cost: "high",
+		description: "Top-tier model for the most demanding tasks",
+		bestFor: "Highly complex tasks requiring maximum intelligence",
+		contextSize: "medium",
+	},
+
+	{ 
 		id: "claude-sonnet-4", 
 		name: "Claude Sonnet 4",
 		speed: 3,
