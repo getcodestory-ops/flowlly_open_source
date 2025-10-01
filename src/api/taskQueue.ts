@@ -444,3 +444,35 @@ export const getTaskStatusById = async(
 	});
 	return response.data;
 };
+
+export const mergeProjectEvents = async({
+	session,
+	projectId,
+	mergeFromEventId,
+	mergeIntoEventId,
+}: {
+	session: Session;
+	projectId: string;
+	mergeFromEventId: string;
+	mergeIntoEventId: string;
+}): Promise<any> => {
+	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/events/merge/${projectId}`;
+	try {
+		const response = await axios.post(
+			url, 
+			{
+				merge_from_event_id: mergeFromEventId,
+				merge_into_event_id: mergeIntoEventId,
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${session.access_token}`,
+				},
+			},
+		);
+		return response.data;
+	} catch (error) {
+		console.error("Failed to merge project events:", error);
+		throw error;
+	}
+};

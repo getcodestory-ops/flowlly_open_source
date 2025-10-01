@@ -1,11 +1,12 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
 	ArrowDown,
 	ArrowUp,
 	PencilIcon,
 	Calendar,
 	Trash2,
+	GitMerge,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,14 +48,19 @@ import { useWorkflow } from "@/hooks/useWorkflow";
 import {
 	Dialog,
 	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
+	DialogFooter,
 } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { useStore } from "@/utils/store";
-import { deleteProjectEvent } from "@/api/taskQueue";
+import { deleteProjectEvent, mergeProjectEvents } from "@/api/taskQueue";
 import ImportMeetingsDialog from "./ImportMeetingsDialog";
 import CreateJob from "./CreateJob";
+import { Checkbox } from "@/components/ui/checkbox";
 const localeText = {
 	searchWorkflows: "Filter meetings by name or type...",
 };
@@ -73,6 +79,9 @@ export const EventListViewer: React.FC = ({
 	const [selectedEventData, setSelectedEventData] = useState<GraphData | null>( null );
 	const [isCreateMeetingOpen, setIsCreateMeetingOpen] = useState(false);
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+	const [isMergeMode, setIsMergeMode] = useState(false);
+	const [selectedEventsForMerge, setSelectedEventsForMerge] = useState<string[]>([]);
+	const [isMergeDialogOpen, setIsMergeDialogOpen] = useState(false);
 	const queryClient = useQueryClient();
 	const { toast } = useToast();
 	const { session, activeProject } = useStore();
@@ -96,11 +105,73 @@ export const EventListViewer: React.FC = ({
 		},
 	});
 
+	const { mutate: mergeEventsMutation, isPending: isMerging } = useMutation({
+		mutationFn: async({ mergeFromId, mergeIntoId }: { mergeFromId: string; mergeIntoId: string }) => {
+			if (!session || !activeProject?.project_id) return;
+
+			await mergeProjectEvents({
+				session,
+				projectId: activeProject.project_id,
+				mergeFromEventId: mergeFromId,
+				mergeIntoEventId: mergeIntoId,
+			});
+		},
+		onSuccess: () => {
+			toast({
+				title: "Events merged successfully",
+				description: "The events have been merged and schedules moved",
+			});
+			queryClient.invalidateQueries({ queryKey: ["projectEvents"] });
+			setIsMergeDialogOpen(false);
+			setSelectedEventsForMerge([]);
+			setIsMergeMode(false);
+		},
+		onError: (error: unknown) => {
+			const errorMessage = error instanceof Error 
+				? error.message 
+				: (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail 
+				|| "An error occurred while merging events";
+			toast({
+				title: "Failed to merge events",
+				description: errorMessage,
+				variant: "destructive",
+			});
+		},
+	});
+
 	const onClickEdit = (info: GraphData) => {
 		const eventType = info.event_type;
 		setSelectedEventType(eventType);
 		setSelectedEventData(info);
 		setIsDialogOpen(true);
+	};
+
+	const toggleEventSelection = useCallback((eventId: string) => {
+		setSelectedEventsForMerge((prev) => {
+			if (prev.includes(eventId)) {
+				return prev.filter((id) => id !== eventId);
+			}
+			// Only allow selecting 2 events
+			if (prev.length >= 2) {
+				toast({
+					title: "Maximum selection reached",
+					description: "You can only select 2 events to merge",
+					variant: "destructive",
+				});
+				return prev;
+			}
+			return [...prev, eventId];
+		});
+	}, [toast]);
+
+	const handleMergeClick = () => {
+		if (selectedEventsForMerge.length === 2) {
+			setIsMergeDialogOpen(true);
+		}
+	};
+
+	const handleConfirmMerge = (mergeFromId: string, mergeIntoId: string) => {
+		mergeEventsMutation({ mergeFromId, mergeIntoId });
 	};
 
 
@@ -110,7 +181,24 @@ export const EventListViewer: React.FC = ({
 
 	const columns = useMemo<ColumnDef<GraphData>[]>(
 		() => {
-			const cols: ColumnDef<GraphData>[] = [
+			const cols: ColumnDef<GraphData>[] = [];
+			
+			// Add checkbox column when in merge mode
+			if (isMergeMode) {
+				cols.push({
+					id: "select",
+					header: "Select",
+					cell: ({ row }) => (
+						<Checkbox
+							checked={selectedEventsForMerge.includes(row.original.id)}
+							onCheckedChange={() => toggleEventSelection(row.original.id)}
+							onClick={(e) => e.stopPropagation()}
+						/>
+					),
+				});
+			}
+
+			cols.push(
 				{
 					accessorKey: "name",
 					header: ({ column }) => (
@@ -137,7 +225,7 @@ export const EventListViewer: React.FC = ({
 						return metadata?.frequency || "N/A";
 					},
 				},
-			];
+			);
 
 			const hasWeekly = (graphs || []).some((g) => g.metadata?.frequency === "weekly");
 			if (hasWeekly) {
@@ -160,7 +248,7 @@ export const EventListViewer: React.FC = ({
 						const g = info.row.original;
 						const firstSchedule = g.event_schedule?.[0];
 						const scheduleStart = firstSchedule?.schedule?.start;
-						const scheduleTime = firstSchedule?.schedule?.time as any;
+						const scheduleTime = firstSchedule?.schedule?.time as { run_time?: string } | { run_time?: string }[] | undefined;
 						const scheduleRunTime = Array.isArray(scheduleTime) ? scheduleTime?.[0]?.run_time : scheduleTime?.run_time;
 						const rt = g.run_time || g.metadata?.time;
 						const hasZoneRe = /Z|[+-]\d\d:\d\d$/;
@@ -212,7 +300,7 @@ export const EventListViewer: React.FC = ({
 			);
 
 			return cols;
-		}, [graphs, setIsDialogOpen, setSelectedEventData, setSelectedEventType]);
+		}, [graphs, setIsDialogOpen, setSelectedEventData, setSelectedEventType, isMergeMode, selectedEventsForMerge, toggleEventSelection]);
 
 	const table = useReactTable({
 		data: graphs || [],
@@ -256,6 +344,30 @@ export const EventListViewer: React.FC = ({
 						placeholder={localeText.searchWorkflows}
 						value={globalFilter ?? ""}
 					/>
+				)}
+				{viewMode === ViewMode.LIST && (
+					<>
+						<Button
+							onClick={() => {
+								setIsMergeMode(!isMergeMode);
+								setSelectedEventsForMerge([]);
+							}}
+							size="sm"
+							variant={isMergeMode ? "default" : "outline"}
+						>
+							<GitMerge className="h-4 w-4 mr-2" />
+							{isMergeMode ? "Cancel Merge" : "Merge Events"}
+						</Button>
+						{isMergeMode && selectedEventsForMerge.length === 2 && (
+							<Button
+								onClick={handleMergeClick}
+								size="sm"
+								variant="default"
+							>
+								Merge Selected ({selectedEventsForMerge.length})
+							</Button>
+						)}
+					</>
 				)}
 			</div>
 			{viewMode === ViewMode.LIST && (
@@ -447,7 +559,151 @@ export const EventListViewer: React.FC = ({
 				isOpen={isImportDialogOpen} 
 				onClose={() => setIsImportDialogOpen(false)} 
 			/>
+			<MergeEventsDialog
+				events={graphs || []}
+				isMerging={isMerging}
+				isOpen={isMergeDialogOpen}
+				onClose={() => setIsMergeDialogOpen(false)}
+				onConfirm={handleConfirmMerge}
+				selectedEventIds={selectedEventsForMerge}
+			/>
 		</div>
+	);
+};
+
+// Merge Events Dialog Component
+interface MergeEventsDialogProps {
+	isOpen: boolean;
+	onClose: () => void;
+	selectedEventIds: string[];
+	events: GraphData[];
+	onConfirm: (mergeFromId: string, mergeIntoId: string) => void;
+	isMerging: boolean;
+}
+
+const MergeEventsDialog: React.FC<MergeEventsDialogProps> = ({
+	isOpen,
+	onClose,
+	selectedEventIds,
+	events,
+	onConfirm,
+	isMerging,
+}) => {
+	const [mergeFromId, setMergeFromId] = useState<string>("");
+	const [mergeIntoId, setMergeIntoId] = useState<string>("");
+
+	const selectedEvents = events.filter((event) =>
+		selectedEventIds.includes(event.id),
+	);
+
+	React.useEffect(() => {
+		if (selectedEventIds.length === 2) {
+			setMergeFromId(selectedEventIds[0]);
+			setMergeIntoId(selectedEventIds[1]);
+		}
+	}, [selectedEventIds]);
+
+	const handleConfirm = () => {
+		if (mergeFromId && mergeIntoId) {
+			onConfirm(mergeFromId, mergeIntoId);
+		}
+	};
+
+	const mergeFromEvent = selectedEvents.find((e) => e.id === mergeFromId);
+	const mergeIntoEvent = selectedEvents.find((e) => e.id === mergeIntoId);
+
+	return (
+		<Dialog onOpenChange={onClose} open={isOpen}>
+			<DialogContent className="max-w-2xl">
+				<DialogHeader>
+					<DialogTitle>Merge Events</DialogTitle>
+					<DialogDescription>
+						Select which event to merge from and which event to merge into. All schedules from the source event will be moved to the target event, and the source event will be deleted.
+					</DialogDescription>
+				</DialogHeader>
+				<div className="space-y-4 py-4">
+					<div className="space-y-2">
+						<label className="text-sm font-medium">Merge From (will be deleted):</label>
+						<div className="grid grid-cols-2 gap-2">
+							{selectedEvents.map((event) => (
+								<Card
+									className={`cursor-pointer transition-all ${
+										mergeFromId === event.id ? "border-red-500 border-2" : ""
+									}`}
+									key={event.id}
+									onClick={() => {
+										setMergeFromId(event.id);
+										if (mergeIntoId === event.id) {
+											setMergeIntoId(selectedEventIds.find((id) => id !== event.id) || "");
+										}
+									}}
+								>
+									<CardHeader className="pb-2">
+										<CardTitle className="text-sm">{event.name}</CardTitle>
+									</CardHeader>
+									<CardContent className="text-xs text-muted-foreground">
+										<p>Type: {event.event_type}</p>
+										<p>Schedules: {event.event_schedule?.length || 0}</p>
+									</CardContent>
+								</Card>
+							))}
+						</div>
+					</div>
+					<div className="space-y-2">
+						<label className="text-sm font-medium">Merge Into (will keep):</label>
+						<div className="grid grid-cols-2 gap-2">
+							{selectedEvents.map((event) => (
+								<Card
+									className={`cursor-pointer transition-all ${
+										mergeIntoId === event.id ? "border-green-500 border-2" : ""
+									}`}
+									key={event.id}
+									onClick={() => {
+										setMergeIntoId(event.id);
+										if (mergeFromId === event.id) {
+											setMergeFromId(selectedEventIds.find((id) => id !== event.id) || "");
+										}
+									}}
+								>
+									<CardHeader className="pb-2">
+										<CardTitle className="text-sm">{event.name}</CardTitle>
+									</CardHeader>
+									<CardContent className="text-xs text-muted-foreground">
+										<p>Type: {event.event_type}</p>
+										<p>Schedules: {event.event_schedule?.length || 0}</p>
+									</CardContent>
+								</Card>
+							))}
+						</div>
+					</div>
+					{mergeFromEvent && mergeIntoEvent && (
+						<div className="bg-muted p-4 rounded-md">
+							<p className="text-sm font-medium mb-2">Summary:</p>
+							<ul className="text-sm space-y-1">
+								<li>• <span className="text-red-600">{mergeFromEvent.name}</span> will be deleted</li>
+								<li>• All {mergeFromEvent.event_schedule?.length || 0} schedule(s) will be moved to <span className="text-green-600">{mergeIntoEvent.name}</span></li>
+								<li>• <span className="text-green-600">{mergeIntoEvent.name}</span> will have {(mergeIntoEvent.event_schedule?.length || 0) + (mergeFromEvent.event_schedule?.length || 0)} schedule(s) after merge</li>
+							</ul>
+						</div>
+					)}
+				</div>
+				<DialogFooter>
+					<Button 
+						disabled={isMerging}
+						onClick={onClose} 
+						variant="outline"
+					>
+						Cancel
+					</Button>
+					<Button
+						disabled={!mergeFromId || !mergeIntoId || mergeFromId === mergeIntoId || isMerging}
+						onClick={handleConfirm}
+					>
+						{isMerging ? "Merging..." : "Confirm Merge"}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
 	);
 };
 
