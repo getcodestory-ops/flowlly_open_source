@@ -28,6 +28,7 @@ export const talkToAgent = async({
 	projectId,
 	responseType = "general",
 	model = "gemini-2.5-flash",
+	agentType = "agent",
 	includeContext = false,
 	files = [],
 	googleSearch = false,
@@ -39,6 +40,7 @@ export const talkToAgent = async({
   projectId: string;
   responseType?: string;
   model?: string;
+  agentType?: string;
   includeContext?: boolean;
   files?: ProcessedFile[];
   googleSearch?: boolean;
@@ -50,6 +52,7 @@ export const talkToAgent = async({
 		project_id: projectId,
 		response_type: responseType,
 		model: model,
+		agent_type: agentType,
 		include_context: includeContext,
 		files: files,
 		google_search: googleSearch,

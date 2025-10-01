@@ -6,6 +6,7 @@ import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, M
 import AtSelectorComponent from "../../../components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
 import ModelSelector from "../../../components/ModelSelector";
+import AgentTypeSelector from "../../../components/AgentTypeSelector";
 import BidLevelling from "./FormDirectives/BidLevelling";
 import DailyReport from "./FormDirectives/DailyReport";
 import ReportWriting from "./FormDirectives/ReportWriting";
@@ -117,6 +118,8 @@ export default function EmptyChatInterface({
 		setChatDirectiveType, 
 		selectedModel, 
 		setSelectedModel,
+		selectedAgentType,
+		setSelectedAgentType,
 		// selectedTemplateId, // No longer needed
 		setSelectedTemplateId,
 		chatContext,
@@ -518,6 +521,10 @@ export default function EmptyChatInterface({
 					<div className="flex items-center justify-between p-6 pt-0">
 						<div className="flex items-center gap-2">
 							{loadDocumentPanel()}
+							<AgentTypeSelector 
+								onAgentTypeChange={setSelectedAgentType}
+								selectedAgentType={selectedAgentType}
+							/>
 							<ModelSelector 
 								onModelChange={setSelectedModel}
 								selectedModel={selectedModel}
