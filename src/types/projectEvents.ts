@@ -41,6 +41,9 @@ export interface ProjectEventMetadata {
   duration?: number;
   recurrence_day?: string;
   time: string;
+  time_zone?: string;
+  resource_id?: string;
+  calendar_event_id?: string;
   search_query?: string;
   write_prompt?: string;
   selected_items?: {};

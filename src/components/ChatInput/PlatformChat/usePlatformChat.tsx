@@ -31,6 +31,7 @@ export function usePlatformChat(
 	const isWaitingForResponse = useChatStore((state) => state.isWaitingForResponse);
 	const chatTypeTags = useChatStore((state) => state.chatTypeTags);
 	const selectedModel = useChatStore((state) => state.selectedModel);
+	const selectedAgentType = useChatStore((state) => state.selectedAgentType);
 	// Note: streamingKey is now detected per-chat instead of using global state
 
 
@@ -281,6 +282,7 @@ export function usePlatformChat(
 			responseType: chatTarget ?? "folder",
 			files: files,
 			model: selectedModel,
+			agentType: selectedAgentType,
 			includeContext: includeContext,
 			googleSearch: googleSearch,
 		});

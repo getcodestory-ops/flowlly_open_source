@@ -746,7 +746,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 				))}
 			</div>
 			<Dialog onOpenChange={setShowSaveAsDialog} open={showSaveAsDialog}>
-				<DialogContent className="sm:max-w-[500px]">
+				<DialogContent className="sm:max-w-[500px]" title="Save Document As">
 					<h2 className="text-xl font-semibold mb-4">Save Document As</h2>
 					<FolderSelector 
 						onFolderSelect={setSaveAsFolder}

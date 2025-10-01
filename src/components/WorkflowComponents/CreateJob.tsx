@@ -1,43 +1,37 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, Video, Loader2, CheckCircle2 } from "lucide-react";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Calendar, Video, Loader2, CheckCircle2, ChevronDown, Download, Settings } from "lucide-react";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import ProjectEventCreationForm from "@/components/ProjectEvent/ProjectEventCreationForm";
+import ImportMeetingsDialog from "./ImportMeetingsDialog";
+import CalendarConnectionSuccessDialog from "./CalendarConnectionSuccessDialog";
 import { useStore } from "@/utils/store";
+import { useIntegrationStore, type WebhookData } from "@/hooks/useIntegrationStore";
 import {
-	getApiIntegration,
 	registerOutlookCalendarWebhook,
-	getMicrosoftWebhook,
 } from "@/api/integration_routes";
 
 function CreateJob(): React.ReactNode {
 	const { toast } = useToast();
 	const session = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
+	
+	// Use integration store
+	const microsoftIntegration = useIntegrationStore((state) => state.microsoftIntegration);
+	const microsoftCalendarWebhook = useIntegrationStore((state) => state.microsoftCalendarWebhook);
+	const fetchMicrosoftIntegration = useIntegrationStore((state) => state.fetchMicrosoftIntegration);
+	const fetchMicrosoftCalendarWebhook = useIntegrationStore((state) => state.fetchMicrosoftCalendarWebhook);
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+	const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
 	const [microsoftConnected, setMicrosoftConnected] = useState(false);
-	const [microsoftWebhook, setMicrosoftWebhook] = useState(null);
+	const [microsoftWebhook, setMicrosoftWebhook] = useState<WebhookData | null>(null);
 	const [isConnectingCalendar, setIsConnectingCalendar] = useState(false);
 	const [connectionPolling, setConnectionPolling] = useState<NodeJS.Timeout | null>(null);
-
-	// Check Microsoft integration status
-	const { data: microsoftIntegration, refetch: refetchMicrosoftIntegration } = useQuery({
-		queryKey: ["integration", activeProject?.project_id, "microsoft"],
-		queryFn: () =>
-			getApiIntegration(session!, activeProject?.project_id!, "microsoft"),
-		enabled: !!session && !!activeProject?.project_id,
-	});
-
-	// Check calendar webhook status
-	const { data: microsoftWebhookState } = useQuery({
-		queryKey: ["microsoftWebhook", activeProject?.project_id],
-		queryFn: () =>
-			getMicrosoftWebhook(session!, activeProject?.project_id!, "events"),
-		enabled: !!session && !!activeProject?.project_id && microsoftConnected,
-	});
 
 	// Calendar webhook registration mutation
 	const {
@@ -46,12 +40,17 @@ function CreateJob(): React.ReactNode {
 	} = useMutation({
 		mutationFn: () =>
 			registerOutlookCalendarWebhook(session!, activeProject?.project_id!),
-		onSuccess: () => {
+		onSuccess: async() => {
 			setIsConnectingCalendar(false);
-			toast({
-				title: "Calendar Ready!",
-				description: "Your Microsoft calendar is now connected and ready to sync.",
-			});
+			// Small delay to ensure backend has processed the webhook
+			setTimeout(async() => {
+				// Refetch webhook state to update UI
+				if (session && activeProject?.project_id) {
+					await fetchMicrosoftCalendarWebhook(session, activeProject.project_id);
+				}
+				// Show success dialog after UI is updated
+				setIsSuccessDialogOpen(true);
+			}, 500);
 		},
 		onError: () => {
 			setIsConnectingCalendar(false);
@@ -74,10 +73,10 @@ function CreateJob(): React.ReactNode {
 				setConnectionPolling(null);
 			}
 			
-			// Automatically trigger calendar connection
+			// Automatically trigger calendar connection with better feedback
 			toast({
 				title: "Microsoft Connected!",
-				description: "Now connecting your calendar...",
+				description: "Setting up calendar integration...",
 			});
 			
 			// Trigger calendar webhook registration
@@ -86,8 +85,8 @@ function CreateJob(): React.ReactNode {
 	}, [microsoftIntegration, microsoftConnected, isConnectingCalendar, connectionPolling, toast, registerCalendarWebhook]);
 
 	useEffect(() => {
-		setMicrosoftWebhook(microsoftWebhookState);
-	}, [microsoftWebhookState]);
+		setMicrosoftWebhook(microsoftCalendarWebhook);
+	}, [microsoftCalendarWebhook]);
 
 	// Cleanup polling on unmount
 	useEffect(() => {
@@ -106,7 +105,9 @@ function CreateJob(): React.ReactNode {
 
 		// Start polling every 3 seconds to check for connection
 		const polling = setInterval(() => {
-			refetchMicrosoftIntegration();
+			if (session && activeProject?.project_id) {
+				fetchMicrosoftIntegration(session, activeProject.project_id);
+			}
 		}, 3000);
 
 		setConnectionPolling(polling);
@@ -188,7 +189,25 @@ function CreateJob(): React.ReactNode {
 		}
 	};
 
+	const handleImportMeetings = (): void => {
+		if (!microsoftWebhook) {
+			toast({
+				title: "Calendar Not Connected",
+				description: "Please connect your Microsoft calendar first.",
+				variant: "destructive",
+			});
+			return;
+		}
+		setIsImportDialogOpen(true);
+	};
 
+	const handleSuccessDialogImport = (): void => {
+		setIsImportDialogOpen(true);
+	};
+
+	const handleSuccessDialogSkip = (): void => {
+		// Just close the dialog, user can access import later from dropdown
+	};
 
 	return (
 		<div className="flex gap-3 items-center">
@@ -200,36 +219,70 @@ function CreateJob(): React.ReactNode {
 				<Video className="mr-2 h-4 w-4" />
 				Create New Meeting
 			</Button>
-			{/* Microsoft Calendar Setup Button */}
-			<Button
-				className="flex items-center gap-2"
-				disabled={isConnectingCalendar || isCalendarRegistering}
-				onClick={handleCalendarSetup}
-				variant="outline"
-			>
-				{(isConnectingCalendar || isCalendarRegistering) ? (
-					<>
-						<Loader2 className="h-4 w-4 animate-spin" />
-						Setting up calendar...
-					</>
-				) : microsoftWebhook ? (
-					<>
-						<CheckCircle2 className="h-4 w-4 text-green-500" />
-						Calendar Connected
-					</>
-				) : (
-					<>
-						<Calendar className="h-4 w-4" />
-						Connect Microsoft Calendar
-					</>
-				)}
-			</Button>
+			{/* Microsoft Calendar Integration */}
+			{!microsoftWebhook ? (
+				<Button
+					className="flex items-center gap-2"
+					disabled={isConnectingCalendar || isCalendarRegistering}
+					onClick={handleCalendarSetup}
+					variant="outline"
+				>
+					{(isConnectingCalendar || isCalendarRegistering) ? (
+						<>
+							<Loader2 className="h-4 w-4 animate-spin" />
+							Setting up calendar...
+						</>
+					) : (
+						<>
+							<Calendar className="h-4 w-4" />
+							Connect Microsoft Calendar
+						</>
+					)}
+				</Button>
+			) : (
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button className="flex items-center gap-2" variant="outline">
+							<CheckCircle2 className="h-4 w-4 text-green-500" />
+							Calendar Connected
+							<ChevronDown className="h-4 w-4" />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end" className="w-56">
+						<DropdownMenuItem onClick={handleImportMeetings}>
+							<Download className="mr-2 h-4 w-4" />
+							Import Meetings
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem onClick={handleCalendarSetup}>
+							<Settings className="mr-2 h-4 w-4" />
+							Reconnect Calendar
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			)}
 			{/* Meeting Creation Sheet */}
 			<Sheet onOpenChange={setIsDialogOpen} open={isDialogOpen}>
-				<SheetContent className="w-[50vw]" side="right">
+				
+				<SheetContent className="w-[50vw]"
+					side="right"
+				>
+					<SheetTitle>Create New Meeting</SheetTitle>
 					<ProjectEventCreationForm onClose={() => setIsDialogOpen(false)} />
 				</SheetContent>
 			</Sheet>
+			{/* Import Meetings Dialog */}
+			<ImportMeetingsDialog 
+				isOpen={isImportDialogOpen} 
+				onClose={() => setIsImportDialogOpen(false)} 
+			/>
+			{/* Calendar Connection Success Dialog */}
+			<CalendarConnectionSuccessDialog
+				isOpen={isSuccessDialogOpen}
+				onClose={() => setIsSuccessDialogOpen(false)}
+				onImportMeetings={handleSuccessDialogImport}
+				onSkip={handleSuccessDialogSkip}
+			/>
 		</div>
 	);
 }

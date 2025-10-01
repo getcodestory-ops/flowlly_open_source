@@ -31,6 +31,7 @@ import { useChatStore } from "@/hooks/useChatStore";
 import EmptyChatInterface from "./PlatformChatInterface/components/EmptyChatInterface/EmptyChatInterface";
 import { requestHelp, stopAgent } from "@/api/agentRoutes";
 import ModelSelector from "./components/ModelSelector";
+import AgentTypeSelector from "./components/AgentTypeSelector";
 
 
 export default function PlatformChatInterface({
@@ -65,7 +66,7 @@ export default function PlatformChatInterface({
 		activeChatEntity,
 		setIsWaitingForResponse,
 	} = usePlatformChat(folderId, chatTarget, includeContext);
-	const { setSidePanel, setCollapsed, contextFolder, selectedModel, setSelectedModel, selectedContexts, setSelectedContexts } = useChatStore();
+	const { setSidePanel, setCollapsed, contextFolder, selectedModel, setSelectedModel, selectedAgentType, setSelectedAgentType, selectedContexts, setSelectedContexts } = useChatStore();
 	
 	// Paste upload functionality
 	const { handlePasteEvent } = usePasteUpload({
@@ -451,6 +452,10 @@ export default function PlatformChatInterface({
 				<div className="flex items-center justify-between p-3 pt-0">
 					<div className="flex items-center gap-2">
 						{loadDocumentPanel()}
+						<AgentTypeSelector 
+							onAgentTypeChange={setSelectedAgentType}
+							selectedAgentType={selectedAgentType}
+						/>
 						<ModelSelector 
 							onModelChange={setSelectedModel}
 							selectedModel={selectedModel}

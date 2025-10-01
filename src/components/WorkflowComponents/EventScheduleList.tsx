@@ -22,7 +22,6 @@ import { cn } from "@/lib/utils";
 import type { EventSchedule, ScheduleTableRow } from "./types";
 import {
 	getEventResult,
-	getEventTrigger,
 	clearWorkflowProcess,
 } from "@/api/taskQueue";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -49,7 +48,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	graphs,
 	onWorkflowSelect,
 }) => {
-	const { setIsLoadingResult, setCurrentResult, currentGraphId, selectedWorkflowId } = useWorkflow();
+	const { setIsLoadingResult, setCurrentResult, selectedWorkflowId } = useWorkflow();
 	const compact = true;
 
 	const [sorting, setSorting] = useState<SortingState>([]);
@@ -81,26 +80,28 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 				}
 			}
 		}
-	}, [graphs]);
+	}, [graphs, selectedEventId, selectedWorkflowId, setCurrentResult]);
 
 	// Add new state to track the selected result
 
-	const { data: eventTrigger } = useQuery({
-		queryKey: ["eventTrigger", selectedEventId],
-		queryFn: async() => {
-			if (!session || !activeProject || !currentGraphId)
-				return Promise.reject(
-					"Either session, active project, or selected event ID is missing",
-				);
-			return getEventTrigger({
-				session,
-				projectId: activeProject?.project_id || "",
-				eventId: currentGraphId,
-				triggerType: "ui",
-			});
-		},
-		enabled: !!session && !!activeProject && !!currentGraphId,
-	});
+	// Note: eventTrigger query removed as it was not being used
+	// If needed in the future, uncomment the query below
+	// const { data: eventTrigger } = useQuery({
+	// 	queryKey: ["eventTrigger", selectedEventId],
+	// 	queryFn: async() => {
+	// 		if (!session || !activeProject || !currentGraphId)
+	// 			return Promise.reject(
+	// 				"Either session, active project, or selected event ID is missing",
+	// 			);
+	// 		return getEventTrigger({
+	// 			session,
+	// 			projectId: activeProject?.project_id || "",
+	// 			eventId: currentGraphId,
+	// 			triggerType: "ui",
+	// 		});
+	// 	},
+	// 	enabled: !!session && !!activeProject && !!currentGraphId,
+	// });
 
 	const sortedGraphs = useMemo(() => {
 		if (!graphs || graphs.length === 0) {
@@ -108,8 +109,10 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 		}
 
 		return graphs.slice().sort((a, b) => {
-			const runTimeA = a.schedule?.time?.[0]?.run_time;
-			const runTimeB = b.schedule?.time?.[0]?.run_time;
+			const timeA = a.schedule?.time;
+			const timeB = b.schedule?.time;
+			const runTimeA = timeA ? (Array.isArray(timeA) ? timeA[0]?.run_time : timeA.run_time) : undefined;
+			const runTimeB = timeB ? (Array.isArray(timeB) ? timeB[0]?.run_time : timeB.run_time) : undefined;
 
 			// If one of them does not have a run_time, consider it upcoming and place it at the top
 			if (!runTimeA && runTimeB) return -1; // a is upcoming, so a comes first
@@ -153,7 +156,24 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 					result: eventResult,
 				})),
 		}));
-	}, [sortedGraphs, eventTrigger]);
+	}, [sortedGraphs]);
+
+	const { mutate: clearProcess } = useMutation({
+		mutationFn: async(workflowId: string) => {
+			if (!session || !activeProject) throw new Error("No session or project");
+			return clearWorkflowProcess({
+				session,
+				projectId: activeProject.project_id,
+				workflowId,
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["projectEvents"] });
+			queryClient.invalidateQueries({
+				queryKey: ["eventResult", selectedEventId],
+			});
+		},
+	});
 
 	const columns = useMemo<ColumnDef<ScheduleTableRow>[]>(
 		() => [
@@ -163,7 +183,8 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 				cell: ({ row }) => {
 					if (row.original.schedule) {
 						const schedule = row.original.schedule;
-						const run_time = schedule.time?.[0]?.run_time;
+						const time = schedule.time;
+						const run_time = time ? (Array.isArray(time) ? time[0]?.run_time : time.run_time) : undefined;
 						if (run_time) {
 							return (
 								<div className="flex items-center">
@@ -194,7 +215,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 						return (
 							<div className="flex items-center">
 								<span className="font-medium">
-									{compact ? "Running" : "Running Workflow"}
+									{compact ? "Meetings" : "Running Workflow"}
 								</span>
 							</div>
 						);
@@ -277,7 +298,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 			},
 			// Add other columns as needed
 		],
-		[compact],
+		[compact, graphs, clearProcess],
 	);
 
 	const table = useReactTable<ScheduleTableRow>({
@@ -326,31 +347,14 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 		if (isFetched) {
 			setIsLoadingResult(false);
 		}
-	}, [isFetchingEventResult, isFetched]);
-
-	const { mutate: clearProcess } = useMutation({
-		mutationFn: async(workflowId: string) => {
-			if (!session || !activeProject) throw new Error("No session or project");
-			return clearWorkflowProcess({
-				session,
-				projectId: activeProject.project_id,
-				workflowId,
-			});
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["projectEvents"] });
-			queryClient.invalidateQueries({
-				queryKey: ["eventResult", selectedEventId],
-			});
-		},
-	});
+	}, [isFetchingEventResult, isFetched, setIsLoadingResult]);
 
 	useEffect(() => {
 		if (fetchedEventResult) {
 			setCurrentResult(fetchedEventResult?.result);
 			setSelectedEventId(null);
 		}
-	}, [fetchedEventResult]);
+	}, [fetchedEventResult, setCurrentResult]);
 
 	return (
 		<div className={cn("w-full", compact && "text-sm")}>
@@ -476,7 +480,7 @@ const WorkflowListItem = ({ row, compact,  graphs, setSelectedEventId, onWorkflo
 	);
 };
 
-const WorkflowItem = ({ name }: {name: any}): React.ReactNode => {
+const WorkflowItem = ({ name }: {name: React.ReactNode}): React.ReactNode => {
 	return (
 		<div className="flex items-center gap-1 flex-row">
 			{/* <div>
@@ -492,7 +496,7 @@ const WorkflowItem = ({ name }: {name: any}): React.ReactNode => {
 	);
 };
 
-const CancelRunningWorkflowButton = ({ clearProcess, row, buttonClassName }: { clearProcess: (_: string) => void, row: Row<ScheduleTableRow>, buttonClassName: string }) => {
+const CancelRunningWorkflowButton = ({ clearProcess, row, buttonClassName }: { clearProcess: (_: string) => void, row: Row<ScheduleTableRow>, buttonClassName: string }): React.ReactNode => {
 	return (
 		<AlertDialog>
 			<AlertDialogTrigger asChild>

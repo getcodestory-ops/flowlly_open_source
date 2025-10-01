@@ -60,6 +60,9 @@ export type GraphMetadata = {
   time_zone: string;
   online_link: string;
   recurrence_day?: string;
+  location?: string;
+  resource_id?: string;
+  calendar_event_id?: string;
   nodes?: WorkflowNode[];
 };
 
@@ -123,9 +126,11 @@ export type EventSchedule = {
   id: string;
   schedule: {
     day: number[];
-    time: { run_time: string }[];
+    time: { run_time: string }[] | { run_time: string };
     start: string;
+    end?: string;
     time_zone: string;
+    exceptions?: string[];
   };
   event_result: EventResult[];
 };
