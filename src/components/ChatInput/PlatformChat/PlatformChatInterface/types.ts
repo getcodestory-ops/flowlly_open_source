@@ -77,16 +77,6 @@ export const MODELS: ModelType[] = [
 		bestFor: "Small tasks that need faster results, ideal for chat",
 		contextSize: "medium",
 	},
-	{ 
-		id: "claude-3-7-sonnet", 
-		name: "Claude 3.7 Sonnet",
-		speed: 3,
-		performance: 4,
-		cost: "high",
-		description: "Balanced model with excellent reasoning capabilities",
-		bestFor: "Mid-level complex tasks requiring high quality",
-		contextSize: "large",
-	},
 
 	{
 		id: "claude-opus-4",

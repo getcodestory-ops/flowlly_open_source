@@ -137,7 +137,7 @@ export default function EmptyChatInterface({
 			// Reset height to auto to get the correct scrollHeight
 			textarea.style.height = "auto";
 			// Set height to scrollHeight with min and max constraints
-			const newHeight = Math.min(Math.max(textarea.scrollHeight, 80), 200); // min 80px, max 200px
+			const newHeight = Math.min(Math.max(textarea.scrollHeight, 80), 400); 
 			textarea.style.height = `${newHeight}px`;
 		}
 	}, [chatInput]);
@@ -468,7 +468,7 @@ export default function EmptyChatInterface({
 	return (
 		<ScrollArea className="flex flex-col items-center justify-center  px-4 py-6 w-full">
 
-			<div className="w-full max-w-3xl mb-8"> {/* Centered Chat Input */}
+			<div className="w-full max-w-3xl mb-8 p-2"> {/* Centered Chat Input */}
 				<div className="w-full mb-12"> 
 					<h1 className="text-4xl font-bold text-gray-500 mb-4">
 					Hi, What can I do for you?
@@ -480,11 +480,11 @@ export default function EmptyChatInterface({
 						or select a chat type below to get started
 					</p>
 				</div>
-				<div className="relative overflow-hidden rounded-xl bg-white border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-300 transition-all">
+				<div className="relative overflow-hidden rounded-xl bg-white border border-slate-200 shadow-sm focus-within:ring-1 focus-within:ring-indigo-300 transition-all">
 					<Label className="sr-only" htmlFor="empty-message">
 						Message
 					</Label>
-					<div className="absolute top-0 left-2 z-10 pt-2">
+					<div className="absolute top-0 left-2 z-10 pt-2 ">
 						<div className="flex items-center gap-2">
 							<AtSelectorComponent />
 							{chatContext.trim() && (
@@ -500,7 +500,7 @@ export default function EmptyChatInterface({
 							)}
 						</div>
 					</div>
-					<div className="relative">
+					<div className="relative ">
 						<AnimatedPlaceholder isEmpty={!chatInput.trim()} />
 						<Textarea
 							className="min-h-20 resize-none border-0 p-4 pl-12 mt-4 shadow-none focus-visible:ring-0 text-slate-800 bg-transparent text-base"
