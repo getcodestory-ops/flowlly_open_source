@@ -1,27 +1,21 @@
-import React, { useState, useEffect } from "react";
-import { useToast } from "@chakra-ui/react";
-
+import React, { useEffect } from "react";
+import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/router";
 import supabase from "@/utils/supabaseClient";
-// import checkAdminRights from "@/utils/checkAdminRights";
-// import { Session } from "@supabase/supabase-js";
-import { useStore } from "@/utils/store";
 import { AuthBackground } from "@/components/AuthBackground/AuthBackground";
 import { ChangePasswordComponent } from "@/components/ChangePasswordModal/ChangePasswordModal";
 
 function ResetPassword() {
-	// const [sessionToken, setSessionToken] = useState<Session | null>();
-	// const [hasAdminRights, setAdminRights] = useState<boolean>(false);
-	const toast = useToast();
+	const { toast } = useToast();
 	const router = useRouter();
-	const setAppView = useStore((state) => state.setAppView);
 
 	useEffect(() => {
 		async function loginCheck() {
 			const { token_hash } = router.query;
 
 			if (!token_hash) {
-				router.replace("/");
+				router.replace("/login");
+				return;
 			}
 			if (typeof token_hash === "string") {
 				const { data: userSession, error } = await supabase.auth.verifyOtp({
@@ -29,7 +23,7 @@ function ResetPassword() {
 					token_hash,
 				});
 
-				const { user, session } = userSession;
+				const { session } = userSession;
 
 				if (session) {
 					const { access_token, refresh_token } = session;
@@ -40,38 +34,33 @@ function ResetPassword() {
 					toast({
 						title: "Error",
 						description: error.message,
-						status: "error",
 						duration: 9000,
-						isClosable: true,
 					});
-					router.replace("/");
+					router.replace("/login");
+					return;
 				}
 			}
 
 			const { data } = await supabase.auth.getSession();
 
 			if (!data?.session?.user) {
-				router.replace("/");
+				router.replace("/login");
 			}
 			// else {
 			// setSessionToken(data?.session);
 			// }
 		}
-		// loginCheck();
-		const { token_hash } = router.query;
-		if (token_hash) {
+		
+		// Run the check whenever router.query is ready
+		if (router.isReady) {
 			loginCheck();
 		}
-	}, [router]);
+	}, [router, toast]);
 
-	// useEffect(() => {
-	//   async function getAdminRights() {
-	//     if (!sessionToken?.user.id) return;
-	//     // const adminRights = await checkAdminRights(sessionToken?.user.id);
-	//     // setAdminRights(adminRights);
-	//   }
-	//   getAdminRights();
-	// }, [sessionToken?.user]);
+	const handlePasswordChangeSuccess = () => {
+		// Redirect to main page after successful password change
+		router.push("/");
+	};
 
 	return (
 		<AuthBackground>
@@ -83,8 +72,9 @@ function ResetPassword() {
 						// router.push("/");
 					}}
 					onError={() => {
-						setAppView("updates");
+						router.replace("/login");
 					}}
+					onSuccess={handlePasswordChangeSuccess}
 					toast={toast}
 				/>
 			</div>
@@ -93,7 +83,5 @@ function ResetPassword() {
 }
 
 export default function AcceptInvite() {
-	const [isLoading, setIsLoading] = useState<boolean>(true);
-
 	return <ResetPassword />;
 }

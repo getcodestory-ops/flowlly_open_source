@@ -26,12 +26,22 @@ export const LoginLayout = ({
 
 	const [email, setEmail] = useState("");
 
-	const onErrorCallback = () =>
+	const onErrorCallback = (error: Error) => {
+		if (error.message?.includes("NEXT_REDIRECT")) {
+			toast({
+				title: "Login successful",
+				description: "You have been logged in successfully",
+				duration: 5000,
+			});
+			return;
+		}
+		
 		toast({
-			title: "Login Unsuccesful",
-			description: "An error occured while logging in, please try again",
+			title: "Login Unsuccessful",
+			description: error.message || "An error occurred while logging in, please try again",
 			duration: 5000,
 		});
+	};
 	const onSuccessCallback = () =>
 		toast({
 			title: "Login successful",
