@@ -7,6 +7,8 @@ import {
 	Calendar,
 	Trash2,
 	GitMerge,
+	ChevronRight,
+	ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +29,9 @@ import {
 	SortingState,
 	flexRender,
 	getPaginationRowModel,
+	getExpandedRowModel,
+	getGroupedRowModel,
+	ExpandedState,
 } from "@tanstack/react-table";
 import { DataTablePagination } from "@/components/Schedule/ScheduleTable/DataTablePagination";
 import { CalendarView } from "./CalendarView";
@@ -74,6 +79,8 @@ export const EventListViewer: React.FC = ({
 	};
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [globalFilter, setGlobalFilter] = useState("");
+	const [expanded, setExpanded] = useState<ExpandedState>(true);
+	const [grouping, setGrouping] = useState<string[]>(["name"]); // Start grouped by default
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [selectedEventType, setSelectedEventType] = useState<string | null>( null );
 	const [selectedEventData, setSelectedEventData] = useState<GraphData | null>( null );
@@ -183,8 +190,8 @@ export const EventListViewer: React.FC = ({
 		() => {
 			const cols: ColumnDef<GraphData>[] = [];
 			
-			// Add checkbox column when in merge mode
-			if (isMergeMode) {
+			// Add checkbox column when in merge mode (only if not grouping)
+			if (isMergeMode && grouping.length === 0) {
 				cols.push({
 					id: "select",
 					header: "Select",
@@ -210,42 +217,93 @@ export const EventListViewer: React.FC = ({
 							Name
 						</Button>
 					),
-					cell: (info) => info.getValue(),
-				},
-				{
-					accessorKey: "event_type",
-					header: "Type",
-					cell: (info) => info.getValue(),
+					cell: ({ row, getValue }) => {
+						if (row.getIsGrouped()) {
+							// This is a grouped row (parent)
+							return (
+								<div className="flex items-center gap-2 font-medium">
+									<button
+										className="p-1 hover:bg-gray-100 rounded"
+										onClick={(e) => {
+											e.stopPropagation();
+											row.toggleExpanded();
+										}}
+									>
+										{row.getIsExpanded() ? (
+											<ChevronDown className="h-4 w-4" />
+										) : (
+											<ChevronRight className="h-4 w-4" />
+										)}
+									</button>
+									<span>{getValue() as string}</span>
+									<span className="text-xs text-gray-500 font-normal">
+										({row.subRows.length} {row.subRows.length === 1 ? "instance" : "instances"})
+									</span>
+								</div>
+							);
+						}
+						// This is a child row - show the full event name with indent
+						return (
+							<div className="pl-8">
+								{row.original.name}
+							</div>
+						);
+					},
 				},
 				{
 					accessorKey: "metadata.frequency",
 					header: "Frequency",
-					cell: (info) => {
-						const metadata = info.row.original.metadata;
+					cell: ({ row }) => {
+						if (row.getIsGrouped()) {
+							// For grouped rows, determine frequency based on instance count
+							return row.subRows.length > 1 ? "Recurrent" : "Once";
+						}
+						const metadata = row.original.metadata;
 						return metadata?.frequency || "N/A";
 					},
 				},
 			);
 
-			const hasWeekly = (graphs || []).some((g) => g.metadata?.frequency === "weekly");
-			if (hasWeekly) {
-				cols.push({
-					accessorKey: "metadata.recurrence_day",
-					header: "Day",
-					cell: (info) => {
-						const metadata = info.row.original.metadata;
-						if (!metadata || metadata.frequency !== "weekly") return "";
-						return metadata.recurrence_day || "";
-					},
-				});
-			}
-
 			cols.push(
 				{
 					accessorKey: "run_time",
-					header: "Meeting Time",
-					cell: (info) => {
-						const g = info.row.original;
+					header: "Meeting Date & Time",
+					accessorFn: (row) => {
+						// Return a timestamp for sorting
+						const g = row;
+						const firstSchedule = g.event_schedule?.[0];
+						const scheduleStart = firstSchedule?.schedule?.start;
+						const scheduleTime = firstSchedule?.schedule?.time as { run_time?: string } | { run_time?: string }[] | undefined;
+						const scheduleRunTime = Array.isArray(scheduleTime) ? scheduleTime?.[0]?.run_time : scheduleTime?.run_time;
+						const rt = g.run_time || g.metadata?.time;
+						const hasZoneRe = /Z|[+-]\d\d:\d\d$/;
+						
+						// Prefer schedule start + schedule run_time when available for exact meeting instance time
+						if (scheduleStart && scheduleRunTime) {
+							let isoFromSchedule: string;
+							if (scheduleRunTime.includes("T")) {
+								isoFromSchedule = hasZoneRe.test(scheduleRunTime) ? scheduleRunTime : `${scheduleRunTime}Z`;
+							} else {
+								const baseDateStr = scheduleStart.split("T")[0];
+								isoFromSchedule = `${baseDateStr}T${scheduleRunTime}Z`;
+							}
+							return new Date(isoFromSchedule).getTime();
+						}
+						// Fallbacks
+						if (rt) {
+							if (rt.includes("T")) {
+								const iso = hasZoneRe.test(rt) ? rt : `${rt}Z`;
+								return new Date(iso).getTime();
+							}
+							const baseDateStr = (g.created_at || new Date().toISOString()).split("T")[0];
+							return new Date(`${baseDateStr}T${rt}Z`).getTime();
+						}
+						return 0; // Return 0 for rows without time (will sort to bottom)
+					},
+					cell: ({ row }) => {
+						// For grouped rows, use the latest event's date (first subRow)
+						const g = row.getIsGrouped() && row.subRows.length > 0 ? row.subRows[0].original : row.original;
+						
 						const firstSchedule = g.event_schedule?.[0];
 						const scheduleStart = firstSchedule?.schedule?.start;
 						const scheduleTime = firstSchedule?.schedule?.time as { run_time?: string } | { run_time?: string }[] | undefined;
@@ -279,8 +337,13 @@ export const EventListViewer: React.FC = ({
 				{
 					accessorKey: "id",
 					header: "Edit",
-					cell: (info) => {
-						const eventType = info.row.original.event_type;
+					cell: ({ row }) => {
+						// Don't show edit icon for grouped rows
+						if (row.getIsGrouped()) {
+							return null;
+						}
+						
+						const eventType = row.original.event_type;
 						return (
 							<PencilIcon
 								className="cursor-pointer  hover:text-purple-500 transition-colors"
@@ -288,7 +351,7 @@ export const EventListViewer: React.FC = ({
 									e.stopPropagation();
 									if (["meeting", "document_writing", "custom"].includes(eventType)) {
 										setSelectedEventType(eventType);
-										setSelectedEventData(info.row.original);
+										setSelectedEventData(row.original);
 										setIsDialogOpen(true);
 									}
 								}}
@@ -300,7 +363,7 @@ export const EventListViewer: React.FC = ({
 			);
 
 			return cols;
-		}, [graphs, setIsDialogOpen, setSelectedEventData, setSelectedEventType, isMergeMode, selectedEventsForMerge, toggleEventSelection]);
+		}, [setIsDialogOpen, setSelectedEventData, setSelectedEventType, isMergeMode, selectedEventsForMerge, toggleEventSelection, grouping]);
 
 	const table = useReactTable({
 		data: graphs || [],
@@ -308,13 +371,19 @@ export const EventListViewer: React.FC = ({
 		state: {
 			sorting,
 			globalFilter,
+			expanded,
+			grouping,
 		},
 		onSortingChange: setSorting,
 		onGlobalFilterChange: setGlobalFilter,
+		onExpandedChange: setExpanded,
+		onGroupingChange: setGrouping,
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
+		getExpandedRowModel: getExpandedRowModel(),
+		getGroupedRowModel: getGroupedRowModel(),
 	});
 
 	// Define a reusable filter function for consistency across views
@@ -348,6 +417,26 @@ export const EventListViewer: React.FC = ({
 				{viewMode === ViewMode.LIST && (
 					<>
 						<Button
+							onClick={() => {
+								if (grouping.length > 0) {
+									setGrouping([]);
+								} else {
+									setGrouping(["name"]);
+									setExpanded(true); // Expand all groups by default
+									// Disable merge mode when grouping
+									if (isMergeMode) {
+										setIsMergeMode(false);
+										setSelectedEventsForMerge([]);
+									}
+								}
+							}}
+							size="sm"
+							variant={grouping.length > 0 ? "default" : "outline"}
+						>
+							{grouping.length > 0 ? "Ungroup" : "Group by Name"}
+						</Button>
+						<Button
+							disabled={grouping.length > 0}
 							onClick={() => {
 								setIsMergeMode(!isMergeMode);
 								setSelectedEventsForMerge([]);
@@ -409,22 +498,44 @@ export const EventListViewer: React.FC = ({
 						</TableHeader>
 						<TableBody>
 							{table.getRowModel().rows.length > 0 ? (
-								table.getRowModel().rows.map((row) => (
-									<TableRow
-										className="cursor-pointer hover:bg-gray-100"
-										key={row.id}
-										onClick={() => onSelectGraph(row.original.id)}
-									>
-										{row.getVisibleCells().map((cell) => (
-											<TableCell key={cell.id}>
-												{flexRender(
-													cell.column.columnDef.cell,
-													cell.getContext(),
-												)}
-											</TableCell>
-										))}
-									</TableRow>
-								))
+								table.getRowModel().rows.map((row) => {
+									const isGroupRow = row.getIsGrouped();
+									return (
+										<TableRow
+											className={isGroupRow ? "bg-gray-50" : "cursor-pointer hover:bg-gray-100"}
+											key={row.id}
+											onClick={() => {
+												if (!isGroupRow) {
+													onSelectGraph(row.original.id);
+												}
+											}}
+										>
+											{row.getVisibleCells().map((cell) => (
+												<TableCell key={cell.id}>
+													{cell.getIsGrouped() ? (
+														// Render the grouped cell
+														flexRender(
+															cell.column.columnDef.cell,
+															cell.getContext(),
+														)
+													) : cell.getIsAggregated() ? (
+														// Render aggregated cell (if any)
+														null
+													) : cell.getIsPlaceholder() ? (
+														// Render placeholder for cells in grouped rows
+														null
+													) : (
+														// Render normal cell
+														flexRender(
+															cell.column.columnDef.cell,
+															cell.getContext(),
+														)
+													)}
+												</TableCell>
+											))}
+										</TableRow>
+									);
+								})
 							) : (
 								<TableRow>
 									<TableCell className="text-center" colSpan={columns.length}>
@@ -536,7 +647,7 @@ export const EventListViewer: React.FC = ({
 			)}
 			{isDialogOpen && (
 				<Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
-					<DialogContent className="max-w-[90vw]" title="edit event">
+					<DialogContent className="max-w-[90vw]">
 						{selectedEventType === "meeting" && (
 							<>
 								<h2 className="text-lg font-semibold">Edit Meeting</h2>

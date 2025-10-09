@@ -178,19 +178,6 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 
 	
 
-		// Count filtered out agenda events
-		let totalEvents = 0;
-		let filteredAgendaEvents = 0;
-		sortedGraphs.forEach((eventSchedule) => {
-			eventSchedule.event_result.forEach((eventResult) => {
-				totalEvents++;
-				const eventTag = eventResult.description ? getEventTag(eventResult.description) : null;
-				if (eventTag?.label === "Agenda") {
-					filteredAgendaEvents++;
-				}
-			});
-		});
-
 		
 
 		return sortedGraphs.map((eventSchedule) => ({
@@ -357,10 +344,14 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 								<div className="flex items-center gap-2">
 									<span className="text-sm">
 										{(() => {
-											// Always display in user's local timezone
+											// Display date in text format with abbreviated month
 											return eventDate.toLocaleString([], {
-												dateStyle: compact ? "short" : "long",
-												timeStyle: compact ? "short" : "medium",
+												month: "short",
+												day: "numeric",
+												year: "numeric",
+												hour: "numeric",
+												minute: "2-digit",
+												hour12: true,
 											});
 										})()}
 									</span>
@@ -609,7 +600,8 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 							[eventResult.id]: nodeData,
 						}));
 					}
-				} catch (error) {
+				} catch {
+					// Silently fail and continue
 				} finally {
 					// Remove from fetching set
 					setFetchingEventIds((prev) => {
