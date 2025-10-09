@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import React, { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { StorageResourceEntity } from "@/types/document";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,8 +14,6 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import PlatformChatComponent from "../../ChatInput/PlatformChat/PlatformChatComponent";
-import ChatButton from "../../ChatButton";
 
 // Import our new components and hooks
 import {
@@ -37,11 +35,9 @@ export const FilesTable: React.FC<FilesTableProps> = ({
 	session,
 	activeProject,
 	onFolderClick,
+	isProjectWide,
 }) => {
 	const [currentFile, setCurrentFile] = useState<null | StorageResourceEntity>(null);
-	const [isChatOpen, setIsChatOpen] = useState(false);
-	const [isClosing, setIsClosing] = useState(false);
-	const chatRef = useRef<HTMLDivElement>(null);
 
 	// Use our custom hook for table logic
 	const {
@@ -72,7 +68,7 @@ export const FilesTable: React.FC<FilesTableProps> = ({
 							activeProject={activeProject}
 							folderId={folderId}
 							folderName={folderName}
-							isProjectWide
+							isProjectWide={isProjectWide}
 							session={session}
 						/>
 						<FileUploadButton
@@ -150,45 +146,7 @@ export const FilesTable: React.FC<FilesTableProps> = ({
 					</div>
 				</CardContent>
 			</Card>
-			{/* <ChatButton
-				isOpen={isChatOpen}
-				onClick={() => setIsChatOpen(!isChatOpen)}
-				openText={`Chat about ${folderName}`}
-				title={
-					isChatOpen
-						? "Close chat assistant"
-						: `Chat with Flowlly AI about ${folderName}`
-				}
-			/> */}
-			{/* Chat component*/}
-			{/* {(isChatOpen || isClosing) && (
-				<div
-					className={`fixed bottom-2 right-4 w-[calc(100vw-200px)] z-30 bg-white border border-gray-200 rounded-lg  overflow-hidden transition-opacity duration-300 ${
-						isClosing ? "opacity-0" : "opacity-100"
-					}`}
-					ref={chatRef}
-				>
-					<PlatformChatComponent
-						chatTarget="folder"
-						folderId={folderId}
-					/>
-					<div className="fixed p-2 z-50 top-3 ">
-						<Button
-							onClick={() => {
-								setIsClosing(true);
-								setTimeout(() => {
-									setIsChatOpen(false);
-									setIsClosing(false);
-								}, 300);
-							}}
-							size="icon"
-							variant="outline"
-						>
-							<X className="h-4 w-4" />
-						</Button>
-					</div>
-				</div>
-			)} */}
+			
 		</div>
 	);
 };

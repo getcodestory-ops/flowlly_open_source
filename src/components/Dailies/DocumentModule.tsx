@@ -428,6 +428,7 @@ const FolderDetails: React.FC<
 				folderId={currentFolderStructure.folderId}
 				folderName={currentFolderStructure.folderName}
 				folders={displaySubFolders}
+				isProjectWide={isProjectWide}
 				onFolderClick={(folderId, folderName) => {
 					navigateToFolder(folderId, folderName);
 				}}
