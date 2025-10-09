@@ -39,7 +39,6 @@ export const FilesTable: React.FC<FilesTableProps> = ({
 }) => {
 	const [currentFile, setCurrentFile] = useState<null | StorageResourceEntity>(null);
 
-
 	// Use our custom hook for table logic
 	const {
 		currentPage,
@@ -147,6 +146,7 @@ export const FilesTable: React.FC<FilesTableProps> = ({
 					</div>
 				</CardContent>
 			</Card>
+			
 		</div>
 	);
 };
