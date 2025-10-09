@@ -7,6 +7,12 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	Video,
+	FileText,
+	List,
+	Calendar,
+} from "lucide-react";
+import {
 	useReactTable,
 	getCoreRowModel,
 	getFilteredRowModel,
@@ -38,6 +44,7 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useWorkflow } from "@/hooks/useWorkflow";
+import { Tooltipped } from "@/components/Common/Tooltiped";
 
 interface EventScheduleListProps {
   graphs: EventSchedule[];
@@ -48,10 +55,10 @@ interface EventScheduleListProps {
 const getEventTag = (description: string): { label: string; color: string } | null => {
 	const lowerDesc = description.toLowerCase();
 	if (lowerDesc.includes("meeting minutes")) {
-		return { label: "Meeting", color: "bg-blue-100 text-blue-800 border-blue-300" };
+		return { label: "Agenda", color: "bg-blue-100 text-blue-800 border-blue-300" };
 	}
 	if (lowerDesc.includes("creating process from user input")) {
-		return { label: "Agenda", color: "bg-purple-100 text-purple-800 border-purple-300" };
+		return { label: "Meeting", color: "bg-purple-100 text-purple-800 border-purple-300" };
 	}
 	return null;
 };
@@ -63,13 +70,13 @@ const getTimeBasedTag = (eventDate: Date, currentTime: Date): { label: string; c
 	
 	if (diffMs < 0) {
 		// Event is in the past
-		return { label: "Finished Meeting", color: "bg-gray-100 text-gray-700 border-gray-300" };
+		return { label: "Finished", color: "bg-amber-100 text-gray-700 border-amber-300" };
 	} else if (diffMinutes <= 60) {
 		// Event is happening in 1 hour or less
 		return { label: `Happening in ${diffMinutes} minutes`, color: "bg-green-100 text-green-800 border-green-300" };
 	} else {
 		// Event is more than 1 hour in the future
-		return { label: "Upcoming Meeting", color: "bg-orange-100 text-orange-800 border-orange-300" };
+		return { label: "Upcoming", color: "bg-orange-100 text-orange-800 border-orange-300" };
 	}
 };
 
@@ -86,6 +93,12 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	const activeProject = useStore((state) => state.activeProject);
 	const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 	const [currentTime, setCurrentTime] = useState(new Date());
+	
+	// Store node data for events (eventId -> array of {id, status, output})
+	const [eventNodesMap, setEventNodesMap] = useState<Record<string, Array<{ id: string; status: string; output?: unknown }>>>({});
+	
+	// Track which events we're currently fetching to avoid duplicate requests
+	const [fetchingEventIds, setFetchingEventIds] = useState<Set<string>>(new Set());
 
 	// Added pagination state
 	const [pagination, setPagination] = useState<{
@@ -112,12 +125,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 		}
 	}, [graphs, selectedEventId, selectedWorkflowId, setCurrentResult]);
 
-	useEffect(() => {
-		// eslint-disable-next-line no-console
-		console.log("graphs", graphs);
-		// eslint-disable-next-line no-console
-		console.log("selectedEventId", selectedEventId);
-	}, [graphs, selectedEventId]);
+
 
 	// Add new state to track the selected result
 
@@ -168,11 +176,33 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 			return [];
 		}
 
+	
+
+		// Count filtered out agenda events
+		let totalEvents = 0;
+		let filteredAgendaEvents = 0;
+		sortedGraphs.forEach((eventSchedule) => {
+			eventSchedule.event_result.forEach((eventResult) => {
+				totalEvents++;
+				const eventTag = eventResult.description ? getEventTag(eventResult.description) : null;
+				if (eventTag?.label === "Agenda") {
+					filteredAgendaEvents++;
+				}
+			});
+		});
+
+		
+
 		return sortedGraphs.map((eventSchedule) => ({
 			id: eventSchedule.id,
 			schedule: eventSchedule.schedule,
 			subRows: eventSchedule.event_result
 				.slice() // create copy to avoid mutating original data
+				.filter((eventResult) => {
+					// Filter out events with "Agenda" tag
+					const eventTag = eventResult.description ? getEventTag(eventResult.description) : null;
+					return eventTag?.label !== "Agenda";
+				})
 				.sort((a, b) => {
 					const parseTime = (er: { run_time?: string; timestamp: string }): number => {
 						if (er.run_time) {
@@ -192,7 +222,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 					id: eventResult.id,
 					result: eventResult,
 				})),
-		}));
+		})).filter((scheduleRow) => scheduleRow.subRows && scheduleRow.subRows.length > 0);
 	}, [sortedGraphs]);
 
 	const { mutate: clearProcess } = useMutation({
@@ -268,6 +298,16 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 						const isCompleted = result.status === "completed";
 						const eventTag = result.description ? getEventTag(result.description) : null;
 
+						// Get node data (id and status) from either the result directly or from our fetched map
+						
+						
+						const nodeData = result.nodes 
+							? result.nodes.map((n: { id: string; status: string; output?: unknown }) => ({ id: n.id, status: n.status, output: n.output }))
+							: eventNodesMap[result.id] || [];
+						
+						// Debug logging
+					
+
 						// Calculate event date for time-based tag
 						const rt = result.run_time;
 						const zonePattern = /Z|[+-]\d\d:\d\d$/;
@@ -337,6 +377,97 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 											Completed
 										</span>
 									)}
+									{/* Display node icons */}
+									{(() => {
+										// Show loading skeleton if currently fetching
+										if (fetchingEventIds.has(result.id)) {
+											return (
+												<Tooltipped tooltip="Loading meeting data...">
+													<div className="flex items-center gap-1 ml-2 px-2 py-0.5 bg-gray-50 border border-gray-200 rounded-md animate-pulse">
+														<div className="h-3.5 w-3.5 bg-gray-300 rounded" />
+														<div className="h-3.5 w-3.5 bg-gray-300 rounded" />
+													</div>
+												</Tooltipped>
+											);
+										}
+										
+										return nodeData.length > 0 && (
+											<div className="flex items-center gap-1 ml-2 px-2 py-0.5 bg-gray-50 border border-gray-200 rounded-md">
+												{(() => {
+													// Create map to group nodes by type with their status
+													const nodesByType = new Map<string, { status: string; isFailed: boolean }>();
+													
+													nodeData.forEach((node) => {
+														const lowerNodeId = node.id.toLowerCase();
+														let type = null;
+														
+														if (lowerNodeId.includes("record") || lowerNodeId.includes("transcribe")) {
+															type = "recording";
+														} else if (lowerNodeId.includes("minutes")) {
+															type = "minutes";
+														} else if (lowerNodeId.includes("action")) {
+															type = "actions";
+														} else if (lowerNodeId.includes("agenda")) {
+															type = "agenda";
+														}
+														
+														if (type) {
+															// If type already exists, update status to failed if any node failed
+															const existing = nodesByType.get(type);
+															
+															// Check if node failed OR if minutes node has "meeting transcript was not provided"
+															let isFailed = node.status === "failed";
+															if (type === "minutes" && node.output) {
+																const outputStr = typeof node.output === "string" 
+																	? node.output 
+																	: JSON.stringify(node.output);
+																if (outputStr.toLowerCase().includes("meeting transcript was not provided")) {
+																	isFailed = true;
+																}
+															}
+															
+															if (!existing || (isFailed && !existing.isFailed)) {
+																nodesByType.set(type, { 
+																	status: node.status, 
+																	isFailed: isFailed || (existing?.isFailed ?? false),
+																});
+															}
+														}
+													});
+													
+													return Array.from(nodesByType.entries()).map(([type, { isFailed }], idx) => {
+														// Get tooltip text based on type
+														let tooltipText = "";
+														if (type === "recording") {
+															tooltipText = isFailed ? "Meeting Recording - Failed" : "Meeting Recording Available";
+														} else if (type === "minutes") {
+															tooltipText = isFailed ? "Meeting Minutes - Failed or Unavailable" : "Meeting Minutes Available";
+														} else if (type === "actions") {
+															tooltipText = isFailed ? "Action Items - Failed" : "Action Items Available";
+														} else if (type === "agenda") {
+															tooltipText = isFailed ? "Next Meeting Agenda - Failed" : "Next Meeting Agenda Available";
+														}
+														
+														return (
+															<Tooltipped key={idx} tooltip={tooltipText}>
+																<span className="relative inline-flex items-center text-gray-600">
+																	{type === "recording" && <Video className="h-3.5 w-3.5" />}
+																	{type === "minutes" && <FileText className="h-3.5 w-3.5" />}
+																	{type === "actions" && <List className="h-3.5 w-3.5" />}
+																	{type === "agenda" && <Calendar className="h-3.5 w-3.5" />}
+																	{isFailed && (
+																		<div className="absolute inset-0 flex items-center justify-center">
+																			<div className="w-full h-[1.5px] bg-red-500 rotate-45 transform" />
+																		</div>
+																	)}
+																</span>
+															</Tooltipped>
+														);
+													});
+												})()}
+											</div>
+										);
+									})()}
 								</div>
 								{activelyListening && (
 									<div className="flex items-center">
@@ -369,7 +500,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 			},
 			// Add other columns as needed
 		],
-		[compact, graphs, clearProcess, currentTime],
+		[compact, graphs, clearProcess, currentTime, eventNodesMap, fetchingEventIds],
 	);
 
 	const table = useReactTable<ScheduleTableRow>({
@@ -434,6 +565,65 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 		}, 60000); // Update every minute
 		return () => clearInterval(timer);
 	}, []);
+
+	// Fetch node data for events that don't have it - optimized with incremental updates
+	useEffect(() => {
+		if (!session || !activeProject || !graphs || graphs.length === 0) return;
+
+		const fetchNodeData = async(): Promise<void> => {
+			const allEventResults = graphs.flatMap((schedule) => schedule.event_result);
+			// Filter out events that already have nodes, are already fetched, or are being fetched
+			const eventsWithoutNodes = allEventResults.filter(
+				(er) => !er.nodes && !eventNodesMap[er.id] && !fetchingEventIds.has(er.id),
+			);
+			
+			if (eventsWithoutNodes.length === 0) return;
+			
+			
+			// Mark these events as being fetched
+			setFetchingEventIds((prev) => {
+				const newSet = new Set(prev);
+				eventsWithoutNodes.forEach((er) => newSet.add(er.id));
+				return newSet;
+			});
+			
+			// Fetch and update incrementally - icons appear as each fetch completes
+			eventsWithoutNodes.forEach(async(eventResult) => {
+				try {
+					const result = await getEventResult({
+						session,
+						projectId: activeProject.project_id,
+						resultId: eventResult.id,
+					});
+					
+					if (result?.result?.nodes) {
+						const nodeData = result.result.nodes.map((node: { id: string; status: string; output?: unknown }) => ({ 
+							id: node.id, 
+							status: node.status,
+							output: node.output,
+						}));
+						
+						// Update state immediately for this event
+						setEventNodesMap((prev) => ({
+							...prev,
+							[eventResult.id]: nodeData,
+						}));
+					}
+				} catch (error) {
+				} finally {
+					// Remove from fetching set
+					setFetchingEventIds((prev) => {
+						const newSet = new Set(prev);
+						newSet.delete(eventResult.id);
+						return newSet;
+					});
+				}
+			});
+		};
+
+		fetchNodeData();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [graphs, session, activeProject]);
 
 	return (
 		<div className={cn("w-full", compact && "text-sm")}>
@@ -506,7 +696,7 @@ interface WorkflowListItemProps {
 	onWorkflowSelect?: () => void;
 }
 
-const WorkflowListItem = ({ row, compact,  graphs, setSelectedEventId, onWorkflowSelect }: WorkflowListItemProps): React.ReactNode => {
+const WorkflowListItem = ({ row, compact, graphs, setSelectedEventId, onWorkflowSelect }: WorkflowListItemProps): React.ReactNode => {
 	const { selectedWorkflowId, setSelectedWorkflowId } = useWorkflow();
 	const { setCurrentResult } = useWorkflow();
 	const isSelected = row.original.result?.id === selectedWorkflowId;
