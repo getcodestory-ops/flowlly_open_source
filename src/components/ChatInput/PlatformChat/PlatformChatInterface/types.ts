@@ -37,6 +37,17 @@ export type ModelType = {
 
 export const MODELS: ModelType[] = [
 	{ 
+		id: "claude-sonnet-4-5", 
+		name: "Claude Sonnet 4.5",
+		speed: 3,
+		performance: 5,
+		cost: "high",
+		description: "Top-tier model for the most demanding tasks",
+		bestFor: "Highly complex tasks requiring maximum intelligence",
+		contextSize: "medium",
+	},
+
+	{ 
 		id: "claude-sonnet-4", 
 		name: "Claude Sonnet 4",
 		speed: 3,
@@ -65,16 +76,6 @@ export const MODELS: ModelType[] = [
 		description: "Fast and efficient for quick responses",
 		bestFor: "Small tasks that need faster results, ideal for chat",
 		contextSize: "medium",
-	},
-	{ 
-		id: "claude-3-7-sonnet", 
-		name: "Claude 3.7 Sonnet",
-		speed: 3,
-		performance: 4,
-		cost: "high",
-		description: "Balanced model with excellent reasoning capabilities",
-		bestFor: "Mid-level complex tasks requiring high quality",
-		contextSize: "large",
 	},
 
 	{

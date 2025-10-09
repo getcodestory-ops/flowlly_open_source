@@ -40,13 +40,16 @@ export interface ProjectEventMetadata {
   frequency?: string;
   duration?: number;
   recurrence_day?: string;
-  time: string;
+  time?: string;
+  time_zone?: string;
+  resource_id?: string;
+  calendar_event_id?: string;
   search_query?: string;
   write_prompt?: string;
   selected_items?: {};
   output_folder_id?: string | null;
   nodes?: WorkflowNode[];
-  triggerType: TriggerType;
+  triggerType?: TriggerType;
   startingPrompt?: string;
 }
 
@@ -69,6 +72,7 @@ export enum EventAccessRole {
   ADMIN = "admin",
   MEMBER = "member",
   GUEST = "guest",
+  PARTICIPANT = "participant",
 }
 
 export enum IdentificationType {
@@ -81,7 +85,7 @@ export enum IdentificationType {
 }
 
 export interface EventParticipantMetadata {
-  role: "owner" | "admin" | "member" | "guest";
+  role: "owner" | "admin" | "member" | "guest" | "participant";
   identification:
     | "user_id"
     | "email"

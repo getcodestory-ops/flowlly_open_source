@@ -98,7 +98,7 @@ export function EnhancedSidePanel(): React.ReactNode {
 		// Set a delay before hiding the panel
 		hideChatTimeoutRef.current = setTimeout(() => {
 			setShowChatPanel(false);
-		}, 300); // 300ms delay
+		}, 500); 
 	};
 
 	const handleChatPanelMouseEnter = (): void => {
@@ -110,8 +110,10 @@ export function EnhancedSidePanel(): React.ReactNode {
 	};
 
 	const handleChatPanelMouseLeave = (): void => {
-		// Hide the panel when leaving the panel area
-		setShowChatPanel(false);
+		// Add a small delay before hiding the panel when leaving the panel area
+		hideChatTimeoutRef.current = setTimeout(() => {
+			setShowChatPanel(false);
+		}, 300); 
 	};
 
 	// Workflow panel hover handlers with delay
@@ -128,7 +130,7 @@ export function EnhancedSidePanel(): React.ReactNode {
 		// Set a delay before hiding the panel
 		hideWorkflowTimeoutRef.current = setTimeout(() => {
 			setShowWorkflowPanel(false);
-		}, 300); // 300ms delay
+		}, 500); 
 	};
 
 	const handleWorkflowPanelMouseEnter = (): void => {
@@ -140,8 +142,10 @@ export function EnhancedSidePanel(): React.ReactNode {
 	};
 
 	const handleWorkflowPanelMouseLeave = (): void => {
-		// Hide the panel when leaving the panel area
-		setShowWorkflowPanel(false);
+		// Add a small delay before hiding the panel when leaving the panel area
+		hideWorkflowTimeoutRef.current = setTimeout(() => {
+			setShowWorkflowPanel(false);
+		}, 300); 
 	};
 
 	// Fetch project list
@@ -263,6 +267,11 @@ export function EnhancedSidePanel(): React.ReactNode {
 				chatButtonRef.current &&
 				!chatButtonRef.current.contains(event.target as Node)
 			) {
+				// Clear any pending timeout when clicking outside
+				if (hideChatTimeoutRef.current) {
+					clearTimeout(hideChatTimeoutRef.current);
+					hideChatTimeoutRef.current = null;
+				}
 				setShowChatPanel(false);
 			}
 
@@ -272,6 +281,11 @@ export function EnhancedSidePanel(): React.ReactNode {
 				workflowButtonRef.current &&
 				!workflowButtonRef.current.contains(event.target as Node)
 			) {
+				// Clear any pending timeout when clicking outside
+				if (hideWorkflowTimeoutRef.current) {
+					clearTimeout(hideWorkflowTimeoutRef.current);
+					hideWorkflowTimeoutRef.current = null;
+				}
 				setShowWorkflowPanel(false);
 			}
 		}

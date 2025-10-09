@@ -113,3 +113,27 @@ export interface AgentChatEntity {
   hidden?: boolean;
   created_at: string;
 }
+
+
+export interface ApprovalFlowProps {
+	data: string;
+}
+
+export interface ApprovalData {
+	fn_call_id: string;
+	message: string;
+}
+
+// Enum matching backend ApprovalStatus
+export enum ApprovalStatus {
+	PENDING = "pending",
+	APPROVED = "approved", 
+	REJECTED = "rejected"
+}
+
+// Interface matching backend FunctionApproval
+export interface FunctionApproval {
+	approved: ApprovalStatus;
+	comments?: string;
+	fn_call_id: string; 
+}

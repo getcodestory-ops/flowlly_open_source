@@ -12,7 +12,7 @@ export const BrainSelector: React.FC<BrainSelectorProps> = ({
 	onFolderSelect,
 }) => {
 	return (
-		<DialogContent className="sm:max-w-[600px]">
+		<DialogContent className="sm:max-w-[600px]" title="Select Folder">
 			<div className="py-4">
 				<FolderSelector
 					onFolderSelect={onFolderSelect}

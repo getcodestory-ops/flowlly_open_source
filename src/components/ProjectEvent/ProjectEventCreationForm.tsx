@@ -123,7 +123,7 @@ function ParticipantSelector({
               Add
 						</Button>
 					</DialogTrigger>
-					<DialogContent aria-describedby="new_user creation dialogure">
+					<DialogContent aria-describedby="new_user creation dialogure" title="Add Participant">
 						<DialogHeader>
 							<DialogTitle>Add Participant</DialogTitle>
 						</DialogHeader>
@@ -258,6 +258,7 @@ export default function ProjectEventCreationForm({
 	);
 	const [duration, setDuration] = useState("60");
 	const [participationLink, setParticipationLink] = useState("");
+	const [location, setLocation] = useState("");
 	const [autoJoin, setAutoJoin] = useState(false);
 	const [isFormValid, setIsFormValid] = useState(false);
 	const [weeklyRecurrenceDay, setWeeklyRecurrenceDay] = useState(
@@ -299,25 +300,106 @@ export default function ProjectEventCreationForm({
 
 	useEffect(() => {
 		if (editData) {
+			// Set basic event info
 			setMeetingName(editData.name || "");
+			setSelectedEvent(editData.id || null);
+			
+			// Set metadata fields
 			if (editData.metadata) {
 				setParticipationLink(editData.metadata.online_link || "");
-				setRecurrence(editData.metadata.frequency || "once");
-				setStartTime(
-					editData.metadata.time ||
-            format(
-            	roundToNearestMinutes(new Date(), { nearestTo: 30 }),
-            	"HH:mm",
-            ),
-				);
+				setLocation(editData.metadata.location || "");
+				
+				const frequency = editData.metadata.frequency || "once";
+				setRecurrence(frequency);
+				
+				// Set time from metadata if available
+				if (editData.metadata.time) {
+					try {
+						// If the time is in a different timezone, convert it to local time for display
+						if (editData.metadata.time_zone && editData.metadata.time_zone !== Intl.DateTimeFormat().resolvedOptions().timeZone) {
+							// Parse the time and convert from stored timezone to local timezone
+							const timeParts = editData.metadata.time.split(":");
+							
+							// Validate that we have valid time parts
+							if (timeParts.length >= 2) {
+								const hours = Number(timeParts[0]);
+								const minutes = Number(timeParts[1]);
+								
+								// Check if hours and minutes are valid numbers
+								if (!isNaN(hours) && !isNaN(minutes) && hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
+									// Create a date object in the stored timezone
+									const storedDate = new Date();
+									storedDate.setUTCHours(hours, minutes, 0, 0);
+									
+									// If stored timezone is UTC, convert to local
+									if (editData.metadata.time_zone === "UTC") {
+										// Get local time from UTC time
+										const localTime = format(storedDate, "HH:mm");
+										setStartTime(localTime);
+									} else {
+										// For other timezones, just use the time as-is for now
+										setStartTime(editData.metadata.time);
+									}
+								} else {
+									// Invalid time values, use the time as-is
+									console.warn("Invalid time values in metadata:", editData.metadata.time);
+									setStartTime(editData.metadata.time);
+								}
+							} else {
+								// Invalid time format, use the time as-is
+								console.warn("Invalid time format in metadata:", editData.metadata.time);
+								setStartTime(editData.metadata.time);
+							}
+						} else {
+							setStartTime(editData.metadata.time);
+						}
+					} catch (error) {
+						// If any error occurs during time conversion, fall back to using the time as-is
+						console.error("Error processing time from metadata:", error);
+						setStartTime(editData.metadata.time || format(roundToNearestMinutes(new Date(), { nearestTo: 30 }), "HH:mm"));
+					}
+				}
+				
 				setDuration(editData.metadata.duration?.toString() || "60");
 				setWeeklyRecurrenceDay(
 					editData.metadata.recurrence_day || format(new Date(), "EEEE"),
 				);
+				setTimeZone(editData.metadata.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone);
 			}
 
-			if (editData.event_schedule) {
-				setStartDate(new Date(editData.event_schedule[0].schedule.start));
+			// Set schedule information
+			if (editData.event_schedule && editData.event_schedule.length > 0) {
+				const schedule = editData.event_schedule[0].schedule;
+				setStartDate(new Date(schedule.start));
+				
+				// Set end date if it exists
+				if (schedule.end) {
+					setEndDate(new Date(schedule.end));
+				}
+				
+				// Set time zone from schedule if not in metadata
+				if (schedule.time_zone && !editData.metadata?.time_zone) {
+					setTimeZone(schedule.time_zone);
+				}
+				
+				// Set start time from schedule time if not already set from metadata
+				if (schedule.time && !editData.metadata?.time) {
+					let runTime = "";
+					// Handle both array and object formats
+					if (Array.isArray(schedule.time) && schedule.time.length > 0) {
+						runTime = schedule.time[0].run_time;
+					} else if (typeof schedule.time === "object" && "run_time" in schedule.time) {
+						runTime = schedule.time.run_time;
+					}
+					
+					if (runTime) {
+						// Extract HH:mm from HH:mm:ss format
+						const timeMatch = runTime.match(/(\d{2}:\d{2})/);
+						if (timeMatch) {
+							setStartTime(timeMatch[1]);
+						}
+					}
+				}
 			}
 		}
 	}, [editData]);
@@ -353,18 +435,38 @@ export default function ProjectEventCreationForm({
 			finalParticipants.push(session.user.email);
 		}
 		
+		// Convert time back to the stored timezone if editing
+		let submissionTime = startTime;
+		if (editData?.metadata?.time_zone && editData.metadata.time_zone !== timeZone) {
+			// Convert from local time back to stored timezone (UTC)
+			if (editData.metadata.time_zone === "UTC") {
+				const [hours, minutes] = startTime.split(":").map(Number);
+				const localDate = new Date();
+				localDate.setHours(hours, minutes, 0, 0);
+				
+				// Convert to UTC by getting UTC hours and minutes
+				const utcHours = localDate.getUTCHours();
+				const utcMinutes = localDate.getUTCMinutes();
+				submissionTime = `${String(utcHours).padStart(2, "0")}:${String(utcMinutes).padStart(2, "0")}`;
+			}
+		}
+		
 		const submissionData: CreateEvent = {
+			id: selectedEvent || undefined, // Top-level ID for backend to identify update vs create
 			project_event: {
 				id: selectedEvent || undefined,
 				name: meetingName,
 				event_type: "meeting",
 				metadata: {
 					online_link: participationLink,
+					location: location,
 					frequency: recurrence,
-					time: startTime,
-					triggerType: "ui",
+					time: submissionTime,
 					duration: parseInt(duration ?? 0),
 					recurrence_day: weeklyRecurrenceDay,
+					time_zone: editData?.metadata?.time_zone || timeZone,
+					resource_id: editData?.metadata?.resource_id,
+					calendar_event_id: editData?.metadata?.calendar_event_id,
 				},
 			},
 			event_participants: finalParticipants.map((p) => {
@@ -401,8 +503,6 @@ export default function ProjectEventCreationForm({
 		});
 	};
 
-
-
 	return (
 		<ScrollArea className="w-full h-full">
 			<div>
@@ -411,9 +511,14 @@ export default function ProjectEventCreationForm({
 						<>
 							<CardHeader>
 								<CardTitle>
-									Join meeting <br />
+									{editData ? "Edit Meeting" : "Join meeting"} <br />
 									<span className="text-sm mt-2 font-thin">
 										{new Date().toLocaleTimeString()} {timeZone}
+										{editData?.metadata?.time_zone && editData.metadata.time_zone !== timeZone && (
+											<span className="ml-2 text-xs text-muted-foreground">
+												(Original: {editData.metadata.time_zone})
+											</span>
+										)}
 									</span>
 								</CardTitle>
 							</CardHeader>
@@ -427,6 +532,16 @@ export default function ProjectEventCreationForm({
 											onChange={(e) => setMeetingName(e.target.value)}
 											required
 											value={meetingName}
+										/>
+									</div>
+									<div className="space-y-2">
+										<Label htmlFor="location">Location</Label>
+										<Input
+											id="location"
+											name="location"
+											onChange={(e) => setLocation(e.target.value)}
+											placeholder="e.g., Microsoft Teams Meeting, Conference Room A"
+											value={location}
 										/>
 									</div>
 									<div className="space-y-2">
@@ -444,7 +559,7 @@ export default function ProjectEventCreationForm({
 										<div className="space-y-2">
 											<Label htmlFor="recurrence">Repeat</Label>
 											<Select
-												defaultValue="once"
+												key={`recurrence-${recurrence}-${editData?.id || "new"}`}
 												name="recurrence"
 												onValueChange={setRecurrence}
 												value={recurrence}
@@ -543,7 +658,11 @@ export default function ProjectEventCreationForm({
 									<div className="grid grid-cols-2 gap-4">
 										<div className="space-y-2">
 											<Label htmlFor="startTime">Time</Label>
-											<Select onValueChange={setStartTime} value={startTime}>
+											<Select 
+												key={`startTime-${startTime}-${editData?.id || "new"}`}
+												onValueChange={setStartTime} 
+												value={startTime}
+											>
 												<SelectTrigger>
 													<SelectValue placeholder="Select time" />
 												</SelectTrigger>
@@ -564,7 +683,11 @@ export default function ProjectEventCreationForm({
 										</div>
 										<div className="space-y-2">
 											<Label htmlFor="duration">Duration</Label>
-											<Select onValueChange={setDuration} value={duration}>
+											<Select 
+												key={`duration-${editData?.id || "new"}`}
+												onValueChange={setDuration} 
+												value={duration}
+											>
 												<SelectTrigger>
 													<SelectValue placeholder="Select duration" />
 												</SelectTrigger>
@@ -577,24 +700,6 @@ export default function ProjectEventCreationForm({
 												</SelectContent>
 											</Select>
 										</div>
-									</div>
-									<div className="space-y-2">
-										<Label>Participation Option</Label>
-										<RadioGroup
-											onValueChange={(value) =>
-												setParticipationOption(value as "join" | "record")
-											}
-											value={participationOption}
-										>
-											<div className="flex items-center space-x-2">
-												<RadioGroupItem id="join" value="join" />
-												<Label htmlFor="join">Join using link</Label>
-											</div>
-											<div className="flex items-center space-x-2">
-												<RadioGroupItem id="record" value="record" />
-												<Label htmlFor="record">Audio recording</Label>
-											</div>
-										</RadioGroup>
 									</div>
 									{participationOption === "join" && (
 										<>
@@ -626,16 +731,6 @@ export default function ProjectEventCreationForm({
 											)}
 										</>
 									)}
-									<div className="flex items-center space-x-2">
-										<Checkbox
-											checked={isJoining}
-											id="joinNow"
-											onCheckedChange={(checked) =>
-												setIsJoining(checked as boolean)
-											}
-										/>
-										<Label htmlFor="joinNow">Join Now</Label>
-									</div>
 								</CardContent>
 								<CardFooter>
 									<Button
@@ -673,38 +768,7 @@ export default function ProjectEventCreationForm({
 							<CardHeader>
 								<CardTitle>Event Created Successfully!</CardTitle>
 							</CardHeader>
-							<CardContent className="space-y-6">
-								<div className="space-y-4">
-									<div className="space-y-2">
-										<h3 className="text-lg font-medium">Next Steps</h3>
-										<p className="text-sm text-muted-foreground">
-											Would you like to set up additional details for your meeting?
-										</p>
-									</div>
-									<div className="grid gap-4">
-										<Button
-											className="w-full"
-											onClick={() => setEditingDocument("agenda")}
-											variant="outline"
-										>
-											<PlusCircle className="mr-2 h-4 w-4" />
-											{agendaContent ? "Edit Meeting Agenda" : "Create Meeting Agenda"}
-										</Button>
-										<Button
-											className="w-full"
-											onClick={() => setEditingDocument("template")}
-											variant="outline"
-										>
-											<PlusCircle className="mr-2 h-4 w-4" />
-											{templateContent ? "Edit Meeting Template" : "Setup Meeting Template"}
-										</Button>
-									</div>
-								</div>
-							</CardContent>
 							<CardFooter className="flex justify-between">
-								<Button onClick={onClose} variant="outline">
-									Skip for now
-								</Button>
 								<Button onClick={onClose}>
 									Done
 								</Button>

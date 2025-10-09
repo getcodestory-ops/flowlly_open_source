@@ -82,6 +82,9 @@ interface ChatStore {
 	setChatDirectiveType: (directiveType: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "template" | "templateCreate" | "templateCreateAI" | "none") => void;
 	selectedModel: string;
 	setSelectedModel: (model: string) => void;
+	// Agent type selection
+	selectedAgentType: string;
+	setSelectedAgentType: (agentType: string) => void;
 	// Chat type tags for new chats
 	chatTypeTags: {
 		name: string;
@@ -345,6 +348,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	},
 	selectedModel: "claude-sonnet-4",
 	setSelectedModel: (model) => set({ selectedModel: model }),
+	// Agent type management
+	selectedAgentType: "agent",
+	setSelectedAgentType: (agentType) => set({ selectedAgentType: agentType }),
 	// Chat type tags management
 	chatTypeTags: [],
 	setChatTypeTags: (tags) => set({ chatTypeTags: tags }),

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 
-import { useToast } from "@chakra-ui/react";
+import { useToast } from "@/components/ui/use-toast";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +27,7 @@ export function ChangePasswordModal({
 	onCancel,
 	isOpen,
 }: ChangePasswordModalProps) {
-	const toast = useToast();
+	const { toast } = useToast();
 	return (
 		<Modal
 			backdrop
@@ -54,7 +54,7 @@ export const ChangePasswordComponent = ({
 	onSuccess,
 	onAuthPage = false,
 }: ChangePasswordModalProps & {
-  toast: ReturnType<typeof useToast>;
+  toast: ReturnType<typeof useToast>["toast"];
   onAuthPage?: boolean;
 }) => {
 	const [password, setPassword] = useState("");
@@ -81,9 +81,7 @@ export const ChangePasswordComponent = ({
 			toast({
 				title: "Error resetting password",
 				description: error.message,
-				status: "error",
 				duration: 5000,
-				isClosable: true,
 			});
 			onError && onError();
 			return;
@@ -91,9 +89,7 @@ export const ChangePasswordComponent = ({
 
 		toast({
 			title: "Password reset successfully",
-			status: "success",
 			duration: 5000,
-			isClosable: true,
 		});
 		onSuccess && onSuccess();
 		onCancel();

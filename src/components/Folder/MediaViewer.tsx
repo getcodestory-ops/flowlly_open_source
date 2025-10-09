@@ -54,7 +54,7 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
 								/>
 							</div>
 						</DialogTrigger>
-						<DialogContent className="">
+						<DialogContent className="" title={file_name || "Image preview"}>
 							<img alt={file_name} src={url} />
 						</DialogContent>
 					</Dialog>
@@ -116,7 +116,7 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
 								</div>
 							</div>
 						</DialogTrigger>
-						<DialogContent className="max-w-6xl ">
+						<DialogContent className="max-w-6xl " title={file_name || "Edit Text Document"}>
 							<ContentEditor
 								content={metadata?.content}
 								documentId={resource?.id}
@@ -139,7 +139,7 @@ export const MediaViewer: React.FC<{ resource: StorageResourceEntity }> = ({
 								</div>
 							</div>
 						</DialogTrigger>
-						<DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+						<DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" title={file_name || "PDF preview"}>
 							<Document
 								file={url}
 								onLoadSuccess={({ numPages }) => setNumPages(numPages)}

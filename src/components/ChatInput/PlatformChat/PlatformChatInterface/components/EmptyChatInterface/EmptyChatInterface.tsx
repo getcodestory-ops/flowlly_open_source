@@ -6,6 +6,7 @@ import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, M
 import AtSelectorComponent from "../../../components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
 import ModelSelector from "../../../components/ModelSelector";
+import AgentTypeSelector from "../../../components/AgentTypeSelector";
 import BidLevelling from "./FormDirectives/BidLevelling";
 import DailyReport from "./FormDirectives/DailyReport";
 import ReportWriting from "./FormDirectives/ReportWriting";
@@ -117,6 +118,8 @@ export default function EmptyChatInterface({
 		setChatDirectiveType, 
 		selectedModel, 
 		setSelectedModel,
+		selectedAgentType,
+		setSelectedAgentType,
 		// selectedTemplateId, // No longer needed
 		setSelectedTemplateId,
 		chatContext,
@@ -134,7 +137,7 @@ export default function EmptyChatInterface({
 			// Reset height to auto to get the correct scrollHeight
 			textarea.style.height = "auto";
 			// Set height to scrollHeight with min and max constraints
-			const newHeight = Math.min(Math.max(textarea.scrollHeight, 80), 200); // min 80px, max 200px
+			const newHeight = Math.min(Math.max(textarea.scrollHeight, 80), 400); 
 			textarea.style.height = `${newHeight}px`;
 		}
 	}, [chatInput]);
@@ -463,9 +466,9 @@ export default function EmptyChatInterface({
 
 	// Otherwise, show the full chat interface
 	return (
-		<div className="flex flex-col items-center justify-center  px-4 py-6 w-full">
+		<ScrollArea className="flex flex-col items-center justify-center  px-4 py-6 w-full">
 
-			<div className="w-full max-w-3xl mb-8"> {/* Centered Chat Input */}
+			<div className="w-full max-w-3xl mb-8 p-2"> {/* Centered Chat Input */}
 				<div className="w-full mb-12"> 
 					<h1 className="text-4xl font-bold text-gray-500 mb-4">
 					Hi, What can I do for you?
@@ -477,11 +480,11 @@ export default function EmptyChatInterface({
 						or select a chat type below to get started
 					</p>
 				</div>
-				<div className="relative overflow-hidden rounded-xl bg-white border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-300 transition-all">
+				<div className="relative overflow-hidden rounded-xl bg-white border border-slate-200 shadow-sm focus-within:ring-1 focus-within:ring-indigo-300 transition-all">
 					<Label className="sr-only" htmlFor="empty-message">
 						Message
 					</Label>
-					<div className="absolute top-0 left-2 z-10 pt-2">
+					<div className="absolute top-0 left-2 z-10 pt-2 ">
 						<div className="flex items-center gap-2">
 							<AtSelectorComponent />
 							{chatContext.trim() && (
@@ -497,7 +500,7 @@ export default function EmptyChatInterface({
 							)}
 						</div>
 					</div>
-					<div className="relative">
+					<div className="relative ">
 						<AnimatedPlaceholder isEmpty={!chatInput.trim()} />
 						<Textarea
 							className="min-h-20 resize-none border-0 p-4 pl-12 mt-4 shadow-none focus-visible:ring-0 text-slate-800 bg-transparent text-base"
@@ -518,6 +521,10 @@ export default function EmptyChatInterface({
 					<div className="flex items-center justify-between p-6 pt-0">
 						<div className="flex items-center gap-2">
 							{loadDocumentPanel()}
+							<AgentTypeSelector 
+								onAgentTypeChange={setSelectedAgentType}
+								selectedAgentType={selectedAgentType}
+							/>
 							<ModelSelector 
 								onModelChange={setSelectedModel}
 								selectedModel={selectedModel}
@@ -570,62 +577,60 @@ export default function EmptyChatInterface({
 							})}
 						</div>
 					</div>
-					<ScrollArea className="flex justify-center h-64"> 
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl h-32 items-stretch">
-							{staticChatTypes[activeTab]?.map((type) => {
-								const IconComponent = type.icon;
-								const isSelected = chatDirectiveType === type.id;
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl  items-stretch">
+						{staticChatTypes[activeTab]?.map((type) => {
+							const IconComponent = type.icon;
+							const isSelected = chatDirectiveType === type.id;
 								
-								return (
-									<div
-										className={`cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 ${
-											isSelected 
-												? "border-indigo-500 bg-indigo-50" 
-												: "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md"
-										}`}
-										key={`${type.id}-${type.templateId || "default"}`}
-										onClick={() => {
-											if (type.id === "template" && type.templateId) {
-												// Find the full template data from the templates array
-												const fullTemplate = allTemplates?.find((t) => t.id === type.templateId);
-												if (fullTemplate) {
-													handleTemplateSelection(fullTemplate);
-												}
-											} else {
-												setChatDirectiveType(type.id);
+							return (
+								<div
+									className={`cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 ${
+										isSelected 
+											? "border-indigo-500 bg-indigo-50" 
+											: "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md"
+									}`}
+									key={`${type.id}-${type.templateId || "default"}`}
+									onClick={() => {
+										if (type.id === "template" && type.templateId) {
+											// Find the full template data from the templates array
+											const fullTemplate = allTemplates?.find((t) => t.id === type.templateId);
+											if (fullTemplate) {
+												handleTemplateSelection(fullTemplate);
 											}
-										}}
-									>
-										<div className="flex flex-col items-center text-center space-y-3">
-											<div className={`p-3 rounded-lg ${
-												isSelected ? "bg-indigo-100" : "bg-gray-50"
+										} else {
+											setChatDirectiveType(type.id);
+										}
+									}}
+								>
+									<div className="flex flex-col items-center text-center space-y-3">
+										<div className={`p-3 rounded-lg ${
+											isSelected ? "bg-indigo-100" : "bg-gray-50"
+										}`}
+										>
+											<IconComponent 
+												className={`h-6 w-6 ${
+													isSelected ? "text-indigo-600" : "text-gray-600"
+												}`} 
+											/>
+										</div>
+										<div>
+											<h4 className={`font-semibold text-sm mb-1 ${
+												isSelected ? "text-indigo-900" : "text-gray-900"
 											}`}
 											>
-												<IconComponent 
-													className={`h-6 w-6 ${
-														isSelected ? "text-indigo-600" : "text-gray-600"
-													}`} 
-												/>
-											</div>
-											<div>
-												<h4 className={`font-semibold text-sm mb-1 ${
-													isSelected ? "text-indigo-900" : "text-gray-900"
-												}`}
-												>
-													{type.title}
-												</h4>
-												<p className="text-xs text-gray-600 leading-relaxed">
-													{type.description}
-												</p>
-											</div>
+												{type.title}
+											</h4>
+											<p className="text-xs text-gray-600 leading-relaxed">
+												{type.description}
+											</p>
 										</div>
 									</div>
-								);
-							})}
-						</div>
-					</ScrollArea>
+								</div>
+							);
+						})}
+					</div>
 				</div>
 			</div>
-		</div>
+		</ScrollArea>
 	);
 }

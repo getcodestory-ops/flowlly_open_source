@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { createPlatformChatEntity } from "@/api/agentRoutes";
 import { AgentChat, AgentChatEntity } from "@/types/agentChats";
 import { useChatStore } from "@/hooks/useChatStore";
+import { FunctionApproval } from "@/types/agentChats";
 
 export function usePlatformChat(
 	folderId: string,
@@ -30,6 +31,7 @@ export function usePlatformChat(
 	const isWaitingForResponse = useChatStore((state) => state.isWaitingForResponse);
 	const chatTypeTags = useChatStore((state) => state.chatTypeTags);
 	const selectedModel = useChatStore((state) => state.selectedModel);
+	const selectedAgentType = useChatStore((state) => state.selectedAgentType);
 	// Note: streamingKey is now detected per-chat instead of using global state
 
 
@@ -193,7 +195,7 @@ export function usePlatformChat(
 		message,
 		files,
 	}: {
-    message: string;
+    message: string | FunctionApproval;
     files: ProcessedFile[];
   }) => {
 		if (!session || !activeProject) {
@@ -208,7 +210,7 @@ export function usePlatformChat(
 		// Check if current chat has an active streaming message
 		const activeStreamingKey = hasActiveStreamingMessage();
 		if (activeStreamingKey) {
-			await handleStreamingMessage(message, activeStreamingKey);
+			await handleStreamingMessage(typeof message === "string" ? message : message?.comments || "", activeStreamingKey);
 			return;
 		}
 
@@ -238,7 +240,7 @@ export function usePlatformChat(
 			receiver: "Flowlly",
 			project_id: activeProject?.project_id || "",
 			message: {
-				content: message,
+				content: typeof message === "string" ? message : message?.comments || "",
 				role: "user",
 			},
 			created_at: new Date().toISOString(),
@@ -251,7 +253,7 @@ export function usePlatformChat(
 
 		if (chatEntityId === "untitled") {
 			try {
-				await createChatEntityMutation.mutateAsync(message);
+				await createChatEntityMutation.mutateAsync(typeof message === "string" ? message : message?.comments || "");
 				setIsWaitingForResponse(true);
 			} catch (error) {
 				console.error("Failed to create chat entity:", error);
@@ -280,6 +282,7 @@ export function usePlatformChat(
 			responseType: chatTarget ?? "folder",
 			files: files,
 			model: selectedModel,
+			agentType: selectedAgentType,
 			includeContext: includeContext,
 			googleSearch: googleSearch,
 		});

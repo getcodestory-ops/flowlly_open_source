@@ -17,8 +17,7 @@ import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/utils/store";
 import Image from "next/image";
-import { getApiIntegration } from "@/api/integration_routes";
-import { useQuery } from "@tanstack/react-query";
+import { useIntegrationStore } from "@/hooks/useIntegrationStore";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 export function UserNav({}: { email: string }): React.ReactNode {
@@ -95,21 +94,9 @@ export function UserNav({}: { email: string }): React.ReactNode {
 }
 
 const ConnectionIcons = (): React.ReactNode => {
-	const session = useStore((state) => state.session);
-	const activeProject = useStore((state) => state.activeProject);
-	const { data: microsoftIntegration } = useQuery({
-		queryKey: ["integration", activeProject?.project_id, "microsoft"],
-		queryFn: () =>
-			getApiIntegration(session!, activeProject?.project_id!, "microsoft"),
-		enabled: !!session && !!activeProject?.project_id,
-	});
+	const microsoftIntegration = useIntegrationStore((state) => state.microsoftIntegration);
+	const procoreIntegration = useIntegrationStore((state) => state.procoreIntegration);
 
-	const { data: procoreIntegration } = useQuery({
-		queryKey: ["integration", activeProject?.project_id, "procore"],
-		queryFn: () =>
-			getApiIntegration(session!, activeProject?.project_id!, "procore"),
-		enabled: !!session && !!activeProject?.project_id,
-	});
 	return (
 		<div className="flex flex-row gap-2">
 			<IntegrationActiveState

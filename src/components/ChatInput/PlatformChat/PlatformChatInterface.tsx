@@ -31,6 +31,7 @@ import { useChatStore } from "@/hooks/useChatStore";
 import EmptyChatInterface from "./PlatformChatInterface/components/EmptyChatInterface/EmptyChatInterface";
 import { requestHelp, stopAgent } from "@/api/agentRoutes";
 import ModelSelector from "./components/ModelSelector";
+import AgentTypeSelector from "./components/AgentTypeSelector";
 
 
 export default function PlatformChatInterface({
@@ -65,7 +66,7 @@ export default function PlatformChatInterface({
 		activeChatEntity,
 		setIsWaitingForResponse,
 	} = usePlatformChat(folderId, chatTarget, includeContext);
-	const { setSidePanel, setCollapsed, contextFolder, selectedModel, setSelectedModel, selectedContexts, setSelectedContexts } = useChatStore();
+	const { setSidePanel, setCollapsed, contextFolder, selectedModel, setSelectedModel, selectedAgentType, setSelectedAgentType, selectedContexts, setSelectedContexts } = useChatStore();
 	
 	// Paste upload functionality
 	const { handlePasteEvent } = usePasteUpload({
@@ -240,7 +241,17 @@ export default function PlatformChatInterface({
 		};
 	}, [handlePasteEvent, chats]); // Add chats as dependency to re-run when chats change
 
-
+	// Auto-expand textarea as text grows
+	useEffect(() => {
+		const textarea = textareaRef.current;
+		if (textarea) {
+			// Reset height to auto to get the correct scrollHeight
+			textarea.style.height = "auto";
+			// Set height to scrollHeight with min and max constraints
+			const newHeight = Math.min(Math.max(textarea.scrollHeight, 40), 400); // min 40px, max 400px
+			textarea.style.height = `${newHeight}px`;
+		}
+	}, [chatInput]);
 
 	// Update the button click handlers to use the new handleSubmit function
 	const handleSubmit = (): void => {
@@ -446,11 +457,16 @@ export default function PlatformChatInterface({
 							: "Type message here, paste images, or attach relevant files using the clip icon below..."
 					}
 					ref={textareaRef}
+					style={{ height: "auto" }}
 					value={chatInput}
 				/>
 				<div className="flex items-center justify-between p-3 pt-0">
 					<div className="flex items-center gap-2">
 						{loadDocumentPanel()}
+						<AgentTypeSelector 
+							onAgentTypeChange={setSelectedAgentType}
+							selectedAgentType={selectedAgentType}
+						/>
 						<ModelSelector 
 							onModelChange={setSelectedModel}
 							selectedModel={selectedModel}
