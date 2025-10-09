@@ -44,6 +44,35 @@ interface EventScheduleListProps {
   onWorkflowSelect?: () => void;
 }
 
+// Helper function to determine event tag based on description
+const getEventTag = (description: string): { label: string; color: string } | null => {
+	const lowerDesc = description.toLowerCase();
+	if (lowerDesc.includes("meeting minutes")) {
+		return { label: "Meeting", color: "bg-blue-100 text-blue-800 border-blue-300" };
+	}
+	if (lowerDesc.includes("creating process from user input")) {
+		return { label: "Agenda", color: "bg-purple-100 text-purple-800 border-purple-300" };
+	}
+	return null;
+};
+
+// Helper function to determine time-based tag
+const getTimeBasedTag = (eventDate: Date, currentTime: Date): { label: string; color: string } => {
+	const diffMs = eventDate.getTime() - currentTime.getTime();
+	const diffMinutes = Math.floor(diffMs / 60000);
+	
+	if (diffMs < 0) {
+		// Event is in the past
+		return { label: "Finished Meeting", color: "bg-gray-100 text-gray-700 border-gray-300" };
+	} else if (diffMinutes <= 60) {
+		// Event is happening in 1 hour or less
+		return { label: `Happening in ${diffMinutes} minutes`, color: "bg-green-100 text-green-800 border-green-300" };
+	} else {
+		// Event is more than 1 hour in the future
+		return { label: "Upcoming Meeting", color: "bg-orange-100 text-orange-800 border-orange-300" };
+	}
+};
+
 export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	graphs,
 	onWorkflowSelect,
@@ -56,6 +85,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	const session = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
 	const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+	const [currentTime, setCurrentTime] = useState(new Date());
 
 	// Added pagination state
 	const [pagination, setPagination] = useState<{
@@ -81,6 +111,13 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 			}
 		}
 	}, [graphs, selectedEventId, selectedWorkflowId, setCurrentResult]);
+
+	useEffect(() => {
+		// eslint-disable-next-line no-console
+		console.log("graphs", graphs);
+		// eslint-disable-next-line no-console
+		console.log("selectedEventId", selectedEventId);
+	}, [graphs, selectedEventId]);
 
 	// Add new state to track the selected result
 
@@ -189,9 +226,9 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 							return (
 								<div className="flex items-center">
 									<span className="font-medium">
-										{compact ? "Select a Meeting to see" : "Scheduled Workflow"}
+										{compact ? "Select a Meeting from the list:" : "Scheduled Workflow"}
 									</span>
-									<span className="ml-2 text-xs text-muted-foreground">
+									{/* <span className="ml-2 text-xs text-muted-foreground">
 										{(() => {
 											const start = schedule.start;
 											const zonePattern = /Z|[+-]\d\d:\d\d$/;
@@ -206,9 +243,14 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 											} else {
 												displayDate = new Date(`2000-01-01T${run_time}Z`);
 											}
-											return displayDate.toLocaleString([], { dateStyle: compact ? "short" : "long", timeStyle: compact ? "short" : "medium" });
+											const timeZone = schedule.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+											return displayDate.toLocaleString([], { 
+												dateStyle: compact ? "short" : "long", 
+												timeStyle: compact ? "short" : "medium",
+												timeZone,
+											});
 										})()}
-									</span>
+									</span> */}
 								</div>
 							);
 						}
@@ -224,6 +266,47 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 						const activelyListening = result?.listen;
 						const currentlyRunning = result?.workflow_id;
 						const isCompleted = result.status === "completed";
+						const eventTag = result.description ? getEventTag(result.description) : null;
+
+						// Calculate event date for time-based tag
+						const rt = result.run_time;
+						const zonePattern = /Z|[+-]\d\d:\d\d$/;
+						let eventDate: Date;
+						if (rt) {
+							if (rt.includes("T")) {
+								const iso = zonePattern.test(rt) ? rt : `${rt}Z`;
+								eventDate = new Date(iso);
+							} else {
+								// Time-only: combine with the matching schedule.start date if available
+								const parentSchedule = graphs
+									.find((s) => s.event_result.some((er) => er.id === result.id))?.schedule;
+								const baseDateStr = parentSchedule?.start
+									? parentSchedule.start.split("T")[0]
+									: (result.timestamp ? result.timestamp.split("T")[0] : new Date().toISOString()
+										.split("T")[0]);
+								
+								// Get the timezone from parent schedule or use browser's timezone
+								const eventTimeZone = parentSchedule?.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+								
+								// Create the date string and treat it as local time in the event's timezone
+								const dateTimeString = `${baseDateStr}T${rt}`;
+								
+								// Create a temporary date object
+								const tempDate = new Date(dateTimeString);
+								
+								// Convert from event timezone to user's local timezone
+								const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+								
+								// Create a date in the event timezone, then convert to user's timezone
+								const eventDateInEventTz = new Date(tempDate.toLocaleString("sv-SE", { timeZone: eventTimeZone }));
+								const eventDateInUserTz = new Date(eventDateInEventTz.toLocaleString("sv-SE", { timeZone: userTimezone }));
+								eventDate = eventDateInUserTz;
+							}
+						} else {
+							eventDate = new Date(result.timestamp);
+						}
+
+						const timeBasedTag = getTimeBasedTag(eventDate, currentTime);
 
 						return (
 							<div
@@ -231,35 +314,23 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 									compact ? "4" : "8"
 								} flex flex-col items-start gap-2`}
 							>
-								<div className="flex items-center">
+								<div className="flex items-center gap-2">
 									<span className="text-sm">
 										{(() => {
-											const rt = result.run_time;
-											const zonePattern = /Z|[+-]\d\d:\d\d$/;
-											let displayDate: Date | null = null;
-											if (rt) {
-												if (rt.includes("T")) {
-													const iso = zonePattern.test(rt) ? rt : `${rt}Z`;
-													displayDate = new Date(iso);
-												} else {
-												// Time-only: combine with the matching schedule.start date if available
-													const parentSchedule = graphs
-														.find((s) => s.event_result.some((er) => er.id === result.id))?.schedule;
-													const baseDateStr = parentSchedule?.start
-														? parentSchedule.start.split("T")[0]
-														: (result.timestamp ? result.timestamp.split("T")[0] : new Date().toISOString()
-															.split("T")[0]);
-													displayDate = new Date(`${baseDateStr}T${rt}Z`);
-												}
-											}
-											if (!displayDate) {
-												displayDate = new Date(result.timestamp);
-											}
-											return displayDate.toLocaleString([], {
+											// Always display in user's local timezone
+											return eventDate.toLocaleString([], {
 												dateStyle: compact ? "short" : "long",
 												timeStyle: compact ? "short" : "medium",
 											});
 										})()}
+									</span>
+									{eventTag && (
+										<span className={`px-2 py-0.5 text-xs font-medium rounded-md border ${eventTag.color}`}>
+											{eventTag.label}
+										</span>
+									)}
+									<span className={`px-2 py-0.5 text-xs font-medium rounded-md border ${timeBasedTag.color}`}>
+										{timeBasedTag.label}
 									</span>
 									{isCompleted && compact && (
 										<span className="ml-2 px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">
@@ -298,7 +369,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 			},
 			// Add other columns as needed
 		],
-		[compact, graphs, clearProcess],
+		[compact, graphs, clearProcess, currentTime],
 	);
 
 	const table = useReactTable<ScheduleTableRow>({
@@ -356,8 +427,31 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 		}
 	}, [fetchedEventResult, setCurrentResult]);
 
+	// Update current time every minute
+	useEffect(() => {
+		const timer = setInterval(() => {
+			setCurrentTime(new Date());
+		}, 60000); // Update every minute
+		return () => clearInterval(timer);
+	}, []);
+
 	return (
 		<div className={cn("w-full", compact && "text-sm")}>
+			{/* Current Time Display */}
+			<div className="mb-4 p-3 ">
+				<p className="text-sm font-medium text-gray-700">
+					Your current day and time: <span className="text-gray-700 font-semibold">
+						{currentTime.toLocaleString([], {
+							weekday: "long",
+							year: "numeric",
+							month: "long",
+							day: "numeric",
+							hour: "2-digit",
+							minute: "2-digit",
+						})}
+					</span>
+				</p>
+			</div>
 			{graphs && graphs.length > 0 ? (
 				<Table>
 					<TableBody>

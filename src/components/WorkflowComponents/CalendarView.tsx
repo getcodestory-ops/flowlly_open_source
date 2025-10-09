@@ -79,6 +79,7 @@ export const CalendarView: React.FC = ({
 	};
 	const { calendarView, setCalendarView } = useViewStore();
 	const [date, setDate] = useState(new Date());
+	const [tooltip, setTooltip] = useState<{ content: string; x: number; y: number } | null>(null);
 
 	const extractHoursMinutes = useCallback((timeString?: string): { hours: number; minutes: number } => {
 		if (!timeString) {
@@ -176,8 +177,8 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 								) : (
 									<Video size={14} />
 								)}
-								<span className="text-xs opacity-80">{formatLocalTime(exceptionStart)}</span>
 								{graph.name}
+								<span className="text-xs opacity-80">{formatLocalTime(exceptionStart)}</span>
 								<span className="text-xs bg-orange-100 text-orange-700 px-1 rounded">Moved</span>
 							</div>
 						),
@@ -241,8 +242,8 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 						) : (
 							<Video size={14} />
 						)}
-						<span className="text-xs opacity-80">{formatLocalTime(eventStart)}</span>
 						{graph.name}
+						<span className="text-xs opacity-80">{formatLocalTime(eventStart)}</span>
 					</div>
 				),
 				start: eventStart,
@@ -289,8 +290,8 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 					) : (
 						<Video size={14} />
 					)}
-					<span className="text-xs opacity-80">{formatLocalTime(eventStart)}</span>
 					{graph.name}
+					<span className="text-xs opacity-80">{formatLocalTime(eventStart)}</span>
 				</div>
 			),
 			start: eventStart,
@@ -321,7 +322,7 @@ const events = useMemo(() => {
 			backgroundColor:
         event.resource.event_type === "document_writing"
         	? "#22c55e"
-        	: "#facc15",
+        	: "#fef08a",
 			color:
         event.resource.event_type === "document_writing" ? "white" : "black",
 			padding: "4px 8px",
@@ -332,16 +333,63 @@ const events = useMemo(() => {
 		},
 	});
 
+	const EventComponent = ({ event }: { event: RbcEvent }): JSX.Element => {
+		const tooltipContent = `${event.resource.name} - ${formatLocalTime(event.start)}`;
+		
+		const handleMouseEnter = (e: React.MouseEvent): void => {
+			const rect = e.currentTarget.getBoundingClientRect();
+			setTooltip({
+				content: tooltipContent,
+				x: rect.left + rect.width / 2,
+				y: rect.top - 5,
+			});
+		};
+		
+		const handleMouseLeave = (): void => {
+			setTooltip(null);
+		};
+		
+		return (
+			<div 
+				className="flex items-center gap-1 w-full h-full overflow-hidden cursor-pointer"
+				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
+			>
+				{event.resource.event_type === "document_writing" ? (
+					<FileText className="flex-shrink-0" size={12} />
+				) : (
+					<Video className="flex-shrink-0" size={12} />
+				)}
+				<span className="text-xs font-medium truncate">{event.resource.name}</span>
+				<span className="text-xs opacity-70 flex-shrink-0">{formatLocalTime(event.start)}</span>
+			</div>
+		);
+	};
+
 	return (
-		<div style={{ height: "700px" }}>
+		<div style={{ height: "700px", position: "relative" }}>
 			<Calendar
 				components={{
+					day: {
+						event: EventComponent,
+					},
+					event: EventComponent,
+					month: {
+						event: EventComponent,
+					},
 					toolbar: CustomToolbar,
+					week: {
+						event: EventComponent,
+					},
 				}}
 				date={date}
 				endAccessor="end"
 				eventPropGetter={eventPropGetter}
 				events={events}
+				formats={{
+					eventTimeRangeFormat: () => "",
+					timeGutterFormat: (date: Date) => formatLocalTime(date),
+				}}
 				localizer={localizer}
 				onNavigate={(date: Date) => setDate(date)}
 				onSelectEvent={handleSelectEvent}
@@ -351,6 +399,18 @@ const events = useMemo(() => {
 				view={calendarView as View}
 				views={["month", "week", "day", "agenda"]}
 			/>
+			{tooltip && (
+				<div
+					className="fixed z-50 px-2 py-1 text-xs text-white bg-black rounded shadow-lg pointer-events-none"
+					style={{
+						left: tooltip.x,
+						top: tooltip.y,
+						transform: "translateX(-50%)",
+					}}
+				>
+					{tooltip.content}
+				</div>
+			)}
 		</div>
 	);
 };
