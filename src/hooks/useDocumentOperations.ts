@@ -96,12 +96,14 @@ export const useDocumentOperations = ({
 					storage_relations: [],
 				};
 				addFolder(variables.parentId, folderData);
+				queryClient.setQueryData(
+					[`fetchProjectFolders-${variables.parentId}`, activeProjectId, session, variables.parentId],
+					(oldData: any) => {
+						if (!oldData) return [folderData];
+						return [...oldData, folderData];
+					},
+				);
 			}
-			
-			// Invalidate relevant queries
-			queryClient.invalidateQueries({
-				queryKey: [`fetchProjectFolders-${variables.parentId}`],
-			});
 			
 			toast({
 				title: "Folder created successfully",

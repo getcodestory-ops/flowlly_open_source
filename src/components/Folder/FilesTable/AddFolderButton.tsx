@@ -35,6 +35,13 @@ export const AddFolderButton: React.FC<AddFolderButtonProps> = ({
 			isProjectWide,
 			(data) => {
 				addFolder(folderId, data);
+				queryClient.setQueryData(
+					[`fetchProjectFolders-${folderId}`, activeProject.project_id, session, folderId],
+					(oldData: any) => {
+						if (!oldData) return [data];
+						return [...oldData, data];
+					},
+				);
 			},
 		);
 	};
