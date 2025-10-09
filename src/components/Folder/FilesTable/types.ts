@@ -54,4 +54,5 @@ export interface FilesTableProps {
   session: any;
   activeProject: any;
   onFolderClick: (folderId: string, folderName: string) => void;
+  isProjectWide: boolean;
 } 
