@@ -126,7 +126,12 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 	endDate.setDate(endDate.getDate() + 84);
 
 	const frequency = graph.metadata.frequency || "once";
-	const meetingDay = graph.metadata.recurrence_day?.toLowerCase();
+	const recurrenceDay = graph.metadata.recurrence_day;
+	const meetingDays = Array.isArray(recurrenceDay) 
+		? recurrenceDay.map((day) => day.toLowerCase()) 
+		: recurrenceDay 
+			? [recurrenceDay.toLowerCase()] 
+			: [];
 	const firstSchedule = graph.event_schedule?.[0];
 	const scheduleStart = firstSchedule?.schedule?.start;
 	const scheduleTime = firstSchedule?.schedule?.time as Record<string, unknown> | Array<Record<string, unknown>>;
@@ -147,13 +152,118 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 		}
 	});
 
-	if (frequency === "weekly" && meetingDay && meetingTime) {
+	if (frequency === "weekly" && meetingDays.length > 0 && meetingTime) {
+		// Iterate through each meeting day
+		meetingDays.forEach((meetingDay) => {
+			let currentDate = new Date(startDate);
+			currentDate.setDate(
+				currentDate.getDate() +
+					((dayMapping[meetingDay as keyof typeof dayMapping] + 7 - currentDate.getDay()) % 7),
+			);
+			// const { hours, minutes } = extractHoursMinutes(meetingTime);
+
+			while (currentDate <= endDate) {
+				const baseDateStr = currentDate.toISOString().split("T")[0];
+				const exception = exceptionMap.get(baseDateStr);
+
+				// Check if this occurrence has an exception
+				if (exception) {
+					// Handle different exception types
+					if (exception.exception_type === "moved" && exception.new_start_time && exception.new_end_time) {
+						// For moved meetings, show the event at the new time
+						const exceptionStart = new Date(exception.new_start_time);
+						const exceptionEnd = new Date(exception.new_end_time);
+
+						events.push({
+							id: `${graph.id}-${currentDate.toISOString()}-exception`,
+							title: (
+								<div className="flex items-center gap-2">
+									{graph.event_type === "document_writing" ? (
+										<FileText size={14} />
+									) : (
+										<Video size={14} />
+									)}
+									<span className="text-xs opacity-80">{formatLocalTime(exceptionStart)}</span>
+									{graph.name}
+									<span className="text-xs bg-orange-100 text-orange-700 px-1 rounded">Moved</span>
+								</div>
+							),
+							start: exceptionStart,
+							end: exceptionEnd,
+							allDay: false,
+							resource: graph,
+						});
+					} else if (exception.exception_type === "cancelled") {
+						// For cancelled meetings, skip adding the event
+						// You could also show a strikethrough version if desired
+					}
+					// Skip to next occurrence
+					currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+					continue;
+				}
+
+				// Regular occurrence (no exception)
+				// Compose UTC ISO from the week's date and meeting time, then convert to local
+				let iso: string;
+				if (typeof meetingTime === "string" && meetingTime.includes("T")) {
+					const hasZone = /Z|[+-]\d\d:\d\d$/.test(meetingTime);
+					iso = hasZone ? meetingTime : `${meetingTime}Z`;
+				} else {
+					const norm = ((): string => {
+						const input = String(meetingTime || "00:00").trim();
+						if (input.includes("T")) return input;
+						const ampm = input.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])\s*$/);
+						if (ampm) {
+							let hh = parseInt(ampm[1] || "0", 10);
+							const mm = parseInt(ampm[2] || "0", 10);
+							const ss = parseInt(ampm[3] || "0", 10);
+							const ap = ampm[4].toUpperCase();
+							if (ap === "PM" && hh < 12) hh += 12;
+							if (ap === "AM" && hh === 12) hh = 0;
+							const hhS = String(Math.max(0, Math.min(23, hh))).padStart(2, "0");
+							const mmS = String(Math.max(0, Math.min(59, mm))).padStart(2, "0");
+							const ssS = String(Math.max(0, Math.min(59, ss))).padStart(2, "0");
+							return `${hhS}:${mmS}:${ssS}`;
+						}
+						const h24 = input.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*$/);
+						if (h24) {
+							const hh = String(Math.max(0, Math.min(23, parseInt(h24[1] || "0", 10)))).padStart(2, "0");
+							const mm = String(Math.max(0, Math.min(59, parseInt(h24[2] || "0", 10)))).padStart(2, "0");
+							const ss = String(Math.max(0, Math.min(59, parseInt(h24[3] || "0", 10)))).padStart(2, "0");
+							return `${hh}:${mm}:${ss}`;
+						}
+						return "00:00:00";
+					})();
+					iso = `${baseDateStr}T${norm}Z`;
+				}
+				const eventStart = new Date(iso);
+				const eventEnd = new Date(eventStart.getTime() + 60 * 60 * 1000);
+
+				events.push({
+					id: `${graph.id}-${currentDate.toISOString()}-${meetingDay}`,
+					title: (
+						<div className="flex items-center gap-2">
+							{graph.event_type === "document_writing" ? (
+								<FileText size={14} />
+							) : (
+								<Video size={14} />
+							)}
+							<span className="text-xs opacity-80">{formatLocalTime(eventStart)}</span>
+							{graph.name}
+						</div>
+					),
+					start: eventStart,
+					end: eventEnd,
+					allDay: false,
+					resource: graph,
+				});
+
+				currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+			}
+		});
+	} else if (frequency === "daily" && meetingTime) {
+		// Daily recurring events
 		let currentDate = new Date(startDate);
-		currentDate.setDate(
-			currentDate.getDate() +
-				((dayMapping[meetingDay as keyof typeof dayMapping] + 7 - currentDate.getDay()) % 7),
-		);
-		// const { hours, minutes } = extractHoursMinutes(meetingTime);
 
 		while (currentDate <= endDate) {
 			const baseDateStr = currentDate.toISOString().split("T")[0];
@@ -188,15 +298,13 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 					});
 				} else if (exception.exception_type === "cancelled") {
 					// For cancelled meetings, skip adding the event
-					// You could also show a strikethrough version if desired
 				}
 				// Skip to next occurrence
-				currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+				currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
 				continue;
 			}
 
 			// Regular occurrence (no exception)
-			// Compose UTC ISO from the week's date and meeting time, then convert to local
 			let iso: string;
 			if (typeof meetingTime === "string" && meetingTime.includes("T")) {
 				const hasZone = /Z|[+-]\d\d:\d\d$/.test(meetingTime);
@@ -251,7 +359,7 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 				resource: graph,
 			});
 
-			currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+			currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
 		}
 	} else if (frequency === "once") {
 		const timeString = String(meetingTime || "");

@@ -235,7 +235,7 @@ export const EventListViewer: React.FC = ({
 					cell: (info) => {
 						const metadata = info.row.original.metadata;
 						if (!metadata || metadata.frequency !== "weekly") return "";
-						return metadata.recurrence_day || "";
+						return Array.isArray(metadata.recurrence_day) ? metadata.recurrence_day.map((day) => day.slice(0, 2).toUpperCase()).join(", ") : metadata.recurrence_day?.slice(0, 2).toUpperCase() || "";
 					},
 				});
 			}
