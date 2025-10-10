@@ -261,8 +261,8 @@ export default function ProjectEventCreationForm({
 	const [location, setLocation] = useState("");
 	const [autoJoin, setAutoJoin] = useState(false);
 	const [isFormValid, setIsFormValid] = useState(false);
-	const [weeklyRecurrenceDay, setWeeklyRecurrenceDay] = useState(
-		format(new Date(), "EEEE"),
+	const [weeklyRecurrenceDay, setWeeklyRecurrenceDay] = useState<string[]>(
+		[format(new Date(), "EEEE")],
 	);
 	const [participationOption, setParticipationOption] = useState<
     "join" | "record"
@@ -361,9 +361,18 @@ export default function ProjectEventCreationForm({
 				}
 				
 				setDuration(editData.metadata.duration?.toString() || "60");
-				setWeeklyRecurrenceDay(
-					editData.metadata.recurrence_day || format(new Date(), "EEEE"),
-				);
+				
+				// Handle recurrence_day as either string or string[]
+				if (editData.metadata.recurrence_day) {
+					if (Array.isArray(editData.metadata.recurrence_day)) {
+						setWeeklyRecurrenceDay(editData.metadata.recurrence_day);
+					} else {
+						setWeeklyRecurrenceDay([editData.metadata.recurrence_day]);
+					}
+				} else {
+					setWeeklyRecurrenceDay([format(new Date(), "EEEE")]);
+				}
+				
 				setTimeZone(editData.metadata.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone);
 			}
 
@@ -463,7 +472,7 @@ export default function ProjectEventCreationForm({
 					frequency: recurrence,
 					time: submissionTime,
 					duration: parseInt(duration ?? 0),
-					recurrence_day: weeklyRecurrenceDay,
+					recurrence_day: weeklyRecurrenceDay.length > 0 ? weeklyRecurrenceDay : undefined,
 					time_zone: editData?.metadata?.time_zone || timeZone,
 					resource_id: editData?.metadata?.resource_id,
 					calendar_event_id: editData?.metadata?.calendar_event_id,
@@ -580,29 +589,23 @@ export default function ProjectEventCreationForm({
 											{recurrence === "weekly" && (
 												<div className="space-y-2 col-span-2">
 													<Label htmlFor="weeklyRecurrenceDay">On</Label>
-													<Select
+													<MultiSelect
+														defaultValue={weeklyRecurrenceDay}
 														onValueChange={setWeeklyRecurrenceDay}
-														value={weeklyRecurrenceDay}
-													>
-														<SelectTrigger>
-															<SelectValue placeholder="Select day" />
-														</SelectTrigger>
-														<SelectContent>
-															{[
-																"Sunday",
-																"Monday",
-																"Tuesday",
-																"Wednesday",
-																"Thursday",
-																"Friday",
-																"Saturday",
-															].map((day) => (
-																<SelectItem key={day} value={day}>
-																	{day}
-																</SelectItem>
-															))}
-														</SelectContent>
-													</Select>
+														options={[
+															"Sunday",
+															"Monday",
+															"Tuesday",
+															"Wednesday",
+															"Thursday",
+															"Friday",
+															"Saturday",
+														].map((day) => ({
+															label: day,
+															value: day,
+														}))}
+														placeholder="Select days"
+													/>
 												</div>
 											)}
 											<div className="space-y-2 ">
