@@ -59,7 +59,7 @@ export type GraphMetadata = {
   duration: string;
   time_zone: string;
   online_link: string;
-  recurrence_day?: string;
+  recurrence_day?: string | string[];
   location?: string;
   resource_id?: string;
   calendar_event_id?: string;
