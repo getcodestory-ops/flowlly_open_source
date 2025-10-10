@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { Calendar, View } from "react-big-calendar";
 import { Button } from "@/components/ui/button";
-import { FileText, Video } from "lucide-react";
+import { FileText, Video, PencilIcon, ExternalLink } from "lucide-react";
 import { dayMapping, localizer } from "./calendar-utils";
 import type { GraphData } from "./types";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -71,7 +71,12 @@ const CustomToolbar = (toolbar: ToolbarApi): JSX.Element => {
 	);
 };
 
-export const CalendarView: React.FC = ({
+interface CalendarViewProps {
+	onEditEvent?: (eventData: GraphData) => void;
+}
+
+export const CalendarView: React.FC<CalendarViewProps> = ({
+	onEditEvent,
 }) => {
 	const { graphs, setCurrentGraphId } = useWorkflow();
 	const onSelectGraph = (id: string): void => {
@@ -79,7 +84,17 @@ export const CalendarView: React.FC = ({
 	};
 	const { calendarView, setCalendarView } = useViewStore();
 	const [date, setDate] = useState(new Date());
-	const [tooltip, setTooltip] = useState<{ content: string; x: number; y: number } | null>(null);
+	const [tooltip, setTooltip] = useState<{ event: GraphData; x: number; y: number } | null>(null);
+	const tooltipTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+	// Cleanup timeout on unmount
+	React.useEffect(() => {
+		return () => {
+			if (tooltipTimeoutRef.current) {
+				clearTimeout(tooltipTimeoutRef.current);
+			}
+		};
+	}, []);
 
 	const extractHoursMinutes = useCallback((timeString?: string): { hours: number; minutes: number } => {
 		if (!timeString) {
@@ -334,19 +349,26 @@ const events = useMemo(() => {
 	});
 
 	const EventComponent = ({ event }: { event: RbcEvent }): JSX.Element => {
-		const tooltipContent = `${event.resource.name} - ${formatLocalTime(event.start)}`;
-		
 		const handleMouseEnter = (e: React.MouseEvent): void => {
+			// Clear any pending close timeout
+			if (tooltipTimeoutRef.current) {
+				clearTimeout(tooltipTimeoutRef.current);
+				tooltipTimeoutRef.current = null;
+			}
+			
 			const rect = e.currentTarget.getBoundingClientRect();
 			setTooltip({
-				content: tooltipContent,
+				event: event.resource,
 				x: rect.left + rect.width / 2,
 				y: rect.top - 5,
 			});
 		};
 		
 		const handleMouseLeave = (): void => {
-			setTooltip(null);
+			// Delay closing the tooltip to allow mouse to move to it
+			tooltipTimeoutRef.current = setTimeout(() => {
+				setTooltip(null);
+			}, 100); // 100ms delay
 		};
 		
 		return (
@@ -401,14 +423,70 @@ const events = useMemo(() => {
 			/>
 			{tooltip && (
 				<div
-					className="fixed z-50 px-2 py-1 text-xs text-white bg-black rounded shadow-lg pointer-events-none"
+					className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg"
 					style={{
 						left: tooltip.x,
 						top: tooltip.y,
-						transform: "translateX(-50%)",
+						transform: "translateX(-50%) translateY(-100%) translateY(-8px)",
+					}}
+					onMouseEnter={() => {
+						// Clear any pending close timeout when entering tooltip
+						if (tooltipTimeoutRef.current) {
+							clearTimeout(tooltipTimeoutRef.current);
+							tooltipTimeoutRef.current = null;
+						}
+					}}
+					onMouseLeave={() => {
+						// Close tooltip when leaving it
+						tooltipTimeoutRef.current = setTimeout(() => {
+							setTooltip(null);
+						}, 100);
 					}}
 				>
-					{tooltip.content}
+					<div className="flex items-center gap-4 px-3 py-2">
+						{/* Event Name */}
+						<div className="flex items-center gap-2">
+							{tooltip.event.event_type === "document_writing" ? (
+								<FileText className="flex-shrink-0" size={14} />
+							) : (
+								<Video className="flex-shrink-0" size={14} />
+							)}
+							<span className="font-medium text-gray-900 truncate">{tooltip.event.name}</span>
+						</div>
+						{/* Separator */}
+						<div className="h-6 w-px bg-gray-300" />
+						{/* Action Buttons */}
+						<div className="flex items-center gap-2">
+							{onEditEvent && ["meeting", "document_writing", "custom"].includes(tooltip.event.event_type) && (
+								<Button
+									className="h-8 px-2 text-blue-600 hover:bg-blue-50"
+									size="sm"
+									variant="ghost"
+									onClick={(e) => {
+										e.stopPropagation();
+										onEditEvent(tooltip.event);
+										setTooltip(null);
+									}}
+								>
+									<PencilIcon className="mr-1 h-4 w-4" />
+									Edit
+								</Button>
+							)}
+							<Button
+								className="h-8 px-2 text-green-600 hover:bg-green-50"
+								size="sm"
+								variant="ghost"
+								onClick={(e) => {
+									e.stopPropagation();
+									onSelectGraph(tooltip.event.id);
+									setTooltip(null);
+								}}
+							>
+								<ExternalLink className="mr-1 h-4 w-4" />
+								Open
+							</Button>
+						</div>
+					</div>
 				</div>
 			)}
 		</div>

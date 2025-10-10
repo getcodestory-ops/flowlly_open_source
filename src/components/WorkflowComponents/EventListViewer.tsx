@@ -551,7 +551,7 @@ export const EventListViewer: React.FC = ({
 				</div>
 			)}
 			{viewMode === ViewMode.CALENDAR && (
-				<CalendarView />
+				<CalendarView onEditEvent={onClickEdit} />
 			)}
 			{viewMode === ViewMode.GRID && (
 				<div>
