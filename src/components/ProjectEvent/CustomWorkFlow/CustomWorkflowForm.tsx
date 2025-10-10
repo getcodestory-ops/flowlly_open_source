@@ -27,6 +27,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { format, addMinutes } from "date-fns";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { BasicMetadata } from "./components/BasicMetadata";
 import { TriggerConfiguration } from "./components/TriggerConfiguration";
 import { WorkflowNodes } from "./components/WorkflowNodes/WorkFlowNodes";
@@ -36,23 +37,34 @@ import { WorkflowFormData } from "./types";
 import { Loader2 } from "lucide-react";
 import { GraphData } from "../../WorkflowComponents/types";
 
-const convertGraphToWorkflow = (graphData: GraphData, accessByKey: string): WorkflowFormData => ({
-	id: graphData.id,
-	name: graphData.name,
-	workflowFor: graphData.description,
-	recurrence: graphData.metadata.frequency,
-	startTime: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
-	timeZone: graphData.metadata.time_zone,
-	accessBy: "project_access",
-	accessByKey: accessByKey,
-	triggerBy:
-    (graphData.event_trigger?.[0]
-    	?.trigger_by as WorkflowFormData["triggerBy"]) ?? "time",
-	triggerKeyword: graphData.event_trigger?.[0]?.trigger_keyword ?? "",
-	triggerByKey: graphData.event_trigger?.[0]?.trigger_by_key ?? "",
-	authorizedUsers: [],
-	nodes: graphData.metadata?.nodes ?? [],
-});
+const convertGraphToWorkflow = (graphData: GraphData, accessByKey: string): WorkflowFormData => {
+	const recDay = graphData.metadata.recurrence_day;
+	let recurrenceDay: string[] = [];
+	if (Array.isArray(recDay)) {
+		recurrenceDay = recDay;
+	} else if (recDay) {
+		recurrenceDay = [recDay];
+	}
+	
+	return {
+		id: graphData.id,
+		name: graphData.name,
+		workflowFor: graphData.description,
+		recurrence: graphData.metadata.frequency,
+		startTime: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
+		timeZone: graphData.metadata.time_zone,
+		accessBy: "project_access",
+		accessByKey: accessByKey,
+		triggerBy:
+	    (graphData.event_trigger?.[0]
+	    	?.trigger_by as WorkflowFormData["triggerBy"]) ?? "time",
+		triggerKeyword: graphData.event_trigger?.[0]?.trigger_keyword ?? "",
+		triggerByKey: graphData.event_trigger?.[0]?.trigger_by_key ?? "",
+		authorizedUsers: [],
+		nodes: graphData.metadata?.nodes ?? [],
+		recurrenceDay: recurrenceDay,
+	};
+};
 
 export default function CustomWorkflowForm({
 	onClose,
@@ -110,7 +122,7 @@ export default function CustomWorkflowForm({
 	useEffect(() => {
 		if (formData.recurrence === "weekdays") {
 			const currentDay = format(new Date(), "EEEE");
-			handleFormUpdate({ recurrenceDay: currentDay });
+			handleFormUpdate({ recurrenceDay: [currentDay] });
 		}
 	}, [formData.recurrence]);
 
@@ -200,31 +212,46 @@ export default function CustomWorkflowForm({
 													{formData.recurrence === "weekly" && (
 														<div className="space-y-2 col-span-2">
 															<Label htmlFor="weeklyRecurrenceDay">On</Label>
-															<Select
-																onValueChange={(value) =>
-																	handleFormUpdate({ recurrenceDay: value })
-																}
-																value={formData.recurrenceDay}
-															>
-																<SelectTrigger>
-																	<SelectValue placeholder="Select day" />
-																</SelectTrigger>
-																<SelectContent>
-																	{[
-																		"Monday",
-																		"Tuesday",
-																		"Wednesday",
-																		"Thursday",
-																		"Friday",
-																		"Saturday",
-																		"Sunday",
-																	].map((day) => (
-																		<SelectItem key={day} value={day}>
-																			{day}
-																		</SelectItem>
-																	))}
-																</SelectContent>
-															</Select>
+															<div className="flex flex-wrap gap-2">
+																{[
+																	"Sunday",
+																	"Monday",
+																	"Tuesday",
+																	"Wednesday",
+																	"Thursday",
+																	"Friday",
+																	"Saturday",
+																].map((day) => {
+																	const recDays = Array.isArray(formData.recurrenceDay) 
+																		? formData.recurrenceDay 
+																		: formData.recurrenceDay ? [formData.recurrenceDay] : [];
+																	return (
+																		<label 
+																			className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm cursor-pointer transition-colors ${
+																				recDays.includes(day)
+																					? "bg-blue-100 text-blue-700" 
+																					: "bg-gray-100 hover:bg-gray-200 text-gray-700"
+																			}`}
+																			key={day}
+																		>
+																			<Checkbox
+																				checked={recDays.includes(day)}
+																				className="sr-only"
+																				onCheckedChange={() => {
+																					const current = Array.isArray(formData.recurrenceDay) 
+																						? formData.recurrenceDay 
+																						: formData.recurrenceDay ? [formData.recurrenceDay] : [];
+																					const updated = current.includes(day)
+																						? current.filter((d) => d !== day)
+																						: [...current, day];
+																					handleFormUpdate({ recurrenceDay: updated });
+																				}}
+																			/>
+																			{day.slice(0, 3)}
+																		</label>
+																	);
+																})}
+															</div>
 														</div>
 													)}
 													{formData.recurrence === "weekdays" && (
@@ -232,18 +259,9 @@ export default function CustomWorkflowForm({
 															<Label htmlFor="weeklyRecurrenceDay">
                                 Every Weekday
 															</Label>
-															<Select disabled value={formData.recurrenceDay}>
-																<SelectTrigger>
-																	<SelectValue
-																		placeholder={format(new Date(), "EEEE")}
-																	/>
-																</SelectTrigger>
-																<SelectContent>
-																	<SelectItem value={format(new Date(), "EEEE")}>
-																		{format(new Date(), "EEEE")} (Today)
-																	</SelectItem>
-																</SelectContent>
-															</Select>
+															<div className="px-3 py-2 rounded-md bg-gray-100 text-sm">
+																Monday - Friday
+															</div>
 														</div>
 													)}
 													<div className="space-y-2">
