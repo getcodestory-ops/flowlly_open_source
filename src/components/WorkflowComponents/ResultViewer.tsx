@@ -261,7 +261,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 							)}
 						</TabsContent>
 						<TabsContent 
-							className="p-2 h-full " 
+							className="h-full bg-white " 
 							value="questions"
 						>
 							<MeetingChatFromMeetingInstance 

@@ -407,7 +407,7 @@ export default function MeetingChat({
 
 	return (
 		<ScrollArea className="container space-y-6 bg-white rounded-xl border border-slate-100 p-6 shadow-sm h-full max-w-2xl mx-auto">
-			<div className="text-center mb-6 ">
+			<div className="text-center mb-2 bg-white ">
 				<div className="flex items-center justify-center gap-2 mb-3">
 					<MessageSquare className="h-8 w-8 " />
 				</div>

@@ -73,7 +73,7 @@ const getTimeBasedTag = (eventDate: Date, currentTime: Date): { label: string; c
 		return { label: "Finished", color: "bg-amber-100 text-gray-700 border-amber-300" };
 	} else if (diffMinutes <= 60) {
 		// Event is happening in 1 hour or less
-		return { label: `Happening in ${diffMinutes} minutes`, color: "bg-green-100 text-green-800 border-green-300" };
+		return { label: `In ${diffMinutes} min.`, color: "bg-green-100 text-green-800 border-green-300" };
 	} else {
 		// Event is more than 1 hour in the future
 		return { label: "Upcoming", color: "bg-orange-100 text-orange-800 border-orange-300" };
