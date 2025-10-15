@@ -122,6 +122,35 @@ export type EventResult = {
   streaming?: boolean;
 };
 
+// Microsoft Recurrence Pattern types
+export type RecurrencePatternType = "daily" | "weekly" | "absoluteMonthly" | "relativeMonthly" | "absoluteYearly" | "relativeYearly";
+export type RecurrenceRangeType = "endDate" | "noEnd" | "numbered";
+export type DayOfWeek = "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday";
+export type WeekIndex = "first" | "second" | "third" | "fourth" | "last";
+
+export type RecurrencePattern = {
+  type: RecurrencePatternType;
+  interval: number;
+  month?: number;
+  dayOfMonth?: number;
+  daysOfWeek?: DayOfWeek[];
+  firstDayOfWeek?: DayOfWeek;
+  index?: WeekIndex;
+};
+
+export type RecurrenceRange = {
+  type: RecurrenceRangeType;
+  startDate: string;
+  endDate?: string;
+  recurrenceTimeZone?: string;
+  numberOfOccurrences?: number;
+};
+
+export type Recurrence = {
+  pattern: RecurrencePattern;
+  range: RecurrenceRange;
+};
+
 export type EventSchedule = {
   id: string;
   schedule: {
@@ -131,6 +160,7 @@ export type EventSchedule = {
     end?: string;
     time_zone: string;
     exceptions?: string[];
+    recurrence?: Recurrence;
   };
   event_result: EventResult[];
 };

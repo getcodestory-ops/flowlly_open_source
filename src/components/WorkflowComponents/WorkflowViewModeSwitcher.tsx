@@ -8,11 +8,11 @@ export const WorkflowViewModeSwitcher = (): React.ReactNode => {
 	return (
 		<div className="flex items-center gap-1">
 			<Button
-				onClick={() => setViewMode(ViewMode.GRID)}
+				onClick={() => setViewMode(ViewMode.CALENDAR)}
 				size="icon"
-				variant={viewMode === ViewMode.GRID ? "default" : "outline"}
+				variant={viewMode === ViewMode.CALENDAR ? "default" : "outline"}
 			>
-				<Grid className="h-4 w-4" />
+				<Calendar className="h-4 w-4" />
 			</Button>
 			<Button
 				onClick={() => setViewMode(ViewMode.LIST)}
@@ -22,12 +22,13 @@ export const WorkflowViewModeSwitcher = (): React.ReactNode => {
 				<List className="h-4 w-4" />
 			</Button>
 			<Button
-				onClick={() => setViewMode(ViewMode.CALENDAR)}
+				onClick={() => setViewMode(ViewMode.GRID)}
 				size="icon"
-				variant={viewMode === ViewMode.CALENDAR ? "default" : "outline"}
+				variant={viewMode === ViewMode.GRID ? "default" : "outline"}
 			>
-				<Calendar className="h-4 w-4" />
+				<Grid className="h-4 w-4" />
 			</Button>
+
 		</div>
 	);
 };

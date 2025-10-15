@@ -24,11 +24,13 @@ interface ViewState {
   rowsPerPage: number;
   scheduleView: "list" | "gantt";
   calendarView: View;
+  calendarDate: Date;
   ganttView: ViewMode;
   setWorkbenchView: (view: "table" | "calendar") => void;
   setRowsPerPage: (rows: number) => void;
   setScheduleView: (view: "list" | "gantt") => void;
   setCalendarView: (view: View) => void;
+  setCalendarDate: (date: Date) => void;
   setGanttView: (view: ViewMode) => void;
   setCalendarSubView: (view: "current" | "integrations") => void;
 }
@@ -42,11 +44,13 @@ export const useViewStore = create<ViewState>()(
 			rowsPerPage: 10,
 			scheduleView: "list",
 			calendarView: Views.WEEK,
+			calendarDate: new Date(),
 			ganttView: ViewMode.Week,
 			setWorkbenchView: (view) => set(() => ({ workbenchView: view })),
 			setRowsPerPage: (rows) => set(() => ({ rowsPerPage: rows })),
 			setScheduleView: (view) => set(() => ({ scheduleView: view })),
 			setCalendarView: (view) => set(() => ({ calendarView: view })),
+			setCalendarDate: (date) => set(() => ({ calendarDate: date })),
 			setGanttView: (view) => set(() => ({ ganttView: view })),
 			setCalendarSubView: (view) => set(() => ({ calendarSubView: view })),
 		}),

@@ -86,10 +86,6 @@ export const EventListViewer: React.FC = ({
 	const { toast } = useToast();
 	const { session, activeProject } = useStore();
 
-
-
-
-
 	const { mutate: deleteProjectEventMutation } = useMutation({
 		mutationFn: async(eventId: string) => {
 			if (!session || !activeProject?.project_id) return;
@@ -138,14 +134,12 @@ export const EventListViewer: React.FC = ({
 			});
 		},
 	});
-
 	const onClickEdit = (info: GraphData) => {
 		const eventType = info.event_type;
 		setSelectedEventType(eventType);
 		setSelectedEventData(info);
 		setIsDialogOpen(true);
 	};
-
 	const toggleEventSelection = useCallback((eventId: string) => {
 		setSelectedEventsForMerge((prev) => {
 			if (prev.includes(eventId)) {
@@ -169,16 +163,9 @@ export const EventListViewer: React.FC = ({
 			setIsMergeDialogOpen(true);
 		}
 	};
-
 	const handleConfirmMerge = (mergeFromId: string, mergeIntoId: string) => {
 		mergeEventsMutation({ mergeFromId, mergeIntoId });
 	};
-
-
-
-
-
-
 	const columns = useMemo<ColumnDef<GraphData>[]>(
 		() => {
 			const cols: ColumnDef<GraphData>[] = [];
@@ -207,45 +194,85 @@ export const EventListViewer: React.FC = ({
 							onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 							variant="ghost"
 						>
-							Name
+						Name
 						</Button>
 					),
-					cell: (info) => info.getValue(),
-				},
-				{
-					accessorKey: "event_type",
-					header: "Type",
-					cell: (info) => info.getValue(),
+					cell: (info) => (
+						<div className="font-medium text-gray-900">
+							{info.getValue() as string}
+						</div>
+					),
 				},
 				{
 					accessorKey: "metadata.frequency",
 					header: "Frequency",
 					cell: (info) => {
-						const metadata = info.row.original.metadata;
+						const g = info.row.original;
+						const metadata = g.metadata;
+						
+						// Check for Microsoft recurrence first
+						const msRecurrence = g.event_schedule?.[0]?.schedule?.recurrence;
+						if (msRecurrence?.pattern) {
+							const interval = msRecurrence.pattern.interval || 1;
+							const type = msRecurrence.pattern.type;
+						
+							if (interval > 1) {
+								const intervalUnit = type === "weekly" ? "weeks" : 
+							                     type === "daily" ? "days" : 
+							                     type.includes("Monthly") ? "months" :
+							                     type.includes("Yearly") ? "years" : "intervals";
+								return (
+									<span className=" rounded">
+									Every {interval} {intervalUnit}
+									</span>
+								);
+							}
+						
+							// Format the recurrence text for interval of 1
+							return type.charAt(0).toUpperCase() + type.slice(1);
+						}
+						
+						// Fallback to metadata
 						return metadata?.frequency || "N/A";
 					},
 				},
 			);
 
-			const hasWeekly = (graphs || []).some((g) => g.metadata?.frequency === "weekly");
+			const hasWeekly = (graphs || []).some((g) => {
+				const msRecurrence = g.event_schedule?.[0]?.schedule?.recurrence;
+				return g.metadata?.frequency === "weekly" || msRecurrence?.pattern?.type === "weekly";
+			});
 			if (hasWeekly) {
 				cols.push({
 					accessorKey: "metadata.recurrence_day",
 					header: "Day",
 					cell: (info) => {
-						const metadata = info.row.original.metadata;
+						const g = info.row.original;
+						const metadata = g.metadata;
+						
+						// Check for Microsoft recurrence first
+						const msRecurrence = g.event_schedule?.[0]?.schedule?.recurrence;
+						if (msRecurrence?.pattern?.type === "weekly" && msRecurrence.pattern.daysOfWeek) {
+							return msRecurrence.pattern.daysOfWeek
+								.map((day) => day.slice(0, 2).toUpperCase())
+								.join(", ");
+						}
+						
+						// Fallback to metadata
 						if (!metadata || metadata.frequency !== "weekly") return "";
-						return Array.isArray(metadata.recurrence_day) ? metadata.recurrence_day.map((day) => day.slice(0, 2).toUpperCase()).join(", ") : metadata.recurrence_day?.slice(0, 2).toUpperCase() || "";
+						return Array.isArray(metadata.recurrence_day) 
+							? metadata.recurrence_day.map((day) => day.slice(0, 2).toUpperCase()).join(", ") 
+							: metadata.recurrence_day?.slice(0, 2).toUpperCase() || "";
 					},
 				});
 			}
 
 			cols.push(
 				{
-					accessorKey: "run_time",
+					id: "meeting_time",
 					header: "Meeting Time",
-					cell: (info) => {
-						const g = info.row.original;
+					accessorFn: (row) => {
+						const g = row;
 						const firstSchedule = g.event_schedule?.[0];
 						const scheduleStart = firstSchedule?.schedule?.start;
 						const scheduleTime = firstSchedule?.schedule?.time as { run_time?: string } | { run_time?: string }[] | undefined;
@@ -275,6 +302,7 @@ export const EventListViewer: React.FC = ({
 						}
 						return "N/A";
 					},
+					cell: (info) => info.getValue(),
 				},
 				{
 					accessorKey: "id",
@@ -283,7 +311,7 @@ export const EventListViewer: React.FC = ({
 						const eventType = info.row.original.event_type;
 						return (
 							<PencilIcon
-								className="cursor-pointer  hover:text-purple-500 transition-colors"
+								className="h-4 w-4 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors"
 								onClick={(e) => {
 									e.stopPropagation();
 									if (["meeting", "document_writing", "custom"].includes(eventType)) {
@@ -371,19 +399,22 @@ export const EventListViewer: React.FC = ({
 				)}
 			</div>
 			{viewMode === ViewMode.LIST && (
-				<div>
+				<div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
 					<Table>
-						<TableHeader>
+						<TableHeader className="bg-gray-50/50">
 							{table.getHeaderGroups().map((headerGroup) => (
-								<TableRow key={headerGroup.id}>
+								<TableRow className="border-b border-gray-200" key={headerGroup.id}>
 									{headerGroup.headers.map((header) => (
-										<TableHead className="whitespace-nowrap" key={header.id}>
+										<TableHead 
+											className="whitespace-nowrap h-12 px-6 text-xs font-semibold tracking-wider uppercase text-gray-600" 
+											key={header.id}
+										>
 											{header.isPlaceholder ? null : (
 												<div
 													className={
 														header.column.getCanSort()
-															? "cursor-pointer select-none flex items-center"
-															: ""
+															? "cursor-pointer select-none flex items-center gap-2 hover:text-gray-900 transition-colors"
+															: "flex items-center"
 													}
 													onClick={
 														header.column.getCanSort()
@@ -395,11 +426,15 @@ export const EventListViewer: React.FC = ({
 														header.column.columnDef.header,
 														header.getContext(),
 													)}
-													{header.column.getIsSorted() === "asc" ? (
-														<ArrowUp className="ml-2 h-4 w-4" />
-													) : header.column.getIsSorted() === "desc" ? (
-														<ArrowDown className="ml-2 h-4 w-4" />
-													) : null}
+													{header.column.getCanSort() && (
+														<span className="w-4 h-4 flex items-center justify-center">
+															{header.column.getIsSorted() === "asc" ? (
+																<ArrowUp className="h-4 w-4" />
+															) : header.column.getIsSorted() === "desc" ? (
+																<ArrowDown className="h-4 w-4" />
+															) : null}
+														</span>
+													)}
 												</div>
 											)}
 										</TableHead>
@@ -411,12 +446,15 @@ export const EventListViewer: React.FC = ({
 							{table.getRowModel().rows.length > 0 ? (
 								table.getRowModel().rows.map((row) => (
 									<TableRow
-										className="cursor-pointer hover:bg-gray-100"
+										className="cursor-pointer hover:bg-gray-50/50 transition-colors border-b border-gray-100 last:border-b-0"
 										key={row.id}
 										onClick={() => onSelectGraph(row.original.id)}
 									>
 										{row.getVisibleCells().map((cell) => (
-											<TableCell key={cell.id}>
+											<TableCell 
+												className="px-6 py-4 text-sm text-gray-900"
+												key={cell.id}
+											>
 												{flexRender(
 													cell.column.columnDef.cell,
 													cell.getContext(),
@@ -427,14 +465,14 @@ export const EventListViewer: React.FC = ({
 								))
 							) : (
 								<TableRow>
-									<TableCell className="text-center" colSpan={columns.length}>
-										No results found.
+									<TableCell className="text-center py-12 text-gray-500" colSpan={columns.length}>
+									No results found.
 									</TableCell>
 								</TableRow>
 							)}
 						</TableBody>
 					</Table>
-					<div className="pt-4">
+					<div className="px-6 py-4 border-t border-gray-200 bg-gray-50/30">
 						<DataTablePagination table={table} />
 					</div>
 				</div>
@@ -706,7 +744,6 @@ const MergeEventsDialog: React.FC<MergeEventsDialogProps> = ({
 		</Dialog>
 	);
 };
-
 const formatTimeAgo = (timeAgoString: string): string => {
 	return timeAgoString
 		.replace("about ", "") // Remove "about"
