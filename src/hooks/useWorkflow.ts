@@ -74,7 +74,7 @@ export const useWorkflow = create<WorkflowStore>((set, get) => ({
 	isLoadingResult: false,
 	setIsLoadingResult: (isLoadingResult: boolean) => set({ isLoadingResult }),
 
-	viewMode: ViewMode.GRID,
+	viewMode: ViewMode.CALENDAR,
 	setViewMode: (viewMode: ViewMode) => set({ viewMode }),
 
 	selectedEventResourceId: null,

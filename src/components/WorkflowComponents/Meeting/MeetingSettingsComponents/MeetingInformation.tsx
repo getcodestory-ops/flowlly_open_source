@@ -14,7 +14,18 @@ export const MeetingInformation: React.FC = () => {
 	// Initialize state from currentGraph or defaults
 	const [meetingName, setMeetingName] = useState(currentGraph?.name || "");
 	const [description, setDescription] = useState(currentGraph?.description || "");
-	const [frequency, setFrequency] = useState(currentGraph?.metadata?.frequency || "weekly");
+	
+	// Check for Microsoft recurrence first, then fallback to metadata
+	const getMsRecurrence = () => currentGraph?.event_schedule?.[0]?.schedule?.recurrence;
+	
+	const [frequency, setFrequency] = useState(() => {
+		const msRecurrence = getMsRecurrence();
+		if (msRecurrence?.pattern?.type) {
+			return msRecurrence.pattern.type;
+		}
+		return currentGraph?.metadata?.frequency || "weekly";
+	});
+	
 	const [time, setTime] = useState(currentGraph?.metadata?.time || "");
 	const [duration, setDuration] = useState(currentGraph?.metadata?.duration?.toString() || "60");
 	const [timeZone, setTimeZone] = useState(
@@ -24,11 +35,24 @@ export const MeetingInformation: React.FC = () => {
 	const [selectedDays, setSelectedDays] = useState<number[]>(
 		currentGraph?.event_schedule?.[0]?.schedule?.day || [],
 	);
+	
 	const [weeklyRecurrenceDay, setWeeklyRecurrenceDay] = useState<string[]>(() => {
+		const msRecurrence = getMsRecurrence();
+		if (msRecurrence?.pattern?.daysOfWeek && msRecurrence.pattern.daysOfWeek.length > 0) {
+			// Capitalize first letter to match the format
+			return msRecurrence.pattern.daysOfWeek.map((day) => 
+				day.charAt(0).toUpperCase() + day.slice(1).toLowerCase(),
+			);
+		}
 		const recDay = currentGraph?.metadata?.recurrence_day;
 		if (Array.isArray(recDay)) return recDay;
 		if (recDay) return [recDay];
 		return ["Monday"];
+	});
+	
+	const [recurrenceInterval, setRecurrenceInterval] = useState(() => {
+		const msRecurrence = getMsRecurrence();
+		return msRecurrence?.pattern?.interval || 1;
 	});
 
 	// Update state when currentGraph changes
@@ -36,7 +60,23 @@ export const MeetingInformation: React.FC = () => {
 		if (currentGraph) {
 			setMeetingName(currentGraph.name || "");
 			setDescription(currentGraph.description || "");
-			setFrequency(currentGraph.metadata?.frequency || "weekly");
+			
+			// Check for Microsoft recurrence first
+			const msRecurrence = currentGraph.event_schedule?.[0]?.schedule?.recurrence;
+			if (msRecurrence?.pattern?.type) {
+				setFrequency(msRecurrence.pattern.type);
+				setRecurrenceInterval(msRecurrence.pattern.interval || 1);
+				
+				// Update weekly recurrence days from Microsoft pattern
+				if (msRecurrence.pattern.daysOfWeek && msRecurrence.pattern.daysOfWeek.length > 0) {
+					setWeeklyRecurrenceDay(msRecurrence.pattern.daysOfWeek.map((day) => 
+						day.charAt(0).toUpperCase() + day.slice(1).toLowerCase(),
+					));
+				}
+			} else {
+				setFrequency(currentGraph.metadata?.frequency || "weekly");
+				setRecurrenceInterval(1);
+			}
 			{
 				const firstSchedule = currentGraph.event_schedule?.[0];
 				const scheduleStart = firstSchedule?.schedule?.start;
@@ -99,14 +139,16 @@ export const MeetingInformation: React.FC = () => {
 			setOnlineLink(currentGraph.metadata?.online_link || "");
 			setSelectedDays(currentGraph.event_schedule?.[0]?.schedule?.day || []);
 			
-			// Handle recurrence_day as either string or string[]
-			const recDay = currentGraph.metadata?.recurrence_day;
-			if (Array.isArray(recDay)) {
-				setWeeklyRecurrenceDay(recDay);
-			} else if (recDay) {
-				setWeeklyRecurrenceDay([recDay]);
-			} else {
-				setWeeklyRecurrenceDay(["Monday"]);
+			// Handle recurrence_day from metadata only if no Microsoft recurrence exists
+			if (!msRecurrence?.pattern?.daysOfWeek) {
+				const recDay = currentGraph.metadata?.recurrence_day;
+				if (Array.isArray(recDay)) {
+					setWeeklyRecurrenceDay(recDay);
+				} else if (recDay) {
+					setWeeklyRecurrenceDay([recDay]);
+				} else {
+					setWeeklyRecurrenceDay(["Monday"]);
+				}
 			}
 		}
 	}, [currentGraph]);
@@ -312,18 +354,29 @@ export const MeetingInformation: React.FC = () => {
 			<div className="space-y-3">
 				<div className="flex items-center gap-4">
 					<Repeat className="h-5 w-5 text-gray-600" />
-					<Select onValueChange={setFrequency} value={frequency}>
-						<SelectTrigger className="w-48 h-9 border-none bg-gray-50 hover:bg-gray-100">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="once">Does not repeat</SelectItem>
-							<SelectItem value="daily">Daily</SelectItem>
-							<SelectItem value="weekly">Weekly</SelectItem>
-							<SelectItem value="monthly">Monthly</SelectItem>
-							<SelectItem value="weekdays">Weekdays (Mon-Fri)</SelectItem>
-						</SelectContent>
-					</Select>
+					<div className="flex items-center gap-2">
+						<Select onValueChange={setFrequency} value={frequency}>
+							<SelectTrigger className="w-48 h-9 border-none bg-gray-50 hover:bg-gray-100">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="once">Does not repeat</SelectItem>
+								<SelectItem value="daily">Daily</SelectItem>
+								<SelectItem value="weekly">Weekly</SelectItem>
+								<SelectItem value="monthly">Monthly</SelectItem>
+								<SelectItem value="absoluteMonthly">Monthly (absolute)</SelectItem>
+								<SelectItem value="relativeMonthly">Monthly (relative)</SelectItem>
+								<SelectItem value="absoluteYearly">Yearly (absolute)</SelectItem>
+								<SelectItem value="relativeYearly">Yearly (relative)</SelectItem>
+								<SelectItem value="weekdays">Weekdays (Mon-Fri)</SelectItem>
+							</SelectContent>
+						</Select>
+						{recurrenceInterval > 1 && (
+							<span className="text-sm text-gray-600 bg-blue-50 px-2 py-1 rounded">
+								Every {recurrenceInterval} {frequency === "weekly" ? "weeks" : frequency === "daily" ? "days" : "intervals"}
+							</span>
+						)}
+					</div>
 				</div>
 				{/* Day Selection for Weekly/Weekdays */}
 				{( frequency === "weekdays") && (
