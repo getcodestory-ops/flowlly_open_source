@@ -86,10 +86,6 @@ export const EventListViewer: React.FC = ({
 	const { toast } = useToast();
 	const { session, activeProject } = useStore();
 
-
-
-
-
 	const { mutate: deleteProjectEventMutation } = useMutation({
 		mutationFn: async(eventId: string) => {
 			if (!session || !activeProject?.project_id) return;
@@ -138,14 +134,12 @@ export const EventListViewer: React.FC = ({
 			});
 		},
 	});
-
 	const onClickEdit = (info: GraphData) => {
 		const eventType = info.event_type;
 		setSelectedEventType(eventType);
 		setSelectedEventData(info);
 		setIsDialogOpen(true);
 	};
-
 	const toggleEventSelection = useCallback((eventId: string) => {
 		setSelectedEventsForMerge((prev) => {
 			if (prev.includes(eventId)) {
@@ -169,16 +163,9 @@ export const EventListViewer: React.FC = ({
 			setIsMergeDialogOpen(true);
 		}
 	};
-
 	const handleConfirmMerge = (mergeFromId: string, mergeIntoId: string) => {
 		mergeEventsMutation({ mergeFromId, mergeIntoId });
 	};
-
-
-
-
-
-
 	const columns = useMemo<ColumnDef<GraphData>[]>(
 		() => {
 			const cols: ColumnDef<GraphData>[] = [];
@@ -757,7 +744,6 @@ const MergeEventsDialog: React.FC<MergeEventsDialogProps> = ({
 		</Dialog>
 	);
 };
-
 const formatTimeAgo = (timeAgoString: string): string => {
 	return timeAgoString
 		.replace("about ", "") // Remove "about"
