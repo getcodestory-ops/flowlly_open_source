@@ -7,6 +7,12 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	Video,
+	FileText,
+	List,
+	Calendar,
+} from "lucide-react";
+import {
 	useReactTable,
 	getCoreRowModel,
 	getFilteredRowModel,
@@ -38,11 +44,41 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useWorkflow } from "@/hooks/useWorkflow";
+import { Tooltipped } from "@/components/Common/Tooltiped";
 
 interface EventScheduleListProps {
   graphs: EventSchedule[];
   onWorkflowSelect?: () => void;
 }
+
+// Helper function to determine event tag based on description
+const getEventTag = (description: string): { label: string; color: string } | null => {
+	const lowerDesc = description.toLowerCase();
+	if (lowerDesc.includes("meeting minutes")) {
+		return { label: "Agenda", color: "bg-blue-100 text-blue-800 border-blue-300" };
+	}
+	if (lowerDesc.includes("creating process from user input")) {
+		return { label: "Meeting", color: "bg-purple-100 text-purple-800 border-purple-300" };
+	}
+	return null;
+};
+
+// Helper function to determine time-based tag
+const getTimeBasedTag = (eventDate: Date, currentTime: Date): { label: string; color: string } => {
+	const diffMs = eventDate.getTime() - currentTime.getTime();
+	const diffMinutes = Math.floor(diffMs / 60000);
+	
+	if (diffMs < 0) {
+		// Event is in the past
+		return { label: "Finished", color: "bg-amber-100 text-gray-700 border-amber-300" };
+	} else if (diffMinutes <= 60) {
+		// Event is happening in 1 hour or less
+		return { label: `In ${diffMinutes} min.`, color: "bg-green-100 text-green-800 border-green-300" };
+	} else {
+		// Event is more than 1 hour in the future
+		return { label: "Upcoming", color: "bg-orange-100 text-orange-800 border-orange-300" };
+	}
+};
 
 export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	graphs,
@@ -56,6 +92,13 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	const session = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
 	const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+	const [currentTime, setCurrentTime] = useState(new Date());
+	
+	// Store node data for events (eventId -> array of {id, status, output})
+	const [eventNodesMap, setEventNodesMap] = useState<Record<string, Array<{ id: string; status: string; output?: unknown }>>>({});
+	
+	// Track which events we're currently fetching to avoid duplicate requests
+	const [fetchingEventIds, setFetchingEventIds] = useState<Set<string>>(new Set());
 
 	// Added pagination state
 	const [pagination, setPagination] = useState<{
@@ -81,6 +124,8 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 			}
 		}
 	}, [graphs, selectedEventId, selectedWorkflowId, setCurrentResult]);
+
+
 
 	// Add new state to track the selected result
 
@@ -131,11 +176,20 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 			return [];
 		}
 
+	
+
+		
+
 		return sortedGraphs.map((eventSchedule) => ({
 			id: eventSchedule.id,
 			schedule: eventSchedule.schedule,
 			subRows: eventSchedule.event_result
 				.slice() // create copy to avoid mutating original data
+				.filter((eventResult) => {
+					// Filter out events with "Agenda" tag
+					const eventTag = eventResult.description ? getEventTag(eventResult.description) : null;
+					return eventTag?.label !== "Agenda";
+				})
 				.sort((a, b) => {
 					const parseTime = (er: { run_time?: string; timestamp: string }): number => {
 						if (er.run_time) {
@@ -155,7 +209,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 					id: eventResult.id,
 					result: eventResult,
 				})),
-		}));
+		})).filter((scheduleRow) => scheduleRow.subRows && scheduleRow.subRows.length > 0);
 	}, [sortedGraphs]);
 
 	const { mutate: clearProcess } = useMutation({
@@ -189,9 +243,9 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 							return (
 								<div className="flex items-center">
 									<span className="font-medium">
-										{compact ? "Select a Meeting to see" : "Scheduled Workflow"}
+										{compact ? "Select a Meeting from the list:" : "Scheduled Workflow"}
 									</span>
-									<span className="ml-2 text-xs text-muted-foreground">
+									{/* <span className="ml-2 text-xs text-muted-foreground">
 										{(() => {
 											const start = schedule.start;
 											const zonePattern = /Z|[+-]\d\d:\d\d$/;
@@ -206,9 +260,14 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 											} else {
 												displayDate = new Date(`2000-01-01T${run_time}Z`);
 											}
-											return displayDate.toLocaleString([], { dateStyle: compact ? "short" : "long", timeStyle: compact ? "short" : "medium" });
+											const timeZone = schedule.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+											return displayDate.toLocaleString([], { 
+												dateStyle: compact ? "short" : "long", 
+												timeStyle: compact ? "short" : "medium",
+												timeZone,
+											});
 										})()}
-									</span>
+									</span> */}
 								</div>
 							);
 						}
@@ -224,6 +283,57 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 						const activelyListening = result?.listen;
 						const currentlyRunning = result?.workflow_id;
 						const isCompleted = result.status === "completed";
+						const eventTag = result.description ? getEventTag(result.description) : null;
+
+						// Get node data (id and status) from either the result directly or from our fetched map
+						
+						
+						const nodeData = result.nodes 
+							? result.nodes.map((n: { id: string; status: string; output?: unknown }) => ({ id: n.id, status: n.status, output: n.output }))
+							: eventNodesMap[result.id] || [];
+						
+						// Debug logging
+					
+
+						// Calculate event date for time-based tag
+						const rt = result.run_time;
+						const zonePattern = /Z|[+-]\d\d:\d\d$/;
+						let eventDate: Date;
+						if (rt) {
+							if (rt.includes("T")) {
+								const iso = zonePattern.test(rt) ? rt : `${rt}Z`;
+								eventDate = new Date(iso);
+							} else {
+								// Time-only: combine with the matching schedule.start date if available
+								const parentSchedule = graphs
+									.find((s) => s.event_result.some((er) => er.id === result.id))?.schedule;
+								const baseDateStr = parentSchedule?.start
+									? parentSchedule.start.split("T")[0]
+									: (result.timestamp ? result.timestamp.split("T")[0] : new Date().toISOString()
+										.split("T")[0]);
+								
+								// Get the timezone from parent schedule or use browser's timezone
+								const eventTimeZone = parentSchedule?.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+								
+								// Create the date string and treat it as local time in the event's timezone
+								const dateTimeString = `${baseDateStr}T${rt}`;
+								
+								// Create a temporary date object
+								const tempDate = new Date(dateTimeString);
+								
+								// Convert from event timezone to user's local timezone
+								const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+								
+								// Create a date in the event timezone, then convert to user's timezone
+								const eventDateInEventTz = new Date(tempDate.toLocaleString("sv-SE", { timeZone: eventTimeZone }));
+								const eventDateInUserTz = new Date(eventDateInEventTz.toLocaleString("sv-SE", { timeZone: userTimezone }));
+								eventDate = eventDateInUserTz;
+							}
+						} else {
+							eventDate = new Date(result.timestamp);
+						}
+
+						const timeBasedTag = getTimeBasedTag(eventDate, currentTime);
 
 						return (
 							<div
@@ -231,41 +341,124 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 									compact ? "4" : "8"
 								} flex flex-col items-start gap-2`}
 							>
-								<div className="flex items-center">
+								<div className="flex items-center gap-2">
 									<span className="text-sm">
 										{(() => {
-											const rt = result.run_time;
-											const zonePattern = /Z|[+-]\d\d:\d\d$/;
-											let displayDate: Date | null = null;
-											if (rt) {
-												if (rt.includes("T")) {
-													const iso = zonePattern.test(rt) ? rt : `${rt}Z`;
-													displayDate = new Date(iso);
-												} else {
-												// Time-only: combine with the matching schedule.start date if available
-													const parentSchedule = graphs
-														.find((s) => s.event_result.some((er) => er.id === result.id))?.schedule;
-													const baseDateStr = parentSchedule?.start
-														? parentSchedule.start.split("T")[0]
-														: (result.timestamp ? result.timestamp.split("T")[0] : new Date().toISOString()
-															.split("T")[0]);
-													displayDate = new Date(`${baseDateStr}T${rt}Z`);
-												}
-											}
-											if (!displayDate) {
-												displayDate = new Date(result.timestamp);
-											}
-											return displayDate.toLocaleString([], {
-												dateStyle: compact ? "short" : "long",
-												timeStyle: compact ? "short" : "medium",
+											// Display date in text format with abbreviated month
+											return eventDate.toLocaleString([], {
+												month: "short",
+												day: "numeric",
+												year: "numeric",
+												hour: "numeric",
+												minute: "2-digit",
+												hour12: true,
 											});
 										})()}
+									</span>
+									{eventTag && (
+										<span className={`px-2 py-0.5 text-xs font-medium rounded-md border ${eventTag.color}`}>
+											{eventTag.label}
+										</span>
+									)}
+									<span className={`px-2 py-0.5 text-xs font-medium rounded-md border ${timeBasedTag.color}`}>
+										{timeBasedTag.label}
 									</span>
 									{isCompleted && compact && (
 										<span className="ml-2 px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">
 											Completed
 										</span>
 									)}
+									{/* Display node icons */}
+									{(() => {
+										// Show loading skeleton if currently fetching
+										if (fetchingEventIds.has(result.id)) {
+											return (
+												<Tooltipped tooltip="Loading meeting data...">
+													<div className="flex items-center gap-1 ml-2 px-2 py-0.5 bg-gray-50 border border-gray-200 rounded-md animate-pulse">
+														<div className="h-3.5 w-3.5 bg-gray-300 rounded" />
+														<div className="h-3.5 w-3.5 bg-gray-300 rounded" />
+													</div>
+												</Tooltipped>
+											);
+										}
+										
+										return nodeData.length > 0 && (
+											<div className="flex items-center gap-1 ml-2 px-2 py-0.5 bg-gray-50 border border-gray-200 rounded-md">
+												{(() => {
+													// Create map to group nodes by type with their status
+													const nodesByType = new Map<string, { status: string; isFailed: boolean }>();
+													
+													nodeData.forEach((node) => {
+														const lowerNodeId = node.id.toLowerCase();
+														let type = null;
+														
+														if (lowerNodeId.includes("record") || lowerNodeId.includes("transcribe")) {
+															type = "recording";
+														} else if (lowerNodeId.includes("minutes")) {
+															type = "minutes";
+														} else if (lowerNodeId.includes("action")) {
+															type = "actions";
+														} else if (lowerNodeId.includes("agenda")) {
+															type = "agenda";
+														}
+														
+														if (type) {
+															// If type already exists, update status to failed if any node failed
+															const existing = nodesByType.get(type);
+															
+															// Check if node failed OR if minutes node has "meeting transcript was not provided"
+															let isFailed = node.status === "failed";
+															if (type === "minutes" && node.output) {
+																const outputStr = typeof node.output === "string" 
+																	? node.output 
+																	: JSON.stringify(node.output);
+																if (outputStr.toLowerCase().includes("meeting transcript was not provided")) {
+																	isFailed = true;
+																}
+															}
+															
+															if (!existing || (isFailed && !existing.isFailed)) {
+																nodesByType.set(type, { 
+																	status: node.status, 
+																	isFailed: isFailed || (existing?.isFailed ?? false),
+																});
+															}
+														}
+													});
+													
+													return Array.from(nodesByType.entries()).map(([type, { isFailed }], idx) => {
+														// Get tooltip text based on type
+														let tooltipText = "";
+														if (type === "recording") {
+															tooltipText = isFailed ? "Meeting Recording - Failed" : "Meeting Recording Available";
+														} else if (type === "minutes") {
+															tooltipText = isFailed ? "Meeting Minutes - Failed or Unavailable" : "Meeting Minutes Available";
+														} else if (type === "actions") {
+															tooltipText = isFailed ? "Action Items - Failed" : "Action Items Available";
+														} else if (type === "agenda") {
+															tooltipText = isFailed ? "Next Meeting Agenda - Failed" : "Next Meeting Agenda Available";
+														}
+														
+														return (
+															<Tooltipped key={idx} tooltip={tooltipText}>
+																<span className="relative inline-flex items-center text-gray-600">
+																	{type === "recording" && <Video className="h-3.5 w-3.5" />}
+																	{type === "minutes" && <FileText className="h-3.5 w-3.5" />}
+																	{type === "actions" && <List className="h-3.5 w-3.5" />}
+																	{type === "agenda" && <Calendar className="h-3.5 w-3.5" />}
+																	{isFailed && (
+																		<div className="absolute inset-0 flex items-center justify-center">
+																			<div className="w-full h-[1.5px] bg-red-500 rotate-45 transform" />
+																		</div>
+																	)}
+																</span>
+															</Tooltipped>
+														);
+													});
+												})()}
+											</div>
+										);
+									})()}
 								</div>
 								{activelyListening && (
 									<div className="flex items-center">
@@ -298,7 +491,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 			},
 			// Add other columns as needed
 		],
-		[compact, graphs, clearProcess],
+		[compact, graphs, clearProcess, currentTime, eventNodesMap, fetchingEventIds],
 	);
 
 	const table = useReactTable<ScheduleTableRow>({
@@ -356,8 +549,91 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 		}
 	}, [fetchedEventResult, setCurrentResult]);
 
+	// Update current time every minute
+	useEffect(() => {
+		const timer = setInterval(() => {
+			setCurrentTime(new Date());
+		}, 60000); // Update every minute
+		return () => clearInterval(timer);
+	}, []);
+
+	// Fetch node data for events that don't have it - optimized with incremental updates
+	useEffect(() => {
+		if (!session || !activeProject || !graphs || graphs.length === 0) return;
+
+		const fetchNodeData = async(): Promise<void> => {
+			const allEventResults = graphs.flatMap((schedule) => schedule.event_result);
+			// Filter out events that already have nodes, are already fetched, or are being fetched
+			const eventsWithoutNodes = allEventResults.filter(
+				(er) => !er.nodes && !eventNodesMap[er.id] && !fetchingEventIds.has(er.id),
+			);
+			
+			if (eventsWithoutNodes.length === 0) return;
+			
+			
+			// Mark these events as being fetched
+			setFetchingEventIds((prev) => {
+				const newSet = new Set(prev);
+				eventsWithoutNodes.forEach((er) => newSet.add(er.id));
+				return newSet;
+			});
+			
+			// Fetch and update incrementally - icons appear as each fetch completes
+			eventsWithoutNodes.forEach(async(eventResult) => {
+				try {
+					const result = await getEventResult({
+						session,
+						projectId: activeProject.project_id,
+						resultId: eventResult.id,
+					});
+					
+					if (result?.result?.nodes) {
+						const nodeData = result.result.nodes.map((node: { id: string; status: string; output?: unknown }) => ({ 
+							id: node.id, 
+							status: node.status,
+							output: node.output,
+						}));
+						
+						// Update state immediately for this event
+						setEventNodesMap((prev) => ({
+							...prev,
+							[eventResult.id]: nodeData,
+						}));
+					}
+				} catch {
+					// Silently fail and continue
+				} finally {
+					// Remove from fetching set
+					setFetchingEventIds((prev) => {
+						const newSet = new Set(prev);
+						newSet.delete(eventResult.id);
+						return newSet;
+					});
+				}
+			});
+		};
+
+		fetchNodeData();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [graphs, session, activeProject]);
+
 	return (
 		<div className={cn("w-full", compact && "text-sm")}>
+			{/* Current Time Display */}
+			<div className="mb-4 p-3 ">
+				<p className="text-sm font-medium text-gray-700">
+					Your current day and time: <span className="text-gray-700 font-semibold">
+						{currentTime.toLocaleString([], {
+							weekday: "long",
+							year: "numeric",
+							month: "long",
+							day: "numeric",
+							hour: "2-digit",
+							minute: "2-digit",
+						})}
+					</span>
+				</p>
+			</div>
 			{graphs && graphs.length > 0 ? (
 				<Table>
 					<TableBody>
@@ -412,7 +688,7 @@ interface WorkflowListItemProps {
 	onWorkflowSelect?: () => void;
 }
 
-const WorkflowListItem = ({ row, compact,  graphs, setSelectedEventId, onWorkflowSelect }: WorkflowListItemProps): React.ReactNode => {
+const WorkflowListItem = ({ row, compact, graphs, setSelectedEventId, onWorkflowSelect }: WorkflowListItemProps): React.ReactNode => {
 	const { selectedWorkflowId, setSelectedWorkflowId } = useWorkflow();
 	const { setCurrentResult } = useWorkflow();
 	const isSelected = row.original.result?.id === selectedWorkflowId;

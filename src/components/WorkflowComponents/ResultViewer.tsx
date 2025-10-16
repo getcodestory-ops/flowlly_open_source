@@ -42,6 +42,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 	const { clearChatContext, setChatDirectiveType } = useChatStore();
 	const router = useRouter();
 
+
 	// Handler for back button
 	const handleBackToMeetings = (): void => {
 		// Clear any meeting context when leaving the meeting view
@@ -123,6 +124,8 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 			hasData: !!actionItemsNode,
 		},
 	];
+
+
 
 	// Set default active tab to first available tab
 	const getDefaultActiveTab = (): string => {
@@ -258,7 +261,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 							)}
 						</TabsContent>
 						<TabsContent 
-							className="p-2 h-full " 
+							className="h-full bg-white " 
 							value="questions"
 						>
 							<MeetingChatFromMeetingInstance 

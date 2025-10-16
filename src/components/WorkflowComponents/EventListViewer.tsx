@@ -7,6 +7,8 @@ import {
 	Calendar,
 	Trash2,
 	GitMerge,
+	ChevronRight,
+	ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +29,9 @@ import {
 	SortingState,
 	flexRender,
 	getPaginationRowModel,
+	getExpandedRowModel,
+	getGroupedRowModel,
+	ExpandedState,
 } from "@tanstack/react-table";
 import { DataTablePagination } from "@/components/Schedule/ScheduleTable/DataTablePagination";
 import { CalendarView } from "./CalendarView";
@@ -74,6 +79,8 @@ export const EventListViewer: React.FC = ({
 	};
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [globalFilter, setGlobalFilter] = useState("");
+	const [expanded, setExpanded] = useState<ExpandedState>(true);
+	const [grouping, setGrouping] = useState<string[]>(["name"]); // Start grouped by default
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [selectedEventType, setSelectedEventType] = useState<string | null>( null );
 	const [selectedEventData, setSelectedEventData] = useState<GraphData | null>( null );
@@ -170,8 +177,8 @@ export const EventListViewer: React.FC = ({
 		() => {
 			const cols: ColumnDef<GraphData>[] = [];
 			
-			// Add checkbox column when in merge mode
-			if (isMergeMode) {
+			// Add checkbox column when in merge mode (only if not grouping)
+			if (isMergeMode && grouping.length === 0) {
 				cols.push({
 					id: "select",
 					header: "Select",
@@ -307,8 +314,13 @@ export const EventListViewer: React.FC = ({
 				{
 					accessorKey: "id",
 					header: "Edit",
-					cell: (info) => {
-						const eventType = info.row.original.event_type;
+					cell: ({ row }) => {
+						// Don't show edit icon for grouped rows
+						if (row.getIsGrouped()) {
+							return null;
+						}
+						
+						const eventType = row.original.event_type;
 						return (
 							<PencilIcon
 								className="h-4 w-4 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors"
@@ -316,7 +328,7 @@ export const EventListViewer: React.FC = ({
 									e.stopPropagation();
 									if (["meeting", "document_writing", "custom"].includes(eventType)) {
 										setSelectedEventType(eventType);
-										setSelectedEventData(info.row.original);
+										setSelectedEventData(row.original);
 										setIsDialogOpen(true);
 									}
 								}}
@@ -328,7 +340,7 @@ export const EventListViewer: React.FC = ({
 			);
 
 			return cols;
-		}, [graphs, setIsDialogOpen, setSelectedEventData, setSelectedEventType, isMergeMode, selectedEventsForMerge, toggleEventSelection]);
+		}, [setIsDialogOpen, setSelectedEventData, setSelectedEventType, isMergeMode, selectedEventsForMerge, toggleEventSelection, grouping]);
 
 	const table = useReactTable({
 		data: graphs || [],
@@ -336,13 +348,19 @@ export const EventListViewer: React.FC = ({
 		state: {
 			sorting,
 			globalFilter,
+			expanded,
+			grouping,
 		},
 		onSortingChange: setSorting,
 		onGlobalFilterChange: setGlobalFilter,
+		onExpandedChange: setExpanded,
+		onGroupingChange: setGrouping,
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
+		getExpandedRowModel: getExpandedRowModel(),
+		getGroupedRowModel: getGroupedRowModel(),
 	});
 
 	// Define a reusable filter function for consistency across views
@@ -376,6 +394,26 @@ export const EventListViewer: React.FC = ({
 				{viewMode === ViewMode.LIST && (
 					<>
 						<Button
+							onClick={() => {
+								if (grouping.length > 0) {
+									setGrouping([]);
+								} else {
+									setGrouping(["name"]);
+									setExpanded(true); // Expand all groups by default
+									// Disable merge mode when grouping
+									if (isMergeMode) {
+										setIsMergeMode(false);
+										setSelectedEventsForMerge([]);
+									}
+								}
+							}}
+							size="sm"
+							variant={grouping.length > 0 ? "default" : "outline"}
+						>
+							{grouping.length > 0 ? "Ungroup" : "Group by Name"}
+						</Button>
+						<Button
+							disabled={grouping.length > 0}
 							onClick={() => {
 								setIsMergeMode(!isMergeMode);
 								setSelectedEventsForMerge([]);
@@ -478,7 +516,7 @@ export const EventListViewer: React.FC = ({
 				</div>
 			)}
 			{viewMode === ViewMode.CALENDAR && (
-				<CalendarView />
+				<CalendarView onEditEvent={onClickEdit} />
 			)}
 			{viewMode === ViewMode.GRID && (
 				<div>
@@ -574,7 +612,7 @@ export const EventListViewer: React.FC = ({
 			)}
 			{isDialogOpen && (
 				<Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
-					<DialogContent className="max-w-[90vw]" title="edit event">
+					<DialogContent className="max-w-[90vw]">
 						{selectedEventType === "meeting" && (
 							<>
 								<h2 className="text-lg font-semibold">Edit Meeting</h2>
