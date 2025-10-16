@@ -25,6 +25,7 @@ import CreateJob from "./CreateJob";
 import { WorkflowsTabContent } from "./AssignmentComponents/WorkflowsTabContent";
 import { useWorkflow } from "@/hooks/useWorkflow";
 import { DatabaseViewer } from "./DatabaseViewer";
+import { fetchLatestMeetingEvents } from "@/utils/supabase/SupabaseService";
 
 export default function AssignmentHome(): React.ReactNode {
 	const {
@@ -83,7 +84,45 @@ export default function AssignmentHome(): React.ReactNode {
 		}
 	}, [currentGraphId, graphs, currentResult]);
 
+	// Fetch and log meeting events
+	useEffect(() => {
+		const fetchAndLogMeetingEvents = async(): Promise<void> => {
+			// Use project_id as the project access ID
+			const projectAccessId = activeProject?.project_id;
+			
+			if (projectAccessId) {
+				// eslint-disable-next-line no-console
+				console.log("=== Fetching Meeting Events ===");
+				// eslint-disable-next-line no-console
+				console.log("Project ID (used as access ID):", activeProject?.project_id);
+				// eslint-disable-next-line no-console
+				console.log("Project Number:", activeProject?.project_number);
+				// eslint-disable-next-line no-console
+				console.log("Project Name:", activeProject?.name);
+				
+				const events = await fetchLatestMeetingEvents(projectAccessId);
+				
+				// eslint-disable-next-line no-console
+				console.log("Meeting events result:", events);
+				// eslint-disable-next-line no-console
+				console.log("Is array:", Array.isArray(events));
+				// eslint-disable-next-line no-console
+				console.log("Array length:", events?.length ?? 0);
+				
+				if (events && events.length > 0) {
+					// eslint-disable-next-line no-console
+					console.log("First event:", events[0]);
+				} else {
+					// eslint-disable-next-line no-console
+					console.log("No events found or events is null");
+				}
+				// eslint-disable-next-line no-console
+				console.log("================================");
+			}
+		};
 
+		void fetchAndLogMeetingEvents();
+	}, [activeProject?.project_id, activeProject?.project_number, activeProject?.name]);
 
 	if (isLoading) {
 		return <div className="flex flex-col items-center justify-center h-[100vh]"><LoaderAnimation /></div>;

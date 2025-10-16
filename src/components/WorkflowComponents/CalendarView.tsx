@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useState } from "react";
 import { Calendar, View } from "react-big-calendar";
 import { Button } from "@/components/ui/button";
 import { FileText, Video, PencilIcon, ExternalLink } from "lucide-react";
@@ -460,7 +460,7 @@ const events = useMemo(() => {
 		onSelectGraph(eventResult.id);
 	};
 
-	const eventPropGetter = (_event: { resource: GraphData }): { style: React.CSSProperties } => ({
+	const eventPropGetter = (event: { resource: GraphData }): { style: React.CSSProperties } => ({
 		style: {
 			backgroundColor:
         event.resource.event_type === "document_writing"
@@ -545,7 +545,7 @@ const events = useMemo(() => {
 					timeGutterFormat: (date: Date) => formatLocalTime(date),
 				}}
 				localizer={localizer}
-				onNavigate={(date: Date) => setCalendarDate(date)}
+				onNavigate={setDate}
 				onSelectEvent={handleSelectEvent}
 				onView={setCalendarView}
 				startAccessor="start"
@@ -556,11 +556,6 @@ const events = useMemo(() => {
 			{tooltip && (
 				<div
 					className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg"
-					style={{
-						left: tooltip.x,
-						top: tooltip.y,
-						transform: "translateX(-50%) translateY(-100%) translateY(-8px)",
-					}}
 					onMouseEnter={() => {
 						// Clear any pending close timeout when entering tooltip
 						if (tooltipTimeoutRef.current) {
@@ -573,6 +568,11 @@ const events = useMemo(() => {
 						tooltipTimeoutRef.current = setTimeout(() => {
 							setTooltip(null);
 						}, 100);
+					}}
+					style={{
+						left: tooltip.x,
+						top: tooltip.y,
+						transform: "translateX(-50%) translateY(-100%) translateY(-8px)",
 					}}
 				>
 					<div className="flex items-center gap-4 px-3 py-2">
@@ -592,13 +592,13 @@ const events = useMemo(() => {
 							{onEditEvent && ["meeting", "document_writing", "custom"].includes(tooltip.event.event_type) && (
 								<Button
 									className="h-8 px-2 text-blue-600 hover:bg-blue-50"
-									size="sm"
-									variant="ghost"
 									onClick={(e) => {
 										e.stopPropagation();
 										onEditEvent(tooltip.event);
 										setTooltip(null);
 									}}
+									size="sm"
+									variant="ghost"
 								>
 									<PencilIcon className="mr-1 h-4 w-4" />
 									Edit
@@ -606,13 +606,13 @@ const events = useMemo(() => {
 							)}
 							<Button
 								className="h-8 px-2 text-green-600 hover:bg-green-50"
-								size="sm"
-								variant="ghost"
 								onClick={(e) => {
 									e.stopPropagation();
 									onSelectGraph(tooltip.event.id);
 									setTooltip(null);
 								}}
+								size="sm"
+								variant="ghost"
 							>
 								<ExternalLink className="mr-1 h-4 w-4" />
 								Open
