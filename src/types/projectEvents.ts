@@ -40,6 +40,8 @@ export interface ProjectEventMetadata {
   frequency?: string;
   duration?: number;
   recurrence_day?: string | string[];
+  recurrence_interval?: number;
+  auto_join?: boolean;
   time?: string;
   time_zone?: string;
   resource_id?: string;

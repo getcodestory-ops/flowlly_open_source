@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -259,11 +259,12 @@ export default function ProjectEventCreationForm({
 	const [duration, setDuration] = useState("60");
 	const [participationLink, setParticipationLink] = useState("");
 	const [location, setLocation] = useState("");
-	const [autoJoin, setAutoJoin] = useState(false);
+	const [autoJoin, setAutoJoin] = useState(true);
 	const [isFormValid, setIsFormValid] = useState(false);
 	const [weeklyRecurrenceDay, setWeeklyRecurrenceDay] = useState<string[]>(
 		[format(new Date(), "EEEE")],
 	);
+	const [recurrenceInterval, setRecurrenceInterval] = useState<number>(1);
 	const [participationOption, setParticipationOption] = useState<
     "join" | "record"
   >("join");
@@ -311,6 +312,21 @@ export default function ProjectEventCreationForm({
 				
 				const frequency = editData.metadata.frequency || "once";
 				setRecurrence(frequency);
+				
+				// Get Microsoft recurrence object for reading pattern details
+				const msRecurrence = editData.event_schedule?.[0]?.schedule?.recurrence;
+			
+				// Check for Microsoft recurrence interval - prioritize recurrence object over metadata
+				if (msRecurrence?.pattern?.interval) {
+				// Use interval from the recurrence pattern (most accurate)
+					setRecurrenceInterval(msRecurrence.pattern.interval);
+				} else if (editData.metadata.recurrence_interval) {
+				// Fallback to metadata interval
+					setRecurrenceInterval(editData.metadata.recurrence_interval);
+				} else {
+				// Default to 1
+					setRecurrenceInterval(1);
+				}
 				
 				// Set time from metadata if available
 				if (editData.metadata.time) {
@@ -362,8 +378,16 @@ export default function ProjectEventCreationForm({
 				
 				setDuration(editData.metadata.duration?.toString() || "60");
 				
-				// Handle recurrence_day as either string or string[]
-				if (editData.metadata.recurrence_day) {
+				// Handle recurrence_day - prioritize recurrence object over metadata
+				if (msRecurrence?.pattern?.daysOfWeek && msRecurrence.pattern.daysOfWeek.length > 0) {
+					// Use days from recurrence pattern (capitalize first letter to match UI format)
+					setWeeklyRecurrenceDay(
+						msRecurrence.pattern.daysOfWeek.map((day) => 
+							day.charAt(0).toUpperCase() + day.slice(1).toLowerCase(),
+						),
+					);
+				} else if (editData.metadata.recurrence_day) {
+					// Fallback to metadata
 					if (Array.isArray(editData.metadata.recurrence_day)) {
 						setWeeklyRecurrenceDay(editData.metadata.recurrence_day);
 					} else {
@@ -371,6 +395,11 @@ export default function ProjectEventCreationForm({
 					}
 				} else {
 					setWeeklyRecurrenceDay([format(new Date(), "EEEE")]);
+				}
+				
+				// Load auto_join setting
+				if (editData.metadata.auto_join !== undefined) {
+					setAutoJoin(editData.metadata.auto_join);
 				}
 				
 				setTimeZone(editData.metadata.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -431,6 +460,15 @@ export default function ProjectEventCreationForm({
 		participationOption,
 	]);
 
+	// Reset interval to 1 when recurrence is set to "once" (but not during initial load of edit data)
+	useEffect(() => {
+		// Only reset if we're not editing (editData is null)
+		// This prevents resetting the interval when loading edit data
+		if (recurrence === "once" && !editData) {
+			setRecurrenceInterval(1);
+		}
+	}, [recurrence, editData]);
+
 	const handleSubmit = (event: React.FormEvent) => {
 		event.preventDefault();
 		if (!session || !activeProject) {
@@ -460,6 +498,47 @@ export default function ProjectEventCreationForm({
 			}
 		}
 		
+		// Construct Microsoft-compatible recurrence structure
+		let recurrenceData: any = recurrence;
+		
+		// Send full recurrence structure if:
+		// 1. Interval is greater than 1, OR
+		// 2. It's weekly with multiple days selected (for better clarity on backend)
+		const shouldSendFullRecurrence = recurrence !== "once" && (
+			recurrenceInterval > 1 || 
+			(recurrence === "weekly" && weeklyRecurrenceDay.length > 1)
+		);
+		
+		if (shouldSendFullRecurrence) {
+			// Build the recurrence pattern
+			const pattern: any = {
+				type: recurrence,
+				interval: recurrenceInterval,
+			};
+			
+			// Add days of week for weekly recurrence
+			if (recurrence === "weekly" && weeklyRecurrenceDay.length > 0) {
+				pattern.daysOfWeek = weeklyRecurrenceDay.map((day) => day.toLowerCase());
+			}
+			
+			// Build the recurrence range
+			const range: any = {
+				type: endDate ? "endDate" : "noEnd",
+				startDate: format(startDate, "yyyy-MM-dd"),
+				recurrenceTimeZone: timeZone,
+			};
+			
+			if (endDate) {
+				range.endDate = format(endDate, "yyyy-MM-dd");
+			}
+			
+			// Construct the full recurrence object
+			recurrenceData = {
+				pattern,
+				range,
+			};
+		}
+		
 		const submissionData: CreateEvent = {
 			id: selectedEvent || undefined, // Top-level ID for backend to identify update vs create
 			project_event: {
@@ -473,6 +552,8 @@ export default function ProjectEventCreationForm({
 					time: submissionTime,
 					duration: parseInt(duration ?? 0),
 					recurrence_day: weeklyRecurrenceDay.length > 0 ? weeklyRecurrenceDay : undefined,
+					recurrence_interval: recurrence !== "once" ? recurrenceInterval : undefined,
+					auto_join: recurrence !== "once" ? autoJoin : undefined,
 					time_zone: editData?.metadata?.time_zone || timeZone,
 					resource_id: editData?.metadata?.resource_id,
 					calendar_event_id: editData?.metadata?.calendar_event_id,
@@ -489,7 +570,7 @@ export default function ProjectEventCreationForm({
 					},
 				};
 			}),
-			recurrence,
+			recurrence: recurrenceData,
 			time_zone: timeZone,
 			start_date: startDate
 				? format(startDate, "yyyy-MM-dd")
@@ -503,7 +584,7 @@ export default function ProjectEventCreationForm({
 			is_recording: participationOption === "record",
 			join_now: isJoining,
 		};
-		//console.log("Form submitted:", submissionData);
+	
 
 		mutate({
 			session,
@@ -567,23 +648,50 @@ export default function ProjectEventCreationForm({
 									<div className="space-y-2 p-2 bg-secondary rounded-lg">
 										<div className="space-y-2">
 											<Label htmlFor="recurrence">Repeat</Label>
-											<Select
-												key={`recurrence-${recurrence}-${editData?.id || "new"}`}
-												name="recurrence"
-												onValueChange={setRecurrence}
-												value={recurrence}
-											>
-												<SelectTrigger>
-													<SelectValue placeholder="Select repeat frequency" />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="once">Does not repeat</SelectItem>
-													<SelectItem value="daily">Daily</SelectItem>
-													<SelectItem value="weekly">Weekly</SelectItem>
-													<SelectItem value="monthly">Monthly</SelectItem>
-													<SelectItem value="weekdays">Weekdays</SelectItem>
-												</SelectContent>
-											</Select>
+											<div className="flex gap-2">
+												<Select
+													key={`recurrence-${recurrence}-${editData?.id || "new"}`}
+													name="recurrence"
+													onValueChange={setRecurrence}
+													value={recurrence}
+												>
+													<SelectTrigger className="flex-1">
+														<SelectValue placeholder="Select repeat frequency" />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="once">Does not repeat</SelectItem>
+														<SelectItem value="daily">Daily</SelectItem>
+														<SelectItem value="weekly">Weekly</SelectItem>
+														<SelectItem value="monthly">Monthly</SelectItem>
+														<SelectItem value="weekdays">Weekdays</SelectItem>
+													</SelectContent>
+												</Select>
+												{recurrence !== "once" && (
+													<div className="flex items-center gap-2">
+														<Label className="text-sm whitespace-nowrap">Every</Label>
+														<Select
+															onValueChange={(val) => setRecurrenceInterval(parseInt(val))}
+															value={recurrenceInterval.toString()}
+														>
+															<SelectTrigger className="w-20">
+																<SelectValue />
+															</SelectTrigger>
+															<SelectContent>
+																{Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+																	<SelectItem key={num} value={num.toString()}>
+																		{num}
+																	</SelectItem>
+																))}
+															</SelectContent>
+														</Select>
+														<span className="text-sm text-muted-foreground">
+															{recurrence === "daily" ? "days" : 
+															 recurrence === "weekly" ? "weeks" : 
+															 recurrence === "monthly" ? "months" : "intervals"}
+														</span>
+													</div>
+												)}
+											</div>
 										</div>
 										<div className="grid grid-cols-2 gap-4">
 											{recurrence === "weekly" && (
