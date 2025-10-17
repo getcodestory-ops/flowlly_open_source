@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useWorkflow } from "@/hooks/useWorkflow";
 import { Tooltipped } from "@/components/Common/Tooltiped";
+import { fetchSimilarEventResults, type SimilarEventResult } from "@/utils/supabase/SupabaseService";
 
 interface EventScheduleListProps {
   graphs: EventSchedule[];
@@ -99,6 +100,10 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	
 	// Track which events we're currently fetching to avoid duplicate requests
 	const [fetchingEventIds, setFetchingEventIds] = useState<Set<string>>(new Set());
+	
+	// Store similar event results (for future UI display)
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [similarEventResults, setSimilarEventResults] = useState<SimilarEventResult[]>([]);
 
 	// Added pagination state
 	const [pagination, setPagination] = useState<{
@@ -556,6 +561,34 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 		}, 60000); // Update every minute
 		return () => clearInterval(timer);
 	}, []);
+
+	// Fetch similar event results when an event is selected
+	useEffect(() => {
+		const fetchSimilarEvents = async(): Promise<void> => {
+			if (!selectedEventId) {
+				setSimilarEventResults([]);
+				return;
+			}
+
+			// eslint-disable-next-line no-console
+			console.log("EventScheduleList: Fetching similar events for eventId:", selectedEventId);
+			
+			const results = await fetchSimilarEventResults(selectedEventId);
+			
+			// eslint-disable-next-line no-console
+			console.log("EventScheduleList: Similar event results:", results);
+			// eslint-disable-next-line no-console
+			console.log("EventScheduleList: Found", results?.length ?? 0, "similar events");
+			
+			if (results) {
+				setSimilarEventResults(results);
+			} else {
+				setSimilarEventResults([]);
+			}
+		};
+
+		void fetchSimilarEvents();
+	}, [selectedEventId]);
 
 	// Fetch node data for events that don't have it - optimized with incremental updates
 	useEffect(() => {
