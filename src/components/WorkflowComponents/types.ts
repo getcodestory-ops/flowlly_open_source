@@ -122,6 +122,7 @@ export type EventResult = {
   workflow_id?: string;
   event_id?: string;
   streaming?: boolean;
+  meeting_status?: "agenda" | "finished" | "upcoming" | null;
 };
 
 // Microsoft Recurrence Pattern types

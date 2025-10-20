@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Table,
@@ -52,6 +52,8 @@ interface EventScheduleListProps {
   onWorkflowSelect?: () => void;
 }
 
+
+
 // Helper function to determine event tag based on description
 const getEventTag = (description: string): { label: string; color: string } | null => {
 	const lowerDesc = description.toLowerCase();
@@ -62,6 +64,20 @@ const getEventTag = (description: string): { label: string; color: string } | nu
 		return { label: "Meeting", color: "bg-purple-100 text-purple-800 border-purple-300" };
 	}
 	return null;
+};
+
+// Helper function to determine meeting status tag
+const getMeetingStatusTag = (status: string | null): { label: string; color: string } => {
+	if (status === "agenda") {
+		return { label: "Agenda", color: "bg-blue-100 text-blue-800 border-blue-300" };
+	}
+	if (status === "finished") {
+		return { label: "Finished", color: "bg-amber-100 text-gray-700 border-amber-300" };
+	}
+	if (status === "upcoming") {
+		return { label: "Upcoming", color: "bg-orange-100 text-orange-800 border-orange-300" };
+	}
+	return { label: "Meeting", color: "bg-gray-100 text-gray-800 border-gray-300" };
 };
 
 // Helper function to determine time-based tag
@@ -85,7 +101,7 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	graphs,
 	onWorkflowSelect,
 }) => {
-	const { setIsLoadingResult, setCurrentResult, selectedWorkflowId } = useWorkflow();
+	const { setIsLoadingResult, setCurrentResult, selectedWorkflowId, setSelectedWorkflowId, currentGraphId, setCurrentGraphId } = useWorkflow();
 	const compact = true;
 
 	const [sorting, setSorting] = useState<SortingState>([]);
@@ -101,9 +117,14 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	// Track which events we're currently fetching to avoid duplicate requests
 	const [fetchingEventIds, setFetchingEventIds] = useState<Set<string>>(new Set());
 	
-	// Store similar event results (for future UI display)
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	// Store similar event results
 	const [similarEventResults, setSimilarEventResults] = useState<SimilarEventResult[]>([]);
+	
+	// Track which similar event is selected
+	const [selectedSimilarEventId, setSelectedSimilarEventId] = useState<string | null>(null);
+	
+	// Track the last fetched graph ID to prevent unnecessary refetches
+	const lastFetchedGraphId = useRef<string | null>(null);
 
 	// Added pagination state
 	const [pagination, setPagination] = useState<{
@@ -116,21 +137,28 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 
 	const queryClient = useQueryClient();
 
-	useEffect(() => {
-		if (graphs && !selectedEventId && selectedWorkflowId) {
-			const freshGraph = graphs.find((g) => g.id === selectedWorkflowId);
-			if (freshGraph && freshGraph.event_result) {
-				if (freshGraph.event_result[0].nodes) {
-					setCurrentResult(freshGraph.event_result[0]);
-					setSelectedEventId(freshGraph.event_result[0].id);
-				} else {
-					setSelectedEventId(freshGraph.event_result[0].id);
-				}
-			}
-		}
-	}, [graphs, selectedEventId, selectedWorkflowId, setCurrentResult]);
-
-
+	// useEffect(() => {
+	// 	console.log("=== GRAPHS/SELECTED ID EFFECT ===");
+	// 	console.log("graphs:", graphs);
+	// 	console.log("selectedEventId:", selectedEventId);
+	// 	console.log("selectedWorkflowId:", selectedWorkflowId);
+	// 	if (graphs && !selectedEventId && selectedWorkflowId) {
+	// 		console.log("Condition met - looking for graph with id:", selectedWorkflowId);
+	// 		const freshGraph = graphs.find((g) => g.id === selectedWorkflowId);
+	// 		console.log("Found graph:", freshGraph);
+	// 		if (freshGraph && freshGraph.event_result) {
+	// 			if (freshGraph.event_result[0].nodes) {
+	// 				console.log("Setting current result and selectedEventId from graph");
+	// 				setCurrentResult(freshGraph.event_result[0]);
+	// 				setSelectedEventId(freshGraph.event_result[0].id);
+	// 			} else {
+	// 				console.log("Setting selectedEventId from graph (no nodes)");
+	// 				setSelectedEventId(freshGraph.event_result[0].id);
+	// 			}
+	// 		}
+	// 	}
+	// 	console.log("=== GRAPHS/SELECTED ID EFFECT COMPLETE ===");
+	// }, [graphs, selectedEventId, selectedWorkflowId, setCurrentResult]);
 
 	// Add new state to track the selected result
 
@@ -177,44 +205,36 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	}, [graphs]);
 
 	const tableData: ScheduleTableRow[] = useMemo(() => {
-		if (sortedGraphs.length === 0) {
-			return [];
-		}
+		// Transform regular graphs into table format
+		const regularGraphRows: ScheduleTableRow[] = sortedGraphs.length > 0
+			? sortedGraphs.map((eventSchedule) => ({
+				id: eventSchedule.id,
+				schedule: eventSchedule.schedule,
+				subRows: eventSchedule.event_result
+					.slice() // create copy to avoid mutating original data
+					.sort((a, b) => {
+						const parseTime = (er: { run_time?: string; timestamp: string }): number => {
+							if (er.run_time) {
+								// Prefer run_time; handle both full ISO and time-only strings
+								const rt = er.run_time;
+								const parsed = rt.includes("T")
+									? Date.parse(rt)
+									: Date.parse(`2000-01-01T${rt}Z`);
+								if (!Number.isNaN(parsed)) return parsed;
+							}
+							const ts = Date.parse(er.timestamp);
+							return Number.isNaN(ts) ? 0 : ts;
+						};
+						return parseTime(b) - parseTime(a);
+					})
+					.map((eventResult) => ({
+						id: eventResult.id,
+						result: eventResult,
+					})),
+			})).filter((scheduleRow) => scheduleRow.subRows && scheduleRow.subRows.length > 0)
+			: [];
 
-	
-
-		
-
-		return sortedGraphs.map((eventSchedule) => ({
-			id: eventSchedule.id,
-			schedule: eventSchedule.schedule,
-			subRows: eventSchedule.event_result
-				.slice() // create copy to avoid mutating original data
-				.filter((eventResult) => {
-					// Filter out events with "Agenda" tag
-					const eventTag = eventResult.description ? getEventTag(eventResult.description) : null;
-					return eventTag?.label !== "Agenda";
-				})
-				.sort((a, b) => {
-					const parseTime = (er: { run_time?: string; timestamp: string }): number => {
-						if (er.run_time) {
-							// Prefer run_time; handle both full ISO and time-only strings
-							const rt = er.run_time;
-							const parsed = rt.includes("T")
-								? Date.parse(rt)
-								: Date.parse(`2000-01-01T${rt}Z`);
-							if (!Number.isNaN(parsed)) return parsed;
-						}
-						const ts = Date.parse(er.timestamp);
-						return Number.isNaN(ts) ? 0 : ts;
-					};
-					return parseTime(b) - parseTime(a);
-				})
-				.map((eventResult) => ({
-					id: eventResult.id,
-					result: eventResult,
-				})),
-		})).filter((scheduleRow) => scheduleRow.subRows && scheduleRow.subRows.length > 0);
+		return regularGraphRows;
 	}, [sortedGraphs]);
 
 	const { mutate: clearProcess } = useMutation({
@@ -234,290 +254,296 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 		},
 	});
 
-	const columns = useMemo<ColumnDef<ScheduleTableRow>[]>(
-		() => [
-			{
-				accessorKey: "main",
-				header: () => null,
-				cell: ({ row }) => {
-					if (row.original.schedule) {
-						const schedule = row.original.schedule;
-						const time = schedule.time;
-						const run_time = time ? (Array.isArray(time) ? time[0]?.run_time : time.run_time) : undefined;
-						if (run_time) {
-							return (
-								<div className="flex items-center">
-									<span className="font-medium">
-										{compact ? "Select a Meeting from the list:" : "Scheduled Workflow"}
-									</span>
-									{/* <span className="ml-2 text-xs text-muted-foreground">
-										{(() => {
-											const start = schedule.start;
-											const zonePattern = /Z|[+-]\d\d:\d\d$/;
-											let displayDate: Date;
-											if (run_time.includes("T")) {
-												const iso = zonePattern.test(run_time) ? run_time : `${run_time}Z`;
-												displayDate = new Date(iso);
-											} else if (start) {
-												const datePart = start.split("T")[0];
-												const iso = `${datePart}T${run_time}Z`;
-												displayDate = new Date(iso);
-											} else {
-												displayDate = new Date(`2000-01-01T${run_time}Z`);
-											}
-											const timeZone = schedule.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-											return displayDate.toLocaleString([], { 
-												dateStyle: compact ? "short" : "long", 
-												timeStyle: compact ? "short" : "medium",
-												timeZone,
-											});
-										})()}
-									</span> */}
-								</div>
-							);
-						}
-						return (
-							<div className="flex items-center">
-								<span className="font-medium">
-									{compact ? "Meetings" : "Running Workflow"}
-								</span>
-							</div>
-						);
-					} else if (row.original.result) {
-						const result = row.original.result;
-						const activelyListening = result?.listen;
-						const currentlyRunning = result?.workflow_id;
-						const isCompleted = result.status === "completed";
-						const eventTag = result.description ? getEventTag(result.description) : null;
+	// const columns = useMemo<ColumnDef<ScheduleTableRow>[]>(
+	// 	() => [
+	// 		{
+	// 			accessorKey: "main",
+	// 			header: () => null,
+	// 			cell: ({ row }) => {
+	// 				if (row.original.schedule) {
+	// 					const schedule = row.original.schedule;
+	// 					const time = schedule.time;
+	// 					const run_time = time ? (Array.isArray(time) ? time[0]?.run_time : time.run_time) : undefined;
+	// 					if (run_time) {
+	// 						return (
+	// 							<div className="flex items-center">
+	// 								<span className="font-medium">
+	// 									{compact ? "Select a Meeting from the list:" : "Scheduled Workflow"}
+	// 								</span>
+	// 								{/* <span className="ml-2 text-xs text-muted-foreground">
+	// 									{(() => {
+	// 										const start = schedule.start;
+	// 										const zonePattern = /Z|[+-]\d\d:\d\d$/;
+	// 										let displayDate: Date;
+	// 										if (run_time.includes("T")) {
+	// 											const iso = zonePattern.test(run_time) ? run_time : `${run_time}Z`;
+	// 											displayDate = new Date(iso);
+	// 										} else if (start) {
+	// 											const datePart = start.split("T")[0];
+	// 											const iso = `${datePart}T${run_time}Z`;
+	// 											displayDate = new Date(iso);
+	// 										} else {
+	// 											displayDate = new Date(`2000-01-01T${run_time}Z`);
+	// 										}
+	// 										const timeZone = schedule.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+	// 										return displayDate.toLocaleString([], { 
+	// 											dateStyle: compact ? "short" : "long", 
+	// 											timeStyle: compact ? "short" : "medium",
+	// 											timeZone,
+	// 										});
+	// 									})()}
+	// 								</span> */}
+	// 							</div>
+	// 						);
+	// 					}
+	// 					return (
+	// 						<div className="flex items-center">
+	// 							<span className="font-medium">
+	// 								{compact ? "Meetings" : "Running Workflow"}
+	// 							</span>
+	// 						</div>
+	// 					);
+	// 				} else if (row.original.result) {
+	// 					const result = row.original.result;
+	// 					const activelyListening = result?.listen;
+	// 					const currentlyRunning = result?.workflow_id;
+	// 					const eventTag = result.description ? getEventTag(result.description) : null;
 
-						// Get node data (id and status) from either the result directly or from our fetched map
+	// 					// Get node data (id and status) from either the result directly or from our fetched map
 						
 						
-						const nodeData = result.nodes 
-							? result.nodes.map((n: { id: string; status: string; output?: unknown }) => ({ id: n.id, status: n.status, output: n.output }))
-							: eventNodesMap[result.id] || [];
+	// 					const nodeData = result.nodes 
+	// 						? result.nodes.map((n: { id: string; status: string; output?: unknown }) => ({ id: n.id, status: n.status, output: n.output }))
+	// 						: eventNodesMap[result.id] || [];
 						
-						// Debug logging
+	// 					// Debug logging
 					
 
-						// Calculate event date for time-based tag
-						const rt = result.run_time;
-						const zonePattern = /Z|[+-]\d\d:\d\d$/;
-						let eventDate: Date;
-						if (rt) {
-							if (rt.includes("T")) {
-								const iso = zonePattern.test(rt) ? rt : `${rt}Z`;
-								eventDate = new Date(iso);
-							} else {
-								// Time-only: combine with the matching schedule.start date if available
-								const parentSchedule = graphs
-									.find((s) => s.event_result.some((er) => er.id === result.id))?.schedule;
-								const baseDateStr = parentSchedule?.start
-									? parentSchedule.start.split("T")[0]
-									: (result.timestamp ? result.timestamp.split("T")[0] : new Date().toISOString()
-										.split("T")[0]);
+	// 					// Calculate event date for time-based tag
+	// 					const rt = result.run_time;
+	// 					const zonePattern = /Z|[+-]\d\d:\d\d$/;
+	// 					let eventDate: Date;
+	// 					if (rt) {
+	// 						if (rt.includes("T")) {
+	// 							const iso = zonePattern.test(rt) ? rt : `${rt}Z`;
+	// 							eventDate = new Date(iso);
+	// 						} else {
+	// 							// Time-only: combine with the matching schedule.start date if available
+	// 							const parentSchedule = graphs
+	// 								.find((s) => s.event_result.some((er) => er.id === result.id))?.schedule;
+	// 							const baseDateStr = parentSchedule?.start
+	// 								? parentSchedule.start.split("T")[0]
+	// 								: (result.timestamp ? result.timestamp.split("T")[0] : new Date().toISOString()
+	// 									.split("T")[0]);
 								
-								// Get the timezone from parent schedule or use browser's timezone
-								const eventTimeZone = parentSchedule?.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+	// 							// Get the timezone from parent schedule or use browser's timezone
+	// 							const eventTimeZone = parentSchedule?.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone;
 								
-								// Create the date string and treat it as local time in the event's timezone
-								const dateTimeString = `${baseDateStr}T${rt}`;
+	// 							// Create the date string and treat it as local time in the event's timezone
+	// 							const dateTimeString = `${baseDateStr}T${rt}`;
 								
-								// Create a temporary date object
-								const tempDate = new Date(dateTimeString);
+	// 							// Create a temporary date object
+	// 							const tempDate = new Date(dateTimeString);
 								
-								// Convert from event timezone to user's local timezone
-								const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+	// 							// Convert from event timezone to user's local timezone
+	// 							const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 								
-								// Create a date in the event timezone, then convert to user's timezone
-								const eventDateInEventTz = new Date(tempDate.toLocaleString("sv-SE", { timeZone: eventTimeZone }));
-								const eventDateInUserTz = new Date(eventDateInEventTz.toLocaleString("sv-SE", { timeZone: userTimezone }));
-								eventDate = eventDateInUserTz;
-							}
-						} else {
-							eventDate = new Date(result.timestamp);
-						}
+	// 							// Create a date in the event timezone, then convert to user's timezone
+	// 							const eventDateInEventTz = new Date(tempDate.toLocaleString("sv-SE", { timeZone: eventTimeZone }));
+	// 							const eventDateInUserTz = new Date(eventDateInEventTz.toLocaleString("sv-SE", { timeZone: userTimezone }));
+	// 							eventDate = eventDateInUserTz;
+	// 						}
+	// 					} else {
+	// 						eventDate = new Date(result.timestamp);
+	// 					}
 
-						const timeBasedTag = getTimeBasedTag(eventDate, currentTime);
+	// 					const timeBasedTag = getTimeBasedTag(eventDate, currentTime);
+						
+	// 					// Check if this is a similar event with meeting_status
+	// 					const meetingStatusTag = result.meeting_status 
+	// 						? getMeetingStatusTag(result.meeting_status)
+	// 						: null;
 
-						return (
-							<div
-								className={`pl-${
-									compact ? "4" : "8"
-								} flex flex-col items-start gap-2`}
-							>
-								<div className="flex items-center gap-2">
-									<span className="text-sm">
-										{(() => {
-											// Display date in text format with abbreviated month
-											return eventDate.toLocaleString([], {
-												month: "short",
-												day: "numeric",
-												year: "numeric",
-												hour: "numeric",
-												minute: "2-digit",
-												hour12: true,
-											});
-										})()}
-									</span>
-									{eventTag && (
-										<span className={`px-2 py-0.5 text-xs font-medium rounded-md border ${eventTag.color}`}>
-											{eventTag.label}
-										</span>
-									)}
-									<span className={`px-2 py-0.5 text-xs font-medium rounded-md border ${timeBasedTag.color}`}>
-										{timeBasedTag.label}
-									</span>
-									{isCompleted && compact && (
-										<span className="ml-2 px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">
-											Completed
-										</span>
-									)}
-									{/* Display node icons */}
-									{(() => {
-										// Show loading skeleton if currently fetching
-										if (fetchingEventIds.has(result.id)) {
-											return (
-												<Tooltipped tooltip="Loading meeting data...">
-													<div className="flex items-center gap-1 ml-2 px-2 py-0.5 bg-gray-50 border border-gray-200 rounded-md animate-pulse">
-														<div className="h-3.5 w-3.5 bg-gray-300 rounded" />
-														<div className="h-3.5 w-3.5 bg-gray-300 rounded" />
-													</div>
-												</Tooltipped>
-											);
-										}
+	// 					return (
+	// 						<div
+	// 							className={`pl-${
+	// 								compact ? "4" : "8"
+	// 							} flex flex-col items-start gap-2`}
+	// 						>
+	// 							<div className="flex items-center gap-2">
+	// 								<span className="text-sm">
+	// 									{(() => {
+	// 										// Display date in text format with abbreviated month
+	// 										return eventDate.toLocaleString([], {
+	// 											month: "short",
+	// 											day: "numeric",
+	// 											year: "numeric",
+	// 											hour: "numeric",
+	// 											minute: "2-digit",
+	// 											hour12: true,
+	// 										});
+	// 									})()}
+	// 								</span>
+	// 								{eventTag && (
+	// 									<span className={`px-2 py-0.5 text-xs font-medium rounded-md border ${eventTag.color}`}>
+	// 										{eventTag.label}
+	// 									</span>
+	// 								)}
+	// 								{meetingStatusTag ? (
+	// 									<span className={`px-2 py-0.5 text-xs font-medium rounded-md border ${meetingStatusTag.color}`}>
+	// 										{meetingStatusTag.label}
+	// 									</span>
+	// 								) : (
+	// 									<span className={`px-2 py-0.5 text-xs font-medium rounded-md border ${timeBasedTag.color}`}>
+	// 										{timeBasedTag.label}
+	// 									</span>
+	// 								)}
+	// 								{/* Display node icons */}
+	// 								{(() => {
+	// 									// Show loading skeleton if currently fetching
+	// 									if (fetchingEventIds.has(result.id)) {
+	// 										return (
+	// 											<Tooltipped tooltip="Loading meeting data...">
+	// 												<div className="flex items-center gap-1 ml-2 px-2 py-0.5 bg-gray-50 border border-gray-200 rounded-md animate-pulse">
+	// 													<div className="h-3.5 w-3.5 bg-gray-300 rounded" />
+	// 													<div className="h-3.5 w-3.5 bg-gray-300 rounded" />
+	// 												</div>
+	// 											</Tooltipped>
+	// 										);
+	// 									}
 										
-										return nodeData.length > 0 && (
-											<div className="flex items-center gap-1 ml-2 px-2 py-0.5 bg-gray-50 border border-gray-200 rounded-md">
-												{(() => {
-													// Create map to group nodes by type with their status
-													const nodesByType = new Map<string, { status: string; isFailed: boolean }>();
+	// 									return nodeData.length > 0 && (
+	// 										<div className="flex items-center gap-1 ml-2 px-2 py-0.5 bg-gray-50 border border-gray-200 rounded-md">
+	// 											{(() => {
+	// 												// Create map to group nodes by type with their status
+	// 												const nodesByType = new Map<string, { status: string; isFailed: boolean }>();
 													
-													nodeData.forEach((node) => {
-														const lowerNodeId = node.id.toLowerCase();
-														let type = null;
+	// 												nodeData.forEach((node) => {
+	// 													const lowerNodeId = node.id.toLowerCase();
+	// 													let type = null;
 														
-														if (lowerNodeId.includes("record") || lowerNodeId.includes("transcribe")) {
-															type = "recording";
-														} else if (lowerNodeId.includes("minutes")) {
-															type = "minutes";
-														} else if (lowerNodeId.includes("action")) {
-															type = "actions";
-														} else if (lowerNodeId.includes("agenda")) {
-															type = "agenda";
-														}
+	// 													if (lowerNodeId.includes("record") || lowerNodeId.includes("transcribe")) {
+	// 														type = "recording";
+	// 													} else if (lowerNodeId.includes("minutes")) {
+	// 														type = "minutes";
+	// 													} else if (lowerNodeId.includes("action")) {
+	// 														type = "actions";
+	// 													} else if (lowerNodeId.includes("agenda")) {
+	// 														type = "agenda";
+	// 													}
 														
-														if (type) {
-															// If type already exists, update status to failed if any node failed
-															const existing = nodesByType.get(type);
+	// 													if (type) {
+	// 														// If type already exists, update status to failed if any node failed
+	// 														const existing = nodesByType.get(type);
 															
-															// Check if node failed OR if minutes node has "meeting transcript was not provided"
-															let isFailed = node.status === "failed";
-															if (type === "minutes" && node.output) {
-																const outputStr = typeof node.output === "string" 
-																	? node.output 
-																	: JSON.stringify(node.output);
-																if (outputStr.toLowerCase().includes("meeting transcript was not provided")) {
-																	isFailed = true;
-																}
-															}
+	// 														// Check if node failed OR if minutes node has "meeting transcript was not provided"
+	// 														let isFailed = node.status === "failed";
+	// 														if (type === "minutes" && node.output) {
+	// 															const outputStr = typeof node.output === "string" 
+	// 																? node.output 
+	// 																: JSON.stringify(node.output);
+	// 															if (outputStr.toLowerCase().includes("meeting transcript was not provided")) {
+	// 																isFailed = true;
+	// 															}
+	// 														}
 															
-															if (!existing || (isFailed && !existing.isFailed)) {
-																nodesByType.set(type, { 
-																	status: node.status, 
-																	isFailed: isFailed || (existing?.isFailed ?? false),
-																});
-															}
-														}
-													});
+	// 														if (!existing || (isFailed && !existing.isFailed)) {
+	// 															nodesByType.set(type, { 
+	// 																status: node.status, 
+	// 																isFailed: isFailed || (existing?.isFailed ?? false),
+	// 															});
+	// 														}
+	// 													}
+	// 												});
 													
-													return Array.from(nodesByType.entries()).map(([type, { isFailed }], idx) => {
-														// Get tooltip text based on type
-														let tooltipText = "";
-														if (type === "recording") {
-															tooltipText = isFailed ? "Meeting Recording - Failed" : "Meeting Recording Available";
-														} else if (type === "minutes") {
-															tooltipText = isFailed ? "Meeting Minutes - Failed or Unavailable" : "Meeting Minutes Available";
-														} else if (type === "actions") {
-															tooltipText = isFailed ? "Action Items - Failed" : "Action Items Available";
-														} else if (type === "agenda") {
-															tooltipText = isFailed ? "Next Meeting Agenda - Failed" : "Next Meeting Agenda Available";
-														}
+	// 												return Array.from(nodesByType.entries()).map(([type, { isFailed }], idx) => {
+	// 													// Get tooltip text based on type
+	// 													let tooltipText = "";
+	// 													if (type === "recording") {
+	// 														tooltipText = isFailed ? "Meeting Recording - Failed" : "Meeting Recording Available";
+	// 													} else if (type === "minutes") {
+	// 														tooltipText = isFailed ? "Meeting Minutes - Failed or Unavailable" : "Meeting Minutes Available";
+	// 													} else if (type === "actions") {
+	// 														tooltipText = isFailed ? "Action Items - Failed" : "Action Items Available";
+	// 													} else if (type === "agenda") {
+	// 														tooltipText = isFailed ? "Next Meeting Agenda - Failed" : "Next Meeting Agenda Available";
+	// 													}
 														
-														return (
-															<Tooltipped key={idx} tooltip={tooltipText}>
-																<span className="relative inline-flex items-center text-gray-600">
-																	{type === "recording" && <Video className="h-3.5 w-3.5" />}
-																	{type === "minutes" && <FileText className="h-3.5 w-3.5" />}
-																	{type === "actions" && <List className="h-3.5 w-3.5" />}
-																	{type === "agenda" && <Calendar className="h-3.5 w-3.5" />}
-																	{isFailed && (
-																		<div className="absolute inset-0 flex items-center justify-center">
-																			<div className="w-full h-[1.5px] bg-red-500 rotate-45 transform" />
-																		</div>
-																	)}
-																</span>
-															</Tooltipped>
-														);
-													});
-												})()}
-											</div>
-										);
-									})()}
-								</div>
-								{activelyListening && (
-									<div className="flex items-center">
-										<div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-										<span
-											className={`ml-1 text-${
-												compact ? "xs" : "sm"
-											} text-green-600`}
-										>
-											Waiting for input
-										</span>
-									</div>
-								)}
-								{currentlyRunning && (
-									<div className={`flex items-center ${compact ? "justify-between w-full" : "gap-2"}`}>
-										<RunningText textSize={compact ? "xs" : "sm"} />
-										<CancelRunningWorkflowButton
-											buttonClassName={compact ? "h-5 px-1.5 text-xs" : "h-6 px-2 text-xs"}
-											clearProcess={clearProcess}
-											row={row}
-										/>
-									</div>
-								)}
-							</div>
-						);
-					} else {
-						return "null";
-					}
-				},
-			},
-			// Add other columns as needed
-		],
-		[compact, graphs, clearProcess, currentTime, eventNodesMap, fetchingEventIds],
-	);
+	// 													return (
+	// 														<Tooltipped key={idx} tooltip={tooltipText}>
+	// 															<span className="relative inline-flex items-center text-gray-600">
+	// 																{type === "recording" && <Video className="h-3.5 w-3.5" />}
+	// 																{type === "minutes" && <FileText className="h-3.5 w-3.5" />}
+	// 																{type === "actions" && <List className="h-3.5 w-3.5" />}
+	// 																{type === "agenda" && <Calendar className="h-3.5 w-3.5" />}
+	// 																{isFailed && (
+	// 																	<div className="absolute inset-0 flex items-center justify-center">
+	// 																		<div className="w-full h-[1.5px] bg-red-500 rotate-45 transform" />
+	// 																	</div>
+	// 																)}
+	// 															</span>
+	// 														</Tooltipped>
+	// 													);
+	// 												});
+	// 											})()}
+	// 										</div>
+	// 									);
+	// 								})()}
+	// 							</div>
+	// 							{activelyListening && (
+	// 								<div className="flex items-center">
+	// 									<div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+	// 									<span
+	// 										className={`ml-1 text-${
+	// 											compact ? "xs" : "sm"
+	// 										} text-green-600`}
+	// 									>
+	// 										Waiting for input
+	// 									</span>
+	// 								</div>
+	// 							)}
+	// 							{currentlyRunning && (
+	// 								<div className={`flex items-center ${compact ? "justify-between w-full" : "gap-2"}`}>
+	// 									<RunningText textSize={compact ? "xs" : "sm"} />
+	// 									<CancelRunningWorkflowButton
+	// 										buttonClassName={compact ? "h-5 px-1.5 text-xs" : "h-6 px-2 text-xs"}
+	// 										clearProcess={clearProcess}
+	// 										row={row}
+	// 									/>
+	// 								</div>
+	// 							)}
+	// 						</div>
+	// 					);
+	// 				} else {
+	// 					return null;
+	// 				}
+	// 			},
+	// 		},
+	// 		// Add other columns as needed
+	// 	],
+	// 	[compact, graphs, clearProcess, currentTime, eventNodesMap, fetchingEventIds],
+	// );
 
-	const table = useReactTable<ScheduleTableRow>({
-		data: tableData,
-		columns,
-		state: {
-			sorting,
-			globalFilter,
-			expanded: true,
-			pagination,
-		},
-		onSortingChange: setSorting,
-		onGlobalFilterChange: setGlobalFilter,
-		onPaginationChange: setPagination,
-		getCoreRowModel: getCoreRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-		getFilteredRowModel: getFilteredRowModel(),
-		getExpandedRowModel: getExpandedRowModel(),
-		getPaginationRowModel: getPaginationRowModel(),
-		getSubRows: (row) => row.subRows,
-	});
+	// Table functionality commented out - using similar events list only
+	// const table = useReactTable<ScheduleTableRow>({
+	// 	data: tableData,
+	// 	columns,
+	// 	state: {
+	// 		sorting,
+	// 		globalFilter,
+	// 		expanded: true,
+	// 		pagination,
+	// 	},
+	// 	onSortingChange: setSorting,
+	// 	onGlobalFilterChange: setGlobalFilter,
+	// 	onPaginationChange: setPagination,
+	// 	getCoreRowModel: getCoreRowModel(),
+	// 	getSortedRowModel: getSortedRowModel(),
+	// 	getFilteredRowModel: getFilteredRowModel(),
+	// 	getExpandedRowModel: getExpandedRowModel(),
+	// 	getPaginationRowModel: getPaginationRowModel(),
+	// 	getSubRows: (row) => row.subRows,
+	// });
 
 	const {
 		data: fetchedEventResult,
@@ -526,12 +552,17 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 	} = useQuery({
 		queryKey: ["eventResult", selectedEventId],
 		queryFn: async() => {
-			if (!session || !activeProject || !selectedEventId) return null;
-			return getEventResult({
+			if (!session || !activeProject || !selectedEventId) {
+				return null;
+			}
+			
+			const result = await getEventResult({
 				session,
 				projectId: activeProject.project_id,
 				resultId: selectedEventId,
 			});
+			
+			return result;
 		},
 		enabled: !!session && !!activeProject && !!selectedEventId,
 		staleTime: 0,
@@ -547,12 +578,22 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 		}
 	}, [isFetchingEventResult, isFetched, setIsLoadingResult]);
 
+	// useEffect(() => {
+	// 	if (fetchedEventResult) {
+	// 		console.log("📝 Setting current result and clearing selections");
+	// 		setCurrentResult(fetchedEventResult?.result);
+	// 		setSelectedEventId(null);
+	// 		setSelectedSimilarEventId(null);
+	// 	}
+	// }, [fetchedEventResult, setCurrentResult]);
+
 	useEffect(() => {
-		if (fetchedEventResult) {
+		if (fetchedEventResult && !isFetchingEventResult) {
 			setCurrentResult(fetchedEventResult?.result);
-			setSelectedEventId(null);
 		}
-	}, [fetchedEventResult, setCurrentResult]);
+	}, [fetchedEventResult, isFetchingEventResult, setCurrentResult]);
+
+
 
 	// Update current time every minute
 	useEffect(() => {
@@ -562,33 +603,92 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 		return () => clearInterval(timer);
 	}, []);
 
-	// Fetch similar event results when an event is selected
+	// Fetch similar event results when the current graph ID changes (from EventListViewer selection)
 	useEffect(() => {
 		const fetchSimilarEvents = async(): Promise<void> => {
-			if (!selectedEventId) {
+			if (!currentGraphId) {
 				setSimilarEventResults([]);
+				lastFetchedGraphId.current = null;
 				return;
 			}
 
-			// eslint-disable-next-line no-console
-			console.log("EventScheduleList: Fetching similar events for eventId:", selectedEventId);
+			// Only fetch if this is a different graph ID than the last one we fetched
+			// This prevents unnecessary refetches when clicking on similar events
+			if (lastFetchedGraphId.current === currentGraphId) {
+				return;
+			}
 			
-			const results = await fetchSimilarEventResults(selectedEventId);
-			
-			// eslint-disable-next-line no-console
-			console.log("EventScheduleList: Similar event results:", results);
-			// eslint-disable-next-line no-console
-			console.log("EventScheduleList: Found", results?.length ?? 0, "similar events");
+			const results = await fetchSimilarEventResults(currentGraphId);
 			
 			if (results) {
 				setSimilarEventResults(results);
+				lastFetchedGraphId.current = currentGraphId;
 			} else {
 				setSimilarEventResults([]);
+				lastFetchedGraphId.current = currentGraphId;
 			}
 		};
 
 		void fetchSimilarEvents();
-	}, [selectedEventId]);
+	}, [currentGraphId]);
+	
+	// Pre-fetch node data for similar events
+	useEffect(() => {
+		if (!session || !activeProject || !similarEventResults || similarEventResults.length === 0) return;
+
+		const fetchSimilarEventNodeData = async(): Promise<void> => {
+			// Filter out events that already have nodes in the map or are being fetched
+			const eventsToFetch = similarEventResults.filter(
+				(event) => !eventNodesMap[event.result_id] && !fetchingEventIds.has(event.result_id),
+			);
+			
+			if (eventsToFetch.length === 0) return;
+			
+			// Mark these events as being fetched
+			setFetchingEventIds((prev) => {
+				const newSet = new Set(prev);
+				eventsToFetch.forEach((event) => newSet.add(event.result_id));
+				return newSet;
+			});
+			
+			// Fetch and update incrementally
+			eventsToFetch.forEach(async(eventResult) => {
+				try {
+					const result = await getEventResult({
+						session,
+						projectId: activeProject.project_id,
+						resultId: eventResult.result_id,
+					});
+					
+					if (result?.result?.nodes) {
+						const nodeData = result.result.nodes.map((node: { id: string; status: string; output?: unknown }) => ({ 
+							id: node.id, 
+							status: node.status,
+							output: node.output,
+						}));
+						
+						// Update state immediately for this event
+						setEventNodesMap((prev) => ({
+							...prev,
+							[eventResult.result_id]: nodeData,
+						}));
+					}
+				} catch (error) {
+					// Silently fail
+				} finally {
+					// Remove from fetching set
+					setFetchingEventIds((prev) => {
+						const newSet = new Set(prev);
+						newSet.delete(eventResult.result_id);
+						return newSet;
+					});
+				}
+			});
+		};
+
+		fetchSimilarEventNodeData();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [similarEventResults, session, activeProject]);
 
 	// Fetch node data for events that don't have it - optimized with incremental updates
 	useEffect(() => {
@@ -667,43 +767,62 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 					</span>
 				</p>
 			</div>
-			{graphs && graphs.length > 0 ? (
-				<Table>
-					<TableBody>
-						{table.getRowModel().rows.length > 0 ? (
-							table.getRowModel().rows.map((row) => (
-								<WorkflowListItem
-									compact={compact}
-									graphs={graphs}
-									key={row.id}
-									onWorkflowSelect={onWorkflowSelect}
-									row={row}
-									setSelectedEventId={setSelectedEventId}
-								/>
-							))
-						) : (
-							<TableRow>
-								<TableCell className="text-center" colSpan={columns.length}>
-									<div>
-										No workflow results found.
-									</div>
-								</TableCell>
-							</TableRow>
-						)}
-						{/* </div> */}
-					</TableBody>
-				 </Table>
-			) : (
-				<div className="text-center p-4 text-muted-foreground">
-					No workflow data available.
+			{/* Similar Events Table */}
+			{similarEventResults.length > 0 && (
+				<div className="mb-6">
+					
+					<div className="overflow-hidden">
+						<Table>
+							<TableBody>
+								{similarEventResults
+									.filter((event) => event.meeting_timestamp !== null && event.is_recording_successful)
+									.map((event) => {
+										return (
+											<TableRow
+												className={cn(
+													"cursor-pointer hover:bg-gray-50 border-none",
+													selectedSimilarEventId === event.result_id && "bg-gradient-to-r from-indigo-100 to-purple-500",
+												)}
+												key={event.result_id}
+												onClick={() => {
+													setSelectedSimilarEventId(event.result_id);
+													setSelectedEventId(event.result_id);
+													setSelectedWorkflowId(event.result_id);
+												}}
+											>
+												<TableCell className="py-3 border-none">
+													<div className="flex items-center gap-2">
+														<div className="text-sm font-medium text-gray-900">
+															{new Date(event.meeting_timestamp!).toLocaleString([], {
+																month: "short",
+																day: "numeric",
+																year: "numeric",
+																hour: "numeric",
+																minute: "2-digit",
+																hour12: true,
+															})}
+														</div>
+														{event.is_recording_successful && (
+															<div className="flex items-center gap-1 px-2 py-0.5 bg-gray-50 border border-gray-200 rounded-md">
+																<Tooltipped tooltip="Meeting Recording Available">
+																	<Video className="h-3.5 w-3.5 text-gray-600" />
+																</Tooltipped>
+																<Tooltipped tooltip="Meeting Minutes Available">
+																	<FileText className="h-3.5 w-3.5 text-gray-600" />
+																</Tooltipped>
+															</div>
+														)}
+													</div>
+												</TableCell>
+											</TableRow>
+										);
+									})}
+							</TableBody>
+						</Table>
+					</div>
 				</div>
 			)}
-			{/* Pagination Controls - Only show if we have data */}
-			{table.getRowModel().rows.length > 0 && (
-				<div className="flex items-center justify-between px-2 mt-4">
-					{/* Pagination Controls... */}
-				</div>
-			)}
+			{/* Old graphs table removed - using similar events list only */}
 			{isFetchingEventResult && (
 				<div className="flex items-center justify-center h-full mt-2">
 					<div className="w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-[progressLine_10s_linear_infinite]" />

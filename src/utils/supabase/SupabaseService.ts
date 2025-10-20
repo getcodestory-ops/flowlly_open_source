@@ -12,6 +12,7 @@ export interface SimilarEventResult {
 	result_id: string;
 	is_recording_successful: boolean;
 	meeting_timestamp: string | null; // Add the timestamp (can be null if not found)
+	meeting_status: "agenda" | "finished" | "upcoming" | null;
 }
 
 // Initialize Supabase client

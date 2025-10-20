@@ -73,9 +73,11 @@ export default function AssignmentHome(): React.ReactNode {
 				setEventSchedule([]);
 			}
 
-			if (currentResult && currentResult.event_id !== currentGraphId) {
-				setCurrentResult(null);
-			}
+			// Don't clear currentResult if it's a similar event result
+			// Similar events have different event_ids but should still be displayed
+			// if (currentResult && currentResult.event_id !== currentGraphId) {
+			// 	setCurrentResult(null);
+			// }
 		} else {
 			setEventSchedule(null);
 			setCurrentGraph(null);
