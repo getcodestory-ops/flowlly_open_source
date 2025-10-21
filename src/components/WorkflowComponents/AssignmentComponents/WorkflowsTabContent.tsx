@@ -21,6 +21,8 @@ export const WorkflowsTabContent = (): React.ReactNode => {
 const WorkflowContent = (): React.ReactNode => {
 	const { currentResult, isLoadingResult } = useWorkflow();
 
+
+
 	return (
 		<>
 			{currentResult ? (

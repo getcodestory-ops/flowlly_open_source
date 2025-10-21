@@ -23,6 +23,7 @@ interface ChatInputAreaProps {
   uploadingFiles: FileUploadStatus[];
   onRemoveFile: (index: number) => void;
   selectedContextFolder: { id: string | null; name: string };
+  isInMeetingsContext?: boolean;
 }
 
 export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
@@ -41,9 +42,14 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
 	uploadingFiles,
 	onRemoveFile,
 	selectedContextFolder,
+	isInMeetingsContext = false,
 }) => {
 	return (
-		<div className="px-4 py-2 flex flex-col justify-end">
+		<div
+			className={`px-4 py-2 flex flex-col justify-end ${
+				isInMeetingsContext ? "pb-4" : ""
+			}`}
+		>
 			<div className="relative overflow-hidden rounded-lg border border-black bg-background focus-within:ring-1 focus-within:ring-ring">
 				<Label className="sr-only" htmlFor="message">
           Message

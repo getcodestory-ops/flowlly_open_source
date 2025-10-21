@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
 	ArrowDown,
 	ArrowUp,
@@ -27,6 +27,8 @@ import {
 	SortingState,
 	flexRender,
 	getPaginationRowModel,
+	getExpandedRowModel,
+	ExpandedState,
 } from "@tanstack/react-table";
 import { DataTablePagination } from "@/components/Schedule/ScheduleTable/DataTablePagination";
 import { CalendarView } from "./CalendarView";
@@ -60,7 +62,7 @@ import { useStore } from "@/utils/store";
 import { deleteProjectEvent, mergeProjectEvents } from "@/api/taskQueue";
 import ImportMeetingsDialog from "./ImportMeetingsDialog";
 import CreateJob from "./CreateJob";
-import { Checkbox } from "@/components/ui/checkbox";
+import { fetchLatestMeetingEvents, type MeetingEvent } from "@/utils/supabase/SupabaseService";
 const localeText = {
 	searchWorkflows: "Filter meetings by name or type...",
 };
@@ -74,6 +76,7 @@ export const EventListViewer: React.FC = ({
 	};
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [globalFilter, setGlobalFilter] = useState("");
+	const [expanded, setExpanded] = useState<ExpandedState>(true);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [selectedEventType, setSelectedEventType] = useState<string | null>( null );
 	const [selectedEventData, setSelectedEventData] = useState<GraphData | null>( null );
@@ -82,6 +85,7 @@ export const EventListViewer: React.FC = ({
 	const [isMergeMode, setIsMergeMode] = useState(false);
 	const [selectedEventsForMerge, setSelectedEventsForMerge] = useState<string[]>([]);
 	const [isMergeDialogOpen, setIsMergeDialogOpen] = useState(false);
+	const [meetingEvents, setMeetingEvents] = useState<MeetingEvent[]>([]);
 	const queryClient = useQueryClient();
 	const { toast } = useToast();
 	const { session, activeProject } = useStore();
@@ -134,67 +138,91 @@ export const EventListViewer: React.FC = ({
 			});
 		},
 	});
-	const onClickEdit = (info: GraphData) => {
+
+	// Fetch and log meeting events only when in list view
+	useEffect(() => {
+		const fetchAndLogMeetingEvents = async(): Promise<void> => {
+			// Only run in list view
+			if (viewMode !== ViewMode.LIST) {
+				setMeetingEvents([]);
+				return;
+			}
+			
+			// Use project_id as the project access ID
+			const projectAccessId = activeProject?.project_id;
+			
+			if (projectAccessId) {
+				// eslint-disable-next-line no-console
+				console.log("=== Fetching Meeting Events (List View) ===");
+				// eslint-disable-next-line no-console
+				console.log("Project ID (used as access ID):", activeProject?.project_id);
+				// eslint-disable-next-line no-console
+				console.log("Project Number:", activeProject?.project_number);
+				// eslint-disable-next-line no-console
+				console.log("Project Name:", activeProject?.name);
+				
+				const events = await fetchLatestMeetingEvents(projectAccessId);
+				
+				// eslint-disable-next-line no-console
+				console.log("Meeting events result:", events);
+				// eslint-disable-next-line no-console
+				console.log("Is array:", Array.isArray(events));
+				// eslint-disable-next-line no-console
+				console.log("Array length:", events?.length ?? 0);
+				
+				if (events && events.length > 0) {
+					// eslint-disable-next-line no-console
+					console.log("First event:", events[0]);
+				} else {
+					// eslint-disable-next-line no-console
+					console.log("No events found or events is null");
+				}
+				// eslint-disable-next-line no-console
+				console.log("================================");
+				
+				// Sort events by meeting_date in descending order (newest first)
+				const sortedEvents = (events || []).sort((a, b) => {
+					const dateA = new Date(a.meeting_date).getTime();
+					const dateB = new Date(b.meeting_date).getTime();
+					return dateB - dateA; // Descending order (newest first)
+				});
+				
+				// Store the sorted events in state
+				setMeetingEvents(sortedEvents);
+			}
+		};
+
+		void fetchAndLogMeetingEvents();
+	}, [viewMode, activeProject?.project_id, activeProject?.project_number, activeProject?.name]);
+	const onClickEdit = (info: GraphData): void => {
 		const eventType = info.event_type;
 		setSelectedEventType(eventType);
 		setSelectedEventData(info);
 		setIsDialogOpen(true);
 	};
-	const toggleEventSelection = useCallback((eventId: string) => {
-		setSelectedEventsForMerge((prev) => {
-			if (prev.includes(eventId)) {
-				return prev.filter((id) => id !== eventId);
-			}
-			// Only allow selecting 2 events
-			if (prev.length >= 2) {
-				toast({
-					title: "Maximum selection reached",
-					description: "You can only select 2 events to merge",
-					variant: "destructive",
-				});
-				return prev;
-			}
-			return [...prev, eventId];
-		});
-	}, [toast]);
 
-	const handleMergeClick = () => {
+	const handleMergeClick = (): void => {
 		if (selectedEventsForMerge.length === 2) {
 			setIsMergeDialogOpen(true);
 		}
 	};
-	const handleConfirmMerge = (mergeFromId: string, mergeIntoId: string) => {
+	const handleConfirmMerge = (mergeFromId: string, mergeIntoId: string): void => {
 		mergeEventsMutation({ mergeFromId, mergeIntoId });
 	};
-	const columns = useMemo<ColumnDef<GraphData>[]>(
+	const columns = useMemo<ColumnDef<MeetingEvent | GraphData>[]>(
 		() => {
-			const cols: ColumnDef<GraphData>[] = [];
+			const cols: ColumnDef<MeetingEvent | GraphData>[] = [];
 			
-			// Add checkbox column when in merge mode
-			if (isMergeMode) {
-				cols.push({
-					id: "select",
-					header: "Select",
-					cell: ({ row }) => (
-						<Checkbox
-							checked={selectedEventsForMerge.includes(row.original.id)}
-							onCheckedChange={() => toggleEventSelection(row.original.id)}
-							onClick={(e) => e.stopPropagation()}
-						/>
-					),
-				});
-			}
-
 			cols.push(
 				{
-					accessorKey: "name",
+					accessorKey: "event_name",
 					header: ({ column }) => (
 						<Button
 							className="p-0"
 							onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 							variant="ghost"
 						>
-						Name
+						Event Name
 						</Button>
 					),
 					cell: (info) => (
@@ -204,149 +232,57 @@ export const EventListViewer: React.FC = ({
 					),
 				},
 				{
-					accessorKey: "metadata.frequency",
-					header: "Frequency",
-					cell: (info) => {
-						const g = info.row.original;
-						const metadata = g.metadata;
-						
-						// Check for Microsoft recurrence first
-						const msRecurrence = g.event_schedule?.[0]?.schedule?.recurrence;
-						if (msRecurrence?.pattern) {
-							const interval = msRecurrence.pattern.interval || 1;
-							const type = msRecurrence.pattern.type;
-						
-							if (interval > 1) {
-								const intervalUnit = type === "weekly" ? "weeks" : 
-							                     type === "daily" ? "days" : 
-							                     type.includes("Monthly") ? "months" :
-							                     type.includes("Yearly") ? "years" : "intervals";
-								return (
-									<span className=" rounded">
-									Every {interval} {intervalUnit}
-									</span>
-								);
-							}
-						
-							// Format the recurrence text for interval of 1
-							return type.charAt(0).toUpperCase() + type.slice(1);
-						}
-						
-						// Fallback to metadata
-						return metadata?.frequency || "N/A";
-					},
-				},
-			);
-
-			const hasWeekly = (graphs || []).some((g) => {
-				const msRecurrence = g.event_schedule?.[0]?.schedule?.recurrence;
-				return g.metadata?.frequency === "weekly" || msRecurrence?.pattern?.type === "weekly";
-			});
-			if (hasWeekly) {
-				cols.push({
-					accessorKey: "metadata.recurrence_day",
-					header: "Day",
-					cell: (info) => {
-						const g = info.row.original;
-						const metadata = g.metadata;
-						
-						// Check for Microsoft recurrence first
-						const msRecurrence = g.event_schedule?.[0]?.schedule?.recurrence;
-						if (msRecurrence?.pattern?.type === "weekly" && msRecurrence.pattern.daysOfWeek) {
-							return msRecurrence.pattern.daysOfWeek
-								.map((day) => day.slice(0, 2).toUpperCase())
-								.join(", ");
-						}
-						
-						// Fallback to metadata
-						if (!metadata || metadata.frequency !== "weekly") return "";
-						return Array.isArray(metadata.recurrence_day) 
-							? metadata.recurrence_day.map((day) => day.slice(0, 2).toUpperCase()).join(", ") 
-							: metadata.recurrence_day?.slice(0, 2).toUpperCase() || "";
-					},
-				});
-			}
-
-			cols.push(
-				{
-					id: "meeting_time",
-					header: "Meeting Time",
+					id: "meeting_date",
+					header: "Last Recorded Meeting Date & Time",
 					accessorFn: (row) => {
-						const g = row;
-						const firstSchedule = g.event_schedule?.[0];
-						const scheduleStart = firstSchedule?.schedule?.start;
-						const scheduleTime = firstSchedule?.schedule?.time as { run_time?: string } | { run_time?: string }[] | undefined;
-						const scheduleRunTime = Array.isArray(scheduleTime) ? scheduleTime?.[0]?.run_time : scheduleTime?.run_time;
-						const rt = g.run_time || g.metadata?.time;
-						const hasZoneRe = /Z|[+-]\d\d:\d\d$/;
-						// Prefer schedule start + schedule run_time when available for exact meeting instance time
-						if (scheduleStart && scheduleRunTime) {
-							let isoFromSchedule: string;
-							if (scheduleRunTime.includes("T")) {
-								isoFromSchedule = hasZoneRe.test(scheduleRunTime) ? scheduleRunTime : `${scheduleRunTime}Z`;
-							} else {
-								const baseDateStr = scheduleStart.split("T")[0];
-								isoFromSchedule = `${baseDateStr}T${scheduleRunTime}Z`;
-							}
-							const d = new Date(isoFromSchedule);
-							return d.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
-						}
-						// Fallbacks
-						if (rt) {
-							if (rt.includes("T")) {
-								const iso = hasZoneRe.test(rt) ? rt : `${rt}Z`;
-								return new Date(iso).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
-							}
-							const baseDateStr = (g.created_at || new Date().toISOString()).split("T")[0];
-							return new Date(`${baseDateStr}T${rt}Z`).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
-						}
-						return "N/A";
+						const meetingDate = (row as MeetingEvent).meeting_date;
+						if (!meetingDate) return "N/A";
+						
+						const date = new Date(meetingDate);
+						return date.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
 					},
 					cell: (info) => info.getValue(),
 				},
 				{
-					accessorKey: "id",
-					header: "Edit",
+					accessorKey: "event_count",
+					header: "Meetings with Recordings",
 					cell: (info) => {
-						const eventType = info.row.original.event_type;
+						const count = info.getValue() as number;
 						return (
-							<PencilIcon
-								className="h-4 w-4 cursor-pointer text-gray-500 hover:text-gray-900 transition-colors"
-								onClick={(e) => {
-									e.stopPropagation();
-									if (["meeting", "document_writing", "custom"].includes(eventType)) {
-										setSelectedEventType(eventType);
-										setSelectedEventData(info.row.original);
-										setIsDialogOpen(true);
-									}
-								}}
-								size={16}
-							/>
+							<div className="text-center">
+								{count ?? 0}
+							</div>
 						);
 					},
 				},
 			);
 
 			return cols;
-		}, [graphs, setIsDialogOpen, setSelectedEventData, setSelectedEventType, isMergeMode, selectedEventsForMerge, toggleEventSelection]);
+		}, []);
+
+	// Use meeting events data in list view, otherwise use graphs
+	const tableData = viewMode === ViewMode.LIST ? meetingEvents : (graphs || []);
 
 	const table = useReactTable({
-		data: graphs || [],
+		data: tableData as (MeetingEvent | GraphData)[],
 		columns,
 		state: {
 			sorting,
 			globalFilter,
+			expanded,
 		},
 		onSortingChange: setSorting,
 		onGlobalFilterChange: setGlobalFilter,
+		onExpandedChange: setExpanded,
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
+		getExpandedRowModel: getExpandedRowModel(),
 	});
 
 	// Define a reusable filter function for consistency across views
-	const filterWorkflows = (workflows: GraphData[], searchTerm: string) => {
+	const filterWorkflows = (workflows: GraphData[], searchTerm: string): GraphData[] => {
 		if (!searchTerm) return workflows;
 
 		const lowerSearch = searchTerm.toLowerCase();
@@ -446,9 +382,14 @@ export const EventListViewer: React.FC = ({
 							{table.getRowModel().rows.length > 0 ? (
 								table.getRowModel().rows.map((row) => (
 									<TableRow
-										className="cursor-pointer hover:bg-gray-50/50 transition-colors border-b border-gray-100 last:border-b-0"
+										className="hover:bg-gray-50/50 transition-colors border-b border-gray-100 last:border-b-0 cursor-pointer"
 										key={row.id}
-										onClick={() => onSelectGraph(row.original.id)}
+										onClick={() => {
+											const eventData = row.original as MeetingEvent;
+											if (eventData.latest_event_id) {
+												onSelectGraph(eventData.latest_event_id);
+											}
+										}}
 									>
 										{row.getVisibleCells().map((cell) => (
 											<TableCell 
@@ -466,7 +407,7 @@ export const EventListViewer: React.FC = ({
 							) : (
 								<TableRow>
 									<TableCell className="text-center py-12 text-gray-500" colSpan={columns.length}>
-									No results found.
+										{meetingEvents.length === 0 ? "No meeting events found." : "No results found."}
 									</TableCell>
 								</TableRow>
 							)}
@@ -478,9 +419,10 @@ export const EventListViewer: React.FC = ({
 				</div>
 			)}
 			{viewMode === ViewMode.CALENDAR && (
-				<CalendarView />
+				<CalendarView onEditEvent={onClickEdit} />
 			)}
-			{viewMode === ViewMode.GRID && (
+			{/* Grid view mode hidden */}
+			{false && viewMode === ViewMode.GRID && (
 				<div>
 					
 					<div>
@@ -574,7 +516,7 @@ export const EventListViewer: React.FC = ({
 			)}
 			{isDialogOpen && (
 				<Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
-					<DialogContent className="max-w-[90vw]" title="edit event">
+					<DialogContent className="max-w-[90vw]">
 						{selectedEventType === "meeting" && (
 							<>
 								<h2 className="text-lg font-semibold">Edit Meeting</h2>
@@ -641,7 +583,7 @@ const MergeEventsDialog: React.FC<MergeEventsDialogProps> = ({
 		}
 	}, [selectedEventIds]);
 
-	const handleConfirm = () => {
+	const handleConfirm = (): void => {
 		if (mergeFromId && mergeIntoId) {
 			onConfirm(mergeFromId, mergeIntoId);
 		}
