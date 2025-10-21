@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -47,6 +48,7 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 	onSort,
 }) => {
 	const toolbarRef = useRef<HTMLDivElement>(null);
+	const queryClient = useQueryClient();
 	const { addFolder } = useDocumentStore();
 	const [containerWidth, setContainerWidth] = useState(1200);
 	
@@ -103,6 +105,13 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 			isProjectWide,
 			(data) => {
 				addFolder(currentFolderId, data);
+				queryClient.setQueryData(
+					["folders", session?.access_token, activeProject?.project_id, currentFolderId, isProjectWide],
+					(oldData: any) => {
+						if (!oldData) return [data];
+						return [...oldData, data];
+					},
+				);
 			},
 		);
 	};

@@ -392,7 +392,7 @@ export interface WorkflowFormData {
   triggerByKey: string;
   authorizedUsers: string[];
   nodes: WorkflowNode[];
-  recurrenceDay?: string;
+  recurrenceDay?: string | string[];
   endDate?: string;
   startDate?: string;
 }

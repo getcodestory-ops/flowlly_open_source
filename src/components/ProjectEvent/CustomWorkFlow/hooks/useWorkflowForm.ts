@@ -36,7 +36,7 @@ export function useWorkflowForm({
 		nodes: [],
 		startDate: format(new Date(), "yyyy-MM-dd"),
 		endDate: format(new Date(), "yyyy-MM-dd"),
-		recurrenceDay: format(new Date(), "EEEE"),
+		recurrenceDay: [format(new Date(), "EEEE")],
 	});
 
 	const [isFormValid, setIsFormValid] = useState(false);

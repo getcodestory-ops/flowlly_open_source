@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useMemo, useCallback } from "react";
 import { Calendar, View } from "react-big-calendar";
 import { Button } from "@/components/ui/button";
 import { FileText, Video } from "lucide-react";
@@ -34,21 +34,21 @@ const CustomToolbar = (toolbar: ToolbarApi): JSX.Element => {
 				<Button
 					onClick={goToBack}
 					size="sm"
-					variant="ghost"
+					variant="outline"
 				>
           Back
 				</Button>
 				<Button
 					onClick={goToCurrent}
 					size="sm"
-					variant="ghost"
+					variant="outline"
 				>
           Today
 				</Button>
 				<Button
 					onClick={goToNext}
 					size="sm"
-					variant="ghost"
+					variant="outline"
 				>
           Next
 				</Button>
@@ -77,8 +77,8 @@ export const CalendarView: React.FC = ({
 	const onSelectGraph = (id: string): void => {
 		setCurrentGraphId(id);
 	};
-	const { calendarView, setCalendarView } = useViewStore();
-	const [date, setDate] = useState(new Date());
+	const { calendarView, setCalendarView, calendarDate, setCalendarDate } = useViewStore();
+	const date = useMemo(() => new Date(calendarDate), [calendarDate]);
 
 	const extractHoursMinutes = useCallback((timeString?: string): { hours: number; minutes: number } => {
 		if (!timeString) {
@@ -121,18 +121,56 @@ type RbcEvent = {
 
 const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 	const events = [];
-	const startDate = new Date(graph.created_at);
-	const endDate = new Date(startDate);
-	endDate.setDate(endDate.getDate() + 84);
-
-	const frequency = graph.metadata.frequency || "once";
-	const meetingDay = graph.metadata.recurrence_day?.toLowerCase();
 	const firstSchedule = graph.event_schedule?.[0];
 	const scheduleStart = firstSchedule?.schedule?.start;
 	const scheduleTime = firstSchedule?.schedule?.time as Record<string, unknown> | Array<Record<string, unknown>>;
 	const scheduleRunTime = Array.isArray(scheduleTime) ? scheduleTime?.[0]?.run_time : scheduleTime?.run_time;
-	// Prefer schedule run_time over metadata time to align with list view
 	const meetingTime = scheduleRunTime || graph.metadata.time;
+	
+	// Check for Microsoft recurrence structure
+	const msRecurrence = firstSchedule?.schedule?.recurrence;
+	
+	// Determine date range
+	let startDate: Date;
+	let endDate: Date;
+	
+	if (msRecurrence?.range) {
+		startDate = new Date(msRecurrence.range.startDate);
+		if (msRecurrence.range.type === "endDate" && msRecurrence.range.endDate) {
+			endDate = new Date(msRecurrence.range.endDate);
+		} else if (msRecurrence.range.type === "numbered" && msRecurrence.range.numberOfOccurrences) {
+			// Calculate end date based on number of occurrences
+			endDate = new Date(startDate);
+			endDate.setDate(endDate.getDate() + (msRecurrence.range.numberOfOccurrences * 7)); // rough estimate
+		} else {
+			// No end date - limit to 1 year for display
+			endDate = new Date(startDate);
+			endDate.setFullYear(endDate.getFullYear() + 1);
+		}
+	} else {
+		startDate = new Date(graph.created_at);
+		endDate = new Date(startDate);
+		endDate.setDate(endDate.getDate() + 84);
+	}
+
+	// Determine frequency and days
+	let frequency: string;
+	let meetingDays: string[];
+	let interval = 1;
+	
+	if (msRecurrence?.pattern) {
+		frequency = msRecurrence.pattern.type;
+		interval = msRecurrence.pattern.interval || 1;
+		meetingDays = msRecurrence.pattern.daysOfWeek?.map((day) => day.toLowerCase()) || [];
+	} else {
+		frequency = graph.metadata.frequency || "once";
+		const recurrenceDay = graph.metadata.recurrence_day;
+		meetingDays = Array.isArray(recurrenceDay) 
+			? recurrenceDay.map((day) => day.toLowerCase()) 
+			: recurrenceDay 
+				? [recurrenceDay.toLowerCase()] 
+				: [];
+	}
 
 	// Get exceptions from the schedule
 	const exceptions = (firstSchedule?.schedule as Record<string, unknown>)?.exceptions as Array<Record<string, unknown>> || [];
@@ -147,13 +185,105 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 		}
 	});
 
-	if (frequency === "weekly" && meetingDay && meetingTime) {
+	if (frequency === "weekly" && meetingDays.length > 0 && meetingTime) {
+		// Iterate through each meeting day
+		meetingDays.forEach((meetingDay) => {
+			let currentDate = new Date(startDate);
+			currentDate.setDate(
+				currentDate.getDate() +
+					((dayMapping[meetingDay as keyof typeof dayMapping] + 7 - currentDate.getDay()) % 7),
+			);
+			// const { hours, minutes } = extractHoursMinutes(meetingTime);
+
+			while (currentDate <= endDate) {
+				const baseDateStr = currentDate.toISOString().split("T")[0];
+				const exception = exceptionMap.get(baseDateStr);
+
+				// Check if this occurrence has an exception
+				if (exception) {
+					// Handle different exception types
+					if (exception.exception_type === "moved" && exception.new_start_time && exception.new_end_time) {
+						// For moved meetings, show the event at the new time
+						const exceptionStart = new Date(exception.new_start_time);
+						const exceptionEnd = new Date(exception.new_end_time);
+
+						events.push({
+							id: `${graph.id}-${currentDate.toISOString()}-exception`,
+							title: (
+								<div className="flex items-center gap-2 text-xs font-light">
+									{graph.name}
+								</div>
+							),
+							start: exceptionStart,
+							end: exceptionEnd,
+							allDay: false,
+							resource: graph,
+						});
+					} else if (exception.exception_type === "cancelled") {
+						// For cancelled meetings, skip adding the event
+						// You could also show a strikethrough version if desired
+					}
+					// Skip to next occurrence
+					currentDate = new Date(currentDate.getTime() + interval * 7 * 24 * 60 * 60 * 1000);
+					continue;
+				}
+
+				// Regular occurrence (no exception)
+				// Compose UTC ISO from the week's date and meeting time, then convert to local
+				let iso: string;
+				if (typeof meetingTime === "string" && meetingTime.includes("T")) {
+					const hasZone = /Z|[+-]\d\d:\d\d$/.test(meetingTime);
+					iso = hasZone ? meetingTime : `${meetingTime}Z`;
+				} else {
+					const norm = ((): string => {
+						const input = String(meetingTime || "00:00").trim();
+						if (input.includes("T")) return input;
+						const ampm = input.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])\s*$/);
+						if (ampm) {
+							let hh = parseInt(ampm[1] || "0", 10);
+							const mm = parseInt(ampm[2] || "0", 10);
+							const ss = parseInt(ampm[3] || "0", 10);
+							const ap = ampm[4].toUpperCase();
+							if (ap === "PM" && hh < 12) hh += 12;
+							if (ap === "AM" && hh === 12) hh = 0;
+							const hhS = String(Math.max(0, Math.min(23, hh))).padStart(2, "0");
+							const mmS = String(Math.max(0, Math.min(59, mm))).padStart(2, "0");
+							const ssS = String(Math.max(0, Math.min(59, ss))).padStart(2, "0");
+							return `${hhS}:${mmS}:${ssS}`;
+						}
+						const h24 = input.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*$/);
+						if (h24) {
+							const hh = String(Math.max(0, Math.min(23, parseInt(h24[1] || "0", 10)))).padStart(2, "0");
+							const mm = String(Math.max(0, Math.min(59, parseInt(h24[2] || "0", 10)))).padStart(2, "0");
+							const ss = String(Math.max(0, Math.min(59, parseInt(h24[3] || "0", 10)))).padStart(2, "0");
+							return `${hh}:${mm}:${ss}`;
+						}
+						return "00:00:00";
+					})();
+					iso = `${baseDateStr}T${norm}Z`;
+				}
+				const eventStart = new Date(iso);
+				const eventEnd = new Date(eventStart.getTime() + 60 * 60 * 1000);
+
+				events.push({
+					id: `${graph.id}-${currentDate.toISOString()}-${meetingDay}`,
+					title: (
+						<div className="flex items-center gap-2 text-xs font-light">
+							{graph.name}
+						</div>
+					),
+					start: eventStart,
+					end: eventEnd,
+					allDay: false,
+					resource: graph,
+				});
+
+				currentDate = new Date(currentDate.getTime() + interval * 7 * 24 * 60 * 60 * 1000);
+			}
+		});
+	} else if (frequency === "daily" && meetingTime) {
+		// Daily recurring events
 		let currentDate = new Date(startDate);
-		currentDate.setDate(
-			currentDate.getDate() +
-				((dayMapping[meetingDay as keyof typeof dayMapping] + 7 - currentDate.getDay()) % 7),
-		);
-		// const { hours, minutes } = extractHoursMinutes(meetingTime);
 
 		while (currentDate <= endDate) {
 			const baseDateStr = currentDate.toISOString().split("T")[0];
@@ -170,15 +300,8 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 					events.push({
 						id: `${graph.id}-${currentDate.toISOString()}-exception`,
 						title: (
-							<div className="flex items-center gap-2">
-								{graph.event_type === "document_writing" ? (
-									<FileText size={14} />
-								) : (
-									<Video size={14} />
-								)}
-								<span className="text-xs opacity-80">{formatLocalTime(exceptionStart)}</span>
+							<div className="flex items-center gap-2 text-xs font-light">
 								{graph.name}
-								<span className="text-xs bg-orange-100 text-orange-700 px-1 rounded">Moved</span>
 							</div>
 						),
 						start: exceptionStart,
@@ -188,15 +311,13 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 					});
 				} else if (exception.exception_type === "cancelled") {
 					// For cancelled meetings, skip adding the event
-					// You could also show a strikethrough version if desired
 				}
 				// Skip to next occurrence
-				currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+				currentDate = new Date(currentDate.getTime() + interval * 24 * 60 * 60 * 1000);
 				continue;
 			}
 
 			// Regular occurrence (no exception)
-			// Compose UTC ISO from the week's date and meeting time, then convert to local
 			let iso: string;
 			if (typeof meetingTime === "string" && meetingTime.includes("T")) {
 				const hasZone = /Z|[+-]\d\d:\d\d$/.test(meetingTime);
@@ -235,13 +356,13 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 			events.push({
 				id: `${graph.id}-${currentDate.toISOString()}`,
 				title: (
-					<div className="flex items-center gap-2">
+					<div className="flex items-center gap-2 text-xs font-bold">
 						{graph.event_type === "document_writing" ? (
 							<FileText size={14} />
 						) : (
 							<Video size={14} />
 						)}
-						<span className="text-xs opacity-80">{formatLocalTime(eventStart)}</span>
+						<span className="text-xs  font-light">{formatLocalTime(eventStart)}</span>
 						{graph.name}
 					</div>
 				),
@@ -251,7 +372,7 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 				resource: graph,
 			});
 
-			currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+			currentDate = new Date(currentDate.getTime() + interval * 24 * 60 * 60 * 1000);
 		}
 	} else if (frequency === "once") {
 		const timeString = String(meetingTime || "");
@@ -283,13 +404,7 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 		events.push({
 			id: graph.id,
 			title: (
-				<div className="flex items-center gap-2">
-					{graph.event_type === "document_writing" ? (
-						<FileText size={14} />
-					) : (
-						<Video size={14} />
-					)}
-					<span className="text-xs opacity-80">{formatLocalTime(eventStart)}</span>
+				<div className="flex items-center gap-2 text-xs font-light">
 					{graph.name}
 				</div>
 			),
@@ -316,21 +431,25 @@ const events = useMemo(() => {
 		onSelectGraph(eventResult.id);
 	};
 
-	const eventPropGetter = (event: { resource: GraphData }): { style: React.CSSProperties } => ({
+	const eventPropGetter = (_event: { resource: GraphData }): { style: React.CSSProperties } => ({
 		style: {
-			backgroundColor:
-        event.resource.event_type === "document_writing"
-        	? "#22c55e"
-        	: "#facc15",
-			color:
-        event.resource.event_type === "document_writing" ? "white" : "black",
+			backgroundColor: "#fef08a",
+			color: "black",
 			padding: "4px 8px",
 			borderRadius: "4px",
 			display: "flex",
 			alignItems: "center",
 			gap: "4px",
+			fontWeight: "bold",
+			fontSize: "0.75rem",
+			border: "none",
+			outline: "none",
 		},
 	});
+
+	const formats = {
+		eventTimeRangeFormat: () => "",
+	};
 
 	return (
 		<div style={{ height: "700px" }}>
@@ -342,8 +461,9 @@ const events = useMemo(() => {
 				endAccessor="end"
 				eventPropGetter={eventPropGetter}
 				events={events}
+				formats={formats}
 				localizer={localizer}
-				onNavigate={(date: Date) => setDate(date)}
+				onNavigate={(date: Date) => setCalendarDate(date)}
 				onSelectEvent={handleSelectEvent}
 				onView={setCalendarView}
 				startAccessor="start"

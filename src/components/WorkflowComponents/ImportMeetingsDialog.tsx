@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, Clock, MapPin, Users, Video, Loader2, CheckCircle2, AlertCircle, CalendarDays, Repeat, AlertTriangle } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, MapPin, Users, Video, Loader2, CheckCircle2, AlertCircle, CalendarDays, Repeat, AlertTriangle, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -39,6 +39,7 @@ function ImportMeetingsDialog({ isOpen, onClose }: ImportMeetingsDialogProps): R
 
 	const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
 	const [hasSearched, setHasSearched] = useState(false);
+	const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
 
 	// Fetch calendar events
 	const { 
@@ -59,6 +60,57 @@ function ImportMeetingsDialog({ isOpen, onClose }: ImportMeetingsDialogProps): R
 		},
 		enabled: false, // Only fetch when user clicks search
 	});
+
+	// Group events by recurring series
+	const groupedEvents = useMemo(() => {
+		if (!calendarData?.events) return [];
+
+		const masterEvents = new Map<string, FormattedCalendarEvent>();
+		const childEvents = new Map<string, FormattedCalendarEvent[]>();
+		const standaloneEvents: FormattedCalendarEvent[] = [];
+
+		// First pass: organize events
+		calendarData.events.forEach((event) => {
+			if (event.type === "seriesMaster") {
+				masterEvents.set(event.id, event);
+				childEvents.set(event.id, []);
+			} else if (event.series_master_id) {
+				// This is an exception (modified instance of recurring meeting)
+				const children = childEvents.get(event.series_master_id) || [];
+				children.push(event);
+				childEvents.set(event.series_master_id, children);
+			} else {
+				// Standalone single event
+				standaloneEvents.push(event);
+			}
+		});
+
+		// Build the final structure
+		const result: Array<{
+			type: "standalone" | "series";
+			master?: FormattedCalendarEvent;
+			event?: FormattedCalendarEvent;
+			children?: FormattedCalendarEvent[];
+		}> = [];
+
+		// Add standalone events
+		standaloneEvents.forEach((event) => {
+			result.push({ type: "standalone", event });
+		});
+
+		// Add series with their exceptions
+		masterEvents.forEach((master, masterId) => {
+			const children = childEvents.get(masterId) || [];
+			// Sort exceptions by start date
+			children.sort((a, b) => {
+				if (!a.start || !b.start) return 0;
+				return new Date(a.start).getTime() - new Date(b.start).getTime();
+			});
+			result.push({ type: "series", master, children });
+		});
+
+		return result;
+	}, [calendarData]);
 
 	// Import selected events mutation
 	const { mutate: importEvents, isPending: isImporting } = useMutation({
@@ -133,6 +185,40 @@ function ImportMeetingsDialog({ isOpen, onClose }: ImportMeetingsDialogProps): R
 		} else {
 			setSelectedEvents(new Set(calendarData.events.map((event) => event.id)));
 		}
+	};
+
+	const toggleSeriesExpanded = (seriesId: string): void => {
+		const newExpanded = new Set(expandedSeries);
+		if (newExpanded.has(seriesId)) {
+			newExpanded.delete(seriesId);
+		} else {
+			newExpanded.add(seriesId);
+		}
+		setExpandedSeries(newExpanded);
+	};
+
+	const handleSeriesToggle = (master: FormattedCalendarEvent, children: FormattedCalendarEvent[]): void => {
+		const allIds = [master.id, ...children.map((c) => c.id)];
+		const allSelected = allIds.every((id) => selectedEvents.has(id));
+		
+		const newSelected = new Set(selectedEvents);
+		if (allSelected) {
+			// Deselect all
+			allIds.forEach((id) => newSelected.delete(id));
+		} else {
+			// Select all
+			allIds.forEach((id) => newSelected.add(id));
+		}
+		setSelectedEvents(newSelected);
+	};
+
+	const getSeriesSelectionState = (master: FormattedCalendarEvent, children: FormattedCalendarEvent[]): "all" | "some" | "none" => {
+		const allIds = [master.id, ...children.map((c) => c.id)];
+		const selectedCount = allIds.filter((id) => selectedEvents.has(id)).length;
+		
+		if (selectedCount === 0) return "none";
+		if (selectedCount === allIds.length) return "all";
+		return "some";
 	};
 
 	const formatDateTime = (dateTimeStr?: string, eventTimezone?: string): string => {
@@ -258,6 +344,99 @@ function ImportMeetingsDialog({ isOpen, onClose }: ImportMeetingsDialogProps): R
 		}
 	};
 
+	// Component to render a single event card
+	const EventCard = ({ 
+		event, 
+		isChild = false,
+		showCheckbox = true,
+	}: { 
+		event: FormattedCalendarEvent; 
+		isChild?: boolean;
+		showCheckbox?: boolean;
+	}): React.ReactNode => (
+		<div
+			className={cn(
+				"border rounded-lg p-4 transition-all duration-200",
+				isChild ? "ml-8 border-l-4 border-l-orange-300" : "",
+				selectedEvents.has(event.id) 
+					? "border-blue-500 bg-blue-50 shadow-sm" 
+					: "border-gray-200 hover:border-gray-400 hover:shadow-sm",
+				showCheckbox ? "cursor-pointer" : "",
+			)}
+			onClick={() => showCheckbox && handleEventToggle(event.id)}
+		>
+			<div className="flex items-start space-x-3">
+				{showCheckbox && (
+					<Checkbox
+						checked={selectedEvents.has(event.id)}
+						onCheckedChange={() => handleEventToggle(event.id)}
+						onClick={(e) => e.stopPropagation()}
+					/>
+				)}
+				<div className="flex-1 min-w-0">
+					<div className="flex items-start justify-between gap-2">
+						<div className="flex-1 min-w-0">
+							<h3 className="font-medium text-sm line-clamp-2 pr-2">
+								{event.subject}
+							</h3>
+							{/* Meeting Type Badge */}
+							<div className="flex items-center gap-2 mt-1">
+								{getMeetingTypeBadge(event)}
+								<div className="flex items-center space-x-1 text-xs text-muted-foreground">
+									{event.is_online_meeting && (
+										<Video className="h-3 w-3" />
+									)}
+									{event.location && (
+										<MapPin className="h-3 w-3" />
+									)}
+								</div>
+							</div>
+						</div>
+					</div>
+					<div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
+						<div className="flex items-center space-x-1">
+							<Clock className="h-3 w-3" />
+							<span>{formatDateTime(event.start, event.timezone)}</span>
+							{formatDuration(event.start, event.end) && (
+								<span className="text-gray-400">
+									({formatDuration(event.start, event.end)})
+								</span>
+							)}
+						</div>
+						{event.attendees.length > 0 && (
+							<div className="flex items-center space-x-1">
+								<Users className="h-3 w-3" />
+								<span>{event.attendees.length} attendees</span>
+							</div>
+						)}
+					</div>
+					{event.location && (
+						<div className="flex items-center space-x-1 mt-1 text-xs text-muted-foreground">
+							<MapPin className="h-3 w-3 flex-shrink-0" />
+							<span className="truncate" title={event.location}>{event.location}</span>
+						</div>
+					)}
+					{/* Show recurrence info for recurring meetings */}
+					{event.recurrence && formatRecurrencePattern(event.recurrence) && (
+						<div className="flex items-center space-x-1 mt-1 text-xs text-blue-600">
+							<Repeat className="h-3 w-3" />
+							<span className="truncate">{formatRecurrencePattern(event.recurrence)}</span>
+						</div>
+					)}
+					{/* Show exception info */}
+					{event.type === "exception" && event.original_start && (
+						<div className="flex items-center space-x-1 mt-1 text-xs text-orange-600">
+							<AlertTriangle className="h-3 w-3" />
+							<span className="truncate">
+								Modified from {formatDateTime(event.original_start, event.timezone)}
+							</span>
+						</div>
+					)}
+				</div>
+			</div>
+		</div>
+	);
+
 	return (
 		<Dialog onOpenChange={onClose} open={isOpen}>
 			<DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
@@ -355,87 +534,130 @@ function ImportMeetingsDialog({ isOpen, onClose }: ImportMeetingsDialogProps): R
 											{selectedEvents.size} selected
 										</span>
 									</div>
-									{/* Events List */}
+									{/* Events List - Grouped by Series */}
 									<div className="flex-1 overflow-y-auto space-y-2 py-2">
-										{calendarData.events.map((event: FormattedCalendarEvent) => (
-											<div
-												className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-													selectedEvents.has(event.id) 
-														? "border-blue-500 bg-blue-50" 
-														: "border-gray-200 hover:border-gray-300"
-												}`}
-												key={event.id}
-												onClick={() => handleEventToggle(event.id)}
-											>
-												<div className="flex items-start space-x-3">
-													<Checkbox
-														checked={selectedEvents.has(event.id)}
-														onCheckedChange={() => handleEventToggle(event.id)}
-														onClick={(e) => e.stopPropagation()}
-													/>
-													<div className="flex-1 min-w-0">
-														<div className="flex items-start justify-between gap-2">
-															<div className="flex-1 min-w-0">
-																<h3 className="font-medium text-sm truncate pr-2">
-																	{event.subject}
-																</h3>
-																{/* Meeting Type Badge */}
-																<div className="flex items-center gap-2 mt-1">
-																	{getMeetingTypeBadge(event)}
-																	<div className="flex items-center space-x-1 text-xs text-muted-foreground">
-																		{event.is_online_meeting && (
-																			<Video className="h-3 w-3" />
-																		)}
-																		{event.location && (
-																			<MapPin className="h-3 w-3" />
+										{groupedEvents.map((group) => {
+											if (group.type === "standalone" && group.event) {
+												// Render standalone event
+												return <EventCard event={group.event} key={group.event.id} />;
+											} else if (group.type === "series" && group.master && group.children) {
+												// Render series with children
+												const isExpanded = expandedSeries.has(group.master.id);
+												const selectionState = getSeriesSelectionState(group.master, group.children);
+												
+												return (
+													<div className="space-y-2" key={group.master.id}>
+														{/* Master Event with Expand/Collapse */}
+														<div
+															className={cn(
+																"border rounded-lg p-4 transition-all duration-200",
+																selectionState === "all" 
+																	? "border-blue-500 bg-blue-50 shadow-sm" 
+																	: selectionState === "some"
+																		? "border-blue-300 bg-blue-50/50 shadow-sm"
+																		: "border-gray-200 hover:border-gray-400 hover:shadow-sm",
+															)}
+														>
+															<div className="flex items-start space-x-3">
+																<Checkbox
+																	checked={selectionState === "all"}
+																	onCheckedChange={() => handleSeriesToggle(group.master!, group.children!)}
+																	ref={(el) => {
+																		if (el) {
+																			const inputEl = el as unknown as { indeterminate?: boolean };
+																			if (inputEl) {
+																				inputEl.indeterminate = selectionState === "some";
+																			}
+																		}
+																	}}
+																/>
+																<div className="flex-1 min-w-0">
+																	<div className="flex items-start justify-between gap-2">
+																		<div className="flex-1 min-w-0">
+																			<h3 className="font-medium text-sm line-clamp-2 pr-2">
+																				{group.master.subject}
+																			</h3>
+																			<div className="flex items-center gap-2 mt-1">
+																				{getMeetingTypeBadge(group.master)}
+																				{group.children.length > 0 && (
+																					<Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100" variant="secondary">
+																						{group.children.length} exception{group.children.length !== 1 ? "s" : ""}
+																					</Badge>
+																				)}
+																				<div className="flex items-center space-x-1 text-xs text-muted-foreground">
+																					{group.master.is_online_meeting && (
+																						<Video className="h-3 w-3" />
+																					)}
+																					{group.master.location && (
+																						<MapPin className="h-3 w-3" />
+																					)}
+																				</div>
+																			</div>
+																		</div>
+																		{group.children.length > 0 && (
+																			<Button
+																				className="h-6 w-6 p-0"
+																				onClick={(e) => {
+																					e.stopPropagation();
+																					toggleSeriesExpanded(group.master!.id);
+																				}}
+																				size="sm"
+																				variant="ghost"
+																			>
+																				<ChevronRight 
+																					className={cn(
+																						"h-4 w-4 transition-transform duration-200",
+																						isExpanded && "rotate-90",
+																					)} 
+																				/>
+																			</Button>
 																		)}
 																	</div>
+																	<div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
+																		<div className="flex items-center space-x-1">
+																			<Clock className="h-3 w-3" />
+																			<span>{formatDateTime(group.master.start, group.master.timezone)}</span>
+																			{formatDuration(group.master.start, group.master.end) && (
+																				<span className="text-gray-400">
+																					({formatDuration(group.master.start, group.master.end)})
+																				</span>
+																			)}
+																		</div>
+																		{group.master.attendees.length > 0 && (
+																			<div className="flex items-center space-x-1">
+																				<Users className="h-3 w-3" />
+																				<span>{group.master.attendees.length} attendees</span>
+																			</div>
+																		)}
+																	</div>
+																	{group.master.location && (
+																		<div className="flex items-center space-x-1 mt-1 text-xs text-muted-foreground">
+																			<MapPin className="h-3 w-3 flex-shrink-0" />
+																			<span className="truncate" title={group.master.location}>{group.master.location}</span>
+																		</div>
+																	)}
+																	{group.master.recurrence && formatRecurrencePattern(group.master.recurrence) && (
+																		<div className="flex items-center space-x-1 mt-1 text-xs text-blue-600">
+																			<Repeat className="h-3 w-3" />
+																			<span className="truncate">{formatRecurrencePattern(group.master.recurrence)}</span>
+																		</div>
+																	)}
 																</div>
 															</div>
 														</div>
-														<div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
-															<div className="flex items-center space-x-1">
-																<Clock className="h-3 w-3" />
-																<span>{formatDateTime(event.start, event.timezone)}</span>
-																{formatDuration(event.start, event.end) && (
-																	<span className="text-gray-400">
-                                    ({formatDuration(event.start, event.end)})
-																	</span>
-																)}
-															</div>
-															{event.attendees.length > 0 && (
-																<div className="flex items-center space-x-1">
-																	<Users className="h-3 w-3" />
-																	<span>{event.attendees.length} attendees</span>
-																</div>
-															)}
-														</div>
-														{event.location && (
-															<div className="flex items-center space-x-1 mt-1 text-xs text-muted-foreground">
-																<MapPin className="h-3 w-3" />
-																<span className="truncate">{event.location}</span>
-															</div>
-														)}
-														{/* Show recurrence info for recurring meetings */}
-														{event.recurrence && formatRecurrencePattern(event.recurrence) && (
-															<div className="flex items-center space-x-1 mt-1 text-xs text-blue-600">
-																<Repeat className="h-3 w-3" />
-																<span className="truncate">{formatRecurrencePattern(event.recurrence)}</span>
-															</div>
-														)}
-														{/* Show exception info */}
-														{event.type === "exception" && event.original_start && (
-															<div className="flex items-center space-x-1 mt-1 text-xs text-orange-600">
-																<AlertTriangle className="h-3 w-3" />
-																<span className="truncate">
-																	Modified from {formatDateTime(event.original_start, event.timezone)}
-																</span>
-															</div>
-														)}
+														{/* Exceptions (Modified Instances) */}
+														{isExpanded && group.children.map((child) => (
+															<EventCard
+																event={child}
+																isChild
+																key={child.id}
+															/>
+														))}
 													</div>
-												</div>
-											</div>
-										))}
+												);
+											}
+											return null;
+										})}
 									</div>
 								</>
 							) : (
