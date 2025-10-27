@@ -8,6 +8,7 @@ import ChatInputArea from "./components/InputArea/ChatInputArea";
 import EmptyStateInput from "./components/InputArea/EmptyStateInput";
 import FileUploadProgress from "./components/FileUpload/FileUploadProgress";
 import BrainSelector from "./components/BrainSelector/BrainSelector";
+import { usePathname } from "next/navigation";
 
 export default function PlatformChatInterface({
 	folderId,
@@ -19,10 +20,14 @@ export default function PlatformChatInterface({
 	const chatContainerRef = useRef<HTMLDivElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const { toast } = useToast();
+	const pathname = usePathname();
 	const [selectedContextFolder, setSelectedContextFolder] = useState<{id: string | null; name: string}>({
 		id: folderId,
 		name: "",
 	});
+	
+	// Check if we're in the meetings context
+	const isInMeetingsContext = pathname?.endsWith("/meetings") || false;
 
 	const {
 		chats,
@@ -317,7 +322,11 @@ export default function PlatformChatInterface({
 						onApplyChanges={handleApplyChanges}
 						onCopyContent={copyFormattedContent}
 					/>
-					<div className="sticky bottom-0 px-4 py-3 bg-white border-t border-slate-100 backdrop-blur-sm">
+					<div
+						className={`sticky bottom-0 px-4 py-3 border-t border-slate-100 backdrop-blur-sm ${
+							isInMeetingsContext ? "pb-4 bg-pink-100" : "bg-white"
+						}`}
+					>
 						{activeProject && (
 							<ChatInputArea
 								chatInput={chatInput}
@@ -335,6 +344,7 @@ export default function PlatformChatInterface({
 								setShowBrainSelector={setShowBrainSelector}
 								showBrainSelector={showBrainSelector}
 								uploadingFiles={uploadingFiles}
+								isInMeetingsContext={isInMeetingsContext}
 							/>
 						)}
 					</div>

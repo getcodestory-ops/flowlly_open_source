@@ -60,7 +60,9 @@ export const useWorkflow = create<WorkflowStore>((set, get) => ({
 	setEventSchedule: (eventSchedule: EventSchedule[] | null) => set({ eventSchedule }),
 
 	currentResult: null,
-	setCurrentResult: (currentResult: EventResult | null) => set({ currentResult }),
+	setCurrentResult: (currentResult: EventResult | null) => {
+		set({ currentResult });
+	},
 
 	graphs: null,
 	setGraphs: (graphs: GraphData[] | null) => set({ graphs }),

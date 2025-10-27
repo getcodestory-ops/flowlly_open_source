@@ -21,14 +21,16 @@ export const WorkflowViewModeSwitcher = (): React.ReactNode => {
 			>
 				<List className="h-4 w-4" />
 			</Button>
-			<Button
-				onClick={() => setViewMode(ViewMode.GRID)}
-				size="icon"
-				variant={viewMode === ViewMode.GRID ? "default" : "outline"}
-			>
-				<Grid className="h-4 w-4" />
-			</Button>
-
+			{/* Grid view button hidden */}
+			{false && (
+				<Button
+					onClick={() => setViewMode(ViewMode.GRID)}
+					size="icon"
+					variant={viewMode === ViewMode.GRID ? "default" : "outline"}
+				>
+					<Grid className="h-4 w-4" />
+				</Button>
+			)}
 		</div>
 	);
 };

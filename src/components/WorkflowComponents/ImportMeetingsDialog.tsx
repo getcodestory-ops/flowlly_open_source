@@ -134,7 +134,7 @@ function ImportMeetingsDialog({ isOpen, onClose }: ImportMeetingsDialogProps): R
 				error.response && typeof error.response === "object" && "data" in error.response &&
 				error.response.data && typeof error.response.data === "object" && "detail" in error.response.data
 				? String(error.response.data.detail)
-				: "Failed to import meetings. Please try again.";
+				: "Failed to import meetings. Please try again .";
 			
 			toast({
 				title: "Import Failed",
