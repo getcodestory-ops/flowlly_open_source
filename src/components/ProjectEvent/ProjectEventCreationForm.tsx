@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { CalendarIcon, PlusCircle, Link, Mic } from "lucide-react";
 import { format, parse, addMinutes, roundToNearestMinutes } from "date-fns";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -333,7 +334,7 @@ export default function ProjectEventCreationForm({
 					try {
 						// If the time is in a different timezone, convert it to local time for display
 						if (editData.metadata.time_zone && editData.metadata.time_zone !== Intl.DateTimeFormat().resolvedOptions().timeZone) {
-							// Parse the time and convert from stored timezone to local timezone
+							// Parse the time
 							const timeParts = editData.metadata.time.split(":");
 							
 							// Validate that we have valid time parts
@@ -343,19 +344,16 @@ export default function ProjectEventCreationForm({
 								
 								// Check if hours and minutes are valid numbers
 								if (!isNaN(hours) && !isNaN(minutes) && hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
-									// Create a date object in the stored timezone
-									const storedDate = new Date();
-									storedDate.setUTCHours(hours, minutes, 0, 0);
+									// Create a date in the stored timezone
+									const today = format(new Date(), "yyyy-MM-dd");
+									const dateTimeInStoredTz = `${today} ${editData.metadata.time}:00`;
 									
-									// If stored timezone is UTC, convert to local
-									if (editData.metadata.time_zone === "UTC") {
-										// Get local time from UTC time
-										const localTime = format(storedDate, "HH:mm");
-										setStartTime(localTime);
-									} else {
-										// For other timezones, just use the time as-is for now
-										setStartTime(editData.metadata.time);
-									}
+									// Convert from stored timezone to UTC, then to local
+									const utcDate = fromZonedTime(dateTimeInStoredTz, editData.metadata.time_zone);
+									
+									// Get the local time
+									const localTime = format(utcDate, "HH:mm");
+									setStartTime(localTime);
 								} else {
 									// Invalid time values, use the time as-is
 									console.warn("Invalid time values in metadata:", editData.metadata.time);
@@ -402,7 +400,8 @@ export default function ProjectEventCreationForm({
 					setAutoJoin(editData.metadata.auto_join);
 				}
 				
-				setTimeZone(editData.metadata.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone);
+				// Always use local timezone when editing (time is already converted to local)
+				setTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
 			}
 
 			// Set schedule information
@@ -413,11 +412,6 @@ export default function ProjectEventCreationForm({
 				// Set end date if it exists
 				if (schedule.end) {
 					setEndDate(new Date(schedule.end));
-				}
-				
-				// Set time zone from schedule if not in metadata
-				if (schedule.time_zone && !editData.metadata?.time_zone) {
-					setTimeZone(schedule.time_zone);
 				}
 				
 				// Set start time from schedule time if not already set from metadata
@@ -485,16 +479,20 @@ export default function ProjectEventCreationForm({
 		// Convert time back to the stored timezone if editing
 		let submissionTime = startTime;
 		if (editData?.metadata?.time_zone && editData.metadata.time_zone !== timeZone) {
-			// Convert from local time back to stored timezone (UTC)
-			if (editData.metadata.time_zone === "UTC") {
-				const [hours, minutes] = startTime.split(":").map(Number);
-				const localDate = new Date();
-				localDate.setHours(hours, minutes, 0, 0);
+			try {
+				// Convert from local time back to stored timezone
+				const today = format(new Date(), "yyyy-MM-dd");
 				
-				// Convert to UTC by getting UTC hours and minutes
-				const utcHours = localDate.getUTCHours();
-				const utcMinutes = localDate.getUTCMinutes();
-				submissionTime = `${String(utcHours).padStart(2, "0")}:${String(utcMinutes).padStart(2, "0")}`;
+				// Convert local time to UTC first (treating it as local browser time)
+				const localDate = new Date(`${today}T${startTime}:00`);
+				
+				// Then convert to the target timezone
+				const targetTzDate = toZonedTime(localDate, editData.metadata.time_zone);
+				submissionTime = format(targetTzDate, "HH:mm");
+			} catch (error) {
+				console.error("Error converting time back to stored timezone:", error);
+				// Fall back to using time as-is
+				submissionTime = startTime;
 			}
 		}
 		
@@ -606,7 +604,7 @@ export default function ProjectEventCreationForm({
 										{new Date().toLocaleTimeString()} {timeZone}
 										{editData?.metadata?.time_zone && editData.metadata.time_zone !== timeZone && (
 											<span className="ml-2 text-xs text-muted-foreground">
-												(Original: {editData.metadata.time_zone})
+												(Time converted from {editData.metadata.time_zone})
 											</span>
 										)}
 									</span>

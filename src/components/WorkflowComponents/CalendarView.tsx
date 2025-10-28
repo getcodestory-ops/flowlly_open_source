@@ -7,6 +7,7 @@ import type { GraphData } from "./types";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useViewStore } from "@/utils/store";
 import { useWorkflow } from "@/hooks/useWorkflow";
+import { fromZonedTime } from "date-fns-tz";
 
 type ToolbarApi = {
 	onNavigate: (action: "PREV" | "NEXT" | "TODAY") => void;
@@ -96,24 +97,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 		};
 	}, []);
 
-	const extractHoursMinutes = useCallback((timeString?: string): { hours: number; minutes: number } => {
-		if (!timeString) {
-			return { hours: 0, minutes: 0 };
-		}
-		if (timeString.includes("T")) {
-			const hasZone = /Z|[+-]\d\d:\d\d$/.test(timeString);
-			const iso = hasZone ? timeString : `${timeString}Z`;
-			const parsed = new Date(iso);
-			if (!Number.isNaN(parsed.getTime())) {
-				return { hours: parsed.getHours(), minutes: parsed.getMinutes() };
-			}
-			const rawTime = timeString.split("T")[1]?.replace("Z", "") || "00:00";
-			const [hh, mm] = rawTime.split(":");
-			return { hours: parseInt(hh || "0"), minutes: parseInt(mm || "0") };
-		}
-		const [hh, mm] = timeString.split(":");
-		return { hours: parseInt(hh || "0"), minutes: parseInt(mm || "0") };
-	}, []);
+	// Helper to interpret local time string in a specific timezone and return UTC Date
+	// fromZonedTime takes a date in a specific timezone and returns the equivalent UTC date
+	const zonedToUtc = (dateInput: string, tz: string): Date => {
+		// Parse the date string as if it's in the target timezone
+		const localDate = new Date(dateInput);
+		// Convert from that timezone to UTC
+		return fromZonedTime(localDate, tz);
+	};
 
 	const formatLocalTime = useCallback((date: Date): string => {
 		try {
@@ -142,6 +133,18 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 	const scheduleTime = firstSchedule?.schedule?.time as Record<string, unknown> | Array<Record<string, unknown>>;
 	const scheduleRunTime = Array.isArray(scheduleTime) ? scheduleTime?.[0]?.run_time : scheduleTime?.run_time;
 	const meetingTime = scheduleRunTime || graph.metadata.time;
+
+	// Resolve event timezone (prefer IANA if provided; map common Windows timezones otherwise)
+	const windowsToIana: Record<string, string> = {
+		"Pacific Standard Time": "America/Los_Angeles",
+		"Eastern Standard Time": "America/New_York",
+		"Central Standard Time": "America/Chicago",
+		"Mountain Standard Time": "America/Denver",
+		"India Standard Time": "Asia/Kolkata",
+	};
+	const rawTz = (firstSchedule?.schedule as Record<string, unknown>)?.time_zone as string | undefined;
+	const recurrenceTzValue = (firstSchedule as unknown as { schedule?: { recurrence?: { range?: { recurrenceTimeZone?: string } } } })?.schedule?.recurrence?.range?.recurrenceTimeZone;
+	const eventTimeZone = rawTz || (recurrenceTzValue ? (windowsToIana[recurrenceTzValue] || recurrenceTzValue) : undefined);
 	
 	// Check for Microsoft recurrence structure
 	const msRecurrence = firstSchedule?.schedule?.recurrence;
@@ -207,7 +210,7 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 			let currentDate = new Date(startDate);
 			currentDate.setDate(
 				currentDate.getDate() +
-					((dayMapping[meetingDay as keyof typeof dayMapping] + 7 - currentDate.getDay()) % 7),
+					((dayMapping[meetingDay as keyof typeof dayMapping] + 7 - currentDate.getUTCDay()) % 7),
 			);
 			// const { hours, minutes } = extractHoursMinutes(meetingTime);
 
@@ -245,16 +248,12 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 				}
 
 				// Regular occurrence (no exception)
-				// Compose UTC ISO from the week's date and meeting time, then convert to local
-				let iso: string;
-				if (typeof meetingTime === "string" && meetingTime.includes("T")) {
-					const hasZone = /Z|[+-]\d\d:\d\d$/.test(meetingTime);
-					iso = hasZone ? meetingTime : `${meetingTime}Z`;
-				} else {
-					const norm = ((): string => {
-						const input = String(meetingTime || "00:00").trim();
-						if (input.includes("T")) return input;
-						const ampm = input.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])\s*$/);
+				// Build event start by interpreting run_time in the event's timezone on the base date
+				const norm = ((): string => {
+					const input = String(meetingTime || "00:00").trim();
+					const extractTime = (val: string): string => {
+						const timePart = val.includes("T") ? val.split("T")[1]?.replace(/Z|[+-]\d\d:\d\d$/, "") || "00:00:00" : val;
+						const ampm = timePart.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])\s*$/);
 						if (ampm) {
 							let hh = parseInt(ampm[1] || "0", 10);
 							const mm = parseInt(ampm[2] || "0", 10);
@@ -267,7 +266,7 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 							const ssS = String(Math.max(0, Math.min(59, ss))).padStart(2, "0");
 							return `${hhS}:${mmS}:${ssS}`;
 						}
-						const h24 = input.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*$/);
+						const h24 = timePart.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*$/);
 						if (h24) {
 							const hh = String(Math.max(0, Math.min(23, parseInt(h24[1] || "0", 10)))).padStart(2, "0");
 							const mm = String(Math.max(0, Math.min(59, parseInt(h24[2] || "0", 10)))).padStart(2, "0");
@@ -275,10 +274,17 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 							return `${hh}:${mm}:${ss}`;
 						}
 						return "00:00:00";
-					})();
-					iso = `${baseDateStr}T${norm}Z`;
+					};
+					return extractTime(input);
+				})();
+				let eventStart: Date;
+				if (eventTimeZone) {
+					// Interpret the local time in the event's timezone on baseDate
+					eventStart = zonedToUtc(`${baseDateStr} ${norm}`, eventTimeZone);
+				} else {
+					// Fallback: assume the time is UTC
+					eventStart = new Date(`${baseDateStr}T${norm}Z`);
 				}
-				const eventStart = new Date(iso);
 				const eventEnd = new Date(eventStart.getTime() + 60 * 60 * 1000);
 
 				events.push({
@@ -341,15 +347,11 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 			}
 
 			// Regular occurrence (no exception)
-			let iso: string;
-			if (typeof meetingTime === "string" && meetingTime.includes("T")) {
-				const hasZone = /Z|[+-]\d\d:\d\d$/.test(meetingTime);
-				iso = hasZone ? meetingTime : `${meetingTime}Z`;
-			} else {
-				const norm = ((): string => {
-					const input = String(meetingTime || "00:00").trim();
-					if (input.includes("T")) return input;
-					const ampm = input.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])\s*$/);
+			const norm = ((): string => {
+				const input = String(meetingTime || "00:00").trim();
+				const extractTime = (val: string): string => {
+					const timePart = val.includes("T") ? val.split("T")[1]?.replace(/Z|[+-]\d\d:\d\d$/, "") || "00:00:00" : val;
+					const ampm = timePart.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])\s*$/);
 					if (ampm) {
 						let hh = parseInt(ampm[1] || "0", 10);
 						const mm = parseInt(ampm[2] || "0", 10);
@@ -362,7 +364,7 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 						const ssS = String(Math.max(0, Math.min(59, ss))).padStart(2, "0");
 						return `${hhS}:${mmS}:${ssS}`;
 					}
-					const h24 = input.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*$/);
+					const h24 = timePart.match(/^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*$/);
 					if (h24) {
 						const hh = String(Math.max(0, Math.min(23, parseInt(h24[1] || "0", 10)))).padStart(2, "0");
 						const mm = String(Math.max(0, Math.min(59, parseInt(h24[2] || "0", 10)))).padStart(2, "0");
@@ -370,10 +372,15 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 						return `${hh}:${mm}:${ss}`;
 					}
 					return "00:00:00";
-				})();
-				iso = `${baseDateStr}T${norm}Z`;
+				};
+				return extractTime(input);
+			})();
+			let eventStart: Date;
+			if (eventTimeZone) {
+				eventStart = zonedToUtc(`${baseDateStr} ${norm}`, eventTimeZone);
+			} else {
+				eventStart = new Date(`${baseDateStr}T${norm}Z`);
 			}
-			const eventStart = new Date(iso);
 			const eventEnd = new Date(eventStart.getTime() + 60 * 60 * 1000);
 
 			events.push({
@@ -403,22 +410,23 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 
 		if (timeString && timeString.includes("T")) {
 			const hasZone = /Z|[+-]\d\d:\d\d$/.test(timeString);
-			const iso = hasZone ? timeString : `${timeString}Z`;
-			const parsed = new Date(iso);
-			if (!Number.isNaN(parsed.getTime())) {
-				eventStart = parsed;
+			if (hasZone) {
+				eventStart = new Date(timeString);
+			} else if (eventTimeZone) {
+				// Interpret provided local datetime in the event's timezone
+				eventStart = zonedToUtc(timeString.replace("T", " "), eventTimeZone);
 			} else {
-				const datePart = timeString.split("T")[0];
-				const dateParsed = new Date(datePart);
-				eventStart = Number.isNaN(dateParsed.getTime()) ? new Date(startDate) : dateParsed;
-				const { hours, minutes } = extractHoursMinutes(timeString);
-				eventStart.setHours(hours, minutes);
+				// Assume UTC
+				eventStart = new Date(`${timeString}Z`);
 			}
 		} else {
 			// Time-only: prefer schedule.start's date if available; otherwise fallback to created_at
 			const baseDateStr = scheduleStart ? scheduleStart.split("T")[0] : startDate.toISOString().split("T")[0];
-			const iso = `${baseDateStr}T${timeString || "00:00"}Z`;
-			eventStart = new Date(iso);
+			if (eventTimeZone) {
+				eventStart = zonedToUtc(`${baseDateStr} ${timeString || "00:00"}`, eventTimeZone);
+			} else {
+				eventStart = new Date(`${baseDateStr}T${timeString || "00:00"}Z`);
+			}
 		}
 
 		const eventEnd = new Date(eventStart);
@@ -445,7 +453,7 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 	}
 
 	return events;
-}, [extractHoursMinutes, formatLocalTime]);
+}, [formatLocalTime]);
 
 const events = useMemo(() => {
 	if (!graphs) {
