@@ -17,6 +17,7 @@ interface ModelSelectorProps {
 	selectedModel: string;
 	onModelChange: (model: string) => void;
 	className?: string;
+	selectedAgentType?: string;
 }
 
 // Helper component for rating stars
@@ -40,9 +41,15 @@ const RatingStars = ({ rating, maxRating = 5 }: { rating: number; maxRating?: nu
 export default function ModelSelector({ 
 	className = "",
 	onModelChange,
-	selectedModel, 
+	selectedModel,
+	selectedAgentType = "agent",
 }: ModelSelectorProps): JSX.Element {
-	const currentModel = MODELS.find((model) => model.id === selectedModel);
+	// Filter models based on agent type
+	const filteredModels = selectedAgentType === "chat" 
+		? MODELS // Show all models in chat mode
+		: MODELS.filter((model) => model.id !== "OpenAI-gpt-5"); // All models except OpenAI GPT-5 in agent mode
+	
+	const currentModel = filteredModels.find((model) => model.id === selectedModel);
 
 	return (
 		<div>
@@ -53,7 +60,7 @@ export default function ModelSelector({
 					</SelectValue>
 				</SelectTrigger>
 				<SelectContent className="w-80">
-					{MODELS.map((model: ModelType) => (
+					{filteredModels.map((model: ModelType) => (
 						<SelectItem 
 							className="p-3 cursor-pointer hover:bg-slate-50"
 							key={model.id} 

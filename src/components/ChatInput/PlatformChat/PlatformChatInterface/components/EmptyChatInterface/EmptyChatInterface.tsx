@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import AtSelectorComponent from "../../../components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
 import ModelSelector from "../../../components/ModelSelector";
 import AgentTypeSelector from "../../../components/AgentTypeSelector";
+import { MODELS } from "../../types";
 import BidLevelling from "./FormDirectives/BidLevelling";
 import DailyReport from "./FormDirectives/DailyReport";
 import ReportWriting from "./FormDirectives/ReportWriting";
@@ -141,6 +142,16 @@ export default function EmptyChatInterface({
 			textarea.style.height = `${newHeight}px`;
 		}
 	}, [chatInput]);
+
+	useEffect(() => {
+		if (selectedAgentType === "agent" && selectedModel === "OpenAI-gpt-5") {
+			// GPT-5 is not available in agent mode, switch to the first available model
+			const agentModels = MODELS.filter((model: { id: string }) => model.id !== "OpenAI-gpt-5");
+			if (agentModels.length > 0) {
+				setSelectedModel(agentModels[0].id);
+			}
+		}
+	}, [selectedAgentType, selectedModel, setSelectedModel]);
 
 	// Template hooks - must be declared before any conditional returns
 	const { data: templatesByUseCase, isLoading: templatesLoading, templates: allTemplates } = useTemplatesByUseCase();
@@ -528,6 +539,7 @@ export default function EmptyChatInterface({
 							<ModelSelector 
 								onModelChange={setSelectedModel}
 								selectedModel={selectedModel}
+								selectedAgentType={selectedAgentType}
 							/>
 						</div>
 						<Button

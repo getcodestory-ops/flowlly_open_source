@@ -36,6 +36,16 @@ export type ModelType = {
 };
 
 export const MODELS: ModelType[] = [
+	{
+		id: "gpt-5", 
+		name: "OpenAI GPT-5",
+		speed: 4,
+		performance: 4,
+		cost: "high",
+		description: "Top-tier model for the most demanding tasks",
+		bestFor: "Highly complex tasks requiring maximum intelligence",
+		contextSize: "medium",
+	},
 	{ 
 		id: "claude-sonnet-4-5", 
 		name: "Claude Sonnet 4.5",
