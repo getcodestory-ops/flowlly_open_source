@@ -32,6 +32,7 @@ import EmptyChatInterface from "./PlatformChatInterface/components/EmptyChatInte
 import { requestHelp, stopAgent } from "@/api/agentRoutes";
 import ModelSelector from "./components/ModelSelector";
 import AgentTypeSelector from "./components/AgentTypeSelector";
+import { MODELS } from "./PlatformChatInterface/types";
 
 
 export default function PlatformChatInterface({
@@ -67,6 +68,17 @@ export default function PlatformChatInterface({
 		setIsWaitingForResponse,
 	} = usePlatformChat(folderId, chatTarget, includeContext);
 	const { setSidePanel, setCollapsed, contextFolder, selectedModel, setSelectedModel, selectedAgentType, setSelectedAgentType, selectedContexts, setSelectedContexts } = useChatStore();
+	
+	// Automatically switch to a valid model when switching modes
+	useEffect(() => {
+		if (selectedAgentType === "agent" && selectedModel === "OpenAI-gpt-5") {
+			// GPT-5 is not available in agent mode, switch to the first available model
+			const agentModels = MODELS.filter((model: { id: string }) => model.id !== "OpenAI-gpt-5");
+			if (agentModels.length > 0) {
+				setSelectedModel(agentModels[0].id);
+			}
+		}
+	}, [selectedAgentType, selectedModel, setSelectedModel]);
 	
 	// Paste upload functionality
 	const { handlePasteEvent } = usePasteUpload({
@@ -470,6 +482,7 @@ export default function PlatformChatInterface({
 						<ModelSelector 
 							onModelChange={setSelectedModel}
 							selectedModel={selectedModel}
+							selectedAgentType={selectedAgentType}
 						/>
 					</div>
 					<Button
