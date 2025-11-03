@@ -592,7 +592,7 @@ export default function ProjectEventCreationForm({
 	};
 
 	return (
-		<ScrollArea className="w-full h-full">
+		<ScrollArea className="w-full h-[calc(100vh-150px)]">
 			<div>
 				<Card className="w-full shadow-none">
 					{!showPostCreationOptions ? (
