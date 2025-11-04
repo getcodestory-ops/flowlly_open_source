@@ -223,8 +223,41 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 					// Handle different exception types
 					if (exception.exception_type === "moved" && exception.new_start_time && exception.new_end_time) {
 						// For moved meetings, show the event at the new time
-						const exceptionStart = new Date(exception.new_start_time);
-						const exceptionEnd = new Date(exception.new_end_time);
+						// Get exception timezone and map Windows timezones if needed
+						const exceptionTzRaw = (exception as Record<string, unknown>)?.timezone || (exception as Record<string, unknown>)?.time_zone;
+						const exceptionTimeZone = exceptionTzRaw ? (windowsToIana[exceptionTzRaw as string] || exceptionTzRaw) : eventTimeZone;
+						
+						let exceptionStart: Date;
+						let exceptionEnd: Date;
+						
+						const newStartTimeStr = String(exception.new_start_time);
+						const newEndTimeStr = String(exception.new_end_time);
+						
+						// Check if the time strings already have timezone info
+						const hasStartZone = /Z|[+-]\d\d:\d\d$/.test(newStartTimeStr);
+						const hasEndZone = /Z|[+-]\d\d:\d\d$/.test(newEndTimeStr);
+						
+						if (hasStartZone) {
+							// Already has timezone info, parse directly
+							exceptionStart = new Date(newStartTimeStr);
+						} else if (exceptionTimeZone) {
+							// Interpret the local time in the exception's timezone
+							exceptionStart = zonedToUtc(newStartTimeStr.replace("T", " "), exceptionTimeZone as string);
+						} else {
+							// Fallback: assume UTC
+							exceptionStart = new Date(newStartTimeStr.includes("T") ? `${newStartTimeStr}Z` : `${newStartTimeStr}T00:00:00Z`);
+						}
+						
+						if (hasEndZone) {
+							// Already has timezone info, parse directly
+							exceptionEnd = new Date(newEndTimeStr);
+						} else if (exceptionTimeZone) {
+							// Interpret the local time in the exception's timezone
+							exceptionEnd = zonedToUtc(newEndTimeStr.replace("T", " "), exceptionTimeZone as string);
+						} else {
+							// Fallback: assume UTC
+							exceptionEnd = new Date(newEndTimeStr.includes("T") ? `${newEndTimeStr}Z` : `${newEndTimeStr}T00:00:00Z`);
+						}
 
 						events.push({
 							id: `${graph.id}-${currentDate.toISOString()}-exception`,
@@ -316,8 +349,41 @@ const generateRecurringEvents = useCallback((graph: GraphData): RbcEvent[] => {
 				// Handle different exception types
 				if (exception.exception_type === "moved" && exception.new_start_time && exception.new_end_time) {
 					// For moved meetings, show the event at the new time
-					const exceptionStart = new Date(exception.new_start_time);
-					const exceptionEnd = new Date(exception.new_end_time);
+					// Get exception timezone and map Windows timezones if needed
+					const exceptionTzRaw = (exception as Record<string, unknown>)?.timezone || (exception as Record<string, unknown>)?.time_zone;
+					const exceptionTimeZone = exceptionTzRaw ? (windowsToIana[exceptionTzRaw as string] || exceptionTzRaw) : eventTimeZone;
+					
+					let exceptionStart: Date;
+					let exceptionEnd: Date;
+					
+					const newStartTimeStr = String(exception.new_start_time);
+					const newEndTimeStr = String(exception.new_end_time);
+					
+					// Check if the time strings already have timezone info
+					const hasStartZone = /Z|[+-]\d\d:\d\d$/.test(newStartTimeStr);
+					const hasEndZone = /Z|[+-]\d\d:\d\d$/.test(newEndTimeStr);
+					
+					if (hasStartZone) {
+						// Already has timezone info, parse directly
+						exceptionStart = new Date(newStartTimeStr);
+					} else if (exceptionTimeZone) {
+						// Interpret the local time in the exception's timezone
+						exceptionStart = zonedToUtc(newStartTimeStr.replace("T", " "), exceptionTimeZone as string);
+					} else {
+						// Fallback: assume UTC
+						exceptionStart = new Date(newStartTimeStr.includes("T") ? `${newStartTimeStr}Z` : `${newStartTimeStr}T00:00:00Z`);
+					}
+					
+					if (hasEndZone) {
+						// Already has timezone info, parse directly
+						exceptionEnd = new Date(newEndTimeStr);
+					} else if (exceptionTimeZone) {
+						// Interpret the local time in the exception's timezone
+						exceptionEnd = zonedToUtc(newEndTimeStr.replace("T", " "), exceptionTimeZone as string);
+					} else {
+						// Fallback: assume UTC
+						exceptionEnd = new Date(newEndTimeStr.includes("T") ? `${newEndTimeStr}Z` : `${newEndTimeStr}T00:00:00Z`);
+					}
 
 					events.push({
 						id: `${graph.id}-${currentDate.toISOString()}-exception`,
