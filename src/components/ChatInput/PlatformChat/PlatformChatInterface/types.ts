@@ -28,7 +28,7 @@ export type ModelType = {
   id: string;
   name: string;
   speed: number; // 1-5 scale (5 = fastest)
-  performance: number; // 1-5 scale (5 = highest)
+  performance: number; 
   cost: "low" | "medium" | "high";
   description: string;
   bestFor: string;
