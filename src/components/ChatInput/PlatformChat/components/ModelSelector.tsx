@@ -47,7 +47,7 @@ export default function ModelSelector({
 	// Filter models based on agent type
 	const filteredModels = selectedAgentType === "chat" 
 		? MODELS // Show all models in chat mode
-		: MODELS.filter((model) => model.id !== "OpenAI-gpt-5"); // All models except OpenAI GPT-5 in agent mode
+		: MODELS.filter((model) => model.id !== "gpt-5"); // All models except OpenAI GPT-5 in agent mode
 	
 	const currentModel = filteredModels.find((model) => model.id === selectedModel);
 
