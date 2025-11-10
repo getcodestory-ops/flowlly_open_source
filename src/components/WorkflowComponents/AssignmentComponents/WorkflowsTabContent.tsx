@@ -34,6 +34,7 @@ const WorkflowContent = (): React.ReactNode => {
 					<ResultViewer
 						currentResult={currentResult}
 						key={currentResult.id}											
+						backToMeetings={true}
 					/>
 				)
 			) : (

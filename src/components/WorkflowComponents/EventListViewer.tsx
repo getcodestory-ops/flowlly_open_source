@@ -31,7 +31,7 @@ import {
 	ExpandedState,
 } from "@tanstack/react-table";
 import { DataTablePagination } from "@/components/Schedule/ScheduleTable/DataTablePagination";
-import { CalendarView } from "./CalendarView";
+import { CalendarView } from "../Calendar/CalendarView";
 import type { GraphData } from "./types";
 import ProjectEventCreationForm from "@/components/ProjectEvent/ProjectEventCreationForm";
 import {
@@ -419,7 +419,7 @@ export const EventListViewer: React.FC = ({
 				</div>
 			)}
 			{viewMode === ViewMode.CALENDAR && (
-				<CalendarView onEditEvent={onClickEdit} />
+				<CalendarView />
 			)}
 			{/* Grid view mode hidden */}
 			{false && viewMode === ViewMode.GRID && (

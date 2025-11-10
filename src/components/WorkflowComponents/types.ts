@@ -113,6 +113,7 @@ export type GraphData = {
 export type EventResult = {
   id: string;
   name: string;
+  event_name?: string;
   nodes?: NodeData[];
   status: string;
   run_time: string;
