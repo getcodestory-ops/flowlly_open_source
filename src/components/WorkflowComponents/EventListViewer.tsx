@@ -60,7 +60,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { useStore } from "@/utils/store";
 import { deleteProjectEvent, mergeProjectEvents } from "@/api/taskQueue";
-import ImportMeetingsDialog from "./ImportMeetingsDialog";
+// import ImportMeetingsDialog from "./ImportMeetingsDialog";
 import CreateJob from "./CreateJob";
 import { fetchLatestMeetingEvents, type MeetingEvent } from "@/utils/supabase/SupabaseService";
 const localeText = {
@@ -535,10 +535,10 @@ export const EventListViewer: React.FC = ({
 					<ProjectEventCreationForm onClose={() => setIsCreateMeetingOpen(false)} />
 				</SheetContent>
 			</Sheet>
-			<ImportMeetingsDialog 
+			{/* <ImportMeetingsDialog 
 				isOpen={isImportDialogOpen} 
 				onClose={() => setIsImportDialogOpen(false)} 
-			/>
+			/> */}
 			<MergeEventsDialog
 				events={graphs || []}
 				isMerging={isMerging}
