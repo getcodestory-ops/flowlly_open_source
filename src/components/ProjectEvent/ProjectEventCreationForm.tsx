@@ -32,7 +32,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { CalendarIcon, PlusCircle, Link, Mic } from "lucide-react";
+import { CalendarIcon, PlusCircle, Link, Mic, Trash2, Edit } from "lucide-react";
 import { format, parse, addMinutes, roundToNearestMinutes } from "date-fns";
 import { toZonedTime, fromZonedTime } from "date-fns-tz";
 import { MultiSelect } from "@/components/ui/multi-select";
@@ -40,7 +40,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useStore } from "@/utils/store";
-import { CreateEvent } from "@/types/projectEvents";
+import { CreateEvent, ScheduleException } from "@/types/projectEvents";
 import { createNewProjectEvent } from "@/api/taskQueue";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { GraphData } from "../WorkflowComponents/types";
@@ -278,6 +278,9 @@ export default function ProjectEventCreationForm({
 	const [agendaContent, setAgendaContent] = useState("");
 	const [templateContent, setTemplateContent] = useState("");
 	const [eventId, setEventId] = useState<string | null>(null);
+	const [exceptions, setExceptions] = useState<ScheduleException[]>([]);
+	const [isExceptionDialogOpen, setIsExceptionDialogOpen] = useState(false);
+	const [editingExceptionIndex, setEditingExceptionIndex] = useState<number | null>(null);
 
 	const { mutate, isPending } = useMutation({
 		mutationFn: createNewProjectEvent,
@@ -332,40 +335,106 @@ export default function ProjectEventCreationForm({
 				// Set time from metadata if available
 				if (editData.metadata.time) {
 					try {
-						// If the time is in a different timezone, convert it to local time for display
-						if (editData.metadata.time_zone && editData.metadata.time_zone !== Intl.DateTimeFormat().resolvedOptions().timeZone) {
-							// Parse the time
-							const timeParts = editData.metadata.time.split(":");
+						const timeString = String(editData.metadata.time).trim();
+						
+						// Handle ISO datetime format (e.g., "2025-11-10T11:00:00-08:00")
+						if (timeString.includes("T")) {
+							// Check if ISO string has timezone info
+							const hasTimezone = /Z|[+-]\d\d:\d\d$/.test(timeString);
 							
-							// Validate that we have valid time parts
-							if (timeParts.length >= 2) {
-								const hours = Number(timeParts[0]);
-								const minutes = Number(timeParts[1]);
+							// If metadata has timezone, use it to interpret the datetime (ensures correct DST handling)
+							if (editData.metadata.time_zone) {
+								// Extract date and time parts from ISO string
+								const datePart = timeString.split("T")[0];
+								const timePart = timeString.split("T")[1]?.replace(/Z|[+-]\d\d:\d\d$/, "") || "00:00:00";
+								const dateTimeInStoredTz = `${datePart} ${timePart}`;
 								
-								// Check if hours and minutes are valid numbers
-								if (!isNaN(hours) && !isNaN(minutes) && hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
-									// Create a date in the stored timezone
-									const today = format(new Date(), "yyyy-MM-dd");
-									const dateTimeInStoredTz = `${today} ${editData.metadata.time}:00`;
-									
-									// Convert from stored timezone to UTC, then to local
-									const utcDate = fromZonedTime(dateTimeInStoredTz, editData.metadata.time_zone);
-									
-									// Get the local time
-									const localTime = format(utcDate, "HH:mm");
-									setStartTime(localTime);
+								// Convert from stored timezone to UTC, then format in local timezone
+								const utcDate = fromZonedTime(dateTimeInStoredTz, editData.metadata.time_zone);
+								const localTime = format(utcDate, "HH:mm");
+								setStartTime(localTime);
+							} else if (hasTimezone) {
+								// ISO string has timezone info but no metadata timezone, parse it directly
+								const isoDate = new Date(timeString);
+								
+								if (!isNaN(isoDate.getTime())) {
+									// Extract time in HH:mm format (already converted to local timezone by Date constructor)
+									const extractedTime = format(isoDate, "HH:mm");
+									setStartTime(extractedTime);
 								} else {
-									// Invalid time values, use the time as-is
-									console.warn("Invalid time values in metadata:", editData.metadata.time);
-									setStartTime(editData.metadata.time);
+									// Invalid ISO date, try to extract time part
+									const timePart = timeString.split("T")[1]?.replace(/Z|[+-]\d\d:\d\d$/, "") || "";
+									if (timePart) {
+										const timeOnly = timePart.split(":").slice(0, 2).join(":");
+										setStartTime(timeOnly);
+									} else {
+										console.warn("Invalid ISO datetime format in metadata:", editData.metadata.time);
+										setStartTime(editData.metadata.time);
+									}
 								}
 							} else {
-								// Invalid time format, use the time as-is
-								console.warn("Invalid time format in metadata:", editData.metadata.time);
-								setStartTime(editData.metadata.time);
+								// ISO string without timezone, parse as UTC or use metadata timezone if available
+								const isoDate = new Date(timeString);
+								
+								if (!isNaN(isoDate.getTime())) {
+									// No timezone conversion needed, extract time directly
+									const extractedTime = format(isoDate, "HH:mm");
+									setStartTime(extractedTime);
+								} else {
+									// Invalid ISO date, try to extract time part
+									const timePart = timeString.split("T")[1] || "";
+									if (timePart) {
+										const timeOnly = timePart.split(":").slice(0, 2).join(":");
+										setStartTime(timeOnly);
+									} else {
+										console.warn("Invalid ISO datetime format in metadata:", editData.metadata.time);
+										setStartTime(editData.metadata.time);
+									}
+								}
 							}
 						} else {
-							setStartTime(editData.metadata.time);
+							// Handle simple time format (e.g., "11:00" or "11:00:00")
+							// If the time is in a different timezone, convert it to local time for display
+							if (editData.metadata.time_zone && editData.metadata.time_zone !== Intl.DateTimeFormat().resolvedOptions().timeZone) {
+								// Parse the time
+								const timeParts = timeString.split(":");
+								
+								// Validate that we have valid time parts
+								if (timeParts.length >= 2) {
+									const hours = Number(timeParts[0]);
+									const minutes = Number(timeParts[1]);
+									
+									// Check if hours and minutes are valid numbers
+									if (!isNaN(hours) && !isNaN(minutes) && hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
+										// Create a date in the stored timezone
+										const today = format(new Date(), "yyyy-MM-dd");
+										const dateTimeInStoredTz = `${today} ${timeString}:00`;
+										
+										// Convert from stored timezone to UTC, then to local
+										const utcDate = fromZonedTime(dateTimeInStoredTz, editData.metadata.time_zone);
+										
+										// Get the local time
+										const localTime = format(utcDate, "HH:mm");
+										setStartTime(localTime);
+									} else {
+										// Invalid time values, use the time as-is
+										console.warn("Invalid time values in metadata:", editData.metadata.time);
+										setStartTime(timeString);
+									}
+								} else {
+									// Invalid time format, use the time as-is
+									console.warn("Invalid time format in metadata:", editData.metadata.time);
+									setStartTime(timeString);
+								}
+							} else {
+								// Extract just HH:mm if it's a longer format
+								const timeParts = timeString.split(":");
+								if (timeParts.length >= 2) {
+									setStartTime(`${timeParts[0]}:${timeParts[1]}`);
+								} else {
+									setStartTime(timeString);
+								}
+							}
 						}
 					} catch (error) {
 						// If any error occurs during time conversion, fall back to using the time as-is
@@ -395,21 +464,20 @@ export default function ProjectEventCreationForm({
 					setWeeklyRecurrenceDay([format(new Date(), "EEEE")]);
 				}
 				
-				// Load auto_join setting
+
 				if (editData.metadata.auto_join !== undefined) {
 					setAutoJoin(editData.metadata.auto_join);
 				}
 				
-				// Always use local timezone when editing (time is already converted to local)
+
 				setTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
 			}
 
-			// Set schedule information
 			if (editData.event_schedule && editData.event_schedule.length > 0) {
 				const schedule = editData.event_schedule[0].schedule;
 				setStartDate(new Date(schedule.start));
 				
-				// Set end date if it exists
+
 				if (schedule.end) {
 					setEndDate(new Date(schedule.end));
 				}
@@ -417,7 +485,6 @@ export default function ProjectEventCreationForm({
 				// Set start time from schedule time if not already set from metadata
 				if (schedule.time && !editData.metadata?.time) {
 					let runTime = "";
-					// Handle both array and object formats
 					if (Array.isArray(schedule.time) && schedule.time.length > 0) {
 						runTime = schedule.time[0].run_time;
 					} else if (typeof schedule.time === "object" && "run_time" in schedule.time) {
@@ -425,12 +492,17 @@ export default function ProjectEventCreationForm({
 					}
 					
 					if (runTime) {
-						// Extract HH:mm from HH:mm:ss format
 						const timeMatch = runTime.match(/(\d{2}:\d{2})/);
 						if (timeMatch) {
 							setStartTime(timeMatch[1]);
 						}
 					}
+				}
+				
+				// Load exceptions from schedule
+				const scheduleExceptions = (schedule as Record<string, unknown>)?.exceptions;
+				if (Array.isArray(scheduleExceptions) && scheduleExceptions.length > 0) {
+					setExceptions(scheduleExceptions as ScheduleException[]);
 				}
 			}
 		}
@@ -462,6 +534,34 @@ export default function ProjectEventCreationForm({
 			setRecurrenceInterval(1);
 		}
 	}, [recurrence, editData]);
+
+	const handleAddException = () => {
+		setEditingExceptionIndex(null);
+		setIsExceptionDialogOpen(true);
+	};
+
+	const handleEditException = (index: number) => {
+		setEditingExceptionIndex(index);
+		setIsExceptionDialogOpen(true);
+	};
+
+	const handleDeleteException = (index: number) => {
+		setExceptions(exceptions.filter((_, i) => i !== index));
+	};
+
+	const handleSaveException = (exception: ScheduleException) => {
+		if (editingExceptionIndex !== null) {
+			// Update existing exception
+			const updated = [...exceptions];
+			updated[editingExceptionIndex] = exception;
+			setExceptions(updated);
+		} else {
+			// Add new exception
+			setExceptions([...exceptions, exception]);
+		}
+		setIsExceptionDialogOpen(false);
+		setEditingExceptionIndex(null);
+	};
 
 	const handleSubmit = (event: React.FormEvent) => {
 		event.preventDefault();
@@ -581,6 +681,7 @@ export default function ProjectEventCreationForm({
 			auto_join: participationOption === "join" ? autoJoin : false,
 			is_recording: participationOption === "record",
 			join_now: isJoining,
+			exceptions: exceptions.length > 0 ? exceptions : undefined,
 		};
 	
 
@@ -810,6 +911,65 @@ export default function ProjectEventCreationForm({
 											</Select>
 										</div>
 									</div>
+									{recurrence !== "once" && (
+										<div className="space-y-2">
+											<div className="flex items-center justify-between">
+												<Label>Schedule Exceptions</Label>
+												<Button
+													type="button"
+													onClick={handleAddException}
+													size="sm"
+													variant="outline"
+												>
+													<PlusCircle className="mr-2 h-4 w-4" />
+													Add Exception
+												</Button>
+											</div>
+											{exceptions.length > 0 ? (
+												<div className="space-y-2 border rounded-lg p-3">
+													{exceptions.map((exception, index) => (
+														<div
+															key={index}
+															className="flex items-center justify-between p-2 bg-secondary rounded"
+														>
+															<div className="flex-1">
+																<div className="text-sm font-medium">
+																	{format(new Date(exception.original_occurrence_time), "PPP p")}
+																</div>
+																<div className="text-xs text-muted-foreground">
+																	{exception.exception_type === "moved" && exception.new_start_time
+																		? `Moved to: ${format(new Date(exception.new_start_time), "PPP p")}`
+																		: "Cancelled"}
+																</div>
+															</div>
+															<div className="flex gap-2">
+																<Button
+																	type="button"
+																	size="sm"
+																	variant="ghost"
+																	onClick={() => handleEditException(index)}
+																>
+																	<Edit className="h-4 w-4" />
+																</Button>
+																<Button
+																	type="button"
+																	size="sm"
+																	variant="ghost"
+																	onClick={() => handleDeleteException(index)}
+																>
+																	<Trash2 className="h-4 w-4" />
+																</Button>
+															</div>
+														</div>
+													))}
+												</div>
+											) : (
+												<p className="text-sm text-muted-foreground">
+													No exceptions added. Click "Add Exception" to modify or cancel specific occurrences.
+												</p>
+											)}
+										</div>
+									)}
 									{participationOption === "join" && (
 										<>
 											<div className="space-y-2">
@@ -886,6 +1046,248 @@ export default function ProjectEventCreationForm({
 					)}
 				</Card>
 			</div>
+			{/* Exception Dialog */}
+			<Dialog open={isExceptionDialogOpen} onOpenChange={setIsExceptionDialogOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>
+							{editingExceptionIndex !== null ? "Edit Exception" : "Add Exception"}
+						</DialogTitle>
+					</DialogHeader>
+					<ExceptionForm
+						exception={editingExceptionIndex !== null ? exceptions[editingExceptionIndex] : undefined}
+						onSave={handleSaveException}
+						onCancel={() => {
+							setIsExceptionDialogOpen(false);
+							setEditingExceptionIndex(null);
+						}}
+						eventTimeZone={timeZone}
+						eventDuration={parseInt(duration ?? 60)}
+					/>
+				</DialogContent>
+			</Dialog>
 		</ScrollArea>
+	);
+}
+
+// Exception Form Component
+function ExceptionForm({
+	exception,
+	onSave,
+	onCancel,
+	eventTimeZone,
+	eventDuration,
+}: {
+	exception?: ScheduleException;
+	onSave: (exception: ScheduleException) => void;
+	onCancel: () => void;
+	eventTimeZone: string;
+	eventDuration: number;
+}) {
+	// Convert UTC times to local times for display
+	const getLocalDate = (utcTime: string | undefined, defaultDate: Date): Date => {
+		if (!utcTime) return defaultDate;
+		try {
+			// Parse UTC time and convert to local timezone for display
+			const utcDate = new Date(utcTime);
+			return utcDate;
+		} catch {
+			return defaultDate;
+		}
+	};
+
+	const getLocalTime = (utcTime: string | undefined, defaultTime: string): string => {
+		if (!utcTime) return defaultTime;
+		try {
+			const utcDate = new Date(utcTime);
+			return format(utcDate, "HH:mm");
+		} catch {
+			return defaultTime;
+		}
+	};
+
+	const [originalDate, setOriginalDate] = useState<Date>(
+		getLocalDate(exception?.original_occurrence_time, new Date()),
+	);
+	const [originalTime, setOriginalTime] = useState(
+		getLocalTime(
+			exception?.original_occurrence_time,
+			format(roundToNearestMinutes(new Date(), { nearestTo: 30 }), "HH:mm"),
+		),
+	);
+	const [exceptionType, setExceptionType] = useState<"moved" | "cancelled">(
+		exception?.exception_type || "cancelled",
+	);
+	const [newDate, setNewDate] = useState<Date>(
+		getLocalDate(exception?.new_start_time, new Date()),
+	);
+	const [newTime, setNewTime] = useState(
+		getLocalTime(
+			exception?.new_start_time,
+			format(roundToNearestMinutes(new Date(), { nearestTo: 30 }), "HH:mm"),
+		),
+	);
+	const [newTimezone, setNewTimezone] = useState(exception?.new_timezone || eventTimeZone);
+	const [exceptionResourceId, setExceptionResourceId] = useState(
+		exception?.exception_resource_id || "",
+	);
+
+	const handleSubmit = () => {
+		// Build original occurrence time in ISO format with timezone
+		// Create a date in the event timezone
+		const originalDateTimeStr = `${format(originalDate, "yyyy-MM-dd")}T${originalTime}:00`;
+		const originalLocalDate = new Date(originalDateTimeStr);
+		// Convert to UTC using the event timezone
+		const originalUtcDate = fromZonedTime(originalLocalDate, eventTimeZone);
+		const originalOccurrenceTime = originalUtcDate.toISOString();
+
+		const newException: ScheduleException = {
+			original_occurrence_time: originalOccurrenceTime,
+			exception_resource_id: exceptionResourceId || `exception-${Date.now()}`,
+			exception_type: exceptionType,
+		};
+
+		if (exceptionType === "moved") {
+			// Calculate end time based on duration
+			// Create new datetime in the specified timezone (or event timezone)
+			const newDateTimeStr = `${format(newDate, "yyyy-MM-dd")}T${newTime}:00`;
+			const newLocalDate = new Date(newDateTimeStr);
+			// Convert to UTC using the new timezone (or event timezone if not specified)
+			const newUtcDate = fromZonedTime(newLocalDate, newTimezone || eventTimeZone);
+			const newEndUtcDate = addMinutes(newUtcDate, eventDuration);
+
+			newException.new_start_time = newUtcDate.toISOString();
+			newException.new_end_time = newEndUtcDate.toISOString();
+			if (newTimezone && newTimezone !== eventTimeZone) {
+				newException.new_timezone = newTimezone;
+			}
+		}
+
+		onSave(newException);
+	};
+
+	return (
+		<div className="space-y-4 py-4">
+			<div className="space-y-2">
+				<Label>Original Occurrence Date</Label>
+				<Popover>
+					<PopoverTrigger asChild>
+						<Button variant="outline" className="w-full">
+							{format(originalDate, "PPP")}
+							<CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+						</Button>
+					</PopoverTrigger>
+					<PopoverContent align="start" className="w-auto p-0">
+						<Calendar
+							initialFocus
+							mode="single"
+							onSelect={(date) => date && setOriginalDate(date)}
+							selected={originalDate}
+						/>
+					</PopoverContent>
+				</Popover>
+			</div>
+			<div className="space-y-2">
+				<Label>Original Occurrence Time</Label>
+				<Select onValueChange={setOriginalTime} value={originalTime}>
+					<SelectTrigger>
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						{Array.from({ length: 96 }, (_, i) => {
+							const date = addMinutes(new Date().setHours(0, 0, 0, 0), i * 15);
+							return (
+								<SelectItem key={i} value={format(date, "HH:mm")}>
+									{format(date, "p")}
+								</SelectItem>
+							);
+						})}
+					</SelectContent>
+				</Select>
+			</div>
+			<div className="space-y-2">
+				<Label>Exception Type</Label>
+				<Select
+					onValueChange={(value) => setExceptionType(value as "moved" | "cancelled")}
+					value={exceptionType}
+				>
+					<SelectTrigger>
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="cancelled">Cancel this occurrence</SelectItem>
+						<SelectItem value="moved">Move to a different time</SelectItem>
+					</SelectContent>
+				</Select>
+			</div>
+			{exceptionType === "moved" && (
+				<>
+					<div className="space-y-2">
+						<Label>New Date</Label>
+						<Popover>
+							<PopoverTrigger asChild>
+								<Button variant="outline" className="w-full">
+									{format(newDate, "PPP")}
+									<CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent align="start" className="w-auto p-0">
+								<Calendar
+									initialFocus
+									mode="single"
+									onSelect={(date) => date && setNewDate(date)}
+									selected={newDate}
+								/>
+							</PopoverContent>
+						</Popover>
+					</div>
+					<div className="space-y-2">
+						<Label>New Time</Label>
+						<Select onValueChange={setNewTime} value={newTime}>
+							<SelectTrigger>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{Array.from({ length: 96 }, (_, i) => {
+									const date = addMinutes(new Date().setHours(0, 0, 0, 0), i * 15);
+									return (
+										<SelectItem key={i} value={format(date, "HH:mm")}>
+											{format(date, "p")}
+										</SelectItem>
+									);
+								})}
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="space-y-2">
+						<Label>New Timezone (Optional)</Label>
+						<Input
+							onChange={(e) => setNewTimezone(e.target.value)}
+							placeholder={eventTimeZone}
+							value={newTimezone}
+						/>
+						<p className="text-xs text-muted-foreground">
+							Leave empty to use event timezone: {eventTimeZone}
+						</p>
+					</div>
+				</>
+			)}
+			<div className="space-y-2">
+				<Label>Exception Resource ID (Optional)</Label>
+				<Input
+					onChange={(e) => setExceptionResourceId(e.target.value)}
+					placeholder="Auto-generated if empty"
+					value={exceptionResourceId}
+				/>
+			</div>
+			<div className="flex justify-end gap-2 pt-4">
+				<Button onClick={onCancel} type="button" variant="outline">
+					Cancel
+				</Button>
+				<Button onClick={handleSubmit} type="button">
+					{exception ? "Update" : "Add"} Exception
+				</Button>
+			</div>
+		</div>
 	);
 }
