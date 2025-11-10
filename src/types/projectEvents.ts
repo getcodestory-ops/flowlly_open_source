@@ -123,6 +123,15 @@ export enum EventFrequency {
 //   run_frequency?: "daily" | "weekly" | "weekdays" | "monthly" | "yearly";
 // }
 
+export interface ScheduleException {
+  original_occurrence_time: string;
+  exception_resource_id: string;
+  exception_type: "moved" | "cancelled";
+  new_start_time?: string;
+  new_end_time?: string;
+  new_timezone?: string;
+}
+
 export interface CreateEvent {
   id?: string;
   project_event: ProjectEvent;
@@ -138,4 +147,5 @@ export interface CreateEvent {
   participation_link?: string;
   join_now?: boolean;
   time_zone?: string;
+  exceptions?: ScheduleException[];
 }

@@ -1,6 +1,6 @@
 import { type Session } from "@supabase/supabase-js";
 import { UpdateProperties } from "@/types/updates";
-import { CalendarEventsResponse, ImportCalendarEventsRequest, ImportCalendarEventsResponse } from "@/types/calendar";
+import { ImportCalendarEventsRequest, ImportCalendarEventsResponse, MicrosoftCalendarEvent } from "@/types/calendar";
 import axios from "axios";
 
 export const integrateApi = async(
@@ -135,7 +135,7 @@ export const getCalendarEvents = async(
 	project_access_id: string,
 	start_date: string,
 	end_date: string,
-): Promise<CalendarEventsResponse> => {
+): Promise<MicrosoftCalendarEvent[]> => {
 	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/microsoft/calendar/events/${project_access_id}`;
 	const response = await axios.get(url, {
 		params: {

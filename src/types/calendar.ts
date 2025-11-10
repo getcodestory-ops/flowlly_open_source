@@ -1,3 +1,5 @@
+import type { EventResult } from "@/components/WorkflowComponents/types";
+import type { GraphData } from "@/components/WorkflowComponents/types";
 export interface CalendarOrganizer {
   name: string;
   email: string;
@@ -68,3 +70,64 @@ export interface ImportCalendarEventsResponse {
   failed_count: number;
   message: string;
 }
+
+export type MicrosoftCalendarEvent = {
+	id: string;
+	subject: string;
+	start: {
+		dateTime: string;
+		timeZone: string;
+	};
+	end: {
+		dateTime: string;
+		timeZone: string;
+	};
+	type: "singleInstance" | "occurrence" | "exception" | "seriesMaster";
+	seriesMasterId?: string;
+	occurrenceId?: string;
+	originalStart?: string;
+	isOnlineMeeting: boolean;
+	location?: {
+		displayName?: string;
+		locationType?: string;
+		uniqueId?: string;
+		uniqueIdType?: string;
+		address?: Record<string, unknown>;
+		coordinates?: Record<string, unknown>;
+	};
+	attendees?: Array<{
+		type?: string;
+		status?: {
+			response?: string;
+			time?: string;
+		};
+		emailAddress?: {
+			name?: string;
+			address?: string;
+		};
+	}>;
+	organizer?: {
+		emailAddress?: {
+			name?: string;
+			address?: string;
+		};
+	};
+	recurrence?: Record<string, unknown> | null;
+	body?: {
+		contentType?: string;
+		content?: string;
+	};
+	lastModifiedDateTime?: string;
+};
+
+export type RbcEvent = {
+	id: string;
+	title: React.ReactNode;
+	start: Date;
+	end: Date;
+	allDay?: boolean;
+	resource: MicrosoftCalendarEvent | EventResult | GraphData;
+	resourceType: "microsoft" | "eventResult" | "graphData";
+	graphName?: string; 
+	isReconciled?: boolean; 
+  };

@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, Video, Loader2, CheckCircle2, ChevronDown, Download, Settings } from "lucide-react";
+import { Calendar, Video, Loader2, CheckCircle2, ChevronDown, Settings } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import ProjectEventCreationForm from "@/components/ProjectEvent/ProjectEventCreationForm";
-import ImportMeetingsDialog from "./ImportMeetingsDialog";
 import CalendarConnectionSuccessDialog from "./CalendarConnectionSuccessDialog";
 import { useStore } from "@/utils/store";
 import { useIntegrationStore, type WebhookData } from "@/hooks/useIntegrationStore";
@@ -26,7 +25,6 @@ function CreateJob(): React.ReactNode {
 	const fetchMicrosoftCalendarWebhook = useIntegrationStore((state) => state.fetchMicrosoftCalendarWebhook);
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
-	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 	const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
 	const [microsoftConnected, setMicrosoftConnected] = useState(false);
 	const [microsoftWebhook, setMicrosoftWebhook] = useState<WebhookData | null>(null);
@@ -189,25 +187,6 @@ function CreateJob(): React.ReactNode {
 		}
 	};
 
-	const handleImportMeetings = (): void => {
-		if (!microsoftWebhook) {
-			toast({
-				title: "Calendar Not Connected",
-				description: "Please connect your Microsoft calendar first.",
-				variant: "destructive",
-			});
-			return;
-		}
-		setIsImportDialogOpen(true);
-	};
-
-	const handleSuccessDialogImport = (): void => {
-		setIsImportDialogOpen(true);
-	};
-
-	const handleSuccessDialogSkip = (): void => {
-		// Just close the dialog, user can access import later from dropdown
-	};
 
 	return (
 		<div className="flex gap-3 items-center">
@@ -249,11 +228,6 @@ function CreateJob(): React.ReactNode {
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end" className="w-56">
-						<DropdownMenuItem onClick={handleImportMeetings}>
-							<Download className="mr-2 h-4 w-4" />
-							Import Meetings
-						</DropdownMenuItem>
-						<DropdownMenuSeparator />
 						<DropdownMenuItem onClick={handleCalendarSetup}>
 							<Settings className="mr-2 h-4 w-4" />
 							Reconnect Calendar
@@ -271,17 +245,10 @@ function CreateJob(): React.ReactNode {
 					<ProjectEventCreationForm onClose={() => setIsDialogOpen(false)} />
 				</SheetContent>
 			</Sheet>
-			{/* Import Meetings Dialog */}
-			<ImportMeetingsDialog 
-				isOpen={isImportDialogOpen} 
-				onClose={() => setIsImportDialogOpen(false)} 
-			/>
 			{/* Calendar Connection Success Dialog */}
 			<CalendarConnectionSuccessDialog
 				isOpen={isSuccessDialogOpen}
 				onClose={() => setIsSuccessDialogOpen(false)}
-				onImportMeetings={handleSuccessDialogImport}
-				onSkip={handleSuccessDialogSkip}
 			/>
 		</div>
 	);

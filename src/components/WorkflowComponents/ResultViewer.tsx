@@ -27,11 +27,13 @@ import MeetingAgendaViewer from "./Meeting/MeetingAgendaViewer";
 interface ResultViewerProps {
   currentResult: EventResult;
   cacheId?: string;
+  backToMeetings?: boolean;
 }
 
 export const ResultViewer: React.FC<ResultViewerProps> = ({
 	currentResult,
 	cacheId: _CACHE_ID,
+	backToMeetings = false,
 }) => {
 	const session = useStore((state) => state.session);
 	const { activeProject, setAppView } = useStore((state) => ({
@@ -156,6 +158,13 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 		<>
 			{/* Always show tabs - no conditional rendering */}
 			<div className="h-full  min-h-0 overflow-hidden">
+				{backToMeetings && (
+					<div className="flex items-center gap-4 p-4 border-b">
+						<Button onClick={handleBackToMeetings}>
+							<ArrowLeft className="h-5 w-5" />
+						</Button>
+					</div>
+				)}
 				<Tabs 
 					className="flex-1 flex flex-col min-h-0 h-full" 
 					onValueChange={setActiveTab} 
@@ -163,18 +172,6 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 				>
 					<div className="border-b border-gray-200 bg-white flex-shrink-0">
 						<div className="flex items-center gap-4 px-4">
-							<div className="flex items-center">
-								<Tooltipped tooltip="Back to meetings">
-									<Button
-										className="shrink-0 h-8 w-8 p-0 bg-white hover:bg-gray-50 border border-gray-200"
-										onClick={handleBackToMeetings}
-										size="icon"
-										variant="ghost"
-									>
-										<ArrowLeft className="h-4 w-4" />
-									</Button>
-								</Tooltipped>
-							</div>
 							<div className="flex overflow-x-auto scrollbar-hide">
 								{staticTabs
 									.filter((tab) => tab.hasData)
