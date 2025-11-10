@@ -1,14 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useViewStore } from "@/utils/store";
 import { useWorkflow } from "@/hooks/useWorkflow";
 import { useIntegrationStore } from "@/hooks/useIntegrationStore";
 import { useQuery } from "@tanstack/react-query";
 import { getCalendarEvents } from "@/api/integration_routes";
-
 import { format } from "date-fns";
 import { MicrosoftCalendarEvent } from "@/types/calendar";
 import { useStore } from "@/utils/store";
-import { parseGraphDateTime } from "./calendar-utils";
 import type { RbcEvent } from "@/types/calendar";
 import { getCalendarViewDataFromGraphData } from "./graphDataToEvent";
 import { getCalendarResultViewFromGraphData } from "./resultToEvent";
@@ -22,8 +20,7 @@ export const useCalendarHook = () => {
     const activeProject = useStore((state) => state.activeProject);
     const { graphs } = useWorkflow();
     const microsoftCalendarWebhook = useIntegrationStore((state) => state.microsoftCalendarWebhook);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     yesterday.setHours(23, 59, 59, 999);
@@ -37,7 +34,7 @@ export const useCalendarHook = () => {
         return { start, end };
     });
 
-    const graphEvents = getCalendarViewDataFromGraphData(graphs, today, loadedDateRange.end);
+    const graphEvents = getCalendarViewDataFromGraphData(graphs, now, loadedDateRange.end);
     
 
     const convertCalendarDataToRbcEvent = (calendarData: MicrosoftCalendarEvent[]): RbcEvent[] => {
@@ -61,7 +58,7 @@ export const useCalendarHook = () => {
 
 
     const { data: meetingEventResults = [], isLoading: isLoadingMeetingEventResults } = useQuery<EventResult[]>({
-        queryKey: ["meetingEventResults", activeProject?.project_id, format(loadedDateRange.start, "yyyy-MM-dd"), format(today, "yyyy-MM-dd")],
+        queryKey: ["meetingEventResults", activeProject?.project_id, format(loadedDateRange.start, "yyyy-MM-dd"), format(now, "yyyy-MM-dd")],
         queryFn: async () => {
             if (!session || !activeProject?.project_id) {
                 return [];
@@ -73,17 +70,17 @@ export const useCalendarHook = () => {
                 0, 0, 0, 0
             ));
             const startDateFormatted = startDateUtc.toISOString().replace('.000Z', '+00:00');
-            const events = await getMeetingEventResults(session, activeProject.project_id, startDateFormatted, today.toISOString().replace('.000Z', '+00:00'));
+            const events = await getMeetingEventResults(session, activeProject.project_id, startDateFormatted, now.toISOString().replace('.000Z', '+00:00'));
             
             return Array.isArray(events) ? events.map((event) => (event.result)) : [];
         },
-        enabled: !!session && !!activeProject?.project_id && !!loadedDateRange.start && !!loadedDateRange.end && loadedDateRange.start < today,
+        enabled: !!session && !!activeProject?.project_id && !!loadedDateRange.start && !!loadedDateRange.end && loadedDateRange.start < now,
     });
 
     const resultAsEvents = getCalendarResultViewFromGraphData(meetingEventResults);
 
     const { data: calendarData = [], isLoading: isLoadingEvents } = useQuery<RbcEvent[]>({
-        queryKey: ["calendarEvents", activeProject?.project_id, format(today, "yyyy-MM-dd"), format(loadedDateRange.end, "yyyy-MM-dd")],
+        queryKey: ["calendarEvents", activeProject?.project_id, format(now, "yyyy-MM-dd"), format(loadedDateRange.end, "yyyy-MM-dd")],
         queryFn: async () => {
             try {
                 if (!session || !activeProject?.project_id) {
@@ -92,7 +89,7 @@ export const useCalendarHook = () => {
                 const response = await getCalendarEvents(
                     session,
                     activeProject.project_id,
-                    format(today, "yyyy-MM-dd"),
+                    format(now, "yyyy-MM-dd"),
                     format(loadedDateRange.end, "yyyy-MM-dd"),
                 );
 
@@ -101,11 +98,11 @@ export const useCalendarHook = () => {
                 return [];
             }
         },
-        enabled: !!session && !!activeProject?.project_id && !!microsoftCalendarWebhook  && loadedDateRange.end > today  });
+        enabled: !!session && !!activeProject?.project_id && !!microsoftCalendarWebhook  && loadedDateRange.end > now  });
         
-        const reconciledEvents = reconcileFlowllyMicrosoftEvents(graphEvents, calendarData);
+        const reconciledEvents = reconcileFlowllyMicrosoftEvents(resultAsEvents || [], calendarData || [], graphEvents || []);
 
-    const allEvents = [...(resultAsEvents || []) ,...(reconciledEvents || [])];
+    const allEvents = reconciledEvents || [];
 
 
 	return {
