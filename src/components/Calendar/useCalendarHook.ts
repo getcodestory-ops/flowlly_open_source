@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useViewStore } from "@/utils/store";
 import { useWorkflow } from "@/hooks/useWorkflow";
 import { useIntegrationStore } from "@/hooks/useIntegrationStore";
@@ -13,6 +13,7 @@ import { getCalendarResultViewFromGraphData } from "./resultToEvent";
 import { reconcileFlowllyMicrosoftEvents } from "./reconcileFlowllyMicrosoftEvents";
 import { getMeetingEventResults } from "@/api/meeting_events";
 import { EventResult } from "../WorkflowComponents/types";
+import { BotOff } from "lucide-react";
 
 export const useCalendarHook = () => {
     const { calendarView, setCalendarView } = useViewStore();
@@ -43,9 +44,22 @@ export const useCalendarHook = () => {
             return true;
         });
         const eventmap = events.map((event) => {
+            const isDocument = event.type === "singleInstance" && !event.isOnlineMeeting;
+            
+            let title: React.ReactNode = event.subject;
+            if (isDocument) {
+                // Show crossed-out icon for documents (URL or bot doesn't exist)
+                title = React.createElement(
+                    "div",
+                    { className: "flex items-center gap-1.5 text-xs font-light" },
+                    React.createElement("span", null, event.subject),
+                    React.createElement(BotOff, { size: 12, className: "shrink-0 text-red-500", strokeWidth: 2.5 })
+                );
+            }
+            
             return {
                 id: event.id,
-                title: event.subject,
+                title: title,
                 start: new Date(event.start.dateTime + 'Z'),
                 end: new Date(event.end.dateTime + 'Z'),
                 allDay: false,
