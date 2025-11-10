@@ -113,9 +113,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       return {
         style: {
           backgroundColor: isReconciled
-            ? "#e9d5ff" 
+            ? "#fef3c7" 
             : isException
-              ? "#fed7aa" 
+              ? "#fef3c7" 
               : isDocument
                 ? "#bbf7d0" 
                 : "#fef3c7",

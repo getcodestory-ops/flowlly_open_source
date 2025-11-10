@@ -12,29 +12,39 @@ const normalizeTitle = (title: React.ReactNode): string => {
     return String(title).trim();
 };
 
-export const reconcileFlowllyMicrosoftEvents = (FlowllyCalendarEvents: RbcEvent[], MicrosofotCalendarEvents: RbcEvent[]): RbcEvent[] => {
+const getEventKey = (event: RbcEvent): string => {
+    // For resultAsEvents, prefer graphName if available (more reliable than React component title)
+    const name = event.graphName || normalizeTitle(event.title);
+    return `${name}_${event.start.getTime()}`;
+};
+
+export const reconcileFlowllyMicrosoftEvents = (resultAsEvents: RbcEvent[], calendarData: RbcEvent[], graphEvents: RbcEvent[]): RbcEvent[] => {
     const reconciledEvents: RbcEvent[] = [];
     
-    const flowllyEventsMap = new Map<string, RbcEvent>();
-    FlowllyCalendarEvents.forEach(event => {
-        const key = `${normalizeTitle(event.title)}_${event.start.getTime()}`;
-        flowllyEventsMap.set(key, event);
+    const addedKeys = new Set<string>();
+    
+    resultAsEvents.forEach(resultEvent => {
+        const key = getEventKey(resultEvent);
+        reconciledEvents.push(resultEvent);
+        addedKeys.add(key);
     });
     
 
-    MicrosofotCalendarEvents.forEach(microsoftEvent => {
-        const key = `${normalizeTitle(microsoftEvent.title)}_${microsoftEvent.start.getTime()}`;
-
-        if (flowllyEventsMap.has(key)) {
-            reconciledEvents.push(microsoftEvent);
-            flowllyEventsMap.delete(key);
-        } else {
-            reconciledEvents.push(microsoftEvent);
+    calendarData.forEach(calendarEvent => {
+        const key = getEventKey(calendarEvent);
+        if (!addedKeys.has(key)) {
+            reconciledEvents.push(calendarEvent);
+            addedKeys.add(key);
         }
     });
     
-    flowllyEventsMap.forEach(event => {
-        reconciledEvents.push(event);
+
+    graphEvents.forEach(graphEvent => {
+        const key = getEventKey(graphEvent);
+        if (!addedKeys.has(key)) {
+            reconciledEvents.push(graphEvent);
+            addedKeys.add(key);
+        }
     });
     
     return reconciledEvents;
