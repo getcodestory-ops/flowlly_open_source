@@ -112,13 +112,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
       return {
         style: {
-          backgroundColor: isReconciled
-            ? "#fef3c7" 
-            : isException
-              ? "#fef3c7" 
-              : isDocument
-                ? "#bbf7d0" 
-                : "#fef3c7",
+          backgroundColor: "#fef3c7",
           color: "#1f2937",
           padding: "4px 8px",
           borderRadius: "4px",
