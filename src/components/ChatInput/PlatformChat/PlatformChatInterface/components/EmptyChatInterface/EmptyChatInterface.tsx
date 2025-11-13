@@ -9,6 +9,7 @@ import ModelSelector from "../../../components/ModelSelector";
 import AgentTypeSelector from "../../../components/AgentTypeSelector";
 import { MODELS } from "../../types";
 import BidLevelling from "./FormDirectives/BidLevelling";
+import BidLevelling2 from "./FormDirectives/BidLevelling2";
 import DailyReport from "./FormDirectives/DailyReport";
 import ReportWriting from "./FormDirectives/ReportWriting";
 import KnowledgeManager from "./FormDirectives/KnowledgeManager";
@@ -158,7 +159,7 @@ export default function EmptyChatInterface({
 
 	// Chat types for each tab
 	interface ChatTypeCard {
-		id: "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "template" | "templateCreate" | "templateCreateAI" | "none";
+		id: "bidLevelling" | "bidLevelling2" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "template" | "templateCreate" | "templateCreateAI" | "none";
 		title: string;
 		description: string;
 		icon: React.ComponentType<{ className?: string }>;
@@ -172,8 +173,14 @@ export default function EmptyChatInterface({
 			bidLevelling: [
 				{
 					id: "bidLevelling",
-					title: "Bid Levelling",
+					title: "Bid Levelling Fast",
 					description: "Analyze and compare bids",
+					icon: FileSpreadsheet,
+				},
+				{
+					id: "bidLevelling2",
+					title: "Bid Levelling Comprehensive",
+					description: "Analyze and compare bids in a comprehensive way",
 					icon: FileSpreadsheet,
 				},
 			],
@@ -333,10 +340,33 @@ export default function EmptyChatInterface({
 					loadDocumentPanel={loadDocumentPanel}
 					setChatInput={setChatInput}
 				/>
+			
 			</div>
 		);
 	}
 
+	if (chatDirectiveType === "bidLevelling2") {
+		return (
+			<div className="flex flex-col items-center px-4 py-6">
+				<div className="w-full max-w-3xl mb-4">
+					<button
+						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+						onClick={() => setChatDirectiveType("none")}
+					>
+						<ArrowLeft className="h-4 w-4" /> Back
+					</button>
+				</div>
+				<BidLevelling2
+					handleSubmit={handleSubmit}
+					isPending={isPending}
+					isWaitingForResponse={isWaitingForResponse}
+					loadDocumentPanel={loadDocumentPanel}
+					setChatInput={setChatInput}
+				/>
+			
+			</div>
+		);
+	}
 	// If daily report is selected, show only the form with back
 	if (chatDirectiveType === "dailyReport") {
 		return (

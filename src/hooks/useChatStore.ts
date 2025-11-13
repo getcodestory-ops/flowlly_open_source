@@ -78,8 +78,8 @@ interface ChatStore {
 	clearChatContext: () => void;
 	// Get combined message (chatInput + chatContext)
 	getCombinedMessage: () => string;
-	chatDirectiveType: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "template" | "templateCreate" | "templateCreateAI" | "none";
-	setChatDirectiveType: (directiveType: "chat" | "bidLevelling" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "template" | "templateCreate" | "templateCreateAI" | "none") => void;
+	chatDirectiveType: "chat" | "bidLevelling" | "dailyReport" | "bidLevelling2" | "reportWriting" | "knowledgeManager" | "meetingChat" | "template" | "templateCreate" | "templateCreateAI" | "none";
+	setChatDirectiveType: (directiveType: "chat" | "bidLevelling" | "bidLevelling2" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "template" | "templateCreate" | "templateCreateAI" | "none") => void;
 	selectedModel: string;
 	setSelectedModel: (model: string) => void;
 	// Agent type selection
