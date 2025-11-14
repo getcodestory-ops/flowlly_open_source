@@ -23,7 +23,7 @@ export const DistributionFlow: React.FC<DistributionFlowProps> = ({
 	const { currentGraph } = useWorkflow();
 
 	// Get actual meeting information
-	const selectedDays = currentGraph?.event_schedule?.[0]?.schedule?.day || [];
+	const selectedDays = currentGraph?.event_schedule?.schedule?.day || [];
 	const meetingTime = currentGraph?.metadata?.time || "";
 	const frequency = currentGraph?.metadata?.frequency || "weekly";
 

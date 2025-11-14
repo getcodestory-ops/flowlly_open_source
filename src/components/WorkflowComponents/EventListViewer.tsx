@@ -623,7 +623,7 @@ const MergeEventsDialog: React.FC<MergeEventsDialogProps> = ({
 									</CardHeader>
 									<CardContent className="text-xs text-muted-foreground">
 										<p>Type: {event.event_type}</p>
-										<p>Schedules: {event.event_schedule?.length || 0}</p>
+										<p>Schedules: {event.event_schedule ? 1 : 0}</p>
 									</CardContent>
 								</Card>
 							))}
@@ -650,7 +650,7 @@ const MergeEventsDialog: React.FC<MergeEventsDialogProps> = ({
 									</CardHeader>
 									<CardContent className="text-xs text-muted-foreground">
 										<p>Type: {event.event_type}</p>
-										<p>Schedules: {event.event_schedule?.length || 0}</p>
+										<p>Schedules: {event.event_schedule ? 1 : 0}</p>
 									</CardContent>
 								</Card>
 							))}
@@ -661,8 +661,8 @@ const MergeEventsDialog: React.FC<MergeEventsDialogProps> = ({
 							<p className="text-sm font-medium mb-2">Summary:</p>
 							<ul className="text-sm space-y-1">
 								<li>• <span className="text-red-600">{mergeFromEvent.name}</span> will be deleted</li>
-								<li>• All {mergeFromEvent.event_schedule?.length || 0} schedule(s) will be moved to <span className="text-green-600">{mergeIntoEvent.name}</span></li>
-								<li>• <span className="text-green-600">{mergeIntoEvent.name}</span> will have {(mergeIntoEvent.event_schedule?.length || 0) + (mergeFromEvent.event_schedule?.length || 0)} schedule(s) after merge</li>
+								<li>• All {mergeFromEvent.event_schedule ? 1 : 0} schedule(s) will be moved to <span className="text-green-600">{mergeIntoEvent.name}</span></li>
+								<li>• <span className="text-green-600">{mergeIntoEvent.name}</span> will have {(mergeIntoEvent.event_schedule ? 1 : 0) + (mergeFromEvent.event_schedule ? 1 : 0)} schedule(s) after merge</li>
 							</ul>
 						</div>
 					)}

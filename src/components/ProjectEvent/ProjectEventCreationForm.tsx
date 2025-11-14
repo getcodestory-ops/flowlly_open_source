@@ -318,7 +318,7 @@ export default function ProjectEventCreationForm({
 				setRecurrence(frequency);
 				
 				// Get Microsoft recurrence object for reading pattern details
-				const msRecurrence = editData.event_schedule?.[0]?.schedule?.recurrence;
+				const msRecurrence = editData.event_schedule?.schedule?.recurrence;
 			
 				// Check for Microsoft recurrence interval - prioritize recurrence object over metadata
 				if (msRecurrence?.pattern?.interval) {
@@ -473,8 +473,8 @@ export default function ProjectEventCreationForm({
 				setTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
 			}
 
-			if (editData.event_schedule && editData.event_schedule.length > 0) {
-				const schedule = editData.event_schedule[0].schedule;
+			if (editData.event_schedule && editData.event_schedule) {
+				const schedule = editData.event_schedule.schedule;
 				setStartDate(new Date(schedule.start));
 				
 
