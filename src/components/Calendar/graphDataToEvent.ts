@@ -186,7 +186,7 @@ const handleException = (
 
 
 const extractScheduleMetadata = (graph: GraphData): ScheduleMetadata => {
-	const firstSchedule = graph.event_schedule?.[0];
+	const firstSchedule = graph.event_schedule;
 	const scheduleStart = firstSchedule?.schedule?.start as string | undefined;
 	const scheduleTime = firstSchedule?.schedule?.time as Record<string, unknown> | Array<Record<string, unknown>>;
 	const scheduleRunTime = Array.isArray(scheduleTime) 
@@ -429,6 +429,10 @@ export const getCalendarViewDataFromGraphData = (
 	
 	const events: RbcEvent[] = [];
 	graphs.forEach((graph) => {
+		// Exclude graphs that have calendar_event_id
+		if (graph.metadata.calendar_event_id) {
+			return;
+		}
 		events.push(...graphDataToEvent(graph, startDate, endDate));
 	});
 	

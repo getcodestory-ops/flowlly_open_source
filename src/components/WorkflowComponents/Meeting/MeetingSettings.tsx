@@ -75,8 +75,8 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = () => {
 			setCurrentGraph(graph || null);
 
 			// Check if there's any event_schedule data
-			if (graph?.event_schedule && graph.event_schedule.length > 0) {
-				setEventSchedule(graph.event_schedule);
+			if (graph?.event_schedule && graph.event_schedule) {
+				setEventSchedule([graph.event_schedule]);
 			} else {
 				setEventSchedule([]);
 			}
@@ -112,7 +112,7 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = () => {
 	// Get all instances for the current selected meeting
 	const getCurrentMeetingInstances = (): EventSchedule[] => {
 		if (!currentGraph || !currentGraph.event_schedule) return [];
-		return currentGraph.event_schedule;
+		return [currentGraph.event_schedule];
 	};
 
 	// Get role badge properties

@@ -1,5 +1,5 @@
 import { Providers } from "./providers";
-import { WorkflowStack } from "@/components/WorkflowStack/WorkflowStack";
+// import { WorkflowStack } from "@/components/WorkflowStack/WorkflowStack";
 
 export const metadata = {
 	title: "Construction Documentation",
@@ -14,7 +14,7 @@ export default function RootLayout({
 	return (
 		<div className="relative">
 			<Providers>
-				<WorkflowStack />
+				{/* <WorkflowStack /> */}
 				{children}
 			</Providers>
 			{/* <TemporaryButtonForWorkflowStack /> */}

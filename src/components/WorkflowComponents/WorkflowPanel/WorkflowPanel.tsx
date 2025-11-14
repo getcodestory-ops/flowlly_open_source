@@ -48,36 +48,14 @@ export default function WorkflowPanel({
 	
 	const router = useRouter();
 
-	// Fetch project events when the panel is visible
-	const { data: projectEventsData, isLoading: isLoadingEvents, isError } = useQuery({
-		queryKey: ["projectEvents"],
-		queryFn: async() => {
-			if (!session || !activeProject) return [];
-			const result = await getProjectEvents({
-				session: session,
-				projectId: activeProject.project_id,
-			});
-			return result;
-		},
-		enabled: !!session && !!activeProject && isVisible,
-	});
-
-	// Update graphs when data is loaded
-	useEffect(() => {
-		if (projectEventsData) {
-			setGraphs(projectEventsData.map((d: ProjectEvents) => d.project_events));
-		}
-	}, [projectEventsData, setGraphs]);
-
-	// Update current graph and event schedule when graphs change
 	useEffect(() => {
 		if (graphs && currentGraphId) {
 			const graph = graphs?.find((g) => g.id === currentGraphId);
 			setCurrentGraph(graph || null);
 
 			// Check if there's any event_schedule data
-			if (graph?.event_schedule && graph.event_schedule.length > 0) {
-				setEventSchedule(graph.event_schedule);
+			if (graph?.event_schedule) {
+				setEventSchedule([graph.event_schedule]);
 			} else {
 				setEventSchedule([]);
 			}
@@ -131,26 +109,11 @@ export default function WorkflowPanel({
 						</div>
 					</div>
 					<div className="flex-1 overflow-hidden">
-						{isLoadingEvents ? (
-							<div className="flex items-center justify-center h-full">
-								<LoaderAnimation />
-							</div>
-						) : isError ? (
-							<div className="text-center py-12 px-6">
-								<div className="mb-4">
-									<div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mx-auto">
-										<AlertCircle className="h-6 w-6 text-red-500" />
-									</div>
-								</div>
-								<h3 className="text-sm font-medium text-gray-900 mb-2">Failed to load meetings</h3>
-								<p className="text-xs text-gray-500 mb-4">Please try again later</p>
-							</div>
-						) : (
+					
 							<MeetingsList
 								meetings={graphs}
 								onMeetingSelect={handleMeetingSelect}
 							/>
-						)}
 					</div>
 				</div>
 			</div>
@@ -202,7 +165,7 @@ export default function WorkflowPanel({
 					</Button>
 				</div>
 				<div className="flex-1 overflow-hidden">
-					{isLoadingEvents ? (
+					{!graphs || graphs.length === 0 ? (
 						<div className="flex items-center justify-center h-full">
 							<LoaderAnimation />
 						</div>

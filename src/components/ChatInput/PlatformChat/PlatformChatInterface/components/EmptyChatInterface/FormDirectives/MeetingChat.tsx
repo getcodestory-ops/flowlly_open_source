@@ -238,16 +238,12 @@ export default function MeetingChat({
 		
 		// First, try to get instances from the selected meeting type's event schedule
 		if (selectedMeetingType.event_schedule) {
-			selectedMeetingType.event_schedule.forEach((schedule: EventSchedule) => {
+			const schedule = selectedMeetingType.event_schedule;
 				if (schedule.event_result) {
-					schedule.event_result.forEach((result) => {
-						// Only add if not already present (to avoid duplicate from meetingWorkflowData)
-						if (!instances.find((instance) => instance.id === result.id)) {
-							instances.push(result);
-						}
+					schedule.event_result.forEach((result: EventResult) => {
+						instances.push(result);
 					});
 				}
-			});
 		}
 		
 		// If we have a currentResult from workflow and it belongs to the selected meeting type, add it
