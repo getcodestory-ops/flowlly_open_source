@@ -43,7 +43,7 @@ export default function AssignmentHome(): React.ReactNode {
 
 	
 	const { data, isLoading, isError } = useQuery({
-		queryKey: ["projectEvents"],
+		queryKey: ["projectEvents", activeProject?.project_id],
 		queryFn: async() => {
 			if (!session || !activeProject) return [];
 			const result = await getProjectEvents({
@@ -59,7 +59,9 @@ export default function AssignmentHome(): React.ReactNode {
 		if (data) {
 			setGraphs(data.map((d: ProjectEvents) => d.project_events));
 		}
+	
 	}, [data]);
+
 
 	useEffect(() => {
 		if (graphs) {
@@ -67,8 +69,8 @@ export default function AssignmentHome(): React.ReactNode {
 			setCurrentGraph(graph || null);
 
 			// Check if there's any event_schedule data
-			if (graph?.event_schedule && graph.event_schedule.length > 0) {
-				setEventSchedule(graph.event_schedule);
+			if (graph?.event_schedule ) {
+				setEventSchedule([graph.event_schedule]);
 			} else {
 				setEventSchedule([]);
 			}

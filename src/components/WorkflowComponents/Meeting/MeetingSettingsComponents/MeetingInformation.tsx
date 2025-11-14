@@ -16,7 +16,7 @@ export const MeetingInformation: React.FC = () => {
 	const [description, setDescription] = useState(currentGraph?.description || "");
 	
 	// Check for Microsoft recurrence first, then fallback to metadata
-	const getMsRecurrence = () => currentGraph?.event_schedule?.[0]?.schedule?.recurrence;
+	const getMsRecurrence = () => currentGraph?.event_schedule?.schedule?.recurrence;
 	
 	const [frequency, setFrequency] = useState(() => {
 		const msRecurrence = getMsRecurrence();
@@ -33,7 +33,7 @@ export const MeetingInformation: React.FC = () => {
 	);
 	const [onlineLink, setOnlineLink] = useState(currentGraph?.metadata?.online_link || "");
 	const [selectedDays, setSelectedDays] = useState<number[]>(
-		currentGraph?.event_schedule?.[0]?.schedule?.day || [],
+		currentGraph?.event_schedule?.schedule?.day || [],
 	);
 	
 	const [weeklyRecurrenceDay, setWeeklyRecurrenceDay] = useState<string[]>(() => {
@@ -62,7 +62,7 @@ export const MeetingInformation: React.FC = () => {
 			setDescription(currentGraph.description || "");
 			
 			// Check for Microsoft recurrence first
-			const msRecurrence = currentGraph.event_schedule?.[0]?.schedule?.recurrence;
+			const msRecurrence = currentGraph.event_schedule?.schedule?.recurrence;
 			if (msRecurrence?.pattern?.type) {
 				setFrequency(msRecurrence.pattern.type);
 				setRecurrenceInterval(msRecurrence.pattern.interval || 1);
@@ -78,7 +78,7 @@ export const MeetingInformation: React.FC = () => {
 				setRecurrenceInterval(1);
 			}
 			{
-				const firstSchedule = currentGraph.event_schedule?.[0];
+				const firstSchedule = currentGraph.event_schedule;
 				const scheduleStart = firstSchedule?.schedule?.start;
 				const scheduleTime = firstSchedule?.schedule?.time as any;
 				const scheduleRunTime = Array.isArray(scheduleTime) ? scheduleTime?.[0]?.run_time : scheduleTime?.run_time;
@@ -137,7 +137,7 @@ export const MeetingInformation: React.FC = () => {
 			setDuration(currentGraph.metadata?.duration?.toString() || "60");
 			setTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
 			setOnlineLink(currentGraph.metadata?.online_link || "");
-			setSelectedDays(currentGraph.event_schedule?.[0]?.schedule?.day || []);
+			setSelectedDays(currentGraph.event_schedule?.schedule?.day || []);
 			
 			// Handle recurrence_day from metadata only if no Microsoft recurrence exists
 			if (!msRecurrence?.pattern?.daysOfWeek) {
@@ -194,7 +194,7 @@ export const MeetingInformation: React.FC = () => {
 	// Compute a local display datetime based on schedule.start + schedule.time.run_time when available
 	const formattedMeetingDateTime = useMemo(() => {
 		if (!currentGraph) return "";
-		const firstSchedule = currentGraph.event_schedule?.[0];
+		const firstSchedule = currentGraph.event_schedule;
 		const scheduleStart = firstSchedule?.schedule?.start;
 		const scheduleTime = firstSchedule?.schedule?.time as any;
 		const scheduleRunTime = Array.isArray(scheduleTime) ? scheduleTime?.[0]?.run_time : scheduleTime?.run_time;
@@ -237,7 +237,7 @@ export const MeetingInformation: React.FC = () => {
 
 	// Derive day label: prefer schedule.start's weekday (local), else selectedDays, else weeklyRecurrenceDay
 	const dayLabel = useMemo(() => {
-		const firstSchedule = currentGraph?.event_schedule?.[0];
+		const firstSchedule = currentGraph?.event_schedule;
 		const scheduleStart = firstSchedule?.schedule?.start;
 		if (scheduleStart) {
 			const datePart = extractDatePart(scheduleStart);

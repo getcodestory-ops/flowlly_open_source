@@ -104,7 +104,7 @@ export type GraphData = {
   nodes: NodeData[];
   run_time: string;
   event_type: string; 
-  event_schedule?: EventSchedule[];
+  event_schedule?: EventSchedule;
   event_trigger?: EventTrigger[];
   event_resources?: EventResource[];
 };
