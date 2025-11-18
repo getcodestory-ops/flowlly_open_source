@@ -422,11 +422,15 @@ export const requestHelp = async(
 	session: Session,
 	projectId: string,
 	chatEntityId: string,
+	feedback: string,
+	helpful: boolean,
 ) => {
 	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/task/log_help_request`;
 	const response = await axios.post(url, {
 		project_id: projectId,
 		chat_entity_id: chatEntityId,
+		feedback: feedback,
+		helpful: helpful,
 	}, {
 		headers: {
 			"Content-Type": "application/json",
