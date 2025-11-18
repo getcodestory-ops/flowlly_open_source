@@ -33,7 +33,7 @@ import { requestHelp, stopAgent } from "@/api/agentRoutes";
 import ModelSelector from "./components/ModelSelector";
 import AgentTypeSelector from "./components/AgentTypeSelector";
 import { MODELS } from "./PlatformChatInterface/types";
-
+import ChatResponseFeedback from "./PlatformChatInterface/ChatResponseFeedback";
 
 export default function PlatformChatInterface({
 	chatTarget,
@@ -584,42 +584,7 @@ export default function PlatformChatInterface({
 						))}
 						
 					</div>
-					<div className="flex justify-start px-2 py-2">
-						<Button
-							className="text-xs text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 border-none px-2 py-1 gap-1 h-auto transition-colors"
-							onClick={async() => {
-								try {
-									if (!session || !activeProject) {
-										toast({
-											title: "Error",
-											description: "No session or active project available",
-											variant: "destructive",
-										});
-										return;
-									}
-									
-									await requestHelp(session, activeProject.project_id, activeChatEntity?.id ?? "");
-									toast({
-										title: "Help Request Sent",
-										description: "The Flowlly team has been notified and will assist you shortly.",
-										duration: 3000,
-									});
-								} catch (error) {
-									console.error("Failed to request help:", error);
-									toast({
-										title: "Request Failed",
-										description: "Failed to send help request. Please try again.",
-										variant: "destructive",
-									});
-								}
-							}}
-							size="sm"
-							variant="ghost"
-						>
-							<Bird className="w-3 h-3" />
-							<span title="Flowlly team will review the chat and complete the task !">Get Help</span>
-						</Button>
-					</div>
+						<ChatResponseFeedback />
 				</ScrollArea>
 			) : (
 				<div className="flex flex-col items-center justify-center h-full">
