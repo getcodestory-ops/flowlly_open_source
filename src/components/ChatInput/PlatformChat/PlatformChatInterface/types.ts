@@ -56,6 +56,16 @@ export const MODELS: ModelType[] = [
 		bestFor: "Highly complex tasks requiring maximum intelligence",
 		contextSize: "medium",
 	},
+	{
+		id: "gemini-3-pro-preview",
+		name: "Gemini 3 Pro Preview",
+		speed: 4,
+		performance: 5,
+		cost: "high",
+		description: "Experimental may make mistakes.",
+		bestFor: "Highly complex tasks requiring maximum intelligence",
+		contextSize: "large",
+	},
 
 	{ 
 		id: "claude-sonnet-4", 
