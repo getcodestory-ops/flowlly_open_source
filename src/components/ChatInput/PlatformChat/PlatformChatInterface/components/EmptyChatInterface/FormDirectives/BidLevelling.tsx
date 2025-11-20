@@ -331,7 +331,7 @@ export default function BidLevelling({
 	2. Understand the attached documents, including provided bids and scope document if provided.
 	3. Understand special concerns, obscure language sections etc. in the bid documents corrresponding to the scope items.
 	${scopeDocuments.length > 0 ? "For scope item, each and every scope item should be included as a item in the final analysis document. The goal is to understand the which part of scope is included in the bid document." : ""}
-	Generate your analysis in a tabular format. The table will have the following columns: item (should include all the scope items idividually), (For each bidder) one column for the scope item status (included, excluded, Unsure) a second column with evidence of the status (include the file name, page and quote). Any other comments or special instructions should be included in the analysis document.
+	Generate your analysis in a tabular format, preferably in markdown format. The table will have the following columns: item (should include all the scope items idividually), (For each bidder) one column for the scope item status (included, excluded, Unsure) a second column with evidence of the status (include the file name, page and quote). Any other comments or special instructions should be included in the analysis document.
 	Upload the sandbox files to project documents for review.
 	${documentName ? `
 	Format the final results -  ${documentName} and upload it to project documents for review. keep your final response concise and to the point like see attached analysis for bid leveling.` : ""}`;
