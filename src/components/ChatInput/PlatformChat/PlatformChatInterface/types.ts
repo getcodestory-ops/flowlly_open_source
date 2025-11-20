@@ -37,6 +37,16 @@ export type ModelType = {
 
 export const MODELS: ModelType[] = [
 	{
+		id: "gemini-3-pro-preview",
+		name: "Gemini 3 Pro Preview",
+		speed: 4,
+		performance: 5,
+		cost: "high",
+		description: "Experimental may make mistakes.",
+		bestFor: "Highly complex tasks requiring maximum intelligence",
+		contextSize: "large",
+	},
+	{
 		id: "gpt-5", 
 		name: "OpenAI GPT-5",
 		speed: 4,
@@ -56,7 +66,6 @@ export const MODELS: ModelType[] = [
 		bestFor: "Highly complex tasks requiring maximum intelligence",
 		contextSize: "medium",
 	},
-
 	{ 
 		id: "claude-sonnet-4", 
 		name: "Claude Sonnet 4",
@@ -87,7 +96,6 @@ export const MODELS: ModelType[] = [
 		bestFor: "Small tasks that need faster results, ideal for chat",
 		contextSize: "medium",
 	},
-
 	{
 		id: "claude-opus-4",
 		name: "claude opus 4",
