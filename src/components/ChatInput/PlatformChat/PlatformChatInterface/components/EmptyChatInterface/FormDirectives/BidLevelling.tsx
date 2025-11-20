@@ -327,25 +327,14 @@ export default function BidLevelling({
 		prompt += `**Level the bids based on the provided documents**
 :::instructions
 **Instructions:**
-1. In order to level the bids, first setup a task planner by creating a file called "task.md" in sandbox.
-2. In the task.md file create list of tasks that are required to successfully level the bids.
-    [ ] Copy the attached bid and scope document to the sandbox.
-	[ ] Create a file called "analysis_bid_document_name.md" for each bid document included.
-	[ ] Create a file called "final_analysis.md" which will contain the final analysis of the bid.
-	${scopeDocuments.length > 0 ? `
-	[ ] Create a file called analysis_scope_document.md which will contain the analysis of the scope document.` : ""}
-	([ ] Understand the bid attached document_name ; To understand the bid document examine the file from sandbox if there is special formatting or markups etc. Otherwise simply read the file, include special instruction for the respective bid document here.${scopeDocuments.length > 0 ? `
-	[ ] Understand and analyze the scope document. For scope item, each and every scope item should be included as a item in the final analysis document. The goal is to understand which part of scope is included in the bid document. ` : ""}
-	[ ] For the bid name, write executive summary of the bid documents.
-	[ ] For the bid name, write a detailed exclusions section.
-	[ ] write the special concerns, obscure language section) x **repeat for each bid file attached**
-	[ ] Compile the results in final_analysis.md file.${scopeDocuments.length > 0 ? " [ ] For scope item, each and every scope item should be included as a item in the final analysis document. The goal is to understand the which part of scope is included in the bid document." : ""}
-	[ ] Apart from your analysis document, generate a second document that will only contain a table. The table will have the following columns: item (should include all the scope items idividually), (For each bider) one column for the scope item status (included, excluded, Unsure) a second column with evidence of the status (include the file name, page and quote)  
-	[ ] Upload the sandbox files to project documents for review.
+    1. Copy the attached bid and scope document to the sandbox.
+	2. Understand the attached documents, including provided bids and scope document if provided.
+	3. Understand special concerns, obscure language sections etc. in the bid documents corrresponding to the scope items.
+	${scopeDocuments.length > 0 ? "For scope item, each and every scope item should be included as a item in the final analysis document. The goal is to understand the which part of scope is included in the bid document." : ""}
+	Generate your analysis in a tabular format, preferably in markdown format. The table will have the following columns: item (should include all the scope items idividually), (For each bidder) one column for the scope item status (included, excluded, Unsure) a second column with evidence of the status (include the file name, page and quote). Any other comments or special instructions should be included in the analysis document.
+	Upload the sandbox files to project documents for review.
 	${documentName ? `
-	[ ] Only when all steps have been completed take on the final formatting task. Format the final results -  ${documentName} and upload it to project documents for review.` : ""}
-3. Go through the items of the task.md file and complete the task one by one. Once you complete each task, mark the task as done by updating [ ] task to [x] task in the task.md file.`;
-
+	Format the final results -  ${documentName} and upload it to project documents for review. keep your final response concise and to the point like see attached analysis for bid leveling.` : ""}`;
 		// Add optional instructions if provided
 		if (formData.optionalInstructions.trim()) {
 			prompt += `\n**Additional Instructions:** \n${formData.optionalInstructions.trim()}\n`;
