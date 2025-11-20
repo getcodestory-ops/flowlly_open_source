@@ -346,7 +346,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 				break;
 		}
 	},
-	selectedModel: "claude-sonnet-4",
+	selectedModel: "gemini-3-pro-preview",
 	setSelectedModel: (model) => set({ selectedModel: model }),
 	// Agent type management
 	selectedAgentType: "agent",
