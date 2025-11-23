@@ -179,24 +179,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       />
 
       {selectedEventResult && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-[95vw] h-[99vh] flex flex-col">
-
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-xl font-semibold">
-                {selectedEventResult.event_name || selectedEventResult.name || "Event Details"}
-              </h2>
-              <Button
-                className="h-8 w-8 p-0"
-                onClick={() => setSelectedEventResult(null)}
-                size="icon"
-                variant="ghost"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-xl w-full max-[100vw] h-[100vh] flex flex-col">
             <div className="flex-1 overflow-hidden">
-              <ResultViewer currentResult={selectedEventResult} />
+              <ResultViewer currentResult={selectedEventResult} 
+              backToMeetings={true}
+              onClose={() => setSelectedEventResult(null)}/>
             </div>
           </div>
         </div>

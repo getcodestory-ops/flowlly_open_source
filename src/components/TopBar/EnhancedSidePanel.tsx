@@ -442,7 +442,7 @@ export function EnhancedSidePanel(): React.ReactNode {
 				</div>
 			)}
 			{/* Workflow Panel Popover */}
-			{showWorkflowPanel && activeProject && (
+			{/* {showWorkflowPanel && activeProject && (
 				<div 
 					className="absolute left-[54px] top-0 h-full"
 					onMouseEnter={handleWorkflowPanelMouseEnter}
@@ -459,7 +459,7 @@ export function EnhancedSidePanel(): React.ReactNode {
 						}}
 					/>
 				</div>
-			)}
+			)} */}
 			{/* Navigation buttons */}
 			<div className="flex-1 overflow-y-auto">
 				<nav className="flex flex-col items-center py-4">
@@ -590,7 +590,7 @@ const AllMenuButtons = ({
 		<>
 			{menuItems.map((item) => (
 				<MenuButton
-					hasExtendedPanel={item.fnKey === "agent" || item.fnKey === "meetings"}
+					hasExtendedPanel={item.fnKey === "agent" }
 					icon={item.icon}
 					isSelected={appView === item.fnKey}
 					key={item.label}

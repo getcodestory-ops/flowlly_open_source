@@ -46,6 +46,7 @@ import {
 import { useWorkflow } from "@/hooks/useWorkflow";
 import { Tooltipped } from "@/components/Common/Tooltiped";
 import { fetchSimilarEventResults, type SimilarEventResult } from "@/utils/supabase/SupabaseService";
+import { useRouter, useParams } from "next/navigation";
 
 interface EventScheduleListProps {
   graphs: EventSchedule[];
@@ -103,11 +104,11 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 }) => {
 	const { setIsLoadingResult, setCurrentResult, selectedWorkflowId, setSelectedWorkflowId, currentGraphId, setCurrentGraphId } = useWorkflow();
 	const compact = true;
-
-	const [sorting, setSorting] = useState<SortingState>([]);
-	const [globalFilter, setGlobalFilter] = useState("");
+	const router = useRouter();
+	const params = useParams();
 	const session = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
+	const projectId = (params?.projectId as string) || activeProject?.project_id;
 	const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 	const [currentTime, setCurrentTime] = useState(new Date());
 	
@@ -785,6 +786,13 @@ export const EventScheduleList: React.FC<EventScheduleListProps> = ({
 												)}
 												key={event.result_id}
 												onClick={() => {
+													// Navigate to result page if we have projectId and resultId
+													if (projectId && event.result_id) {
+														router.push(`/project/${projectId}/result/${event.result_id}`);
+														return;
+													}
+													
+													// Fallback to existing behavior
 													setSelectedSimilarEventId(event.result_id);
 													setSelectedEventId(event.result_id);
 													setSelectedWorkflowId(event.result_id);
@@ -843,6 +851,11 @@ interface WorkflowListItemProps {
 const WorkflowListItem = ({ row, compact, graphs, setSelectedEventId, onWorkflowSelect }: WorkflowListItemProps): React.ReactNode => {
 	const { selectedWorkflowId, setSelectedWorkflowId } = useWorkflow();
 	const { setCurrentResult } = useWorkflow();
+	const router = useRouter();
+	const params = useParams();
+	const activeProject = useStore((state) => state.activeProject);
+	const projectId = (params?.projectId as string) || activeProject?.project_id;
+	
 	const isSelected = row.original.result?.id === selectedWorkflowId;
 	const isRunning = row.original.result?.workflow_id;
 	const isListening = row.original.result?.listen;
@@ -882,6 +895,15 @@ const WorkflowListItem = ({ row, compact, graphs, setSelectedEventId, onWorkflow
 							return;
 						}
 
+						const resultId = row.original.result?.id;
+						
+						// Navigate to result page if we have projectId and resultId
+						if (projectId && resultId) {
+							router.push(`/project/${projectId}/result/${resultId}`);
+							return;
+						}
+
+						// Fallback to existing behavior if navigation not available
 						const eventResult = graphs
 							.flatMap((schedule) => schedule.event_result)
 							.find((er) => er.id === row.original.result?.id);
