@@ -7,6 +7,7 @@ import {
 	LogsIcon,
 	Calendar,
 	ArrowLeft,
+	X,
 } from "lucide-react";
 import ActionItemViewer from "@/components/AiActions/ActionItemViewer";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -28,12 +29,14 @@ interface ResultViewerProps {
   currentResult: EventResult;
   cacheId?: string;
   backToMeetings?: boolean;
+  onClose?: () => void;
 }
 
 export const ResultViewer: React.FC<ResultViewerProps> = ({
 	currentResult,
 	cacheId: _CACHE_ID,
 	backToMeetings = false,
+	onClose
 }) => {
 	const session = useStore((state) => state.session);
 	const { activeProject, setAppView } = useStore((state) => ({
@@ -45,17 +48,24 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 	const router = useRouter();
 
 
-	// Handler for back button
 	const handleBackToMeetings = (): void => {
 		// Clear any meeting context when leaving the meeting view
 		clearChatContext();
 		setChatDirectiveType("chat");
-		
+		onClose?.();
 		setCurrentResult(null);
 		setAppView("meetings");
 		if (activeProject) {
 			router.push(`/project/${activeProject.project_id}/meetings`);
 		}
+	};
+
+
+	const handleClose = (): void => {
+		onClose?.();
+		clearChatContext();
+		setChatDirectiveType("chat");
+		setCurrentResult(null);
 	};
 
 	// Get specific nodes from the workflow
@@ -93,36 +103,36 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 		{
 			id: "create_next_meeting_agenda",
 			label: "Agenda",
-			icon: <Calendar className="h-4 w-4" />,
+			icon: <Calendar className="h-3.5 w-3.5" />,
 			hasData: isAgendaAvailable(),
 		},
 		{
 			id: "streaming",
 			label: "Live Updates",
-			icon: <LogsIcon className="h-4 w-4" />,
+			icon: <LogsIcon className="h-3.5 w-3.5" />,
 			hasData: !!(session?.access_token && currentResult?.streaming),
 		},
 		{
 			id: "meeting_recording",
 			label: "Recording",
-			icon: <Video className="h-4 w-4" />,
+			icon: <Video className="h-3.5 w-3.5" />,
 			hasData: !!(recordingNode || transcribeNode),
 		},
 		{
 			id: "minutes",
 			label: "Minutes",
-			icon: <FileText className="h-4 w-4" />,
+			icon: <FileText className="h-3.5 w-3.5" />,
 			hasData: !!minutesNode,
 		},
 		{
 			id: "questions",
 			label: "Chat",
-			icon: <MessageSquare className="h-4 w-4" />,
+			icon: <MessageSquare className="h-3.5 w-3.5" />,
 			hasData: true, // Always available
 		},		{
 			id: "action_items",
 			label: "Action Items",
-			icon: <List className="h-4 w-4" />,
+			icon: <List className="h-3.5 w-3.5" />,
 			hasData: !!actionItemsNode,
 		},
 	];
@@ -143,9 +153,9 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 
 	const [activeTab, setActiveTab] = useState<string>(getDefaultActiveTab());
 
-	// Gmail-style tab styling helper
+	// Compact tab styling helper
 	const getTabStyles = (tab: typeof staticTabs[0], isActive: boolean): string => {
-		const baseStyles = "flex items-center gap-2 px-4 py-2 rounded-none border-b-2 transition-all duration-200 text-sm font-medium";
+		const baseStyles = "flex items-center gap-1.5 px-3 py-1.5 rounded-none border-b-2 transition-all duration-200 text-xs font-medium whitespace-nowrap";
 		
 		if (isActive) {
 			return `${baseStyles} text-gray-900 border-gray-900 bg-gray-50`;
@@ -156,23 +166,26 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 
 	return (
 		<>
-			{/* Always show tabs - no conditional rendering */}
-			<div className="h-full  min-h-0 overflow-hidden">
-				{backToMeetings && (
-					<div className="flex items-center gap-4 p-4 border-b">
-						<Button onClick={handleBackToMeetings}>
-							<ArrowLeft className="h-5 w-5" />
-						</Button>
-					</div>
-				)}
+			<div className="h-full min-h-0 overflow-hidden flex flex-col">
 				<Tabs 
 					className="flex-1 flex flex-col min-h-0 h-full" 
 					onValueChange={setActiveTab} 
 					value={activeTab}
 				>
 					<div className="border-b border-gray-200 bg-white flex-shrink-0">
-						<div className="flex items-center gap-4 px-4">
-							<div className="flex overflow-x-auto scrollbar-hide">
+						<div className="flex items-center gap-2 px-2 py-1">
+							{backToMeetings && (
+								<Button 
+									onClick={handleBackToMeetings}
+									variant="ghost"
+									size="icon"
+									className="h-7 w-7 flex-shrink-0"
+								>
+									<ArrowLeft className="h-4 w-4" />
+								</Button>
+							)}
+							
+							<div className="flex-1 flex overflow-x-auto scrollbar-hide min-w-0">
 								{staticTabs
 									.filter((tab) => tab.hasData)
 									.map((tab) => (
@@ -182,13 +195,23 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 											onClick={() => setActiveTab(tab.id)}
 										>
 											{tab.icon}
-											<span className="hidden sm:inline whitespace-nowrap">{tab.label}</span>
-											<div className="w-2 h-2 rounded-full ml-1 bg-green-500" />
+											<span className="hidden sm:inline">{tab.label}</span>
+											<div className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
 										</button>
 									))}
 							</div>
+
+							<Button 
+								onClick={handleClose}
+								variant="ghost"
+								size="icon"
+								className="h-7 w-7 flex-shrink-0"
+							>
+								<X className="h-4 w-4" />
+							</Button>
 						</div>
 					</div>
+
 					<div className="flex-1 min-h-0 overflow-hidden">
 						<TabsContent 
 							className="h-full m-0 p-0 overflow-hidden" 
@@ -236,6 +259,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 							<MeetingRecording 
 								currentResult={currentResult} 
 								recordingNode={recordingNode}
+								minutesNode={minutesNode}
 							/>
 						</TabsContent>
 						<TabsContent 
@@ -272,7 +296,6 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 	);
 };
 
-// Helper component for no data state
 const NoDataAvailable: React.FC<{ message: string }> = ({ message }) => (
 	<div className="flex items-center justify-center h-full text-gray-500">
 		<div className="text-center">

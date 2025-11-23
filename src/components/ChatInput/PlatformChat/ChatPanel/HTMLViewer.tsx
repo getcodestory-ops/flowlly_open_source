@@ -77,6 +77,7 @@ export const HTMLViewer = ({
 		if (!htmlContent) return "";
 		let workingHtmlContent = htmlContent;
 		let headContent = "";
+		console.log(htmlContent);
 		try {
 			const hasBaseTag = /<base\s[^>]*href=/i.test(workingHtmlContent);
 			const baseHref = typeof document !== "undefined" ? document.baseURI : "/";
