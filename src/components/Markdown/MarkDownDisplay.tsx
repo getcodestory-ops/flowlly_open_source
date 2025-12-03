@@ -283,18 +283,26 @@ const AttachmentsComponent: React.FC<{ attachments: string }> = ({ attachments }
 			parsedAttachments = JSON.parse(jsonString);
 		}
 		
-		const files = parsedAttachments.map((attachment: Attachment) => ({	
-			resource_id: attachment.is_sandbox_file 
-				? `${attachment.uuid}::${attachment.name}` // Use sandbox_id::filename for unique identification
-				: attachment.uuid,
-			resource_name: attachment.name,
-			extension: attachment.type || attachment.extension,
-			url: attachment.url, // Include URL if present
-			type: attachment.is_sandbox_file ? "sandbox" : "storage",
-			focus: attachment.focus,
-			sandbox_id: attachment.is_sandbox_file ? attachment.uuid : undefined, // Explicit sandbox ID for API calls
-		}));
+		// UUID regex pattern to check if resource_id is a valid UUID
+		const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 		
+		const files = parsedAttachments.map((attachment: Attachment) => {
+			const resourceId = attachment.is_sandbox_file 
+				? `${attachment.uuid}::${attachment.name}` // Use sandbox_id::filename for unique identification
+				: attachment.uuid;
+			const type = isUUID(attachment.uuid) ? "storage" : "sandbox";
+			
+			return {
+				resource_id: resourceId,
+				resource_name: attachment.name,
+				extension: attachment.type || attachment.extension,
+				url: attachment.url, // Include URL if present
+				type,
+				focus: attachment.focus,
+				sandbox_id: attachment.is_sandbox_file ? attachment.uuid : undefined, // Explicit sandbox ID for API calls
+			};
+		});
+		console.log("files", files);
 		return <AttachmentViewer files={files} />;
 	} catch (error) {
 		console.error("Error parsing attachments:", error);

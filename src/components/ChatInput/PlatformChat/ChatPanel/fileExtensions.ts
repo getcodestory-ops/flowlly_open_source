@@ -21,6 +21,22 @@ export const microsoftExtensions = [
 	"xls",
 	"ppt",
 	"pptx",
+	"odt",
+	"ods",
+	"odp",
+];
+
+// Extensions supported by Collabora Online for WOPI editing
+export const wopiEditableExtensions = [
+	"doc",
+	"docx",
+	"xlsx",
+	"xls",
+	"ppt",
+	"pptx",
+	"odt",
+	"ods",
+	"odp",
 ];
 
 export const csvExtensions = ["csv"];

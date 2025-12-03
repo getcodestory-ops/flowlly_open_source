@@ -476,3 +476,83 @@ export const getInlineDocument = async({
 		return null;
 	}
 };
+
+// WOPI Editor Response type
+export type WopiEditorResponse = {
+	editor_url: string;
+	access_token: string;
+	access_token_ttl: number;
+	file_id: string;
+	file_name: string;
+};
+
+/**
+ * Get WOPI editor URL for editing sandbox files via Collabora Online
+ * Uses the WOPI protocol for document editing
+ */
+export const getWopiSandboxEditorUrl = async({
+	session,
+	projectId,
+	sandboxId,
+	fileName,
+}: {
+	session: Session;
+	projectId: string;
+	sandboxId: string;
+	fileName: string;
+}) : Promise<WopiEditorResponse | null> => {
+	const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/wopi/editor/sandbox/${sandboxId}`;
+	
+	const params = new URLSearchParams();
+	params.append("file_name", fileName);
+	params.append("project_access_id", projectId);
+	
+	const fullUrl = `${baseUrl}?${params.toString()}`;
+
+	try {
+		const response = await axios.get<WopiEditorResponse>(fullUrl, {
+			headers: {
+				Authorization: `Bearer ${session.access_token}`,
+			},
+		});
+
+		return response.data;
+	} catch (error) {
+		console.error("Error getting WOPI sandbox editor URL:", error);
+		return null;
+	}
+};
+
+/**
+ * Get WOPI editor URL for editing storage (GCS) files via Collabora Online
+ * Uses the WOPI protocol for document editing
+ */
+export const getWopiStorageEditorUrl = async({
+	session,
+	projectId,
+	resourceId,
+}: {
+	session: Session;
+	projectId: string;
+	resourceId: string;
+}) : Promise<WopiEditorResponse | null> => {
+	const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/wopi/editor/storage/${resourceId}`;
+	
+	const params = new URLSearchParams();
+	params.append("project_access_id", projectId);
+	
+	const fullUrl = `${baseUrl}?${params.toString()}`;
+
+	try {
+		const response = await axios.get<WopiEditorResponse>(fullUrl, {
+			headers: {
+				Authorization: `Bearer ${session.access_token}`,
+			},
+		});
+
+		return response.data;
+	} catch (error) {
+		console.error("Error getting WOPI storage editor URL:", error);
+		return null;
+	}
+};
