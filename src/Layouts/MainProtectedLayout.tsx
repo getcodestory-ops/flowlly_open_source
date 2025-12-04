@@ -8,7 +8,15 @@ import { ChakraProvider } from "@chakra-ui/react";
 import { chakraTheme } from "@/utils/chakraTheme";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			refetchOnWindowFocus: false,
+			staleTime: 30 * 1000,
+			retry: 1,
+		},
+	},
+});
 
 function MainLayout() {
 	const {

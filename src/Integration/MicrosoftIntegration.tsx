@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getApiIntegration } from "@/api/integration_routes";
 import { useStore } from "@/utils/store";
+
 interface Email {
   id: string;
   subject: string;

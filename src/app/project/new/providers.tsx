@@ -10,7 +10,18 @@ import supabase from "@/utils/supabaseClient";
 import { Toaster } from "@/components/ui/toaster";
 import { EnhancedSidePanel } from "@/components/TopBar/EnhancedSidePanel";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			// Prevent automatic refetch on window focus - reduces unnecessary reloads
+			refetchOnWindowFocus: false,
+			// Keep data fresh for 30 seconds before considering it stale
+			staleTime: 30 * 1000,
+			// Retry failed requests once
+			retry: 1,
+		},
+	},
+});
 
 export function Providers({ children }: { children: React.ReactNode }) {
 	const router = useRouter();

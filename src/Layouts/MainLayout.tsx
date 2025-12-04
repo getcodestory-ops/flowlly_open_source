@@ -15,7 +15,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ChatComponent from "@/components/ChatInput/ChatComponet";
 import ConstructionDashboard from "@/components/ProjectDashboard/ConstructionDashboard";
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			refetchOnWindowFocus: false,
+			staleTime: 30 * 1000,
+			retry: 1,
+		},
+	},
+});
 
 export default function MainLayout({
 	children,
