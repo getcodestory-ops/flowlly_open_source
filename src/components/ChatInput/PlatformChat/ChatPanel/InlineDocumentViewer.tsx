@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
 import { getInlineDocument, getWopiSandboxEditorUrl, getWopiStorageEditorUrl } from "@/api/folderRoutes";
-import { FileImage, Loader2 } from "lucide-react";
+import { FileImage, Loader2, Maximize2, Minimize2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { CSVViewer } from "./CSVViewer";
 import HTMLViewer from "./HTMLViewer";
 import {
@@ -18,30 +19,86 @@ const CollaboraEditor = ({
 	editorUrl,
 	accessToken,
 	accessTokenTtl,
+	resourceId,
+	fileName,
 }: {
 	editorUrl: string;
 	accessToken: string;
 	accessTokenTtl: number;
+	resourceId: string;
+	fileName?: string;
 }) => {
 	const formRef = useRef<HTMLFormElement>(null);
 	const iframeRef = useRef<HTMLIFrameElement>(null);
+	const containerRef = useRef<HTMLDivElement>(null);
+	const hasSubmittedRef = useRef(false);
+	const lastEditorUrlRef = useRef<string | null>(null);
+	const [isFullscreen, setIsFullscreen] = useState(false);
+
+	// Generate unique iframe name based on resourceId AND fileName to prevent conflicts
+	// For sandbox files, resourceId is sandbox_id which is shared, so fileName makes it unique
+	const iframeName = `collabora_editor_${resourceId.replace(/[^a-zA-Z0-9]/g, "_")}_${(fileName || "").replace(/[^a-zA-Z0-9]/g, "_")}`;
 
 	useEffect(() => {
-		// Submit the form to load the Collabora editor
-		if (formRef.current) {
+		// Only submit the form once per unique editor URL to prevent reloading
+		if (formRef.current && editorUrl && editorUrl !== lastEditorUrlRef.current) {
+			lastEditorUrlRef.current = editorUrl;
+			hasSubmittedRef.current = true;
 			formRef.current.submit();
 		}
 	}, [editorUrl, accessToken]);
 
+	// Listen for fullscreen changes (e.g., user presses Escape)
+	useEffect(() => {
+		const handleFullscreenChange = () => {
+			setIsFullscreen(!!document.fullscreenElement);
+		};
+
+		document.addEventListener("fullscreenchange", handleFullscreenChange);
+		return () => {
+			document.removeEventListener("fullscreenchange", handleFullscreenChange);
+		};
+	}, []);
+
+	const toggleFullscreen = useCallback(async () => {
+		if (!containerRef.current) return;
+
+		try {
+			if (!document.fullscreenElement) {
+				await containerRef.current.requestFullscreen();
+				setIsFullscreen(true);
+			} else {
+				await document.exitFullscreen();
+				setIsFullscreen(false);
+			}
+		} catch (err) {
+			console.error("Fullscreen error:", err);
+		}
+	}, []);
+
 	return (
-		<div className="h-full w-full relative">
+		<div className="h-full w-full relative" ref={containerRef}>
+			{/* Fullscreen toggle button */}
+			<Button
+				className="absolute bottom-2 right-2 z-10 bg-white/90 hover:bg-white shadow-md"
+				onClick={toggleFullscreen}
+				size="icon"
+				title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+				variant="outline"
+			>
+				{isFullscreen ? (
+					<Minimize2 className="h-4 w-4" />
+				) : (
+					<Maximize2 className="h-4 w-4" />
+				)}
+			</Button>
 			{/* Hidden form to POST access token to Collabora */}
 			<form
 				action={editorUrl}
 				encType="application/x-www-form-urlencoded"
 				method="POST"
 				ref={formRef}
-				target="collabora_editor"
+				target={iframeName}
 			>
 				<input name="access_token" type="hidden" value={accessToken} />
 				<input name="access_token_ttl" type="hidden" value={accessTokenTtl.toString()} />
@@ -50,9 +107,9 @@ const CollaboraEditor = ({
 				allowFullScreen
 				className="border-0 bg-white"
 				height="100%"
-				name="collabora_editor"
+				name={iframeName}
 				ref={iframeRef}
-				sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-downloads allow-modals"
+				// sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-downloads allow-modals"
 				title="Collabora Online Editor"
 				width="100%"
 			/>
@@ -73,8 +130,10 @@ export const InlineDocumentViewer = ({
   fileName?: string;
   lastReloadTime?: number;
 }): React.ReactNode => {
-	const { session } = useStore();
-	const { activeProject } = useStore();
+	const { session, activeProject } = useStore((state) => ({
+		session: state.session,
+		activeProject: state.activeProject,
+	}));
 
 	// Check if this file extension supports WOPI editing (both sandbox and storage)
 	const isWopiEditable = wopiEditableExtensions.includes(fileExtension);
@@ -90,8 +149,7 @@ export const InlineDocumentViewer = ({
 	const { data: resource } = useQuery({
 		queryKey: [
 			"getInlineFileUrl",
-			session,
-			activeProject,
+			activeProject?.project_id,
 			resourceId,
 			isSandboxFile,
 			fileName,
@@ -110,14 +168,14 @@ export const InlineDocumentViewer = ({
 			});
 		},
 		enabled: needsInlineUrl && !!session && !!activeProject?.project_id,
+		staleTime: 30 * 1000, // Keep data fresh for 30 seconds
 	});
 
 	// Fetch WOPI editor URL for sandbox files
 	const { data: wopiSandboxEditor, isLoading: wopiSandboxLoading } = useQuery({
 		queryKey: [
 			"getWopiSandboxEditorUrl",
-			session,
-			activeProject,
+			activeProject?.project_id,
 			resourceId,
 			fileName,
 			lastReloadTime,
@@ -134,14 +192,14 @@ export const InlineDocumentViewer = ({
 			});
 		},
 		enabled: isWopiSandbox && !!session && !!activeProject?.project_id && !!fileName,
+		staleTime: 30 * 1000, // Keep data fresh for 30 seconds
 	});
 
 	// Fetch WOPI editor URL for storage (GCS) files
 	const { data: wopiStorageEditor, isLoading: wopiStorageLoading } = useQuery({
 		queryKey: [
 			"getWopiStorageEditorUrl",
-			session,
-			activeProject,
+			activeProject?.project_id,
 			resourceId,
 			lastReloadTime,
 		],
@@ -156,6 +214,7 @@ export const InlineDocumentViewer = ({
 			});
 		},
 		enabled: isWopiStorage && !!session && !!activeProject?.project_id,
+		staleTime: 30 * 1000, // Keep data fresh for 30 seconds
 	});
 
 	// Determine which WOPI editor to use
@@ -182,6 +241,8 @@ export const InlineDocumentViewer = ({
 						accessToken={wopiEditor.access_token}
 						accessTokenTtl={wopiEditor.access_token_ttl}
 						editorUrl={wopiEditor.editor_url}
+						fileName={fileName}
+						resourceId={resourceId}
 					/>
 				</div>
 			);

@@ -30,10 +30,11 @@ export function ResourceTextViewer({
 	const { onSubmit, isPending } = isSandboxFile ? sandboxFileSave : storageFileSave;
 
 	const { data, isLoading, error } = useQuery({
-		queryKey: ["aiJobResource", resource_id, isSandboxFile, fileName, lastReloadTime],
+		queryKey: ["aiJobResource", activeProject?.project_id, resource_id, isSandboxFile, fileName, lastReloadTime],
 		queryFn: () =>
 			fetchResource(session, activeProject?.project_id, resource_id, isSandboxFile, fileName),
-		staleTime: 0, // Always fetch fresh data
+		staleTime: 30 * 1000, // Keep data fresh for 30 seconds
+		enabled: !!session && !!activeProject?.project_id,
 	});
 	
 

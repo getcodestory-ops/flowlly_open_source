@@ -133,7 +133,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		set({ sidePanel: tabWithId });
 
 		const { addTab } = get();
-		addTab(sidePanel, true); 
+		// Don't force reload by default - only reload if explicitly needed
+		addTab(sidePanel, false); 
 	},
 	tabs: [],
 	activeTabId: null,
@@ -193,9 +194,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 			lastReloadTime: Date.now(),
 		};
 		
-		// Check if a tab with the same resourceId and type already exists
+		// Check if a tab with the same resourceId, type, AND filename already exists
+		// For sandbox files, multiple files can share the same sandbox_id (resourceId),
+		// so we need to also check filename to distinguish them
 		const existingTab = state.tabs.find(
-			(t) => t.resourceId === tab.resourceId && t.type === tab.type,
+			(t) => t.resourceId === tab.resourceId && 
+				   t.type === tab.type && 
+				   t.filename === tab.filename,
 		);
 		
 		if (existingTab) {

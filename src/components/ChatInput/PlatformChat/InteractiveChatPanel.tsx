@@ -72,7 +72,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 
 	// Query to get resource data for download functionality
 	const { data: downloadResource } = useQuery({
-		queryKey: ["downloadResource", session, activeProject, activeTab?.resourceId, activeTab?.type],
+		queryKey: ["downloadResource", activeProject?.project_id, activeTab?.resourceId, activeTab?.type, activeTab?.filename],
 		queryFn: () => {
 			if (!session || !activeProject?.project_id || !activeTab?.resourceId) {
 				return Promise.reject("No session, active project, or resource ID");
@@ -91,6 +91,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 			});
 		},
 		enabled: !!session && !!activeProject?.project_id && !!activeTab?.resourceId && (activeTab?.type === "sources" || activeTab?.type === "sandbox"),
+		staleTime: 30 * 1000, // Keep data fresh for 30 seconds
 	});
 
 	const handlePrintActiveHtml = async(): Promise<void> => {
@@ -276,7 +277,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 		setShowUnsavedDialog(false);
 	};
 
-	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "wav", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", ".xlsx", ".docx", ".doc", "docx", "doc", "xlsx", "md", "json", "jsonl", "py", "css", "js", "ts", "tsx", "ppt", "pptx", "template", "database"];
+	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", "docx", "doc", "xlsx", "xls", "ppt", "pptx", "odt", "ods", "odp", "md", "jsonl", "py", "css", "js", "ts", "tsx", "template", "database"];
 
 	const handleFileNameEdit = async(tabId: string, newName: string) => {
 		if (!session || !activeProject) return;
@@ -653,6 +654,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 											) : (
 												<InlineDocumentViewer 
 													fileExtension={getFileExtension(tab.filename)} 
+													fileName={tab.filename}
 													lastReloadTime={tab.lastReloadTime}
 													resourceId={tab.resourceId}
 												/>
