@@ -14,6 +14,7 @@ import DailyReport from "./FormDirectives/DailyReport";
 import ReportWriting from "./FormDirectives/ReportWriting";
 import KnowledgeManager from "./FormDirectives/KnowledgeManager";
 import MeetingChat from "./FormDirectives/MeetingChat";
+import DocumentGeneration from "./FormDirectives/DocumentGeneration";
 import { useTemplatesByUseCase } from "@/hooks/useTemplates";
 import type { TemplatePreview, StorageResourceEntity } from "@/api/templateRoutes";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -159,7 +160,7 @@ export default function EmptyChatInterface({
 
 	// Chat types for each tab
 	interface ChatTypeCard {
-		id: "bidLevelling" | "bidLevelling2" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "template" | "templateCreate" | "templateCreateAI" | "none";
+		id: "bidLevelling" | "bidLevelling2" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "documentGeneration" | "template" | "templateCreate" | "templateCreateAI" | "none";
 		title: string;
 		description: string;
 		icon: React.ComponentType<{ className?: string }>;
@@ -206,6 +207,14 @@ export default function EmptyChatInterface({
 					title: "Meeting Assistant",
 					description: "Ask about meetings and transcripts",
 					icon: Users,
+				},
+			],
+			documents: [
+				{
+					id: "documentGeneration",
+					title: "Document Generation",
+					description: "Create new documents in sandbox",
+					icon: FileCode,
 				},
 			],
 			templates: [], // Will be populated dynamically
@@ -267,6 +276,11 @@ export default function EmptyChatInterface({
 			id: "meeting",
 			label: "Meeting",
 			icon: Users,
+		},
+		{
+			id: "documents",
+			label: "Documents",
+			icon: FileCode,
 		},
 		{
 			id: "templates",
@@ -474,6 +488,29 @@ export default function EmptyChatInterface({
 					</button>
 				</div>
 				<TemplateFromExistingReport 
+					handleSubmit={handleSubmit}
+					isPending={isPending}
+					isWaitingForResponse={isWaitingForResponse}
+					loadDocumentPanel={loadDocumentPanel}
+					setChatInput={setChatInput}
+				/>
+			</div>
+		);
+	}
+
+	// If document generation is selected, show only the form with back
+	if (chatDirectiveType === "documentGeneration") {
+		return (
+			<div className="flex flex-col items-center px-4 py-6">
+				<div className="w-full max-w-3xl mb-4">
+					<button
+						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+						onClick={() => setChatDirectiveType("none")}
+					>
+						<ArrowLeft className="h-4 w-4" /> Back
+					</button>
+				</div>
+				<DocumentGeneration
 					handleSubmit={handleSubmit}
 					isPending={isPending}
 					isWaitingForResponse={isWaitingForResponse}
