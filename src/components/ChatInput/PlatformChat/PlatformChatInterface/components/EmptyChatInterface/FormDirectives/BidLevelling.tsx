@@ -327,12 +327,13 @@ export default function BidLevelling({
 		prompt += `**Level the bids based on the provided documents**
 :::instructions
 **Instructions:**
-    1. Copy the attached bid and scope document to the sandbox.
-	2. Understand the attached documents, including provided bids and scope document if provided.
-	3. Understand special concerns, obscure language sections etc. in the bid documents corrresponding to the scope items.
+    1. Copy the attached bids and scope documents to the sandbox.
+	2. Examine the bid document thoroughly. At least run secondary examine file from sandbox operation with different query on bid document to make sure that all the numbers extracted and ocred are correct. 
+	3. Understand the attached documents, including provided bids and scope document if provided.
+	4. Understand special concerns, obscure language sections etc. in the bid documents corrresponding to the scope items.
 	${scopeDocuments.length > 0 ? "For scope item, each and every scope item should be included as a item in the final analysis document. The goal is to understand the which part of scope is included in the bid document." : ""}
 	Generate your analysis in a tabular format, preferably in markdown format. The table will have the following columns: item (should include all the scope items idividually), (For each bidder) one column for the scope item status (included, excluded, Unsure) a second column with evidence of the status (include the file name, page and quote). Any other comments or special instructions should be included in the analysis document.
-	Upload the sandbox files to project documents for review.
+	6. For any calculations, sum of total numbers etc. use calculation operation, excel sheet formulas, programming operations etc. to make sure that the calculations are correct.
 	${documentName ? `
 	Format the final results -  ${documentName} and upload it to project documents for review. keep your final response concise and to the point like see attached analysis for bid leveling.` : ""}`;
 		// Add optional instructions if provided
