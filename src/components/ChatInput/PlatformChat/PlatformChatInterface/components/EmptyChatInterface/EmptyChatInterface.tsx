@@ -281,28 +281,7 @@ export default function EmptyChatInterface({
 
 
 	const handleTemplateSelection = React.useCallback((template: StorageResourceEntity) => {
-		// Add template as attachment to the chat panel
-		// addTab({
-		// 	isOpen: true,
-		// 	type: "sources",
-		// 	resourceId: template.id,
-		// 	filename: template.file_name,
-		// 	title: template.metadata.template_name || template.file_name,
-		// });
 
-		// Add template to selected contexts (this will automatically create the attachment directive)
-		// const currentContexts = selectedContexts[currentChatId] || [];
-		// const templateContext = {
-		// 	id: template.id,
-		// 	name: template.file_name,
-		// 	extension: "template", // Templates are .template files
-		// };
-		
-		// Check if template is already selected to avoid duplicates
-		// const isAlreadySelected = currentContexts.some((ctx) => ctx.id === template.id);
-		// if (!isAlreadySelected) {
-		// 	setSelectedContexts(currentChatId, [...currentContexts, templateContext]);
-		// }
 
 		setChatDirectiveType("chat");
 

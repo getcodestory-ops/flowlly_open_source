@@ -225,19 +225,19 @@ export default function PlatformChatInterface({
 		};
 	}, [chats]);
 	
-	// Add paste event listener to both textareas (regular and empty state)
+
 	useEffect(() => {
 		const handlePaste = (event: ClipboardEvent): void => {
 			handlePasteEvent(event);
 		};
 		
-		// Add listener to regular chat textarea (when chats exist)
+
 		const regularTextarea = textareaRef.current;
 		if (regularTextarea) {
 			regularTextarea.addEventListener("paste", handlePaste);
 		}
 		
-		// Add listener to empty state textarea (when no chats)
+
 		const emptyTextarea = emptyTextareaRef.current;
 		if (emptyTextarea) {
 			emptyTextarea.addEventListener("paste", handlePaste);
@@ -253,19 +253,16 @@ export default function PlatformChatInterface({
 		};
 	}, [handlePasteEvent, chats]); // Add chats as dependency to re-run when chats change
 
-	// Auto-expand textarea as text grows
+
 	useEffect(() => {
 		const textarea = textareaRef.current;
 		if (textarea) {
-			// Reset height to auto to get the correct scrollHeight
 			textarea.style.height = "auto";
-			// Set height to scrollHeight with min and max constraints
-			const newHeight = Math.min(Math.max(textarea.scrollHeight, 40), 400); // min 40px, max 400px
+			const newHeight = Math.min(Math.max(textarea.scrollHeight, 40), 400);
 			textarea.style.height = `${newHeight}px`;
 		}
 	}, [chatInput]);
 
-	// Update the button click handlers to use the new handleSubmit function
 	const handleSubmit = (): void => {
 		if (!session || !activeProject) {
 			toast({
@@ -276,17 +273,13 @@ export default function PlatformChatInterface({
 			return;
 		}
 
-		// Get combined message (chatInput + chatContext)
 		const combinedMessage = getCombinedMessage();
 		
-		// The pasted files are now in selectedContexts, so we don't need to pass them separately
-		// The usePlatformChat hook will handle adding them to the message as ::attachments[...]
 		handleChatSubmit({
 			message: combinedMessage,
-			files: [], // Empty since we're using selectedContexts system
+			files: [], 
 		});
 		
-		// Clear uploaded files after submission
 		setUploadingFiles([]);
 		setShowUploadProgress(false);
 	};
@@ -338,37 +331,7 @@ export default function PlatformChatInterface({
 		}
 	}, [chats]);
 
-	// Create a more reliable function to extract text content (currently unused)
-	// const getTextFromHtml = (html: string): string => {
-	// 	const tempDiv = document.createElement("div");
-	// 	tempDiv.innerHTML = html;
-	// 	return tempDiv.textContent || tempDiv.innerText || "";
-	// };
 
-	// Function to copy formatted content (currently unused but kept for future use)
-	// const copyFormattedContent = (index: number): void => {
-	// 	const history = chats[index];
-	// 	let textContent = "";
-	// 
-	// 	if (typeof history.message === "string") {
-	// 		textContent = history.message;
-	// 	} else if (history.message && typeof history.message === "object") {
-	// 		// Convert HTML to plain text for copying
-	// 		const tempDiv = document.createElement("div");
-	// 		tempDiv.innerHTML = history.message.toString();
-	// 		textContent = getTextFromHtml(tempDiv.innerHTML);
-	// 	}
-	// 
-	// 	if (textContent) {
-	// 		navigator.clipboard.writeText(textContent)
-	// 			.then(() => {
-	// 				// Successfully copied to clipboard
-	// 			})
-	// 			.catch(() => {
-	// 				// Failed to copy content
-	// 			});
-	// 	}
-	// };
 
 	// Helper function to determine if we should show "Flowlly" label
 	const shouldShowFlowllyLabel = (currentIndex: number): boolean => {
