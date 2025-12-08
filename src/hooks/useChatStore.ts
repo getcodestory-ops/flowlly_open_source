@@ -78,8 +78,8 @@ interface ChatStore {
 	clearChatContext: () => void;
 	// Get combined message (chatInput + chatContext)
 	getCombinedMessage: () => string;
-	chatDirectiveType: "chat" | "bidLevelling" | "dailyReport" | "bidLevelling2" | "reportWriting" | "knowledgeManager" | "meetingChat" | "template" | "templateCreate" | "templateCreateAI" | "none";
-	setChatDirectiveType: (directiveType: "chat" | "bidLevelling" | "bidLevelling2" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "template" | "templateCreate" | "templateCreateAI" | "none") => void;
+	chatDirectiveType: "chat" | "bidLevelling" | "dailyReport" | "bidLevelling2" | "reportWriting" | "knowledgeManager" | "meetingChat" | "documentGeneration" | "template" | "templateCreate" | "templateCreateAI" | "none";
+	setChatDirectiveType: (directiveType: "chat" | "bidLevelling" | "bidLevelling2" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "documentGeneration" | "template" | "templateCreate" | "templateCreateAI" | "none") => void;
 	selectedModel: string;
 	setSelectedModel: (model: string) => void;
 	// Agent type selection
@@ -336,6 +336,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 				break;
 			case "meetingChat":
 				setChatTypeTags([{ name: "meeting-chat", parent: "root" }]);
+				break;
+			case "documentGeneration":
+				setChatTypeTags([{ name: "document-generation", parent: "root" }]);
 				break;
 			case "template":
 				setChatTypeTags([{ name: "template", parent: "root" }]);
