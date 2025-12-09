@@ -302,7 +302,7 @@ const AttachmentsComponent: React.FC<{ attachments: string }> = ({ attachments }
 				sandbox_id: attachment.is_sandbox_file ? attachment.uuid : undefined, // Explicit sandbox ID for API calls
 			};
 		});
-		console.log("files", files);
+
 		return <AttachmentViewer files={files} />;
 	} catch (error) {
 		console.error("Error parsing attachments:", error);

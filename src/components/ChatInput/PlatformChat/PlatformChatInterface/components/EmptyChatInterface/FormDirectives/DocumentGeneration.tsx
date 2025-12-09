@@ -79,8 +79,7 @@ export default function DocumentGeneration({
 1. Create a new document with the name "${documentName}.${documentType}" in the sandbox.
 2. The document should be of type: ${documentType}.${contentInstructions ? `
 3. Generate content based on the following instructions: ${contentInstructions}` : `
-3. Create an appropriate template or starter content for a ${documentType} file.`}
-6. Keep the document in only sandbox.
+4. Create an appropriate template or starter content for a ${documentType} file.`}
 :::`;
 
 		return prompt;
@@ -115,7 +114,7 @@ export default function DocumentGeneration({
 	}, [formData, isFormValid, isWaitingForResponse, generatePrompt, setChatInput]);
 
 	return (
-		<ScrollArea className="w-full space-y-6 bg-white rounded-xl border border-slate-100 p-6 shadow-sm h-[85vh] p-16">
+		<ScrollArea className="w-full space-y-6 bg-white rounded-xl border border-slate-100 shadow-sm h-[85vh] p-16">
 			<div className="text-center">
 				<h3 className="text-lg font-semibold text-gray-900 mb-2">
 					Document Generation

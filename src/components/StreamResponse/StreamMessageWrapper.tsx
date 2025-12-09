@@ -398,9 +398,9 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 		<div className="w-full">
 			{isThinking && thinkingContent && (
 				<div className="mb-4">
-					<MarkDownDisplay content={thinkingContent} />
-				</div>
-			)}
+							<MarkDownDisplay content={thinkingContent} />
+						</div>
+					)}
 			<div className="rounded-lg border border-gray-200">
 				<div 
 					className="px-4 py-3 rounded-t-lg transition-colors  flex items-center justify-between"
