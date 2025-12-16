@@ -81,7 +81,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 		}
 	}, [setSidePanel, setCollapsed]);
 
-	// Reset state when streamingKey changes
+
 	useEffect(() => {
 		setDisplayValue("");
 		setIsPending(true);
@@ -89,12 +89,10 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 		setIsThinking(false);
 		setThinkingContent("");
 		
-		// Clean up previous EventSource if it exists
 		if (eventSourceRef.current) {
 			eventSourceRef.current.close();
 		}
 		
-		// Create new EventSource connection
 		const eventSource = new EventSource(
 			`${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/stream/${streamingKey}`,
 		);
@@ -163,7 +161,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 					if (dataPart) {
 						handleAttachmentEvent(dataPart.trim());
 					}
-					return; // Don't add this to displayValue
+					return; 
 				}
 
 				// Check if this is a TODO event that came through as regular message data
