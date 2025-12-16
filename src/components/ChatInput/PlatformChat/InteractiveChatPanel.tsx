@@ -483,9 +483,9 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 				</div>
 			)}
 			{tabs.length > 0 && (
-				<div className="flex items-center bg-gray-100 border-b border-gray-200 rounded-t-lg min-h-[52px]">
+				<div className="flex items-center bg-gray-100 border-b border-gray-200 rounded-t-lg min-h-[40px]">
 					<div 
-						className="flex-1 min-w-0 relative"
+						className="flex-1 w-0 min-w-0 relative overflow-hidden"
 						onMouseLeave={handleTabAreaMouseLeave}
 						onMouseMove={handleTabAreaMouseMove}
 						ref={tabAreaRef}
@@ -525,18 +525,16 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 								msOverflowStyle: "none",
 							}}
 						>
-							<div className="flex items-end pb-1 px-2 gap-1 h-[51px]">
+							<div className="flex items-end pb-1 px-2 gap-1 h-[45px]">
 								{tabs.map((tab, index) => {
 									const isActive = tab.id === activeTabId;
 									const fileExtension = getFileExtension(tab.filename);
 									
-									// Chrome-like dynamic width
+									// Chrome-like dynamic width - more conservative to leave room for toolbar
 									const getTabWidth = () => {
-										const maxWidth = 200;
-										const minWidth = 120;
-										if (tabs.length <= 3) return maxWidth;
-										if (tabs.length <= 6) return Math.max(minWidth, 180);
-										return Math.max(minWidth, Math.min(180, 600 / tabs.length));
+										if (tabs.length <= 3) return 180;
+										if (tabs.length <= 4) return 120;
+										return 180;
 									};
 									
 									return (

@@ -202,30 +202,7 @@ export function EnhancedSidePanel(): React.ReactNode {
 		}
 	}, [membersData, setMembers]);
 
-	// Fetch chat entities for active project
-	// const { data: chatEntitities } = useQuery({
-	// 	queryKey: ["chatEntityList", session, activeProject],
-	// 	queryFn: () => {
-	// 		if (!session || !activeProject) {
-	// 			return Promise.reject("No session or active project");
-	// 		}
-	// 		return getAgentChatEntities(session, activeProject.project_id);
-	// 	},
-	// 	enabled: !!session?.access_token && !!activeProject?.project_id,
-	// });
-
-	// Set chat entities when data is loaded
-	// useEffect(() => {
-	// 	if (chatEntitities && chatEntitities.length > 0) {
-	// 		setChatEntities(chatEntitities);
-	// 		setActiveChatEntity(chatEntitities[chatEntitities.length - 1]);
-	// 	} else {
-	// 		setActiveChatEntity(null);
-	// 		setChatEntities([]);
-	// 	}
-	// }, [chatEntitities, setActiveChatEntity, setChatEntities]);
-
-	// Handle global keyboard shortcuts
+	
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent): void => {
 			if ((e.ctrlKey || e.metaKey) && e.key === "k") {
@@ -324,21 +301,7 @@ export function EnhancedSidePanel(): React.ReactNode {
 						onClick={() => setShowProjectSwitcher(!showProjectSwitcher)}
 						ref={projectButtonRef}
 					>
-						{/* <div className="relative">
-								<Avatar className="h-6 w-6 mb-1 ring-2 ring-offset-1 ring-offset-indigo-500 ring-white/30">
-									<AvatarImage
-										alt={activeProject?.name ? activeProject.name : "P"}
-										className={showProjectSwitcher ? "" : "grayscale"}
-										src={`https://avatar.vercel.sh/${
-											activeProject?.name || "project"
-										}.png`}
-									/>
-									<AvatarFallback>P</AvatarFallback>
-								</Avatar>
-								{activeProject && (
-									<span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-green-500 border border-white" />
-								)}
-							</div> */}
+
 						{activeProject && (
 							<ProjectRoundIcon
 								activeProject={activeProject}
@@ -441,25 +404,7 @@ export function EnhancedSidePanel(): React.ReactNode {
 					/>
 				</div>
 			)}
-			{/* Workflow Panel Popover */}
-			{/* {showWorkflowPanel && activeProject && (
-				<div 
-					className="absolute left-[54px] top-0 h-full"
-					onMouseEnter={handleWorkflowPanelMouseEnter}
-					onMouseLeave={handleWorkflowPanelMouseLeave}
-					ref={workflowPanelRef}
-					style={{ zIndex: 1000 }}
-				>
-					<WorkflowPanel
-						isVisible={showWorkflowPanel}
-						onNavigateBack={() => {
-							// Navigate to meetings page when going back
-							router.push(`/project/${activeProject.project_id}/meetings`);
-							setShowWorkflowPanel(false);
-						}}
-					/>
-				</div>
-			)} */}
+	
 			{/* Navigation buttons */}
 			<div className="flex-1 overflow-y-auto">
 				<nav className="flex flex-col items-center py-4">
@@ -519,12 +464,7 @@ const menuItems: {
   icon: React.ReactNode;
   link: string;
 }[] = [
-	// {
-	// 	label: "Projects",
-	// 	fnKey: "project",
-	// 	icon: <Building2 className="h-5 w-5" />,
-	// 	link: "projects",
-	// },
+
 	{
 		label: "Meetings",
 		fnKey: "meetings",
@@ -549,18 +489,7 @@ const menuItems: {
 		icon: <MessageSquareCode className="h-5 w-5" />,
 		link: "agent",
 	},
-	// {
-	// 	label: "Team",
-	// 	fnKey: "members",
-	// 	icon: <Users2 className="h-5 w-5" />,
-	// 	link: "members",
-	// },
-	// {
-	// 	label: "Connect",
-	// 	fnKey: "integrations",
-	// 	icon: <Workflow className="h-5 w-5" />,
-	// 	link: "integrations",
-	// },
+
 ];
 
 const AllMenuButtons = ({
