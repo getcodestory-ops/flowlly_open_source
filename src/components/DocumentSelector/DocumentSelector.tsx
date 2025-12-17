@@ -38,7 +38,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 	const [sortField, setSortField] = React.useState<SortField>("created_at");
 	const [sortDirection, setSortDirection] = React.useState<SortDirection>("desc");
 	const [searchTerm, setSearchTerm] = React.useState("");
-	
+
 	// Copy to folder dialog state
 	const [showCopyDialog, setShowCopyDialog] = React.useState(false);
 	const [itemsToCopy, setItemsToCopy] = React.useState<{ id: string; name: string }[]>([]);
@@ -167,13 +167,13 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 	// Build sorted/filtered items
 	const sortedAndFilteredItems: DocumentSelectorItem[] = React.useMemo(() => {
 		const items: DocumentSelectorItem[] = [
-			...displayFolders.map((folder: GetFolderSubFolderProp) => ({
+		...displayFolders.map((folder: GetFolderSubFolderProp) => ({
 				id: folder.id, name: folder.name, type: "folder" as const, created_at: folder.created_at,
-			})),
-			...extractedFiles.map((file: StorageResourceEntity) => ({
+		})),
+		...extractedFiles.map((file: StorageResourceEntity) => ({
 				id: file.id, name: file.file_name || "", type: "file" as const, created_at: file.created_at || "",
 				file_name: file.file_name, metadata: file.metadata, url: file.url,
-			})),
+		})),
 		];
 
 		return items
@@ -226,7 +226,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 		if (folderSelectOnly && item.type !== "folder") return;
 		
 		const isCtrlOrCmd = event?.ctrlKey || event?.metaKey;
-		
+
 		if (shouldUseChatContext) {
 			if (!effectiveContextId) return;
 			const currentContexts = selectedContexts[effectiveContextId] || [];
@@ -241,7 +241,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 			} else {
 				// Regular click: Toggle selection (clear others if not selected)
 				newContexts = isSelected
-					? currentContexts.filter((ctx) => ctx.id !== item.id)
+				? currentContexts.filter((ctx) => ctx.id !== item.id)
 					: [...currentContexts, { id: item.id, name: item.name, extension: item.type === "folder" ? "folder" : "file" }];
 			}
 			setSelectedContexts(effectiveContextId, newContexts);
@@ -392,7 +392,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 	const handleCreateFolder = (name: string) => {
 		if (!activeProject || !session) return;
 		createSubFolder(session, activeProject.project_id, name, currentFolderId, isProjectWide, (data) => {
-			addFolder(currentFolderId || "root", data);
+				addFolder(currentFolderId || "root", data);
 		});
 		setShowCreateFolderModal(false);
 	};
@@ -507,7 +507,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 									onUploadFile={handleContextUploadFile}
 									selectedItems={selectedItems}
 								/>
-							</ScrollArea>
+						</ScrollArea>
 						</DocumentDropZone>
 					</CardContent>
 				</Card>
@@ -539,4 +539,4 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 			/>
 		</>
 	);
-};
+}; 

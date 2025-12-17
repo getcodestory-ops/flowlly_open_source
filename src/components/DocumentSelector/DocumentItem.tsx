@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, FolderOutput, Folder } from "lucide-react";
+import { Eye, FolderOutput, Folder, FolderOpen, ExternalLink } from "lucide-react";
 import clsx from "clsx";
 import { DocumentItemActions } from "./DocumentItemActions";
 import { ContextMenuContent } from "./ContextMenuContent";
@@ -52,6 +52,7 @@ const DocumentItemComponent: React.FC<DocumentItemProps> = ({
 	const [contextMenuOpen, setContextMenuOpen] = useState(false);
 	const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
 	const [isNavigating, setIsNavigating] = useState(false);
+	const [isHovered, setIsHovered] = useState(false);
 	const rowRef = useRef<HTMLDivElement>(null);
 	const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -61,6 +62,7 @@ const DocumentItemComponent: React.FC<DocumentItemProps> = ({
 
 	// Debounced hover handlers for prefetch
 	const handleMouseEnter = useCallback(() => {
+		setIsHovered(true);
 		if (isFolder && onHoverStart) {
 			hoverTimeoutRef.current = setTimeout(() => {
 				onHoverStart();
@@ -69,6 +71,7 @@ const DocumentItemComponent: React.FC<DocumentItemProps> = ({
 	}, [isFolder, onHoverStart]);
 
 	const handleMouseLeave = useCallback(() => {
+		setIsHovered(false);
 		if (hoverTimeoutRef.current) {
 			clearTimeout(hoverTimeoutRef.current);
 			hoverTimeoutRef.current = null;
@@ -243,7 +246,10 @@ const DocumentItemComponent: React.FC<DocumentItemProps> = ({
 				</DropdownMenu>
 				{/* Checkbox - Always visible (Google Drive style) */}
 				<div
-					className="flex-shrink-0"
+					className={clsx(
+						"flex-shrink-0 relative p-1 -m-1 rounded transition-all duration-150",
+						isHovered && !isSelected && "bg-green-50 ring-2 ring-green-200"
+					)}
 					onClick={(e) => {
 						e.stopPropagation();
 						// Pass modifier keys for multi-select
@@ -253,24 +259,42 @@ const DocumentItemComponent: React.FC<DocumentItemProps> = ({
 							metaKey: e.metaKey,
 						});
 					}}
+					title={isSelected ? "Remove from chat context" : "Add to chat context"}
 				>
 					<Checkbox
 						checked={isSelected}
-						className="h-4 w-4 border-gray-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+						className={clsx(
+							"h-4 w-4 transition-all duration-150",
+							isSelected 
+								? "border-green-600 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600" 
+								: isHovered 
+									? "border-green-500 scale-110"
+									: "border-gray-300"
+						)}
 					/>
+					{/* Hover hint label - shows on row hover */}
+					{isHovered && (
+						<span className="absolute left-1/2 -translate-x-1/2 -bottom-6 whitespace-nowrap text-[10px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded animate-in fade-in duration-150 pointer-events-none shadow-sm border border-green-200 z-10">
+							{isSelected ? "Remove" : "+ Context"}
+						</span>
+					)}
 				</div>
 
-				{/* Icon */}
-				<div className="flex-shrink-0">
+				{/* Icon - folder opens on hover */}
+				<div className="flex-shrink-0 transition-transform duration-150">
 					{isFolder ? (
-						<Folder className="h-5 w-5 text-blue-500" />
+						isHovered ? (
+							<FolderOpen className="h-5 w-5 text-blue-600" />
+						) : (
+							<Folder className="h-5 w-5 text-blue-500" />
+						)
 					) : (
 						<FileTypeIcon extension={item.metadata?.extension} />
 					)}
 				</div>
 
 				{/* Name - with inline edit for files */}
-				<div className="flex-1 min-w-0">
+				<div className="flex-1 min-w-0 flex items-center gap-2">
 					{isEditing ? (
 						<Input
 							autoFocus
@@ -282,13 +306,22 @@ const DocumentItemComponent: React.FC<DocumentItemProps> = ({
 							value={editName}
 						/>
 					) : (
-						<span
-							className="text-sm truncate block"
-							onDoubleClick={handleNameDoubleClick}
-							title={isFolder ? `${item.name} - Double-click to open` : `${item.name} - Double-click to view`}
-						>
-							{item.name}
-						</span>
+						<>
+							<span
+								className={clsx(
+									"text-sm truncate block transition-all duration-150",
+									isHovered && "text-blue-600 underline underline-offset-2"
+								)}
+								onDoubleClick={handleNameDoubleClick}
+								title={isFolder ? `Click to open folder` : `Click to view file`}
+							>
+								{item.name}
+							</span>
+							{/* Open indicator on hover */}
+							{isHovered && (
+								<ExternalLink className="h-3.5 w-3.5 text-blue-500 flex-shrink-0 animate-in fade-in duration-150" />
+							)}
+						</>
 					)}
 				</div>
 
