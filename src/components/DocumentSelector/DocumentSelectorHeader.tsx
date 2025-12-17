@@ -83,6 +83,11 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 		};
 	}, []);
 
+	// Clear search term when folder changes
+	useEffect(() => {
+		setSearchTerm("");
+	}, [currentFolderId, setSearchTerm]);
+
 	// Build breadcrumb path from current folder structure
 	const getBreadcrumbPath = (): string => {
 		const path = [];
