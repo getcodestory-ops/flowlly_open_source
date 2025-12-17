@@ -198,7 +198,7 @@ const DocumentItemComponent: React.FC<DocumentItemProps> = ({
 				ref={rowRef}
 				className={clsx(
 					"flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer rounded-lg group transition-all duration-75 relative",
-					isSelected && !isNavigating && "bg-blue-50 hover:bg-blue-100 border-l-2 border-blue-500",
+					isSelected && !isNavigating && "bg-blue-50 hover:bg-blue-100 ",
 					isNavigating && "opacity-50 pointer-events-none bg-gray-100",
 				)}
 				onClick={handleRowClick}
