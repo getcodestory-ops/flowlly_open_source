@@ -9,6 +9,7 @@ import { useDocumentStore } from "@/hooks/useDocumentStore";
 import { useToast } from "@/components/ui/use-toast";
 import { StorageResourceEntity } from "@/types/document";
 import { useFileUpload } from "../Folder/FilesTable/useFileUpload";
+import { FileUploadProgress } from "../Folder/FilesTable/FileUploadProgress";
 import { AddNewFolderModal } from "../CreateNewFolderModal/CreateNewFolderModal";
 
 import { DocumentSelectorHeader } from "./DocumentSelectorHeader";
@@ -62,7 +63,9 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 		handleFileUpload, 
 		fileInputRef, 
 		handleCreateTextFile,
-		setTextFileName,
+		uploadingFiles,
+		showUploadProgress,
+		closeUploadProgress,
 	} = useFileUpload(
 		currentFolderId || "",
 		session,
@@ -417,15 +420,12 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 	const handleCreateFile = async (fileName: string) => {
 		setIsCreatingFile(true);
 		try {
-			setTextFileName(fileName);
-			// Small delay to ensure state is set
-			setTimeout(() => {
-				handleCreateTextFile();
-				setShowCreateFileDialog(false);
-				setIsCreatingFile(false);
-			}, 100);
+			// Pass filename directly to avoid stale closure issues
+			handleCreateTextFile(fileName);
+			setShowCreateFileDialog(false);
 		} catch (error) {
 			console.error("Error creating file:", error);
+		} finally {
 			setIsCreatingFile(false);
 		}
 	};
@@ -528,7 +528,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 				open={showCopyDialog}
 			/>
 
-			{/* Create Folder Modal */}
+
 			<AddNewFolderModal
 				onAdd={handleCreateFolder}
 				parentFolderName={currentFolderStructure?.folderName || (isProjectWide ? "Project Root" : "Personal Root")}
@@ -536,13 +536,21 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 				onOpenChange={setShowCreateFolderModal}
 			/>
 
-			{/* Create File Dialog */}
+
 			<CreateFileDialog
 				open={showCreateFileDialog}
 				onOpenChange={setShowCreateFileDialog}
 				onConfirm={handleCreateFile}
 				isCreating={isCreatingFile}
 			/>
+
+
+			{showUploadProgress && uploadingFiles.length > 0 && (
+				<FileUploadProgress
+					files={uploadingFiles}
+					onClose={closeUploadProgress}
+				/>
+			)}
 		</>
 	);
 }; 
