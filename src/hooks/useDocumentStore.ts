@@ -56,6 +56,7 @@ export interface DocumentStore {
 	removeFolder: (folderId: string, parentFolderId?: string) => void;
 	addFile: (folderId: string, file: StorageResourceEntity) => void;
 	removeFile: (folderId: string, fileId: string) => void;
+	updateFile: (folderId: string, fileId: string, updates: Partial<StorageResourceEntity>) => void;
 	
 	// Cache management
 	invalidateFolder: (folderId: string) => void;
@@ -248,6 +249,25 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
 		const updatedFolder = {
 			...folder,
 			files: folder.files?.filter((f) => f.id !== fileId) || [],
+		};
+		
+		return {
+			folders: {
+				...state.folders,
+				[folderId]: updatedFolder,
+			},
+		};
+	}),
+	
+	updateFile: (folderId, fileId, updates) => set((state) => {
+		const folder = state.folders[folderId];
+		if (!folder) return state;
+		
+		const updatedFolder = {
+			...folder,
+			files: folder.files?.map((f) => 
+				f.id === fileId ? { ...f, ...updates } : f
+			) || [],
 		};
 		
 		return {

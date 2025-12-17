@@ -54,18 +54,35 @@ export const AddNewFolderModal = ({
 	children,
 	parentFolderName,
 	onAdd,
+	open: controlledOpen,
+	onOpenChange,
 }: {
   children?: React.ReactNode;
   parentFolderName: string;
   onAdd: (name: string) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) => {
-	const [isOpen, setIsOpen] = useState(false);
+	const [internalOpen, setInternalOpen] = useState(false);
+	
+	// Support both controlled and uncontrolled modes
+	const isControlled = controlledOpen !== undefined;
+	const isOpen = isControlled ? controlledOpen : internalOpen;
+	const setIsOpen = (value: boolean) => {
+		if (isControlled && onOpenChange) {
+			onOpenChange(value);
+		} else {
+			setInternalOpen(value);
+		}
+	};
 
 	return (
 		<AlertDialog onOpenChange={setIsOpen} open={isOpen}>
-			<AlertDialogTrigger asChild>
-				{children ? children : <Button variant="default">+ Add Folder</Button>}
-			</AlertDialogTrigger>
+			{!isControlled && (
+				<AlertDialogTrigger asChild>
+					{children ? children : <Button variant="default">+ Add Folder</Button>}
+				</AlertDialogTrigger>
+			)}
 			<AddNewFolderModalContent
 				isOpen={isOpen}
 				onAdd={onAdd}
@@ -143,7 +160,7 @@ export const AddNewFolderModalContent = ({
 			<AlertDialogHeader>
 				<AlertDialogTitle>Create New Folder</AlertDialogTitle>
 				<AlertDialogDescription>
-          Add a sub folder in {parentFolderName} category
+          Add a sub folder in {parentFolderName} 
 				</AlertDialogDescription>
 			</AlertDialogHeader>
 			<form onSubmit={handleSubmit}>

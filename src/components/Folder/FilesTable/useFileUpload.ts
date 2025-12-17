@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { uploadFileInFolder } from "@/api/folderRoutes";
@@ -14,6 +14,11 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 	const [uploadingFiles, setUploadingFiles] = useState<FileUploadStatus[]>([]);
 	const [showUploadProgress, setShowUploadProgress] = useState(false);
 	const addFile = useDocumentStore((state) => state.addFile);
+	
+	// Use ref to always access the latest folderId value
+	// This prevents stale closures when folderId changes after initial render
+	const folderIdRef = useRef(folderId);
+	folderIdRef.current = folderId;
 
 	const pollTaskStatus = async(taskId: string, fileIndex: number) => {
 		try {
@@ -35,7 +40,7 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 
 				// Add processed file to document store if result contains file data
 				if (response.result) {
-					addFile(folderId, response.result);
+					addFile(folderIdRef.current, response.result);
 				}
 
 
@@ -124,7 +129,7 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 					session,
 					activeProject.project_id,
 					file,
-					folderId,
+					folderIdRef.current,
 					undefined, // callback
 					(progress) => {
 						// Update progress
@@ -159,7 +164,7 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 					// Extract file data from response and add to document store
 					if (response?.storage_relations?.[0]?.storage_resources) {
 						const fileData = response.storage_relations[0].storage_resources;
-						addFile(folderId, fileData);
+						addFile(folderIdRef.current, fileData);
 					}
 
 					// Update status to success if no processing needed
@@ -208,11 +213,28 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 		}
 	};
 
-	const handleCreateTextFile = () => {
-		if (!textFileName) return;
+	// Get MIME type based on file extension
+	const getMimeType = (filename: string): string => {
+		const extension = filename.split('.').pop()?.toLowerCase();
+		const mimeTypes: Record<string, string> = {
+			'txt': 'text/plain',
+			'md': 'text/markdown',
+			'csv': 'text/csv',
+			'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+			'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+			'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+		};
+		return mimeTypes[extension || ''] || 'text/plain';
+	};
 
-		// Create a new text file with the given name
-		const file = new File([""], textFileName + ".txt", { type: "text/plain" });
+	const handleCreateTextFile = (fileNameParam?: string) => {
+		// Use passed parameter or fall back to state
+		const fileName = fileNameParam || textFileName;
+		if (!fileName) return;
+
+		const mimeType = getMimeType(fileName);
+		
+		const file = new File([''], fileName, { type: mimeType });
 
 		// Add the file to the upload progress UI
 		const fileStatus: FileUploadStatus = {
@@ -228,7 +250,7 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 			session,
 			activeProject.project_id,
 			file,
-			folderId,
+			folderIdRef.current,
 			(data) => {
 				// Check if the response contains a task_id for processing
 				if (data && data.task_id) {
@@ -247,14 +269,11 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 					);
 					pollTaskStatus(data.task_id, 0);
 				} else {
-					// File creation completed without async processing
-					// Extract file data from response and add to document store
 					if (data?.storage_relations?.[0]?.storage_resources) {
 						const fileData = data.storage_relations[0].storage_resources;
-						addFile(folderId, fileData);
+						addFile(folderIdRef.current, fileData);
 					}
 
-					// Update status to success if no processing needed
 					setUploadingFiles((prev) =>
 						prev.map((item) =>
 							item.file === file
@@ -263,10 +282,9 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 						),
 					);
 
-
 					toast({
-						title: "Text File Created Successfully",
-						description: `Text file "${textFileName}.txt" created successfully`,
+						title: "File Created Successfully",
+						description: `File "${fileName}" created successfully`,
 						duration: 5000,
 					});
 
@@ -274,7 +292,6 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 				}
 			},
 			(progress) => {
-				// Update progress
 				setUploadingFiles((prev) =>
 					prev.map((item) =>
 						item.file === file ? { ...item, progress } : item,
@@ -282,7 +299,6 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 				);
 			},
 		).catch((error) => {
-			// Update status to error
 			setUploadingFiles((prev) =>
 				prev.map((item) =>
 					item.file === file
@@ -298,11 +314,29 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 
 			toast({
 				title: "File Creation Error",
-				description: `Failed to create text file "${textFileName}.txt"`,
+				description: `Failed to create file "${fileName}"`,
 				variant: "destructive",
 			});
 		});
 	};
+
+
+	useEffect(() => {
+		if (uploadingFiles.length === 0 || !showUploadProgress) return;
+		
+		const allProcessed = uploadingFiles.every(
+			(file) => file.status === "success" || file.status === "error",
+		);
+		
+		if (allProcessed) {
+			const timer = setTimeout(() => {
+				setShowUploadProgress(false);
+				setUploadingFiles([]);
+			}, 3000);
+			
+			return () => clearTimeout(timer);
+		}
+	}, [uploadingFiles, showUploadProgress]);
 
 	const closeUploadProgress = () => {
 		// Only allow closing if all files are processed (success or error)

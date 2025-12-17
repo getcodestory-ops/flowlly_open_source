@@ -77,8 +77,123 @@ export interface DocumentFolderRowProps {
   onFolderClick: () => void;
 }
 
-export interface SelectedItemsListProps {
+// Selection event with modifier keys
+export interface SelectionEvent {
+  shiftKey: boolean;
+  ctrlKey: boolean;
+  metaKey: boolean; // Cmd key on Mac
+}
+
+// Document Item Props
+export interface DocumentItemProps {
+  item: DocumentSelectorItem;
+  itemIndex: number;
+  isSelected: boolean;
+  selectedCount: number;
+  onToggleSelection: (event?: SelectionEvent) => void;
+  onFolderClick?: () => void;
+  onOpenInSidePanel?: () => void;
+  onRename: (newName: string) => Promise<void>;
+  onDelete: () => Promise<void>;
+  onSetOutputFolder?: () => void;
+  isOutputFolder?: boolean;
+  // Placeholder actions
+  onMove?: () => void;
+  // Copy to folder (files only)
+  onCopy?: () => void;
+  // Bulk actions (when multiple selected)
+  onBulkDelete?: () => void;
+  onBulkMove?: () => void;
+  onBulkAddToChat?: () => void;
+  onBulkCopy?: () => void;
+  // Prefetch on hover (folders only)
+  onHoverStart?: () => void;
+  onHoverEnd?: () => void;
+  // Folder operations (create/upload)
+  onCreateFolder?: () => void;
+  onCreateFile?: () => void;
+  onUploadFile?: () => void;
+}
+
+// Document Item Actions (Context Menu) Props
+export interface DocumentItemActionsProps {
+  item: DocumentSelectorItem;
+  onRename: () => void;
+  onDelete: () => void;
+  onMove: () => void;
+  onAddToChat: () => void;
+  onView?: () => void;
+  onSetOutputFolder?: () => void;
+  isOutputFolder?: boolean;
+}
+
+// Delete Confirm Dialog Props
+export interface DeleteConfirmDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  itemName: string;
+  itemType: "file" | "folder";
+  onConfirm: () => void;
+  isDeleting?: boolean;
+}
+
+// Rename Dialog Props
+export interface RenameDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  currentName: string;
+  itemType: "file" | "folder";
+  onConfirm: (newName: string) => void;
+  isRenaming?: boolean;
+}
+
+// Document Grid Props
+export interface DocumentGridProps {
+  items: DocumentSelectorItem[];
   selectedItems: SelectedItem[];
-  onRemoveItem: (id: string) => void;
-  onOpenInSidePanel?: (fileId: string, fileName: string) => void;
+  onToggleSelection: (item: SelectedItem, event?: SelectionEvent) => void;
+  onRangeSelection: (startIndex: number, endIndex: number) => void;
+  onFolderClick: (folderId: string, folderName: string) => void;
+  onOpenInSidePanel: (fileId: string, fileName: string) => void;
+  onRenameFile: (fileId: string, newName: string) => Promise<boolean>;
+  onDeleteFile: (fileId: string, fileName: string) => Promise<boolean>;
+  onSetOutputFolder: (folderId: string, folderName: string) => void;
+  contextFolderId?: string;
+  isLoading?: boolean;
+  // Bulk actions
+  onBulkDelete?: () => void;
+  onBulkMove?: () => void;
+  onBulkAddToChat?: () => void;
+  onBulkCopy?: () => void;
+  // Copy single file
+  onCopyFile?: (fileId: string, fileName: string) => void;
+  // Prefetch on hover
+  onPrefetchFolder?: (folderId: string) => void;
+  // Folder operations (create/upload)
+  onCreateFolder?: () => void;
+  onCreateFile?: () => void;
+  onUploadFile?: () => void;
+}
+
+// Document Drop Zone Props
+export interface DocumentDropZoneProps {
+  children: React.ReactNode;
+  onFilesDropped: (files: FileList) => void;
+  disabled?: boolean;
+  className?: string;
+}
+
+// useDocumentActions hook return type
+export interface UseDocumentActionsReturn {
+  // File operations
+  renameFile: (fileId: string, newName: string) => Promise<boolean>;
+  deleteFile: (fileId: string) => Promise<boolean>;
+  // Folder placeholder operations
+  renameFolder: (folderId: string, newName: string) => void;
+  deleteFolder: (folderId: string) => void;
+  // Move placeholder
+  moveItem: (itemId: string, targetFolderId: string) => void;
+  // Loading states
+  isRenaming: boolean;
+  isDeleting: boolean;
 } 

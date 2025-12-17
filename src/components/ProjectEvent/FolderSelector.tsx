@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
@@ -11,19 +10,24 @@ import {
 import { useStore } from "@/utils/store";
 import { useQuery } from "@tanstack/react-query";
 import { fetchFolders, GetFolderSubFolderProp } from "@/api/folderRoutes";
-import { Folder, ArrowLeft } from "lucide-react";
+import { Folder, ArrowLeft, Check, ChevronRight, Loader2, FolderOpen } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import clsx from "clsx";
 
 interface FolderSelectorProps {
   selectedFolderId: string | null;
   onFolderSelect: (folderId: string | null, folderName: string) => void;
+  hideLabel?: boolean;
+  label?: string;
 }
 
 export default function FolderSelector({
 	selectedFolderId,
 	onFolderSelect,
+	hideLabel = false,
+	label,
 }: FolderSelectorProps) :React.ReactNode {
 	const session = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
@@ -76,7 +80,11 @@ export default function FolderSelector({
 		setCurrentFolderId(previousFolderId);
 	};
 
-	const handleFolderClick = (folder: GetFolderSubFolderProp) : void=> {
+	const handleFolderSelect = (folder: GetFolderSubFolderProp) : void => {
+		onFolderSelect(folder.id, folder.name);
+	};
+
+	const handleFolderDoubleClick = (folder: GetFolderSubFolderProp) : void => {
 		navigateToFolder(folder.id, folder.name);
 	};
 
@@ -88,38 +96,47 @@ export default function FolderSelector({
 		setIsProjectWide(newIsProjectWide);
 	};
 
+	const currentFolderName = currentFolderId 
+		? folderNames[currentFolderId] 
+		: (isProjectWide ? "Project Files" : "Personal Files");
+
 	return (
-		<div className="space-y-4">
-			<Label className="text-sm font-semibold">
-			Select working Folder, all files will be saved in this folder
-			</Label>
-			<Card className="border">
-				<CardHeader className="flex justify-between items-center">
+		<div className="space-y-3">
+			{!hideLabel && (
+				<Label className="text-sm font-semibold">
+					{label || "Select working Folder, all files will be saved in this folder"}
+				</Label>
+			)}
+			<Card className="border rounded-xl overflow-hidden shadow-sm">
+				{/* Header with navigation */}
+				<CardHeader className="py-3 px-4 bg-gray-50/80 border-b">
 					<div className="flex items-center gap-2 w-full">
 						<Button
-							className="flex items-center gap-2"
+							className="h-8 w-8 p-0 flex-shrink-0"
 							disabled={!currentFolderId}
 							onClick={handleBack}
+							size="sm"
 							variant="ghost"
 						>
 							<ArrowLeft size={16} />
 						</Button>
-						<div className="text-sm text-gray-500 flex-1 min-w-0">
-							<div className="truncate">
-								{folderHistory.length > 0
-									? `/${folderHistory
-										.map((id) => folderNames[id])
-										.filter(Boolean)
-										.join("/")}`
-									: "/"}
-							</div>
+						<div className="flex items-center gap-1 flex-1 min-w-0 text-sm">
+							<Folder className="h-4 w-4 text-gray-400 flex-shrink-0" />
+							<span className="text-gray-600 truncate font-medium">
+								{currentFolderName}
+							</span>
+							{folderHistory.length > 0 && (
+								<span className="text-gray-400 text-xs ml-1">
+									({folderHistory.length} level{folderHistory.length > 1 ? "s" : ""} deep)
+								</span>
+							)}
 						</div>
 						<Select
 							onValueChange={handleScopeChange}
 							value={isProjectWide ? "project" : "personal"}
 						>
-							<SelectTrigger className="w-[100px]">
-								<SelectValue placeholder="Select Scope" />
+							<SelectTrigger className="w-[110px] h-8 text-xs">
+								<SelectValue placeholder="Scope" />
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="project">Project</SelectItem>
@@ -128,49 +145,73 @@ export default function FolderSelector({
 						</Select>
 					</div>
 				</CardHeader>
-				<CardContent>
-					<ScrollArea className="h-[300px]">
-						{isFoldersLoading ? (
-							<div className="text-center text-gray-500">Loading...</div>
-						) : (
-							<div className="grid grid-cols-1 gap-3">
-								{foldersData?.map((folder: GetFolderSubFolderProp) => (
-									<div
-										className={clsx(
-											"flex items-center gap-2 p-3 hover:bg-gray-50 cursor-pointer",
-											{
-												"bg-gray-100": selectedFolderId === folder.id,
-											},
-										)}
-										key={folder.id}
-										onClick={() => handleFolderClick(folder)}
-									>
-										<div className="flex items-center min-w-0 flex-1">
-											<Folder
-												className="mr-2 text-blue-500 flex-shrink-0"
-												size={16}
-											/>
-											<span className="text-sm truncate" title={folder.name}>
-												{folder.name}
-											</span>
-										</div>
-										<Button
-											className="flex-shrink-0 ml-2"
-											onClick={(e) => {
-												e.stopPropagation();
-												onFolderSelect(folder.id, folder.name);
-											}}
-											size="sm"
-											variant={selectedFolderId === folder.id ? "default" : "outline"}
-										>
-											{selectedFolderId === folder.id ? "Selected" : "Select"}
-										</Button>
-									</div>
-								))}
-							</div>
-						)}
+
+				{/* Folder list */}
+				<CardContent className="p-0">
+					<ScrollArea className="h-[280px]">
+						<div className="p-2">
+							{isFoldersLoading ? (
+								<div className="flex flex-col items-center justify-center h-[200px] text-gray-400">
+									<Loader2 className="h-8 w-8 animate-spin mb-2" />
+									<span className="text-sm">Loading folders...</span>
+								</div>
+							) : foldersData && foldersData.length > 0 ? (
+								<div className="space-y-1">
+									{foldersData.map((folder: GetFolderSubFolderProp) => {
+										const isSelected = selectedFolderId === folder.id;
+										return (
+											<div
+												className={clsx(
+													"flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-150 select-none group",
+													isSelected
+														? "bg-blue-50 ring-2 ring-blue-500 ring-inset shadow-sm"
+														: "hover:bg-gray-100",
+												)}
+												key={folder.id}
+												onClick={() => handleFolderSelect(folder)}
+												onDoubleClick={() => handleFolderDoubleClick(folder)}
+											>
+												{isSelected ? (
+													<FolderOpen className="text-blue-600 flex-shrink-0" size={20} />
+												) : (
+													<Folder className="text-amber-500 flex-shrink-0 group-hover:text-amber-600" size={20} />
+												)}
+												<span 
+													className={clsx(
+														"text-sm truncate flex-1 font-medium",
+														isSelected ? "text-blue-700" : "text-gray-700"
+													)} 
+													title={folder.name}
+												>
+													{folder.name}
+												</span>
+												{isSelected ? (
+													<Check className="text-blue-600 flex-shrink-0" size={18} />
+												) : (
+													<ChevronRight 
+														className="text-gray-300 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" 
+														size={16} 
+													/>
+												)}
+											</div>
+										);
+									})}
+								</div>
+							) : (
+								<div className="flex flex-col items-center justify-center h-[200px] text-gray-400">
+									<Folder className="h-12 w-12 mb-2 text-gray-300" />
+									<span className="text-sm font-medium">No folders here</span>
+									<span className="text-xs text-gray-400">This folder is empty</span>
+								</div>
+							)}
+						</div>
 					</ScrollArea>
 				</CardContent>
+
+				{/* Footer hint */}
+				<div className="px-4 py-2 bg-gray-50/50 border-t text-xs text-gray-400 text-center">
+					Click to select • Double-click to open folder
+				</div>
 			</Card>
 		</div>
 	);

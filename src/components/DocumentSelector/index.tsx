@@ -1,23 +1,29 @@
 // Main component
 export { DocumentSelector } from "./DocumentSelector";
 
-// Reuse existing FilesTable components
-export { FileRow as DocumentFileRow } from "../Folder/FilesTable/FileRow";
-export { FolderRow as DocumentFolderRow } from "../Folder/FilesTable/FolderRow";
+// Sub-components
+export { DocumentSelectorHeader } from "./DocumentSelectorHeader";
+export { DocumentGrid } from "./DocumentGrid";
+export { DocumentItem } from "./DocumentItem";
+export { DocumentItemActions } from "./DocumentItemActions";
+export { ContextMenuContent } from "./ContextMenuContent";
+export { BulkContextMenuContent } from "./BulkContextMenuContent";
+export { DocumentDropZone } from "./DocumentDropZone";
+export { DeleteConfirmDialog } from "./DeleteConfirmDialog";
+export { RenameDialog } from "./RenameDialog";
+export { CopyToFolderDialog } from "./CopyToFolderDialog";
+export { CreateFileDialog } from "./CreateFileDialog";
+export { EmptyDocumentDisplay } from "./EmptyDocumentDisplay";
+export { FileTypeIcon } from "./FileTypeIcon";
+
+// Hooks
+export { useDocumentSelector } from "./useDocumentSelector";
+export { useDocumentActions } from "./useDocumentActions";
+
+// Reuse existing FilesTable components for upload
 export { FileUploadButton as DocumentUploadButton } from "../Folder/FilesTable/FileUploadButton";
 export { FileUploadProgress as DocumentUploadProgress } from "../Folder/FilesTable/FileUploadProgress";
-export { EmptyDocumentDisplay } from "./EmptyDocumentDisplay";
-export { AddFolderButton as DocumentAddFolderButton } from "../Folder/FilesTable/AddFolderButton";
-
-// Only new components needed
-export { DocumentSelectorHeader } from "./DocumentSelectorHeader";
-export { SelectedItemsList } from "./SelectedItemsList";
-
-// Reuse existing hooks where possible
 export { useFileUpload as useDocumentUpload } from "../Folder/FilesTable/useFileUpload";
 
-// Custom hook for document selector logic
-export { useDocumentSelector } from "./useDocumentSelector";
-
 // Types
-export * from "./types"; 
+export * from "./types";
