@@ -21,7 +21,7 @@ export const useDocumentActions = ({
 }: UseDocumentActionsProps): UseDocumentActionsReturn => {
 	const { toast } = useToast();
 	const queryClient = useQueryClient();
-	const { removeFile } = useDocumentStore();
+	const { removeFile, updateFile } = useDocumentStore();
 	const [isRenaming, setIsRenaming] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
 
@@ -52,14 +52,14 @@ export const useDocumentActions = ({
 		try {
 			const response = await updateDocumentName(session, fileId, newName);
 			if (response) {
+				// Update local store immediately for instant UI feedback
+				const folderId = currentFolderId || "root";
+				updateFile(folderId, fileId, { file_name: newName });
+				
 				toast({
 					title: "File renamed",
 					description: `File renamed to "${newName}"`,
 					duration: 3000,
-				});
-				// Invalidate queries to refresh the file list
-				queryClient.invalidateQueries({
-					queryKey: ["files", session?.access_token, activeProject?.project_id, currentFolderId, isProjectWide],
 				});
 				return true;
 			} else {

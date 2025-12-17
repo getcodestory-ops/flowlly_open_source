@@ -274,7 +274,6 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 				}
 			},
 			(progress) => {
-				// Update progress
 				setUploadingFiles((prev) =>
 					prev.map((item) =>
 						item.file === file ? { ...item, progress } : item,
@@ -282,7 +281,6 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 				);
 			},
 		).catch((error) => {
-			// Update status to error
 			setUploadingFiles((prev) =>
 				prev.map((item) =>
 					item.file === file

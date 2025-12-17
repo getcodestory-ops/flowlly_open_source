@@ -81,8 +81,30 @@ export const CreateFileDialog: React.FC<CreateFileDialogProps> = ({
 				</DialogHeader>
 				<form onSubmit={handleSubmit}>
 					<div className="space-y-4 py-4">
-						{/* File Type Selection */}
+
+
+						{/* File Name Input */}
 						<div className="space-y-2">
+							<Label htmlFor="fileName" className="text-sm font-medium">
+								File name
+							</Label>
+							<div className="flex items-center gap-2">
+								<Input
+									id="fileName"
+									placeholder="Enter file name"
+									value={fileName}
+									onChange={(e) => setFileName(e.target.value)}
+									autoFocus
+									disabled={isCreating}
+									className="flex-1"
+								/>
+								<span className="text-sm text-gray-500 font-mono bg-gray-100 px-2 py-1.5 rounded">
+									{selectedType.extension}
+								</span>
+							</div>
+						</div>
+												{/* File Type Selection */}
+												<div className="space-y-2">
 							<Label htmlFor="fileType" className="text-sm font-medium">
 								File type
 							</Label>
@@ -108,27 +130,6 @@ export const CreateFileDialog: React.FC<CreateFileDialogProps> = ({
 							<p className="text-xs text-gray-500">
 								{selectedType.description}
 							</p>
-						</div>
-
-						{/* File Name Input */}
-						<div className="space-y-2">
-							<Label htmlFor="fileName" className="text-sm font-medium">
-								File name
-							</Label>
-							<div className="flex items-center gap-2">
-								<Input
-									id="fileName"
-									placeholder="Enter file name"
-									value={fileName}
-									onChange={(e) => setFileName(e.target.value)}
-									autoFocus
-									disabled={isCreating}
-									className="flex-1"
-								/>
-								<span className="text-sm text-gray-500 font-mono bg-gray-100 px-2 py-1.5 rounded">
-									{selectedType.extension}
-								</span>
-							</div>
 						</div>
 					</div>
 					<DialogFooter>

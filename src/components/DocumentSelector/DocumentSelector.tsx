@@ -350,6 +350,12 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 			}
 			
 			if (successCount > 0) {
+				// Invalidate target folder's cache so new files show when navigating there
+				setFiles(targetFolderId, []);
+				queryClient.invalidateQueries({
+					queryKey: ["files", session.access_token, activeProject.project_id, targetFolderId, isProjectWide],
+				});
+				
 				toast({
 					title: "Files Copied",
 					description: `${successCount} file(s) copied to "${folderName}"`,
