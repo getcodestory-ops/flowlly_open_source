@@ -269,14 +269,11 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 					);
 					pollTaskStatus(data.task_id, 0);
 				} else {
-					// File creation completed without async processing
-					// Extract file data from response and add to document store
 					if (data?.storage_relations?.[0]?.storage_resources) {
 						const fileData = data.storage_relations[0].storage_resources;
 						addFile(folderIdRef.current, fileData);
 					}
 
-					// Update status to success if no processing needed
 					setUploadingFiles((prev) =>
 						prev.map((item) =>
 							item.file === file

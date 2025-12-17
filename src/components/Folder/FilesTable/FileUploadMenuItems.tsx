@@ -19,7 +19,7 @@ interface FileUploadMenuItemsProps {
   textFileName: string;
   setTextFileName: (name: string) => void;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleCreateTextFile: () => void;
+  handleCreateTextFile: (fileName?: string) => void;
 }
 
 export const FileUploadMenuItems: React.FC<FileUploadMenuItemsProps> = ({
@@ -54,24 +54,24 @@ export const FileUploadMenuItems: React.FC<FileUploadMenuItemsProps> = ({
 						Enter a name for your new text file
 					</p>
 				</div>
-				<Input
-					onChange={(e) => setTextFileName(e.target.value)}
-					onKeyDown={(e) => {
-						if (e.key === "Enter") {
-							handleCreateTextFile();
-						}
-					}}
-					placeholder="Enter file name"
-					type="text"
-					value={textFileName}
-				/>
-				<Button 
-					disabled={!textFileName.trim()}
-					onClick={handleCreateTextFile}
-					size="sm"
-				>
-					Create File
-				</Button>
+			<Input
+				onChange={(e) => setTextFileName(e.target.value)}
+				onKeyDown={(e) => {
+					if (e.key === "Enter" && textFileName.trim()) {
+						handleCreateTextFile(textFileName.trim());
+					}
+				}}
+				placeholder="Enter file name"
+				type="text"
+				value={textFileName}
+			/>
+			<Button 
+				disabled={!textFileName.trim()}
+				onClick={() => handleCreateTextFile(textFileName.trim())}
+				size="sm"
+			>
+				Create File
+			</Button>
 			</div>
 		</PopoverContent>
 	);
