@@ -14,6 +14,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 import { AuthBackground } from "@/components/AuthBackground/AuthBackground";
 
@@ -25,6 +26,7 @@ export const LoginLayout = ({
 	const { toast } = useToast();
 
 	const [email, setEmail] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
 
 	const onErrorCallback = (error: Error) => {
 		if (error.message?.includes("NEXT_REDIRECT")) {
@@ -36,18 +38,21 @@ export const LoginLayout = ({
 			return;
 		}
 		
+		setIsLoading(false);
 		toast({
 			title: "Login Unsuccessful",
 			description: error.message || "An error occurred while logging in, please try again",
 			duration: 5000,
 		});
 	};
-	const onSuccessCallback = () =>
+	const onSuccessCallback = () => {
+		setIsLoading(false);
 		toast({
 			title: "Login successful",
 			description: "You have been logged in successfully",
 			duration: 5000,
 		});
+	};
 
 	const handlePasswordReset = async(email: string) => {
 		if (!email) {
@@ -93,6 +98,7 @@ export const LoginLayout = ({
 									<Input
 										id="email"
 										name="email"
+										disabled={isLoading}
 										onChange={(e) => setEmail(e.target.value)}
 										placeholder="you@example.com"
 										required
@@ -102,16 +108,19 @@ export const LoginLayout = ({
 								<div className="grid gap-2">
 									<div className="flex items-center">
 										<Label htmlFor="password">Password</Label>
-										<div
-											className="ml-auto inline-block text-sm underline cursor-pointer"
+										<button
+											type="button"
+											className="ml-auto inline-block text-sm underline cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+											disabled={isLoading}
 											onClick={() => handlePasswordReset(email)}
 										>
-                      Forgot your password?
-										</div>
+											Forgot your password?
+										</button>
 									</div>
 									<Input
 										id="password"
 										name="password"
+										disabled={isLoading}
 										placeholder="••••••••"
 										required
 										type="password"
@@ -119,14 +128,23 @@ export const LoginLayout = ({
 								</div>
 								<Button
 									className="w-full"
+									disabled={isLoading}
 									formAction={(formData) => {
+										setIsLoading(true);
 										signIn(formData)
 											.then(onSuccessCallback)
 											.catch(onErrorCallback);
 									}}
 									type="submit"
 								>
-                  Login
+									{isLoading ? (
+										<>
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											Logging in...
+										</>
+									) : (
+										"Login"
+									)}
 								</Button>
 								<Button
 									className="w-full"
