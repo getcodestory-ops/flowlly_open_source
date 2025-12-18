@@ -47,6 +47,16 @@ export const MODELS: ModelType[] = [
 		contextSize: "large",
 	},
 	{
+		id: "gemini-3-flash-preview",
+		name: "Gemini 3 flash Preview",
+		speed: 4,
+		performance: 5,
+		cost: "low",
+		description: "Experimental may hallucinates",
+		bestFor: "Highly complex tasks requiring maximum intelligence",
+		contextSize: "large",
+	},
+	{
 		id: "gpt-5", 
 		name: "OpenAI GPT-5",
 		speed: 4,
