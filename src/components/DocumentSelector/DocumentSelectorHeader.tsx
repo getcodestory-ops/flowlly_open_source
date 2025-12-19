@@ -62,7 +62,7 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 		handleFileUpload,
 		handleCreateTextFile,
 		closeUploadProgress,
-	} = useFileUpload(currentFolderId, session, activeProject);
+	} = useFileUpload(currentFolderId, session, activeProject, isProjectWide);
 
 	const COLLAPSE_BREAKPOINT = 750; // Start collapsing at this container width (more conservative)
 	const FULL_COLLAPSE_BREAKPOINT = 500; // Collapse everything except essentials
