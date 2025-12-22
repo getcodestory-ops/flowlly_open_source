@@ -90,9 +90,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 	// Ref for auto-scrolling thinking container
 	const thinkingScrollRef = useRef<HTMLDivElement>(null);
 	
-	// Ref for auto-scrolling stream content container
-	const streamScrollRef = useRef<HTMLDivElement>(null);
-	
 	// Add state to track stream completion for optimized polling
 	const streamCompleteRef = useRef(false);
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -145,13 +142,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 
 	const handleThinkingContentChange = useCallback((content: string) => {
 		setThinkingContent(content);
-	}, []);
-
-	// Callback for stream content updates - triggers auto-scroll
-	const handleContentUpdate = useCallback(() => {
-		if (streamScrollRef.current) {
-			streamScrollRef.current.scrollTop = streamScrollRef.current.scrollHeight;
-		}
 	}, []);
 
 
@@ -455,8 +445,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 				>
 				</div>
 				<div 
-					ref={streamScrollRef}
-					className="max-h-56 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
+					className="max-h-56"
 				>
 					<StreamComponent
 						authToken={authToken}
@@ -464,7 +453,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 						onStreamComplete={handleStreamComplete}
 						onThinkingChange={handleThinkingChange}
 						onThinkingContentChange={handleThinkingContentChange}
-						onContentUpdate={handleContentUpdate}
 						streamingKey={streamingKey}
 					/>
 				</div>

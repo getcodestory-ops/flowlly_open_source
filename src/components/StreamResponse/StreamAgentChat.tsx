@@ -10,7 +10,6 @@ interface StreamComponentProps {
   onStreamComplete?: (content: string) => void;
   onThinkingChange?: (thinking: boolean) => void;
   onThinkingContentChange?: (content: string) => void;
-  onContentUpdate?: () => void;
 }
 
 interface ATTACHMENT_DATA {
@@ -30,7 +29,6 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	onStreamComplete,
 	onThinkingChange,
 	onThinkingContentChange,
-	onContentUpdate,
 }) => {
 	const [displayValue, setDisplayValue] = useState<string>("");
 	const displayValueRef = useRef<string>("");
@@ -41,13 +39,10 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	const eventSourceRef = useRef<EventSource | null>(null);
 	const { setSidePanel, setCollapsed, setTodoState, initFileProgress, appendFileProgressDelta, endFileProgress, clearStreamTabs } = useChatStore() as any;
 
-	// Keep ref in sync with state and trigger scroll on content update
+	// Keep ref in sync with state
 	useEffect(() => {
 		displayValueRef.current = displayValue;
-		if (displayValue && onContentUpdate) {
-			onContentUpdate();
-		}
-	}, [displayValue, onContentUpdate]);
+	}, [displayValue]);
 
 	// Helper function to handle attachment events
 	const handleAttachmentEvent = useCallback((attachmentDataString: string): void => {
