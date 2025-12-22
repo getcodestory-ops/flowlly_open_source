@@ -10,6 +10,7 @@ interface StreamComponentProps {
   onStreamComplete?: (content: string) => void;
   onThinkingChange?: (thinking: boolean) => void;
   onThinkingContentChange?: (content: string) => void;
+  onContentUpdate?: () => void;
 }
 
 interface ATTACHMENT_DATA {
@@ -29,6 +30,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	onStreamComplete,
 	onThinkingChange,
 	onThinkingContentChange,
+	onContentUpdate,
 }) => {
 	const [displayValue, setDisplayValue] = useState<string>("");
 	const displayValueRef = useRef<string>("");
@@ -37,12 +39,15 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	const [isThinking, setIsThinking] = useState(false);
 	const [THINKING_CONTENT, setThinkingContent] = useState<string>("");
 	const eventSourceRef = useRef<EventSource | null>(null);
-	const { setSidePanel, setCollapsed, setTodoState, initFileProgress, appendFileProgressDelta, endFileProgress } = useChatStore() as any;
+	const { setSidePanel, setCollapsed, setTodoState, initFileProgress, appendFileProgressDelta, endFileProgress, clearStreamTabs } = useChatStore() as any;
 
-	// Keep ref in sync with state
+	// Keep ref in sync with state and trigger scroll on content update
 	useEffect(() => {
 		displayValueRef.current = displayValue;
-	}, [displayValue]);
+		if (displayValue && onContentUpdate) {
+			onContentUpdate();
+		}
+	}, [displayValue, onContentUpdate]);
 
 	// Helper function to handle attachment events
 	const handleAttachmentEvent = useCallback((attachmentDataString: string): void => {
@@ -326,6 +331,9 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			eventSource.close();
 			eventSourceRef.current = null;
 
+			// Clear stream-related tabs when stream ends (even on error)
+			clearStreamTabs();
+
 			// Call the callback if provided, regardless of displayValue content
 			if (onStreamComplete) {
 				onStreamComplete(displayValueRef.current);
@@ -336,6 +344,9 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			//console.log("Stream ended");
 			setIsPending(false);
 			setStreamComplete(true);
+
+			// Clear stream-related tabs (attachments, todos, file progress) when stream completes
+			clearStreamTabs();
 
 			// Call the callback if provided, regardless of displayValue content
 			if (onStreamComplete) {
@@ -353,7 +364,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			eventSourceRef.current = null;
 		};
 	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, setTodoState, handleAttachmentEvent, initFileProgress, appendFileProgressDelta, endFileProgress]);
+	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, setTodoState, handleAttachmentEvent, initFileProgress, appendFileProgressDelta, endFileProgress, clearStreamTabs]);
 
 	return (
 		<div className="pb-4">

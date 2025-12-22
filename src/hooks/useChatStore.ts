@@ -31,6 +31,7 @@ interface ChatStore {
 	removeTab: (tabId: string) => void;
 	setActiveTab: (tabId: string) => void;
 	clearAllTabs: () => void;
+	clearStreamTabs: () => void;
 	// TODO stream states keyed by resourceId (e.g., filename)
 	todoStates: { [resourceId: string]: any };
 	setTodoState: (resourceId: string, state: any) => void;
@@ -251,6 +252,25 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	}),
 	setActiveTab: (tabId) => set({ activeTabId: tabId }),
 	clearAllTabs: () => set({ tabs: [], activeTabId: null }),
+	clearStreamTabs: () => set((state) => {
+		// Remove tabs that were opened during streaming (attachments, todos, file progress)
+		const streamTabTypes = ["sandbox", "todo", "fileProgress"];
+		const newTabs = state.tabs.filter((tab) => !streamTabTypes.includes(tab.type));
+		
+		// If active tab was removed, switch to another tab
+		let newActiveTabId = state.activeTabId;
+		const activeTabRemoved = state.activeTabId && !newTabs.find((t) => t.id === state.activeTabId);
+		if (activeTabRemoved) {
+			newActiveTabId = newTabs.length > 0 ? newTabs[newTabs.length - 1].id : null;
+		}
+		
+		return {
+			tabs: newTabs,
+			activeTabId: newActiveTabId,
+			// Also clear the file progress state
+			fileProgress: {},
+		};
+	}),
 	setFileProgressContent: (fileName: string, content: string, status: "delta" | "ended" = "delta") => set((prev) => ({
 		fileProgress: {
 			...prev.fileProgress,
