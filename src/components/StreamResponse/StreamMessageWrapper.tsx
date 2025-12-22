@@ -4,9 +4,12 @@ import { getTaskStatusById } from "@/api/taskQueue";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import StreamComponent from "./StreamAgentChat";
-import {  LaptopMinimalIcon } from "lucide-react";
+import { LaptopMinimalIcon, Brain, Loader2 } from "lucide-react";
 import { useChatStore } from "@/hooks/useChatStore";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
+
+
+
 
 
 
@@ -84,7 +87,11 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 	const [isThinking, setIsThinking] = useState(false);
 	const [thinkingContent, setThinkingContent] = useState<string>("");
 	
-
+	// Ref for auto-scrolling thinking container
+	const thinkingScrollRef = useRef<HTMLDivElement>(null);
+	
+	// Ref for auto-scrolling stream content container
+	const streamScrollRef = useRef<HTMLDivElement>(null);
 	
 	// Add state to track stream completion for optimized polling
 	const streamCompleteRef = useRef(false);
@@ -103,6 +110,13 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 		
 		initNotifications();
 	}, []);
+
+	// Auto-scroll thinking container to bottom when content changes
+	useEffect(() => {
+		if (thinkingScrollRef.current && thinkingContent) {
+			thinkingScrollRef.current.scrollTop = thinkingScrollRef.current.scrollHeight;
+		}
+	}, [thinkingContent]);
 
 	// Handle stream completion callback - memoized to prevent unnecessary re-renders
 	const handleStreamComplete = useCallback((_content: string) => {
@@ -131,6 +145,13 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 
 	const handleThinkingContentChange = useCallback((content: string) => {
 		setThinkingContent(content);
+	}, []);
+
+	// Callback for stream content updates - triggers auto-scroll
+	const handleContentUpdate = useCallback(() => {
+		if (streamScrollRef.current) {
+			streamScrollRef.current.scrollTop = streamScrollRef.current.scrollHeight;
+		}
 	}, []);
 
 
@@ -395,27 +416,47 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 	};
 
 	return (
-		<div className="w-full">
+		<div className="mb-4 overflow-hidden">
+		<div className="flex items-center gap-2 px-3 py-2 ">
+			<Loader2 className="w-4 h-4 text-purple-500/70 animate-spin" />
+			{(isThinking ) && (
+				<span className="text-xs text-gray-500/70 dark:text-gray-400/60 leading-relaxed">Thinking...</span>
+			)}
+		</div>
 			{isThinking && thinkingContent && (
-				<div className="mb-4">
+				<div >
+					<div 
+						ref={thinkingScrollRef}
+						className="max-h-36 overflow-y-auto px-3 py-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
+					>
+						<div className="thinking-content">
+							<style>{`
+								.thinking-content,
+								.thinking-content * {
+									font-size: 14px !important;
+									line-height: 1.4 !important;
+									color: rgba(156, 163, 175, 0.7) !important;
+								}
+								.thinking-content code,
+								.thinking-content pre {
+									font-size: 12px !important;
+									opacity: 0.4 !important;
+								}
+							`}
+							</style>
 							<MarkDownDisplay content={thinkingContent} />
 						</div>
-					)}
-			<div className="rounded-lg border border-gray-200">
+					</div>
+				</div>
+			)}
+			<div className="rounded-lg ">
 				<div 
 					className="px-4 py-3 rounded-t-lg transition-colors  flex items-center justify-between"
 				>
-					<div className="flex items-center gap-2">
-						<span className="text-xs text-gray-500 flex items-center">
-							{getStatusText()}
-							{(taskStatus === "pending" || taskStatus === "processing") && (
-								<AnimatedDots />
-							)}
-						</span>
-					</div>
 				</div>
 				<div 
-					className="max-h-56"
+					ref={streamScrollRef}
+					className="max-h-56 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
 				>
 					<StreamComponent
 						authToken={authToken}
@@ -423,6 +464,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 						onStreamComplete={handleStreamComplete}
 						onThinkingChange={handleThinkingChange}
 						onThinkingContentChange={handleThinkingContentChange}
+						onContentUpdate={handleContentUpdate}
 						streamingKey={streamingKey}
 					/>
 				</div>

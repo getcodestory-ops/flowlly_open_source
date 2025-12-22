@@ -10,6 +10,7 @@ interface StreamComponentProps {
   onStreamComplete?: (content: string) => void;
   onThinkingChange?: (thinking: boolean) => void;
   onThinkingContentChange?: (content: string) => void;
+  onContentUpdate?: () => void;
 }
 
 interface ATTACHMENT_DATA {
@@ -20,23 +21,7 @@ interface ATTACHMENT_DATA {
   focus?: boolean;
 }
 
-const LoadingDots: React.FC<{ showThinking?: boolean; centered?: boolean }> = ({ 
-	showThinking = false, 
-	centered = false, 
-}) => (
-	<div className={`flex gap-2 items-center ${centered ? "justify-center" : ""} ${showThinking ? "mt-2" : "mt-2"}`}>
-		<div className="flex gap-0.5 items-center">
-			<div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" />
-			<div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce delay-75" />
-			<div className="w-1.5 h-1.5 bg-pink-500 rounded-full animate-bounce delay-150" />
-		</div>
-		{showThinking && (
-			<span className="text-xs text-gray-600 font-medium">
-        thinking...
-			</span>
-		)}
-	</div>
-);
+
 
 const StreamComponent: React.FC<StreamComponentProps> = ({
 	streamingKey,
@@ -45,6 +30,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	onStreamComplete,
 	onThinkingChange,
 	onThinkingContentChange,
+	onContentUpdate,
 }) => {
 	const [displayValue, setDisplayValue] = useState<string>("");
 	const displayValueRef = useRef<string>("");
@@ -53,12 +39,15 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	const [isThinking, setIsThinking] = useState(false);
 	const [THINKING_CONTENT, setThinkingContent] = useState<string>("");
 	const eventSourceRef = useRef<EventSource | null>(null);
-	const { setSidePanel, setCollapsed, setTodoState, initFileProgress, appendFileProgressDelta, endFileProgress } = useChatStore() as any;
+	const { setSidePanel, setCollapsed, setTodoState, initFileProgress, appendFileProgressDelta, endFileProgress, clearStreamTabs } = useChatStore() as any;
 
-	// Keep ref in sync with state
+	// Keep ref in sync with state and trigger scroll on content update
 	useEffect(() => {
 		displayValueRef.current = displayValue;
-	}, [displayValue]);
+		if (displayValue && onContentUpdate) {
+			onContentUpdate();
+		}
+	}, [displayValue, onContentUpdate]);
 
 	// Helper function to handle attachment events
 	const handleAttachmentEvent = useCallback((attachmentDataString: string): void => {
@@ -342,6 +331,9 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			eventSource.close();
 			eventSourceRef.current = null;
 
+			// Clear stream-related tabs when stream ends (even on error)
+			clearStreamTabs();
+
 			// Call the callback if provided, regardless of displayValue content
 			if (onStreamComplete) {
 				onStreamComplete(displayValueRef.current);
@@ -352,6 +344,9 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			//console.log("Stream ended");
 			setIsPending(false);
 			setStreamComplete(true);
+
+			// Clear stream-related tabs (attachments, todos, file progress) when stream completes
+			clearStreamTabs();
 
 			// Call the callback if provided, regardless of displayValue content
 			if (onStreamComplete) {
@@ -369,13 +364,10 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			eventSourceRef.current = null;
 		};
 	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, setTodoState, handleAttachmentEvent, initFileProgress, appendFileProgressDelta, endFileProgress]);
+	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, setTodoState, handleAttachmentEvent, initFileProgress, appendFileProgressDelta, endFileProgress, clearStreamTabs]);
 
 	return (
 		<div className="pb-4">
-			{(isThinking || isPending) && (
-				<LoadingDots centered showThinking={isThinking} />
-			)}
 			{displayValue && (
 				<MarkdownTerminal content={displayValue} />
 			)}
