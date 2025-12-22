@@ -20,23 +20,7 @@ interface ATTACHMENT_DATA {
   focus?: boolean;
 }
 
-const LoadingDots: React.FC<{ showThinking?: boolean; centered?: boolean }> = ({ 
-	showThinking = false, 
-	centered = false, 
-}) => (
-	<div className={`flex gap-2 items-center ${centered ? "justify-center" : ""} ${showThinking ? "mt-2" : "mt-2"}`}>
-		<div className="flex gap-0.5 items-center">
-			<div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" />
-			<div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce delay-75" />
-			<div className="w-1.5 h-1.5 bg-pink-500 rounded-full animate-bounce delay-150" />
-		</div>
-		{showThinking && (
-			<span className="text-xs text-gray-600 font-medium">
-        thinking...
-			</span>
-		)}
-	</div>
-);
+
 
 const StreamComponent: React.FC<StreamComponentProps> = ({
 	streamingKey,
@@ -373,9 +357,6 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 
 	return (
 		<div className="pb-4">
-			{(isThinking || isPending) && (
-				<LoadingDots centered showThinking={isThinking} />
-			)}
 			{displayValue && (
 				<MarkdownTerminal content={displayValue} />
 			)}
