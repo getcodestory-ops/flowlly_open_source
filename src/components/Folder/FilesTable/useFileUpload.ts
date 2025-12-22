@@ -6,19 +6,35 @@ import { getTaskStatus } from "@/api/schedule_routes";
 import { FileUploadStatus, UploadFileResponse, ExtendedScheduleResponse } from "./types";
 import { useDocumentStore } from "@/hooks/useDocumentStore";
 
-export const useFileUpload = (folderId: string, session: any, activeProject: any) => {
+export const useFileUpload = (folderId: string, session: any, activeProject: any, isProjectWide: boolean = true) => {
 	const { toast } = useToast();
 	const queryClient = useQueryClient();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [textFileName, setTextFileName] = useState("");
 	const [uploadingFiles, setUploadingFiles] = useState<FileUploadStatus[]>([]);
 	const [showUploadProgress, setShowUploadProgress] = useState(false);
-	const addFile = useDocumentStore((state) => state.addFile);
+	const { addFile, getFilesForFolder, setFiles } = useDocumentStore();
 	
 	// Use ref to always access the latest folderId value
 	// This prevents stale closures when folderId changes after initial render
 	const folderIdRef = useRef(folderId);
 	folderIdRef.current = folderId;
+	
+	// Helper to safely add a file to the store and invalidate query
+	const safeAddFile = (fileData: any) => {
+		const currentFolderId = folderIdRef.current;
+		const existingFiles = getFilesForFolder(currentFolderId) || [];
+		// Append the new file to existing files
+		setFiles(currentFolderId, [...existingFiles, fileData]);
+		
+		// Also invalidate the query to ensure consistency
+		// Note: Query key uses currentFolderId directly (including "root" string when at root level)
+		if (session?.access_token && activeProject?.project_id) {
+			queryClient.invalidateQueries({
+				queryKey: ["files", session.access_token, activeProject.project_id, currentFolderId, isProjectWide],
+			});
+		}
+	};
 
 	const pollTaskStatus = async(taskId: string, fileIndex: number) => {
 		try {
@@ -40,7 +56,7 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 
 				// Add processed file to document store if result contains file data
 				if (response.result) {
-					addFile(folderIdRef.current, response.result);
+					safeAddFile(response.result);
 				}
 
 
@@ -164,7 +180,7 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 					// Extract file data from response and add to document store
 					if (response?.storage_relations?.[0]?.storage_resources) {
 						const fileData = response.storage_relations[0].storage_resources;
-						addFile(folderIdRef.current, fileData);
+						safeAddFile(fileData);
 					}
 
 					// Update status to success if no processing needed
@@ -271,7 +287,7 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 				} else {
 					if (data?.storage_relations?.[0]?.storage_resources) {
 						const fileData = data.storage_relations[0].storage_resources;
-						addFile(folderIdRef.current, fileData);
+						safeAddFile(fileData);
 					}
 
 					setUploadingFiles((prev) =>

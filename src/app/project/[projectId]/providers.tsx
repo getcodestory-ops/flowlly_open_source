@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import supabase from "@/utils/supabaseClient";
 import { Toaster } from "@/components/ui/toaster";
 import { EnhancedSidePanel } from "@/components/TopBar/EnhancedSidePanel";
+import { getPlatformChatEntities } from "@/api/agentRoutes";
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -60,6 +61,23 @@ export function Providers({ children }: { children: React.ReactNode }) {
 			clearIntegrations();
 		}
 	}, [session, activeProject?.project_id, fetchAllIntegrations, clearIntegrations]);
+
+	// Prefetch chat entities in background for faster chat panel loading
+	useEffect(() => {
+		if (session && activeProject?.project_id) {
+			// Prefetch chat entities so they're ready when user opens the chat panel
+			queryClient.prefetchQuery({
+				queryKey: ["documentChatEntityList", session, activeProject],
+				queryFn: () => getPlatformChatEntities(
+					session,
+					activeProject.project_id,
+					activeProject.project_id, // folderId is same as project_id for agent chats
+					"agent",
+				),
+				staleTime: 30 * 1000, // Keep fresh for 30 seconds
+			});
+		}
+	}, [session, activeProject]);
 
 	return (
 		<QueryClientProvider client={queryClient}>

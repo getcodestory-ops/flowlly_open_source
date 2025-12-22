@@ -58,6 +58,9 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 
 	const currentFolderId = currentFolderStructure?.folderId || null;
 
+	// Use consistent folder ID across all operations (matching cache lookup)
+	const effectiveFolderId = currentFolderId || "root";
+
 	// File upload hook for drag-and-drop and file creation
 	const { 
 		handleFileUpload, 
@@ -67,9 +70,10 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 		showUploadProgress,
 		closeUploadProgress,
 	} = useFileUpload(
-		currentFolderId || "",
+		effectiveFolderId,
 		session,
 		activeProject,
+		isProjectWide,
 	);
 
 	// Document actions hook
@@ -118,8 +122,8 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 		staleTime: 5 * 60 * 1000,
 	});
 
-	const cachedSubFolders = getSubFoldersForFolder(currentFolderId || "root") || [];
-	const cachedFiles = getFilesForFolder(currentFolderId || "root") || [];
+	const cachedSubFolders = getSubFoldersForFolder(effectiveFolderId) || [];
+	const cachedFiles = getFilesForFolder(effectiveFolderId) || [];
 
 	// Fetch folders
 	const { data: foldersData, isFetching: isFetchingFolders } = useQuery({
@@ -127,7 +131,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 		queryFn: async () => {
 			if (!session || !activeProject?.project_id) return Promise.reject("Session or project not available");
 			const data = await fetchFolders(session, activeProject?.project_id, currentFolderId, isProjectWide);
-			setSubFolders(currentFolderId || "root", data);
+			setSubFolders(effectiveFolderId, data);
 			return data;
 		},
 		enabled: !!session && !!activeProject && !cachedSubFolders.length,
@@ -146,7 +150,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 					if (file.storage_resources) files.push(file.storage_resources);
 				});
 			});
-			setFiles(currentFolderId || "root", files);
+			setFiles(effectiveFolderId, files);
 			return data;
 		},
 		enabled: !!session && !!activeProject && !cachedFiles.length,
@@ -401,7 +405,14 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 	const handleCreateFolder = (name: string) => {
 		if (!activeProject || !session) return;
 		createSubFolder(session, activeProject.project_id, name, currentFolderId, isProjectWide, (data) => {
-				addFolder(currentFolderId || "root", data);
+				addFolder(effectiveFolderId, data);
+				queryClient.setQueryData(
+					["folders", session?.access_token, activeProject?.project_id, currentFolderId, isProjectWide],
+					(oldData: any) => {
+						if (!oldData) return [data];
+						return [...oldData, data];
+					},
+				);
 		});
 		setShowCreateFolderModal(false);
 	};
@@ -437,8 +448,8 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 
 	const handleRefresh = React.useCallback(async () => {
 		if (!session || !activeProject?.project_id) return;
-		setSubFolders(currentFolderId || "root", []);
-		setFiles(currentFolderId || "root", []);
+		setSubFolders(effectiveFolderId, []);
+		setFiles(effectiveFolderId, []);
 		await queryClient.invalidateQueries({ queryKey: ["folders", session.access_token, activeProject.project_id, currentFolderId, isProjectWide] });
 		await queryClient.invalidateQueries({ queryKey: ["files", session.access_token, activeProject.project_id, currentFolderId, isProjectWide] });
 		toast({ title: "Refreshed", description: "Folder contents have been updated", duration: 2000 });
@@ -458,7 +469,13 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 
 	return (
 		<>
-			<input ref={fileInputRef} style={{ display: "none" }} type="file" multiple />
+			<input 
+				ref={fileInputRef} 
+				style={{ display: "none" }} 
+				type="file" 
+				multiple 
+				onChange={handleFileUpload}
+			/>
 			<div className="flex flex-col h-full">
 				<Card className="border flex flex-col flex-1 min-h-0">
 					<DocumentSelectorHeader

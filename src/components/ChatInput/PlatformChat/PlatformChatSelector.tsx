@@ -13,7 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getPlatformChatEntities } from "@/api/agentRoutes";
 import AddNewPlatformChatEntity from "./AddNewPlatformChatEntity";
-import { toast } from "@/components/ui/use-toast";
+
 
 const PlatformChatSelector = ({
 	folderId,
@@ -46,14 +46,6 @@ const PlatformChatSelector = ({
 			);
 		},
 	});
-
-	// useEffect(() => {
-	//   if (chatEntities && chatEntities.length > 0) {
-	//     setActiveChatEntity(chatEntities[chatEntities.length - 1]);
-	//   } else {
-	//     setActiveChatEntity(null);
-	//   }
-	// }, [chatEntities, setActiveChatEntity]);
 
 	return (
 		<div className="flex items-center gap-3">

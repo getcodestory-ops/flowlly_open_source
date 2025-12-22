@@ -16,6 +16,7 @@ interface FileUploadButtonProps {
   session: any;
   activeProject: any;
   showInToolbar?: boolean;
+  isProjectWide?: boolean;
 }
 
 export const FileUploadButton: React.FC<FileUploadButtonProps> = ({
@@ -23,6 +24,7 @@ export const FileUploadButton: React.FC<FileUploadButtonProps> = ({
 	session,
 	activeProject,
 	showInToolbar = false,
+	isProjectWide = true,
 }) => {
 	const {
 		textFileName,
@@ -33,7 +35,7 @@ export const FileUploadButton: React.FC<FileUploadButtonProps> = ({
 		handleFileUpload,
 		handleCreateTextFile,
 		closeUploadProgress,
-	} = useFileUpload(folderId, session, activeProject);
+	} = useFileUpload(folderId, session, activeProject, isProjectWide);
 
 	// Shared file input - always rendered
 	const fileInput = (
