@@ -26,11 +26,12 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 	folderSelectOnly = false,
 	useChatContext = false,
 	contextId,
+	singleSelect = false,
 }) => {
 	const session = useStore((state) => state.session);
 	const activeProject = useStore((state) => state.activeProject);
 	const activeChatEntity = useStore((state) => state.activeChatEntity);
-	const { setSelectedContexts, selectedContexts, addTab, setContextFolder, contextFolder } = useChatStore();
+	const { setSelectedContexts, selectedContexts, addTab, setContextFolder, contextFolder, setCollapsed, removeTab, activeTabId } = useChatStore();
 	const currentChatId = activeChatEntity?.id || "untitled";
 	const effectiveContextId = contextId || currentChatId;
 	const { toast } = useToast();
@@ -240,7 +241,24 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 			const isSelected = currentContexts.some((ctx) => ctx.id === item.id);
 			
 			let newContexts;
-			if (isCtrlOrCmd) {
+			
+			// Single select mode: replace selection instead of adding
+			if (singleSelect) {
+				newContexts = isSelected
+					? [] // Deselect if already selected
+					: [{ id: item.id, name: item.name, extension: item.type === "folder" ? "folder" : "file" }];
+				
+				// Auto-close panel when a file is selected in single select mode
+				if (!isSelected && item.type === "file") {
+					setSelectedContexts(effectiveContextId, newContexts);
+					// Close the panel after selection
+					setCollapsed(false);
+					if (activeTabId) {
+						removeTab(activeTabId);
+					}
+					return;
+				}
+			} else if (isCtrlOrCmd) {
 				// Ctrl/Cmd+Click: Toggle this item without affecting others
 				newContexts = isSelected
 					? currentContexts.filter((ctx) => ctx.id !== item.id)
@@ -256,6 +274,21 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 			if (!propSetSelectedItems) return;
 			propSetSelectedItems((prev) => {
 				const isSelected = prev.some((i) => i.id === item.id);
+				
+				// Single select mode: replace selection instead of adding
+				if (singleSelect) {
+					// Auto-close panel when a file is selected in single select mode
+					if (!isSelected && item.type === "file") {
+						setTimeout(() => {
+							setCollapsed(false);
+							if (activeTabId) {
+								removeTab(activeTabId);
+							}
+						}, 0);
+					}
+					return isSelected ? [] : [item];
+				}
+				
 				if (isCtrlOrCmd) {
 					// Ctrl/Cmd+Click: Toggle this item without affecting others
 					return isSelected ? prev.filter((i) => i.id !== item.id) : [...prev, item];

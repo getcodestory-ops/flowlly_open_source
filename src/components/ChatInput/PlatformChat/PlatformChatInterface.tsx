@@ -28,6 +28,7 @@ import { FileUploadStatus } from "./PlatformChatInterface/types";
 import clsx from "clsx";
 import AtSelectorComponent from "./components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
+import { useViewStore } from "@/utils/store";
 import EmptyChatInterface from "./PlatformChatInterface/components/EmptyChatInterface/EmptyChatInterface";
 import { requestHelp, stopAgent } from "@/api/agentRoutes";
 import ModelSelector from "./components/ModelSelector";
@@ -67,18 +68,15 @@ export default function PlatformChatInterface({
 		activeChatEntity,
 		setIsWaitingForResponse,
 	} = usePlatformChat(folderId, chatTarget, includeContext);
-	const { setSidePanel, setCollapsed, contextFolder, selectedModel, setSelectedModel, selectedAgentType, setSelectedAgentType, selectedContexts, setSelectedContexts } = useChatStore();
+	const { setSidePanel, setCollapsed, contextFolder, selectedContexts, setSelectedContexts } = useChatStore();
+	const { preferredModel, setPreferredModel, preferredAgentType, setPreferredAgentType } = useViewStore();
 	
-	// Automatically switch to a valid model when switching modes
-	useEffect(() => {
-		if (selectedAgentType === "agent" && selectedModel === "OpenAI-gpt-5") {
-			// GPT-5 is not available in agent mode, switch to the first available model
-			const agentModels = MODELS.filter((model: { id: string }) => model.id !== "OpenAI-gpt-5");
-			if (agentModels.length > 0) {
-				setSelectedModel(agentModels[0].id);
-			}
-		}
-	}, [selectedAgentType, selectedModel, setSelectedModel]);
+	// Model change handler - directly updates the persisted store
+	const handleModelChange = (model: string) => {
+		setPreferredModel(model);
+	};
+	
+
 	
 	// Paste upload functionality
 	const { handlePasteEvent } = usePasteUpload({
@@ -519,13 +517,13 @@ export default function PlatformChatInterface({
 					<div className="flex items-center gap-2">
 						{loadDocumentPanel()}
 						<AgentTypeSelector 
-							onAgentTypeChange={setSelectedAgentType}
-							selectedAgentType={selectedAgentType}
+							onAgentTypeChange={setPreferredAgentType}
+							selectedAgentType={preferredAgentType}
 						/>
 						<ModelSelector 
-							onModelChange={setSelectedModel}
-							selectedModel={selectedModel}
-							selectedAgentType={selectedAgentType}
+							onModelChange={handleModelChange}
+							selectedModel={preferredModel}
+							selectedAgentType={preferredAgentType}
 						/>
 					</div>
 					<Button

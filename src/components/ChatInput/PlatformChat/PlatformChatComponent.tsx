@@ -1,6 +1,5 @@
 "use client";
 import PlatformChatInterface from "./PlatformChatInterface";
-import { useState } from "react";
 import clsx from "clsx";
 import { usePathname } from "next/navigation";
 
@@ -21,8 +20,7 @@ export default function PlatformChatComponent({
   onContentUpdate?: (newContent: string) => void;
   heightOffset?: number;
 }): React.ReactNode {
-	const [selectedModel] = useState<string>("claude-sonnet-4");
-	const [includeContext] = useState<boolean>(false);
+	const includeContext = false;
 	const pathname = usePathname();
 	
 	// Check if we're in the meetings context

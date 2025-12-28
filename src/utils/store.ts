@@ -26,6 +26,8 @@ interface ViewState {
   calendarView: View;
   calendarDate: Date;
   ganttView: ViewMode;
+  preferredModel: string;
+  preferredAgentType: "agent" | "chat";
   setWorkbenchView: (view: "table" | "calendar") => void;
   setRowsPerPage: (rows: number) => void;
   setScheduleView: (view: "list" | "gantt") => void;
@@ -33,6 +35,8 @@ interface ViewState {
   setCalendarDate: (date: Date) => void;
   setGanttView: (view: ViewMode) => void;
   setCalendarSubView: (view: "current" | "integrations") => void;
+  setPreferredModel: (model: string) => void;
+  setPreferredAgentType: (type: "agent" | "chat") => void;
 }
 
 // Create new persisted store
@@ -46,6 +50,8 @@ export const useViewStore = create<ViewState>()(
 			calendarView: Views.WEEK,
 			calendarDate: new Date(),
 			ganttView: ViewMode.Week,
+			preferredModel: "gemini-3-pro-preview",
+			preferredAgentType: "agent",
 			setWorkbenchView: (view) => set(() => ({ workbenchView: view })),
 			setRowsPerPage: (rows) => set(() => ({ rowsPerPage: rows })),
 			setScheduleView: (view) => set(() => ({ scheduleView: view })),
@@ -53,6 +59,8 @@ export const useViewStore = create<ViewState>()(
 			setCalendarDate: (date) => set(() => ({ calendarDate: date })),
 			setGanttView: (view) => set(() => ({ ganttView: view })),
 			setCalendarSubView: (view) => set(() => ({ calendarSubView: view })),
+			setPreferredModel: (model) => set(() => ({ preferredModel: model })),
+			setPreferredAgentType: (type) => set(() => ({ preferredAgentType: type })),
 		}),
 		{
 			name: "view-storage",

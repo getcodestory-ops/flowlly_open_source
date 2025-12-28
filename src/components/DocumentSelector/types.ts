@@ -42,6 +42,8 @@ export interface DocumentSelectorProps {
   useChatContext?: boolean;
   // Optional context ID for form-specific or custom context selection
   contextId?: string;
+  // Single select mode - only allows one document at a time
+  singleSelect?: boolean;
 }
 
 export interface DocumentSelectorHeaderProps {

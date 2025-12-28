@@ -11,6 +11,8 @@ interface SidePanel {
 	sandbox_id?: string; // Explicit sandbox ID for API calls (only for sandbox files)
 	// Force reload timestamp for content refresh
 	lastReloadTime?: number;
+	// Single select mode for document selection (only allows one document at a time)
+	singleSelect?: boolean;
 }
 
 interface ChatStore {
@@ -81,8 +83,8 @@ interface ChatStore {
 	getCombinedMessage: () => string;
 	chatDirectiveType: "chat" | "bidLevelling" | "dailyReport" | "bidLevelling2" | "reportWriting" | "knowledgeManager" | "meetingChat" | "documentGeneration" | "template" | "templateCreate" | "templateCreateAI" | "none";
 	setChatDirectiveType: (directiveType: "chat" | "bidLevelling" | "bidLevelling2" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "documentGeneration" | "template" | "templateCreate" | "templateCreateAI" | "none") => void;
-	selectedModel: string;
-	setSelectedModel: (model: string) => void;
+	// selectedModel: string;
+	// setSelectedModel: (model: string) => void;
 	// Agent type selection
 	selectedAgentType: string;
 	setSelectedAgentType: (agentType: string) => void;
@@ -374,8 +376,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 				break;
 		}
 	},
-	selectedModel: "gemini-3-pro-preview",
-	setSelectedModel: (model) => set({ selectedModel: model }),
+	// selectedModel: "gemini-3-pro-preview",
+	// setSelectedModel: (model) => set({ selectedModel: model }),
 	// Agent type management
 	selectedAgentType: "agent",
 	setSelectedAgentType: (agentType) => set({ selectedAgentType: agentType }),

@@ -635,6 +635,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 						{tab.type === "folder" && (
 							<DocumentSelector 
 								contextId={tab.contextId} 
+								singleSelect={tab.singleSelect}
 								useChatContext 
 							/>
 						)}

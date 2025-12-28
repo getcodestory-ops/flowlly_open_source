@@ -9,8 +9,8 @@ import {
 import { cn } from "@/lib/utils";
 
 interface AgentTypeSelectorProps {
-	selectedAgentType: string;
-	onAgentTypeChange: (agentType: string) => void;
+	selectedAgentType: "agent" | "chat";
+	onAgentTypeChange: (agentType: "agent" | "chat") => void;
 	className?: string;
 }
 
@@ -71,7 +71,7 @@ export default function AgentTypeSelector({
 											? `${type.bgColor} ${type.textColor} shadow-sm`
 											: "text-slate-600 hover:text-slate-900 hover:bg-white",
 									)}
-									onClick={() => onAgentTypeChange(type.id)}
+									onClick={() => onAgentTypeChange(type.id as "agent" | "chat")}
 								>
 									<div
 										className={cn(
