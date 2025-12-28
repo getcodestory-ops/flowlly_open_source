@@ -407,10 +407,11 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 
 	return (
 		<div className="mb-4 overflow-hidden">
-		<div className="flex items-center gap-2 px-3 py-2 ">
+		<div className="flex items-center gap-2 pl-1 ">
+			<span className="text-xs text-slate-400">Flowlly</span>
 			<Loader2 className="w-4 h-4 text-purple-500/70 animate-spin" />
 			{(isThinking ) && (
-				<span className="text-xs text-gray-500/70 dark:text-gray-400/60 leading-relaxed">Thinking...</span>
+				<span className="text-xs text-gray-500/70 dark:text-gray-400/60 leading-relaxed ">Thinking...</span>
 			)}
 		</div>
 			{isThinking && thinkingContent && (
@@ -444,9 +445,7 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 					className="px-4 py-3 rounded-t-lg transition-colors  flex items-center justify-between"
 				>
 				</div>
-				<div 
-					className="max-h-56"
-				>
+				<div >
 					<StreamComponent
 						authToken={authToken}
 						key={streamingKey}

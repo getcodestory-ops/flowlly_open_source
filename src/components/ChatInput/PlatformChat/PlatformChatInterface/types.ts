@@ -35,7 +35,31 @@ export type ModelType = {
   contextSize: "small" | "medium" | "large" | "extra-large";
 };
 
+
+
+
 export const MODELS: ModelType[] = [
+	
+	{
+		id: "xiaomi/mimo-v2-flash:free",
+		name: "xiaomi/mimo-v2-flash:free",
+		speed: 4,
+		performance: 5,
+		cost: "high",
+		description: "Experimental may make mistakes.",
+		bestFor: "Highly complex tasks requiring maximum intelligence",
+		contextSize: "large",
+	},
+	{
+		id: "z-ai/glm-4.7",
+		name: "Z-AI GLM 4.7",
+		speed: 4,
+		performance: 5,
+		cost: "high",
+		description: "Experimental may make mistakes.",
+		bestFor: "Highly complex tasks requiring maximum intelligence",
+		contextSize: "large",
+	},
 	{
 		id: "gemini-3-pro-preview",
 		name: "Gemini 3 Pro Preview",

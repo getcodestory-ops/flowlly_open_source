@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkDirective from "remark-directive";
 import type { Components } from "react-markdown";
-import { Play, Info, Eye, EyeOff, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch, NotebookPen, FileOutput, FileInput, FilePlus, Terminal, Database, Network, FolderOpen, BookOpen, Brain, File, ExternalLink, Paperclip, ListTodo, Globe } from "lucide-react";
+import { Play, Info, Eye, EyeOff, CheckCircle, Pencil, FileText, Code, BarChart2, Save, Calendar, FolderSearch2, Search, Loader2, MessageCircle, FilePen, NotebookTabs, TextSearch, NotebookPen, FileOutput, FileInput, FilePlus, Terminal, Database, Network, FolderOpen, BookOpen, Brain, File, ExternalLink, Paperclip, ListTodo, Globe, Zap } from "lucide-react";
 import { visit } from "unist-util-visit";
 import { useEditor } from "@tiptap/react";
 import { StarterKit } from "@tiptap/starter-kit";
@@ -237,6 +237,17 @@ const UUIDViewer: React.FC<{ content: string }> = ({ content }) => {
 	);
 };
 
+// Tool call component - depicts agent executing a tool/function
+const ToolCallComponent: React.FC<{ toolName: string }> = ({ toolName }) => {
+	return (
+		<span className="inline-flex items-center gap-1 mx-0.5 text-[10px] font-mono text-gray-400 italic">
+			<span className="opacity-50">›</span>
+			<Zap className="w-2.5 h-2.5" />
+			<span className="tracking-tight underline underline-offset-2 decoration-dotted decoration-gray-300">{toolName}</span>
+		</span>
+	);
+};
+
 // Add this constant with valid directive names
 const VALID_DIRECTIVES = [
 	"source",
@@ -251,6 +262,7 @@ const VALID_DIRECTIVES = [
 	"integration",
 	"context",
 	"approval",
+	"tool_call",
 ];
 
 // Add Attachment interface
@@ -699,13 +711,19 @@ function remarkDirectiveComponents() {
 							data: extractCompleteContent(node) || "{}",
 						};
 						break;
-					case "approval":
-						data.hName = "custom-approval";
-						data.hProperties = {
-							data: extractCompleteContent(node) || "{}",
-						};
-						break;
-					case "custom-viewer":
+				case "approval":
+					data.hName = "custom-approval";
+					data.hProperties = {
+						data: extractCompleteContent(node) || "{}",
+					};
+					break;
+				case "tool_call":
+					data.hName = "custom-tool-call";
+					data.hProperties = {
+						toolName: extractCompleteContent(node) || "unknown",
+					};
+					break;
+				case "custom-viewer":
 						data.hName = "custom-viewer";
 						try {
 							const jsonData = JSON.parse(extractCompleteContent(node) || "{}");
@@ -852,6 +870,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 		                                                             />,
 		"custom-integration": ({ data }: { data: string }) => <IntegrationDirective data={data} />,
 		"custom-approval": ({ data }: { data: string }) => <ApprovalFlow data={data} />,
+		"custom-tool-call": ({ toolName }: { toolName: string }) => <ToolCallComponent toolName={toolName} />,
 		// Use a normal paragraph component for li elements
 		li: ({ children, ...props }: any) => {
 			return <li {...props}>{children}</li>;

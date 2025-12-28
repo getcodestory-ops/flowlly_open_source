@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import MarkdownTerminal from "../Markdown/style/MarkdownTerminal";
 import { useChatStore } from "@/hooks/useChatStore";
+import MarkdownDisplay from "../Markdown/MarkDownDisplay";
 
 
 interface StreamComponentProps {
@@ -364,7 +365,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	return (
 		<div className="pb-4">
 			{displayValue && (
-				<MarkdownTerminal content={displayValue} />
+				<MarkdownDisplay content={displayValue} />
 			)}
 
 		</div>

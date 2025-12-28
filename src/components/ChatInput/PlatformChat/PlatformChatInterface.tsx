@@ -235,15 +235,30 @@ export default function PlatformChatInterface({
 		wasStreamingRef.current = isCurrentlyStreaming;
 	}, [activeStreamingKey]);
 	
-	// Re-scroll when content might have changed during streaming
+	// Detect user scroll during streaming to stop auto-scrolling
 	useEffect(() => {
-		if (activeStreamingKey) {
-			// During streaming, periodically ensure last user message is visible
-			const interval = setInterval(() => {
-				scrollToLastUserMessage();
-			}, 1000);
-			return () => clearInterval(interval);
-		}
+		if (!activeStreamingKey || !chatContainerRef.current) return;
+		
+		const scrollContainer = chatContainerRef.current.querySelector(
+			"[data-radix-scroll-area-viewport]",
+		);
+		if (!scrollContainer) return;
+		
+		// Reset the flag when streaming starts
+		userHasScrolledRef.current = false;
+		
+		const handleUserScroll = () => {
+			// Mark that user has scrolled manually
+			userHasScrolledRef.current = true;
+		};
+		
+		scrollContainer.addEventListener("wheel", handleUserScroll);
+		scrollContainer.addEventListener("touchmove", handleUserScroll);
+		
+		return () => {
+			scrollContainer.removeEventListener("wheel", handleUserScroll);
+			scrollContainer.removeEventListener("touchmove", handleUserScroll);
+		};
 	}, [activeStreamingKey]);
 	
 
@@ -346,6 +361,9 @@ export default function PlatformChatInterface({
 	
 	// Track if we were previously streaming (to detect when streaming ends)
 	const wasStreamingRef = useRef<boolean>(false);
+	
+	// Track if user has manually scrolled away during streaming
+	const userHasScrolledRef = useRef<boolean>(false);
 
 	// Ensure refs are created for each message
 	useEffect(() => {
@@ -552,6 +570,7 @@ export default function PlatformChatInterface({
 				<ScrollArea
 					className="flex-grow px-1 sm:px-3 pb-4"
 					ref={chatContainerRef}
+					scrollbarClassName="!fixed !right-0 !top-0 !h-screen"
 				>
 					<div className="pt-2">
 						
@@ -577,7 +596,7 @@ export default function PlatformChatInterface({
 													: "w-full bg-white py-3 px-2 border-b border-slate-100 last:border-b-0 min-h-[40px] transition-all duration-200"
 											}`}
 										>
-											{shouldShowFlowllyLabel(index) && (
+											{shouldShowFlowllyLabel(index) && !(typeof history.message === "object" && history.message?.type === "stream") && (
 												<div className="flex text-xs text-slate-400 mb-1 pl-1">
 													Flowlly
 												</div>
@@ -614,9 +633,11 @@ export default function PlatformChatInterface({
 						);
 					})}
 					{/* Spacer to allow scrolling last user message to top */}
+					<ChatResponseFeedback />
 					<div className="min-h-[60vh]" />
 					</div>
-						<ChatResponseFeedback />
+						
+
 				</ScrollArea>
 			) : (
 				<div className="flex flex-col items-center justify-center h-full">
