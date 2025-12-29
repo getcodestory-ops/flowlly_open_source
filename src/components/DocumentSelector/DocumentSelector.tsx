@@ -20,6 +20,16 @@ import { CreateFileDialog } from "./CreateFileDialog";
 import { useDocumentActions } from "./useDocumentActions";
 import { DocumentSelectorProps, SelectedItem, SortField, SortDirection, DocumentSelectorItem, SelectionEvent } from "./types";
 
+// Helper to extract file extension from filename
+const getFileExtension = (filename: string): string => {
+	if (!filename) return "";
+	const lastDot = filename.lastIndexOf(".");
+	if (lastDot > 0 && lastDot < filename.length - 1) {
+		return filename.slice(lastDot + 1).toLowerCase();
+	}
+	return "";
+};
+
 export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 	selectedItems: propSelectedItems,
 	setSelectedItems: propSetSelectedItems,
@@ -242,11 +252,14 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 			
 			let newContexts;
 			
+			// Get the actual file extension from the filename
+			const extension = item.type === "folder" ? "folder" : getFileExtension(item.name);
+			
 			// Single select mode: replace selection instead of adding
 			if (singleSelect) {
 				newContexts = isSelected
 					? [] // Deselect if already selected
-					: [{ id: item.id, name: item.name, extension: item.type === "folder" ? "folder" : "file" }];
+					: [{ id: item.id, name: item.name, extension }];
 				
 				// Auto-close panel when a file is selected in single select mode
 				if (!isSelected && item.type === "file") {
@@ -262,12 +275,12 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 				// Ctrl/Cmd+Click: Toggle this item without affecting others
 				newContexts = isSelected
 					? currentContexts.filter((ctx) => ctx.id !== item.id)
-					: [...currentContexts, { id: item.id, name: item.name, extension: item.type === "folder" ? "folder" : "file" }];
+					: [...currentContexts, { id: item.id, name: item.name, extension }];
 			} else {
 				// Regular click: Toggle selection (clear others if not selected)
 				newContexts = isSelected
 				? currentContexts.filter((ctx) => ctx.id !== item.id)
-					: [...currentContexts, { id: item.id, name: item.name, extension: item.type === "folder" ? "folder" : "file" }];
+					: [...currentContexts, { id: item.id, name: item.name, extension }];
 			}
 			setSelectedContexts(effectiveContextId, newContexts);
 		} else {
@@ -315,7 +328,11 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 				...currentContexts,
 				...newItems
 					.filter((item) => !existingIds.has(item.id))
-					.map((item) => ({ id: item.id, name: item.name, extension: item.type === "folder" ? "folder" : "file" })),
+					.map((item) => ({ 
+						id: item.id, 
+						name: item.name, 
+						extension: item.type === "folder" ? "folder" : getFileExtension(item.name) 
+					})),
 			];
 			setSelectedContexts(effectiveContextId, newContexts);
 		} else {
@@ -509,8 +526,8 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 				multiple 
 				onChange={handleFileUpload}
 			/>
-			<div className="flex flex-col h-full">
-				<Card className="border flex flex-col flex-1 min-h-0">
+			<div className="flex flex-col h-full ">
+				<div className="flex flex-col flex-1 min-h-0">
 					<DocumentSelectorHeader
 						activeProject={activeProject}
 						currentFolderId={currentFolderId || ""}
@@ -527,7 +544,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 						sortDirection={sortDirection}
 						sortField={sortField}
 					/>
-					<CardContent className="p-0 flex-1 min-h-0">
+					<div className="p-0 flex-1 min-h-0">
 						<DocumentDropZone disabled={isLoading} onFilesDropped={handleFilesDropped} className="h-full">
 							<ScrollArea className="h-full">
 								<DocumentGrid
@@ -565,8 +582,8 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 								/>
 						</ScrollArea>
 						</DocumentDropZone>
-					</CardContent>
-				</Card>
+					</div>
+				</div>
 			</div>
 			
 			{/* Copy to Folder Dialog */}

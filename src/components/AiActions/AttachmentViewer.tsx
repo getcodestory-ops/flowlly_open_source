@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { File, FileImage, FileText, FileArchive, FileSpreadsheet, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Paperclip, ArrowUpRight, Box } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/hooks/useChatStore";
 import { cn } from "@/lib/utils";
+import { FileIconSvg, getFileConfig } from "@/utils/fileIconConfig";
 
 interface Attachment {
     resource_id: string;
@@ -13,25 +14,124 @@ interface Attachment {
 	sandbox_id?: string; // Explicit sandbox ID for API calls (only for sandbox files)
 }
 
+// Helper to extract extension from filename when not explicitly provided
+const getExtension = (file: Attachment): string => {
+	if (file.extension) return file.extension;
+	const filename = file.resource_name || file.resource_id || "";
+	const lastDot = filename.lastIndexOf(".");
+	if (lastDot > 0 && lastDot < filename.length - 1) {
+		return filename.slice(lastDot + 1);
+	}
+	return "";
+};
+
 interface AttachmentViewerProps {
     files: Attachment[];
     onFileClick?: (file: Attachment) => void;
 }
 
-// Function to get appropriate file icon based on extension
-const getFileIcon = (extension: string): JSX.Element => {
-	const ext = extension.toLowerCase();
-	if (["jpg", "jpeg", "png", "gif", "bmp", "svg", "webp", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp"].includes(ext)) {
-		return <FileImage className="h-5 w-5" />;
-	} else if (["doc", "docx", "txt", "rtf", "pdf", ".doc", ".docx", ".txt", ".rtf", ".pdf", ".ppt", ".pptx", ".pptx"].includes(ext)) {
-		return <FileText className="h-5 w-5" />;
-	} else if (["xls", "xlsx", "csv", ".xls", ".xlsx", ".csv"].includes(ext)) {
-		return <FileSpreadsheet className="h-5 w-5" />;
-	} else if (["zip", "rar", "7z", "tar", "gz", ".zip", ".rar", ".7z", ".tar", ".gz"].includes(ext)) {
-		return <FileArchive className="h-5 w-5" />;
-	} else {
-		return <File className="h-5 w-5" />;
-	}
+// Inline single attachment component
+const InlineAttachment: React.FC<{ file: Attachment; onClick: () => void }> = ({ file, onClick }) => {
+	const extension = getExtension(file);
+	const config = getFileConfig(extension);
+	const isSandbox = file.type === "sandbox";
+	
+	return (
+		<button
+			className={cn(
+				"group inline-flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg text-sm transition-all duration-200 cursor-pointer",
+				"border shadow-sm hover:shadow-md active:scale-[0.98]",
+				"bg-white border-gray-100 hover:border-gray-200",
+				file.focus && "ring-2 ring-blue-500/20 border-blue-400",
+			)}
+			onClick={onClick}
+			type="button"
+		>
+			{/* Icon with colored background */}
+			<span className={cn(
+				"flex items-center justify-center w-7 h-7 rounded-md transition-transform duration-200 group-hover:scale-105 overflow-hidden",
+				config.bg, config.color,
+			)}
+			>
+				<FileIconSvg className="h-4 w-4" iconKey={config.iconKey} />
+			</span>
+			
+			{/* File name */}
+			<span className="truncate max-w-[180px] font-medium text-gray-800">
+				{file.resource_name || file.resource_id}
+			</span>
+			
+			{/* Extension */}
+			{extension && (
+				<span className={cn("text-[10px] font-semibold uppercase tracking-wide", config.color)}>
+					{extension.replace(".", "")}
+				</span>
+			)}
+			
+			{/* Sandbox indicator - just icon */}
+			{isSandbox && (
+				<Box className={cn("h-3.5 w-3.5", config.color)} />
+			)}
+			
+			<ArrowUpRight className={cn(
+				"h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity",
+				config.color.replace("-600", "-400"),
+			)} />
+		</button>
+	);
+};
+
+// File card for grid view
+const FileCard: React.FC<{ file: Attachment; onClick: () => void }> = ({ file, onClick }) => {
+	const extension = getExtension(file);
+	const config = getFileConfig(extension);
+	const isSandbox = file.type === "sandbox";
+	
+	return (
+		<button
+			className={cn(
+				"group relative flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 cursor-pointer text-left w-full",
+				"hover:shadow-md active:scale-[0.99]",
+				"bg-white border-gray-100 hover:border-gray-200",
+				file.focus && "ring-2 ring-blue-500/20 border-blue-300 shadow-sm",
+			)}
+			onClick={onClick}
+			type="button"
+		>
+			{/* Colored icon container */}
+			<div className={cn(
+				"flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg transition-transform duration-200 group-hover:scale-105 overflow-hidden",
+				config.bg, config.color,
+			)}
+			>
+				<FileIconSvg className="h-7 w-7" iconKey={config.iconKey} />
+			</div>
+			
+			{/* File info */}
+			<div className="flex-1 min-w-0">
+				<div className="text-sm truncate font-medium transition-colors duration-200 text-gray-800">
+					{file.resource_name || file.resource_id}
+				</div>
+				<div className="flex items-center gap-1.5 mt-0.5">
+					{extension && (
+						<span className={cn("text-[10px] font-semibold uppercase tracking-wide", config.color)}>
+							{extension.replace(".", "")}
+						</span>
+					)}
+					{/* Sandbox indicator - just icon */}
+					{isSandbox && (
+						<Box className={cn("h-3 w-3", config.color)} />
+					)}
+				</div>
+			</div>
+			
+			{/* Hover arrow */}
+			<ArrowUpRight className={cn(
+				"h-4 w-4 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5",
+				config.color.replace("-600", "-300"),
+			)} />
+		</button>
+	);
 };
 
 const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ files, onFileClick }) => {
@@ -47,7 +147,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ files, onFileClick 
 				type: file.type === "sandbox"  ? "sandbox" : "sources",
 				resourceId: file.resource_id,
 				filename: file.resource_name,
-				sandbox_id: file.sandbox_id, // Pass explicit sandbox_id for API calls
+				sandbox_id: file.sandbox_id,
 			});
 			setCollapsed(true);
 		}
@@ -65,7 +165,18 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ files, onFileClick 
 		return 0;
 	});
 
-	const INITIAL_DISPLAY_COUNT = 2;
+	// Single file: render inline
+	if (files.length === 1) {
+		const file = sortedFiles[0];
+		return (
+			<div className="my-2">
+				<InlineAttachment file={file} onClick={() => handleFileClick(file)} />
+			</div>
+		);
+	}
+
+	// Multiple files: render grid
+	const INITIAL_DISPLAY_COUNT = 3;
 	const shouldShowExpandButton = files.length > INITIAL_DISPLAY_COUNT;
 	const displayedFiles = isExpanded || !shouldShowExpandButton 
 		? sortedFiles 
@@ -74,14 +185,17 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ files, onFileClick 
 	const hiddenCount = files.length - INITIAL_DISPLAY_COUNT;
 
 	return (
-		<div className="mt-3 mb-3">
-			<div className="flex items-center justify-between mb-2">
-				<div className="text-xs font-medium text-gray-600">
-					Attachments ({files.length})
+		<div className="my-3">
+			{/* Header */}
+			<div className="flex items-center gap-2 mb-2.5">
+				<div className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
+					<Paperclip className="h-3.5 w-3.5" />
+					<span>{files.length} attachments</span>
 				</div>
+				
 				{shouldShowExpandButton && (
 					<Button
-						className="h-6 px-2 text-xs text-gray-500 hover:text-gray-700"
+						className="h-6 px-2 text-xs text-gray-400 hover:text-gray-600 ml-auto"
 						onClick={() => setIsExpanded(!isExpanded)}
 						size="sm"
 						variant="ghost"
@@ -89,85 +203,32 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ files, onFileClick 
 						{isExpanded ? (
 							<>
 								<ChevronUp className="h-3 w-3 mr-1" />
-								Show Less
+								Less
 							</>
 						) : (
 							<>
 								<ChevronDown className="h-3 w-3 mr-1" />
-								Show {hiddenCount} More
+								+{hiddenCount} more
 							</>
 						)}
 					</Button>
 				)}
 			</div>			
+			
+			{/* Grid */}
 			<div className={cn(
 				"grid gap-2 transition-all duration-300 ease-in-out",
-				isExpanded || files.length <= INITIAL_DISPLAY_COUNT
-					? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-					: "grid-cols-1 sm:grid-cols-2",
+				"grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
 			)}
 			>
 				{displayedFiles.map((file, index) => (
-					<div
-						className={cn(
-							"group relative flex items-center p-3 rounded-lg border transition-all duration-200 cursor-pointer",
-							file.type === "sandbox" 
-								? "bg-gray-50/70 border-dashed border-gray-300 hover:bg-gray-100/70 opacity-75" 
-								: "bg-white border-gray-200 hover:shadow-md hover:border-blue-300",
-							file.focus && file.type !== "sandbox" && [
-								"ring-2 ring-blue-500 ring-opacity-50",
-								"border-blue-300 shadow-sm",
-							],
-						)}
-						key={index}
+					<FileCard 
+						file={file} 
+						key={`${file.resource_id}-${index}`}
 						onClick={() => handleFileClick(file)}
-					>					
-						{file.type === "sandbox" && (
-							<span className="absolute -top-1 -right-1 rounded-sm px-1 py-0.5 text-[9px] font-medium bg-gray-200/80 text-gray-500 italic">
-								temp
-							</span>
-						)}
-						{/* File icon */}
-						<div className={cn(
-							"flex-shrink-0 mr-3 transition-transform duration-200",
-							file.type === "sandbox" 
-								? "text-gray-400 opacity-70"
-								: "group-hover:scale-110",
-							file.focus && file.type !== "sandbox"
-								? "text-blue-600"
-								: file.type !== "sandbox" && "text-gray-500",
-						)}
-						>
-							{getFileIcon(file.extension || "")}
-						</div>						
-						{/* File info */}
-						<div className="flex-1 min-w-0">
-							<div className={cn(
-								"text-sm truncate transition-colors duration-200",
-								file.type === "sandbox"
-									? "text-gray-600 italic font-normal"
-									: "font-medium",
-								file.focus && file.type !== "sandbox"
-									? "text-blue-900"
-									: file.type !== "sandbox" && "text-gray-900 group-hover:text-blue-600",
-							)}
-							>
-								{file.resource_name || file.resource_id}
-							</div>
-							{file.extension && (
-								<div className={cn(
-									"text-xs uppercase",
-									file.type === "sandbox" ? "text-gray-400" : "text-gray-500",
-								)}
-								>
-									{file.extension.replace(".", "")} file
-								</div>
-							)}
-						</div>
-					</div>
+					/>
 				))}
 			</div>
-
 		</div>
 	);
 };

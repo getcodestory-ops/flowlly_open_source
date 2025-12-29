@@ -33,11 +33,7 @@ const FileProgressPanel = ({ fileName }: { fileName: string }): React.ReactNode 
 
 	return (
 		<div className="h-full w-full flex flex-col">
-			<div className="px-4 py-3 border-b bg-white">
-				<div className="text-sm font-semibold truncate">{effective.fileName}</div>
-				<div className="text-xs text-gray-500">{effective.action} • {effective.status}</div>
-			</div>
-			<div className="flex-1 overflow-auto p-4" ref={contentRef}>
+			<div className="flex-1 overflow-auto px-4" ref={contentRef}>
 				<MarkDownDisplay content={effective.content || ""} />
 			</div>
 		</div>

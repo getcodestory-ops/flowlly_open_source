@@ -26,15 +26,16 @@ export default function PlatformChatComponent({
 	// Check if we're in the meetings context
 	const isInMeetingsContext = pathname?.endsWith("/meetings") || false;
 
+	// Calculate the actual offset based on context
+	const actualOffset = heightOffset ?? 20;
+	const meetingsExtraOffset = isInMeetingsContext ? 20 : 0;
+	const totalOffset = actualOffset + meetingsExtraOffset;
+
 	return (
 		<div className="mx-auto h-full">
 			<div
-				className={clsx(
-					"bg-white rounded-xl shadow-sm overflow-hidden",
-					isInMeetingsContext 
-						? (heightOffset==20 ? "h-[calc(100vh-40px)]" : "h-[calc(100vh-95px)]")
-						: (heightOffset==20 ? "h-[calc(100vh-20px)]" : "h-[calc(100vh-75px)]"),
-				)}
+				className="bg-white rounded-xl shadow-sm overflow-hidden"
+				style={{ height: `calc(100vh - ${totalOffset}px)` }}
 			>
 				<PlatformChatInterface
 					chatTarget={chatTarget}

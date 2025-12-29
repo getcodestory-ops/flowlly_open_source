@@ -38,7 +38,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	const [isThinking, setIsThinking] = useState(false);
 	const [THINKING_CONTENT, setThinkingContent] = useState<string>("");
 	const eventSourceRef = useRef<EventSource | null>(null);
-	const { setSidePanel, setCollapsed, setTodoState, initFileProgress, appendFileProgressDelta, endFileProgress, clearStreamTabs } = useChatStore() as any;
+	const { setSidePanel, setCollapsed, setTodoState, initFileProgress, appendFileProgressDelta, endFileProgress, closeFileProgressTab, clearStreamTabs } = useChatStore() as any;
 
 	// Keep ref in sync with state
 	useEffect(() => {
@@ -288,6 +288,8 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 						appendFileProgressDelta(fileName, delta, "delta");
 					} else if (status === "ended") {
 						endFileProgress(fileName);
+						// Close the file progress tab - attachment event will open the final file
+						closeFileProgressTab();
 					}
 				} else if (action === "edit") {
 					if (status === "started") {
@@ -313,6 +315,8 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 						}
 					} else if (status === "ended") {
 						endFileProgress(fileName);
+						// Close the file progress tab - attachment event will open the final file
+						closeFileProgressTab();
 					}
 				}
 			} catch (e) {
@@ -360,7 +364,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			eventSourceRef.current = null;
 		};
 	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, setTodoState, handleAttachmentEvent, initFileProgress, appendFileProgressDelta, endFileProgress, clearStreamTabs]);
+	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, setTodoState, handleAttachmentEvent, initFileProgress, appendFileProgressDelta, endFileProgress, closeFileProgressTab, clearStreamTabs]);
 
 	return (
 		<div className="pb-4">

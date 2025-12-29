@@ -51,6 +51,7 @@ interface ChatStore {
 	appendFileProgressDelta: (fileName: string, delta: string, status?: "delta" | "ended") => void;
 	endFileProgress: (fileName: string) => void;
 	setFileProgressContent: (fileName: string, content: string, status?: "delta" | "ended") => void;
+	closeFileProgressTab: () => void;
 	documentDisplayMap: { [resourceId: string]: string };
 	setDocumentDisplayMap: (resourceId: string, chatId: string) => void;
 	clearDocumentDisplayMap: () => void;
@@ -284,6 +285,22 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 			},
 		},
 	})),
+	closeFileProgressTab: () => set((state) => {
+		// Remove only fileProgress tabs (file progress streaming is done, attachment will open final file)
+		const newTabs = state.tabs.filter((tab) => tab.type !== "fileProgress");
+		
+		// If active tab was removed, switch to another tab
+		let newActiveTabId = state.activeTabId;
+		const activeTabRemoved = state.activeTabId && !newTabs.find((t) => t.id === state.activeTabId);
+		if (activeTabRemoved) {
+			newActiveTabId = newTabs.length > 0 ? newTabs[newTabs.length - 1].id : null;
+		}
+		
+		return {
+			tabs: newTabs,
+			activeTabId: newActiveTabId,
+		};
+	}),
 	documentDisplayMap: {},
 	setDocumentDisplayMap: (resourceId, chatId) => 
 		set((state) => ({

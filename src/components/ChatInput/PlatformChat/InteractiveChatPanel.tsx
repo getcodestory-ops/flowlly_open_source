@@ -5,7 +5,7 @@ import { getInlineDocument, saveDocumentAs, fetchResource } from "@/api/folderRo
 import { updateDocumentName } from "@/api/documentRoutes";
 import { useStore } from "@/utils/store";
 import { useQuery } from "@tanstack/react-query";
-import { X, FileText, FileImage, FileAudio, FileVideo, FileCode, File, Pencil, Download, Folder, Plus, Save, Edit3, ChevronLeft, ChevronRight, Printer } from "lucide-react";
+import { X, Folder, Plus, ChevronLeft, ChevronRight, Box } from "lucide-react";
 import TopToolbar from "./ChatPanel/TopToolbar";
 import InlineDocumentViewer from "./ChatPanel/InlineDocumentViewer";
 import { htmlExtensions } from "./ChatPanel/fileExtensions";
@@ -21,23 +21,8 @@ import {
 import FolderSelector from "@/components/ProjectEvent/FolderSelector";
 import { UnsavedChangesDialog } from "@/components/DocumentEditor/ToolBarItems";
 import TodoPanel from "@/components/StreamResponse/TodoPanel";
-
-
-
-const getFileIcon = (extension: string) : React.ReactNode => {
-	const imageExts = ["jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff"];
-	const audioExts = ["mp3", "wav", "ogg", "oga"];
-	const videoExts = ["mp4", "webm"];
-	const codeExts = ["js", "ts", "jsx", "tsx", "html", "htm", "css", "json", "md"];
-	const documentExts = ["pdf", "doc", "docx"];
-
-	if (imageExts.includes(extension)) return <FileImage className="h-4 w-4" />;
-	if (audioExts.includes(extension)) return <FileAudio className="h-4 w-4" />;
-	if (videoExts.includes(extension)) return <FileVideo className="h-4 w-4" />;
-	if (codeExts.includes(extension)) return <FileCode className="h-4 w-4" />;
-	if (documentExts.includes(extension)) return <FileText className="h-4 w-4" />;
-	return <File className="h-4 w-4" />;
-};
+import { cn } from "@/lib/utils";
+import { FileIconSvg, getFileConfig } from "@/utils/fileIconConfig";
 
 // Helper function to get sandbox_id for API calls
 const getSandboxId = (tab: any): string => {
@@ -469,7 +454,10 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 	}, []);
 
 	return (
-		<div className={`h-[calc(100vh-${heightOffset}px)] flex flex-col bg-gray-50 rounded-lg border `}>
+		<div 
+			className="flex flex-col bg-gray-50 "
+			style={{ height: `calc(100vh - ${heightOffset}px)` }}
+		>
 			{tabs.length === 0 && (
 				<div className="flex items-center justify-center p-4 bg-white border-b border-gray-200 rounded-t-lg">
 					<Button
@@ -483,7 +471,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 				</div>
 			)}
 			{tabs.length > 0 && (
-				<div className="flex items-center bg-gray-100 border-b border-gray-200 rounded-t-lg min-h-[40px]">
+				<div className="flex items-center bg-gray-50 rounded-t-lg">
 					<div 
 						className="flex-1 w-0 min-w-0 relative overflow-hidden"
 						onMouseLeave={handleTabAreaMouseLeave}
@@ -492,28 +480,28 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 					>
 						{/* Floating Left Arrow */}
 						{showLeftArrow && (
-							<div className="absolute left-4 top-1/2 -translate-y-1/2 z-20 animate-in fade-in duration-200">
+							<div className="absolute left-2 top-1/2 -translate-y-1/2 z-20 animate-in fade-in duration-200">
 								<Button
-									className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-lg border"
+									className="h-6 w-6 p-0 bg-white/95 hover:bg-white shadow-md border border-gray-200"
 									onClick={() => scrollTabs("left")}
 									size="icon"
 									title="Scroll tabs left"
 									variant="ghost"
 								>
-									<ChevronLeft className="h-4 w-4" />
+									<ChevronLeft className="h-3.5 w-3.5" />
 								</Button>
 							</div>
 						)}
 						{showRightArrow && (
-							<div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 animate-in fade-in duration-200">
+							<div className="absolute right-2 top-1/2 -translate-y-1/2 z-20 animate-in fade-in duration-200">
 								<Button
-									className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-lg border"
+									className="h-6 w-6 p-0 bg-white/95 hover:bg-white shadow-md border border-gray-200"
 									onClick={() => scrollTabs("right")}
 									size="icon"
 									title="Scroll tabs right"
 									variant="ghost"
 								>
-									<ChevronRight className="h-4 w-4" />
+									<ChevronRight className="h-3.5 w-3.5" />
 								</Button>
 							</div>
 						)}
@@ -525,39 +513,43 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 								msOverflowStyle: "none",
 							}}
 						>
-							<div className="flex items-end pb-1 px-2 gap-1 h-[45px]">
+							<div className="flex items-center px-1.5 gap-0.5 h-[36px]">
 								{tabs.map((tab, index) => {
 									const isActive = tab.id === activeTabId;
 									const fileExtension = getFileExtension(tab.filename);
-									
-									// Chrome-like dynamic width - more conservative to leave room for toolbar
-									const getTabWidth = () => {
-										if (tabs.length <= 3) return 180;
-										if (tabs.length <= 4) return 120;
-										return 180;
-									};
+									const fileConfig = getFileConfig(fileExtension);
 									
 									return (
 										<button
-											className={`relative flex items-center gap-2 px-3 py-2 text-sm transition-all duration-200 flex-shrink-0 ${
+											className={cn(
+												"group relative flex items-center gap-1.5 px-2.5 h-[28px] text-xs transition-all duration-150 flex-shrink-0 max-w-[160px] border-t border-gray-300 rounded-t-md",
 												isActive 
-													? "bg-white border border-gray-200 border-b-0 rounded-t-lg shadow-sm z-10 -mb-px h-[42px]" 
-													: "bg-gray-200 hover:bg-gray-300 rounded-t-lg border border-gray-300 border-b-gray-100 mb-0 h-[38px]"
-											}`}
+													? "bg-white text-gray-900 rounded-md shadow-sm border-gray-300" 
+													: "text-gray-600 hover:text-gray-900 hover:bg-gray-100 "
+											)}
 											key={tab.id}
 											onClick={() => setActiveTab(tab.id)}
-											style={{ width: `${getTabWidth()}px` }}
 										>
+											{/* File icon */}
 											{tab.type === "folder" ? (
-												<Folder className="h-4 w-4 text-blue-500 flex-shrink-0" />
+												<div className="flex-shrink-0 flex items-center justify-center w-4 h-4 rounded bg-blue-100">
+													<Folder className="h-3 w-3 text-blue-600" />
+												</div>
 											) : (
-												<div className="flex-shrink-0">{getFileIcon(fileExtension)}</div>
+												<div className={cn(
+													"flex-shrink-0 flex items-center justify-center w-4 h-4 rounded",
+													fileConfig.bg, fileConfig.color
+												)}>
+													<FileIconSvg className="h-4 w-4" iconKey={fileConfig.iconKey} />
+												</div>
 											)}
-											<span className="truncate min-w-0 flex-1 overflow-hidden" title={tab.title}>
+											
+											{/* File name */}
+											<span className="truncate min-w-0 flex-1" title={tab.filename || tab.title}>
 												{editingTabId === tab.id && (tab.type === "sources" || tab.type === "sandbox") ? (
 													<input
 														autoFocus
-														className="text-sm bg-transparent border border-gray-300 rounded px-1 py-0 min-w-0 max-w-[150px] focus:outline-none focus:ring-1 focus:ring-blue-500"
+														className="text-xs bg-transparent border border-gray-300 rounded px-1 py-0 w-full focus:outline-none focus:ring-1 focus:ring-blue-500"
 														onBlur={() => handleFileNameInputBlur(tab.id)}
 														onChange={(e) => setEditedName(e.target.value)}
 														onKeyDown={(e) => handleFileNameKeyDown(e, tab.id)}
@@ -565,20 +557,30 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 													/>
 												) : (
 													<span 
-														className={(tab.type === "sources" || tab.type === "sandbox") ? "cursor-pointer hover:bg-gray-100 px-1 rounded" : ""}
+														className="truncate flex items-center gap-1"
 														onDoubleClick={() => handleFileNameDoubleClick(tab)}
-														title={(tab.type === "sources" || tab.type === "sandbox") ? "Double-click to edit filename" : tab.title}
 													>
 														{tab.filename || tab.title}
-														{tab.type === "sandbox" && <span className="text-xs text-blue-600 ml-1">[sandbox]</span>}
-														{unsavedChanges[tab.resourceId || tab.id] && (
-															<span className="text-orange-600 ml-1">•</span>
+														{tab.type === "sandbox" && (
+															<Box className={cn("h-2.5 w-2.5 flex-shrink-0 opacity-60", fileConfig.color)} />
 														)}
 													</span>
 												)}
 											</span>
+											
+											{/* Unsaved indicator */}
+											{unsavedChanges[tab.resourceId || tab.id] && (
+												<span className="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0" />
+											)}
+											
+											{/* Close button - visible on hover or when active */}
 											<div
-												className="h-4 w-4 p-0 hover:bg-gray-200 flex-shrink-0 ml-1 inline-flex items-center justify-center rounded cursor-pointer"
+												className={cn(
+													"h-4 w-4 flex-shrink-0 inline-flex items-center justify-center rounded-sm cursor-pointer transition-all",
+													isActive 
+														? "hover:bg-gray-200 text-gray-500" 
+														: "opacity-0 group-hover:opacity-100 hover:bg-gray-200 text-gray-400"
+												)}
 												onClick={(e) => handleTabClose(tab.id, e)}
 											>
 												<X className="h-3 w-3" />
@@ -617,7 +619,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 					/>
 				</div>
 			)}
-			<div className="flex-1 overflow-auto relative">
+			<div className="flex-1 overflow-auto relative b">
 				{tabs.length === 0 && (
 					<div className="flex items-center justify-center h-full text-gray-500">
 						<div className="text-center">
@@ -629,7 +631,10 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 				)}
 				{tabs.map((tab) => (
 					<div 
-						className={`absolute px-2 inset-0 ${tab.id === activeTabId ? "block" : "hidden"}`}
+						className={cn(
+							"absolute inset-0",
+							tab.id === activeTabId ? "block" : "hidden",
+						)}
 						key={tab.id}
 					>
 						{tab.type === "folder" && (

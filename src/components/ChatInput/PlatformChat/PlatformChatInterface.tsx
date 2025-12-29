@@ -335,6 +335,7 @@ export default function PlatformChatInterface({
 							isOpen: true,
 							type: "folder",
 							resourceId:  folderId,
+							title : "Drive"
 						});
 					}}
 					size="sm"
@@ -463,8 +464,8 @@ export default function PlatformChatInterface({
 
 	// Update the regular chat input section
 	const renderChatInput = (): React.ReactNode => (
-		<div className="px-4 py-2 flex flex-col justify-end">
-			<div className="relative overflow-hidden rounded-lg border border-black bg-background focus-within:ring-1 focus-within:ring-ring">
+		<div className="flex flex-col justify-end">
+			<div className="relative overflow-hidden rounded-t-2xl  border-t border-l border-r border-gray bg-background shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.1)]">
 				<Label className="sr-only" htmlFor="message">
 					Message
 				</Label>
@@ -652,7 +653,7 @@ export default function PlatformChatInterface({
 			)}
 			{/* Only show this input area when there are chats */}
 			{chats && chats.length > 0 && (
-				<div className="sticky bottom-0 px-4 py-3 bg-white border-t border-slate-100 backdrop-blur-sm">
+				<div className="sticky bottom-0 px-4 pt-3 bg-white">
 					{activeProject && renderChatInput()}
 				</div>
 			)}
