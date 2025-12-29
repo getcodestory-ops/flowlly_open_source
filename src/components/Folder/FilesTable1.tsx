@@ -490,8 +490,12 @@ const FileRow = ({
 			{/* <Dialog>
 				<DialogTrigger asChild> */}
 			<TableCell className="cursor-pointer">
-				<div className="flex flex-row justify-start gap-4">
-					<FileMediaIcon fileExt={resource.metadata.extension + ""} />
+				<div className="flex flex-row items-center justify-start gap-3">
+					<FileMediaIcon 
+						fileExt={resource.metadata.extension + ""} 
+						showBackground 
+						size="sm"
+					/>
 					<div className="font-medium">{resource.file_name}</div>
 				</div>
 			</TableCell>
@@ -1098,8 +1102,10 @@ const FolderRow = ({
 			onClick={() => onFolderClick(folder.id, folder.name)}
 		>
 			<TableCell>
-				<div className="flex flex-row justify-start gap-4">
-					<Folder className="h-4 w-4" />
+				<div className="flex flex-row items-center justify-start gap-3">
+					<div className="flex items-center justify-center w-5 h-5 rounded bg-blue-100 text-blue-600">
+						<Folder className="h-3.5 w-3.5" />
+					</div>
 					<div className="font-medium">{folder.name}</div>
 				</div>
 			</TableCell>

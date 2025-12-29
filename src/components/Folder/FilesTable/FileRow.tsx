@@ -82,8 +82,12 @@ export const FileRow: React.FC<FileRowProps> = ({
 			onMouseLeave={() => setCurrentFile(null)}
 		>
 			<TableCell className="cursor-pointer">
-				<div className="flex flex-row justify-start gap-4">
-					<FileMediaIcon fileExt={resource.metadata?.extension ?? ""} />
+				<div className="flex flex-row items-center justify-start gap-3">
+					<FileMediaIcon 
+						fileExt={resource.metadata?.extension ?? ""} 
+						showBackground 
+						size="sm"
+					/>
 					<div className="font-medium">{resource.file_name}</div>
 				</div>
 			</TableCell>
