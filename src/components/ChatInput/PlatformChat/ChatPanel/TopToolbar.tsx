@@ -1,6 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Edit3, Download, Save, Pencil, FileText, Folder, X, Printer } from "lucide-react";
+import { 
+	Edit3, 
+	Download, 
+	Save, 
+	Pencil, 
+	Eye, 
+	FolderPlus, 
+	XCircle, 
+	Printer,
+	MoreHorizontal,
+	Copy
+} from "lucide-react";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 export interface TopToolbarProps {
   canRename: boolean;
@@ -9,6 +34,7 @@ export interface TopToolbarProps {
   canPrint: boolean;
   isEditMode: boolean;
   hasUnsavedInEdit: boolean;
+  isDownloading?: boolean;
   onRename: () => void;
   onDownload: () => void;
   onSaveAs: () => void;
@@ -18,6 +44,49 @@ export interface TopToolbarProps {
   onPrint: () => void;
 }
 
+// Toolbar button with tooltip
+const ToolbarButton: React.FC<{
+	icon: React.ReactNode;
+	label: string;
+	onClick: () => void;
+	disabled?: boolean;
+	variant?: "default" | "primary" | "danger";
+	showLabel?: boolean;
+}> = ({ icon, label, onClick, disabled, variant = "default", showLabel }) => {
+	const variantClasses = {
+		default: "hover:bg-white hover:shadow-sm text-gray-600 hover:text-gray-900",
+		primary: "bg-blue-500 text-white hover:bg-blue-600 shadow-sm",
+		danger: "hover:bg-red-50 text-gray-600 hover:text-red-600",
+	};
+
+	return (
+		<TooltipProvider delayDuration={300}>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<Button
+						className={cn(
+							"h-8 transition-all duration-200",
+							showLabel ? "px-3 gap-1.5" : "w-8 p-0",
+							variantClasses[variant],
+							disabled && "opacity-40 pointer-events-none"
+						)}
+						disabled={disabled}
+						onClick={onClick}
+						size={showLabel ? "sm" : "icon"}
+						variant="ghost"
+					>
+						{icon}
+						{showLabel && <span className="text-xs font-medium">{label}</span>}
+					</Button>
+				</TooltipTrigger>
+				<TooltipContent side="bottom" sideOffset={5}>
+					<p className="text-xs">{label}</p>
+				</TooltipContent>
+			</Tooltip>
+		</TooltipProvider>
+	);
+};
+
 const TopToolbar: React.FC<TopToolbarProps> = ({
 	canRename,
 	canDownload,
@@ -25,6 +94,7 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 	canPrint,
 	isEditMode,
 	hasUnsavedInEdit,
+	isDownloading = false,
 	onRename,
 	onDownload,
 	onSaveAs,
@@ -34,95 +104,122 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 	onPrint,
 }) => {
 	return (
-		<div className="flex items-center gap-1 px-3 bg-gray-100 border-l border-gray-200 rounded-tr-lg">
-			<div className="flex items-center gap-1">
-				<Button
-					className="h-8 w-8 p-0"
-					disabled={!canRename}
-					onClick={onRename}
-					size="icon"
-					title={canRename ? "Rename file" : "Rename not available"}
-					variant="ghost"
-				>
-					<Edit3 className="h-4 w-4" />
-				</Button>
-				<Button
-					className="h-8 w-8 p-0"
-					disabled={!canDownload}
-					onClick={onDownload}
-					size="icon"
-					title={canDownload ? "Download file" : "Download not available"}
-					variant="ghost"
-				>
-					<Download className="h-4 w-4" />
-				</Button>
-				<Button
-					className="h-8 w-8 p-0"
-					disabled={!canSaveAs}
-					onClick={onSaveAs}
-					size="icon"
-					title={canSaveAs ? "Save as copy" : "Save not available"}
-					variant="ghost"
-				>
-					<Save className="h-4 w-4" />
-				</Button>
-				<Button
-					className={`gap-1 px-2 h-8 transition-all duration-200 relative ${
-						isEditMode
-							? "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100"
-							: "hover:bg-gray-100 border border-transparent"
-					} ${!canRename ? "opacity-50" : ""}`}
-					disabled={!canRename}
-					onClick={onToggleMode}
-					size="sm"
-					title={isEditMode ? "Switch to view mode" : "Switch to edit mode"}
-					variant="ghost"
-				>
-					{!isEditMode ? (
-						<>
-							<Pencil className="h-4 w-4" />
-							<span className="text-xs font-medium">Edit</span>
-						</>
-					) : (
-						<>
-							<FileText className="h-4 w-4" />
-							<span className="text-xs font-medium">View</span>
-						</>
-					)}
-					{hasUnsavedInEdit && (
-						<div className="absolute -top-1 -right-1 h-3 w-3 bg-orange-500 rounded-full border-2 border-white animate-pulse" />
-					)}
-				</Button>
-				<Button
-					className="h-8 w-8 p-0"
-					disabled={!canPrint}
-					onClick={onPrint}
-					size="icon"
-					title={canPrint ? "Print" : "Print not available"}
-					variant="ghost"
-				>
-					<Printer className="h-4 w-4" />
-				</Button>
-			</div>
-			{/* Universal actions */}
-			<Button
-				className="h-8 w-8 p-0"
+		<div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border-l border-gray-200 rounded-tr-lg">
+			{/* Primary action: Edit/View toggle - only show when available */}
+			{canRename && (
+				<>
+					<TooltipProvider delayDuration={300}>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button
+									className={cn(
+										"h-8 px-2.5 gap-1.5 transition-all duration-200 relative",
+										isEditMode
+											? "bg-blue-50 text-blue-600 hover:bg-blue-100"
+											: "hover:bg-white hover:shadow-sm text-gray-600 hover:text-gray-900"
+									)}
+									onClick={onToggleMode}
+									size="sm"
+									variant="ghost"
+								>
+									{isEditMode ? (
+										<>
+											<Eye className="h-4 w-4" />
+											<span className="text-xs font-medium">View</span>
+										</>
+									) : (
+										<>
+											<Pencil className="h-4 w-4" />
+											<span className="text-xs font-medium">Edit</span>
+										</>
+									)}
+									{hasUnsavedInEdit && (
+										<div className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-orange-500 rounded-full border-2 border-white animate-pulse" />
+									)}
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent side="bottom" sideOffset={5}>
+								<p className="text-xs">{isEditMode ? "Switch to view mode" : "Switch to edit mode"}</p>
+							</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
+
+					{/* Divider */}
+					<div className="w-px h-5 bg-gray-300 mx-1" />
+				</>
+			)}
+
+			{/* Quick actions */}
+			<ToolbarButton
+				disabled={!canDownload || isDownloading}
+				icon={<Download className={cn("h-4 w-4", isDownloading && "animate-pulse")} />}
+				label={isDownloading ? "Downloading..." : "Download"}
+				onClick={onDownload}
+			/>
+
+			{/* More actions dropdown */}
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<Button
+						className="h-8 w-8 p-0 hover:bg-white hover:shadow-sm text-gray-600 hover:text-gray-900"
+						size="icon"
+						variant="ghost"
+					>
+						<MoreHorizontal className="h-4 w-4" />
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align="end" className="w-48">
+					<DropdownMenuItem 
+						className="gap-2 cursor-pointer"
+						disabled={!canRename}
+						onClick={onRename}
+					>
+						<Edit3 className="h-4 w-4" />
+						<span>Rename</span>
+					</DropdownMenuItem>
+					<DropdownMenuItem 
+						className="gap-2 cursor-pointer"
+						disabled={!canSaveAs}
+						onClick={onSaveAs}
+					>
+						<Copy className="h-4 w-4" />
+						<span>Save as Copy</span>
+					</DropdownMenuItem>
+					<DropdownMenuItem 
+						className="gap-2 cursor-pointer"
+						disabled={!canPrint}
+						onClick={onPrint}
+					>
+						<Printer className="h-4 w-4" />
+						<span>Print</span>
+					</DropdownMenuItem>
+					<DropdownMenuSeparator />
+					<DropdownMenuItem 
+						className="gap-2 cursor-pointer"
+						onClick={onAddFolder}
+					>
+						<FolderPlus className="h-4 w-4" />
+						<span>Add Files</span>
+					</DropdownMenuItem>
+					<DropdownMenuItem 
+						className="gap-2 cursor-pointer text-red-600 focus:text-red-600"
+						onClick={onCloseAll}
+					>
+						<XCircle className="h-4 w-4" />
+						<span>Close All Tabs</span>
+					</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
+
+			{/* Divider */}
+			<div className="w-px h-5 bg-gray-300 mx-1" />
+
+			{/* Add files button */}
+			<ToolbarButton
+				icon={<FolderPlus className="h-4 w-4" />}
+				label="Add Files"
 				onClick={onAddFolder}
-				size="icon"
-				title="Add Files and Folders"
-				variant="ghost"
-			>
-				<Folder className="h-4 w-4" />
-			</Button>
-			<Button
-				className="h-8 w-8 p-0"
-				onClick={onCloseAll}
-				size="icon"
-				title="Close All Tabs"
-				variant="ghost"
-			>
-				<X className="h-4 w-4" />
-			</Button>
+			/>
 		</div>
 	);
 };

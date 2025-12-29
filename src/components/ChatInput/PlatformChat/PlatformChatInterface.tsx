@@ -28,6 +28,7 @@ import { FileUploadStatus } from "./PlatformChatInterface/types";
 import clsx from "clsx";
 import AtSelectorComponent from "./components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
+import { useViewStore } from "@/utils/store";
 import EmptyChatInterface from "./PlatformChatInterface/components/EmptyChatInterface/EmptyChatInterface";
 import { requestHelp, stopAgent } from "@/api/agentRoutes";
 import ModelSelector from "./components/ModelSelector";
@@ -67,18 +68,15 @@ export default function PlatformChatInterface({
 		activeChatEntity,
 		setIsWaitingForResponse,
 	} = usePlatformChat(folderId, chatTarget, includeContext);
-	const { setSidePanel, setCollapsed, contextFolder, selectedModel, setSelectedModel, selectedAgentType, setSelectedAgentType, selectedContexts, setSelectedContexts } = useChatStore();
+	const { setSidePanel, setCollapsed, contextFolder, selectedContexts, setSelectedContexts } = useChatStore();
+	const { preferredModel, setPreferredModel, preferredAgentType, setPreferredAgentType } = useViewStore();
 	
-	// Automatically switch to a valid model when switching modes
-	useEffect(() => {
-		if (selectedAgentType === "agent" && selectedModel === "OpenAI-gpt-5") {
-			// GPT-5 is not available in agent mode, switch to the first available model
-			const agentModels = MODELS.filter((model: { id: string }) => model.id !== "OpenAI-gpt-5");
-			if (agentModels.length > 0) {
-				setSelectedModel(agentModels[0].id);
-			}
-		}
-	}, [selectedAgentType, selectedModel, setSelectedModel]);
+	// Model change handler - directly updates the persisted store
+	const handleModelChange = (model: string) => {
+		setPreferredModel(model);
+	};
+	
+
 	
 	// Paste upload functionality
 	const { handlePasteEvent } = usePasteUpload({
@@ -210,24 +208,32 @@ export default function PlatformChatInterface({
 		}
 	};
 
-	// Smart scroll behavior: scroll to last user message
+	// Smart scroll behavior: different behavior for streaming vs loaded chat
 	useLayoutEffect(() => {
 		// Give DOM time to render the message
 		const timer = setTimeout(() => {
-			scrollToLastUserMessage();
+			const isCurrentlyStreaming = !!activeStreamingKey;
+			
+			if (isCurrentlyStreaming) {
+				// During streaming: keep user message at top, stream follows below
+				scrollToLastUserMessage();
+			} else {
+				// Chat loaded (not streaming): show bottom of last message at viewport bottom
+				scrollToBottomOfLastMessage();
+			}
 		}, 100);
 		return () => clearTimeout(timer);
-	}, [chats]);
+	}, [chats, activeStreamingKey]);
 
 	// Handle scroll when streaming state changes
 	useEffect(() => {
 		const isCurrentlyStreaming = !!activeStreamingKey;
 		
-		// When streaming ends, ensure we scroll to show last user message at top
+		// When streaming ends, ensure we scroll to show bottom of last message
 		if (wasStreamingRef.current && !isCurrentlyStreaming) {
-			// Streaming just ended - scroll to last user message
+			// Streaming just ended - scroll to bottom of last message
 			const timer = setTimeout(() => {
-				scrollToLastUserMessage();
+				scrollToBottomOfLastMessage();
 			}, 200);
 			return () => clearTimeout(timer);
 		}
@@ -235,15 +241,30 @@ export default function PlatformChatInterface({
 		wasStreamingRef.current = isCurrentlyStreaming;
 	}, [activeStreamingKey]);
 	
-	// Re-scroll when content might have changed during streaming
+	// Detect user scroll during streaming to stop auto-scrolling
 	useEffect(() => {
-		if (activeStreamingKey) {
-			// During streaming, periodically ensure last user message is visible
-			const interval = setInterval(() => {
-				scrollToLastUserMessage();
-			}, 1000);
-			return () => clearInterval(interval);
-		}
+		if (!activeStreamingKey || !chatContainerRef.current) return;
+		
+		const scrollContainer = chatContainerRef.current.querySelector(
+			"[data-radix-scroll-area-viewport]",
+		);
+		if (!scrollContainer) return;
+		
+		// Reset the flag when streaming starts
+		userHasScrolledRef.current = false;
+		
+		const handleUserScroll = () => {
+			// Mark that user has scrolled manually
+			userHasScrolledRef.current = true;
+		};
+		
+		scrollContainer.addEventListener("wheel", handleUserScroll);
+		scrollContainer.addEventListener("touchmove", handleUserScroll);
+		
+		return () => {
+			scrollContainer.removeEventListener("wheel", handleUserScroll);
+			scrollContainer.removeEventListener("touchmove", handleUserScroll);
+		};
 	}, [activeStreamingKey]);
 	
 
@@ -322,6 +343,7 @@ export default function PlatformChatInterface({
 							isOpen: true,
 							type: "folder",
 							resourceId:  folderId,
+							title : "Drive"
 						});
 					}}
 					size="sm"
@@ -344,8 +366,14 @@ export default function PlatformChatInterface({
 	// Ref to track the last user message element for smart scrolling
 	const lastUserMessageRef = useRef<HTMLDivElement | null>(null);
 	
+	// Ref to track the last message element (for scrolling to bottom of conversation)
+	const lastMessageRef = useRef<HTMLDivElement | null>(null);
+	
 	// Track if we were previously streaming (to detect when streaming ends)
 	const wasStreamingRef = useRef<boolean>(false);
+	
+	// Track if user has manually scrolled away during streaming
+	const userHasScrolledRef = useRef<boolean>(false);
 
 	// Ensure refs are created for each message
 	useEffect(() => {
@@ -369,6 +397,20 @@ export default function PlatformChatInterface({
 		return -1;
 	};
 	
+	// Find the index of the last visible message (for scroll to bottom behavior)
+	const getLastVisibleMessageIndex = (): number => {
+		if (!chats || chats.length === 0) return -1;
+		for (let i = chats.length - 1; i >= 0; i--) {
+			const message = chats[i].message;
+			const isVisible = typeof message === "string" || 
+				!["run_workflow", "send_data_to_workflow", "continue_conversation", "start_new_conversation"].includes(message?.function_call?.name || "");
+			if (isVisible) {
+				return i;
+			}
+		}
+		return -1;
+	};
+	
 	// Scroll to position the last user message at the top of the viewport
 	const scrollToLastUserMessage = (): void => {
 		if (lastUserMessageRef.current && chatContainerRef.current) {
@@ -384,6 +426,30 @@ export default function PlatformChatInterface({
 				// with a small offset for visual breathing room
 				const offset = 16; // 16px from the top
 				const targetScroll = scrollContainer.scrollTop + (messageRect.top - containerRect.top) - offset;
+				
+				scrollContainer.scrollTo({
+					top: Math.max(0, targetScroll),
+					behavior: "smooth",
+				});
+			}
+		}
+	};
+	
+	// Scroll to show the bottom of the last message at the bottom of the viewport
+	const scrollToBottomOfLastMessage = (): void => {
+		if (lastMessageRef.current && chatContainerRef.current) {
+			const scrollContainer = chatContainerRef.current.querySelector(
+				"[data-radix-scroll-area-viewport]",
+			);
+			if (scrollContainer) {
+				// Get the position of the last message relative to the scroll container
+				const messageRect = lastMessageRef.current.getBoundingClientRect();
+				const containerRect = scrollContainer.getBoundingClientRect();
+				
+				// Calculate scroll position to put the bottom of the message at the bottom of viewport
+				// with a small offset for visual breathing room
+				const offset = 24; // 24px from the bottom
+				const targetScroll = scrollContainer.scrollTop + (messageRect.bottom - containerRect.bottom) + offset;
 				
 				scrollContainer.scrollTo({
 					top: Math.max(0, targetScroll),
@@ -447,8 +513,8 @@ export default function PlatformChatInterface({
 
 	// Update the regular chat input section
 	const renderChatInput = (): React.ReactNode => (
-		<div className="px-4 py-2 flex flex-col justify-end">
-			<div className="relative overflow-hidden rounded-lg border border-black bg-background focus-within:ring-1 focus-within:ring-ring">
+		<div className="flex flex-col justify-end">
+			<div className="relative overflow-hidden rounded-t-2xl  border-t border-l border-r border-gray bg-background shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.1)]">
 				<Label className="sr-only" htmlFor="message">
 					Message
 				</Label>
@@ -501,13 +567,13 @@ export default function PlatformChatInterface({
 					<div className="flex items-center gap-2">
 						{loadDocumentPanel()}
 						<AgentTypeSelector 
-							onAgentTypeChange={setSelectedAgentType}
-							selectedAgentType={selectedAgentType}
+							onAgentTypeChange={setPreferredAgentType}
+							selectedAgentType={preferredAgentType}
 						/>
 						<ModelSelector 
-							onModelChange={setSelectedModel}
-							selectedModel={selectedModel}
-							selectedAgentType={selectedAgentType}
+							onModelChange={handleModelChange}
+							selectedModel={preferredModel}
+							selectedAgentType={preferredAgentType}
 						/>
 					</div>
 					<Button
@@ -552,12 +618,14 @@ export default function PlatformChatInterface({
 				<ScrollArea
 					className="flex-grow px-1 sm:px-3 pb-4"
 					ref={chatContainerRef}
+					scrollbarClassName="!fixed !right-0 !top-0 !h-screen"
 				>
 					<div className="pt-2">
 						
 						{chats.map((history, index) => {
 						const isUserMessage = history.sender.toLowerCase() === "user";
 						const isLastUserMessage = isUserMessage && index === getLastUserMessageIndex();
+						const isLastVisibleMessage = index === getLastVisibleMessageIndex();
 						
 						return (
 							<div className="flex flex-col gap-2" key={index}>
@@ -568,7 +636,10 @@ export default function PlatformChatInterface({
 												? "flex justify-end mb-4"
 												: "block w-full"
 										}`}
-										ref={isLastUserMessage ? lastUserMessageRef : null}
+										ref={(el) => {
+											if (isLastUserMessage) lastUserMessageRef.current = el;
+											if (isLastVisibleMessage) lastMessageRef.current = el;
+										}}
 									>
 										<div
 											className={`${
@@ -577,7 +648,7 @@ export default function PlatformChatInterface({
 													: "w-full bg-white py-3 px-2 border-b border-slate-100 last:border-b-0 min-h-[40px] transition-all duration-200"
 											}`}
 										>
-											{shouldShowFlowllyLabel(index) && (
+											{shouldShowFlowllyLabel(index) && !(typeof history.message === "object" && history.message?.type === "stream") && (
 												<div className="flex text-xs text-slate-400 mb-1 pl-1">
 													Flowlly
 												</div>
@@ -614,9 +685,11 @@ export default function PlatformChatInterface({
 						);
 					})}
 					{/* Spacer to allow scrolling last user message to top */}
+					<ChatResponseFeedback />
 					<div className="min-h-[60vh]" />
 					</div>
-						<ChatResponseFeedback />
+						
+
 				</ScrollArea>
 			) : (
 				<div className="flex flex-col items-center justify-center h-full">
@@ -633,7 +706,7 @@ export default function PlatformChatInterface({
 			)}
 			{/* Only show this input area when there are chats */}
 			{chats && chats.length > 0 && (
-				<div className="sticky bottom-0 px-4 py-3 bg-white border-t border-slate-100 backdrop-blur-sm">
+				<div className="sticky bottom-0 px-4 pt-3 bg-white">
 					{activeProject && renderChatInput()}
 				</div>
 			)}

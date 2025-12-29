@@ -70,10 +70,10 @@ const parseFormConfig = (jsonString: string) => {
 interface FormField {
 	name: string;
 	label: string;
-	type: "text" | "textarea" | "attachment" | "select" | "checkbox" | "radio" | "number" | "email" | "password" | "date" | "tel" | "group";
+	type: "text" | "textarea" | "attachment" | "select" | "multiselect" | "checkbox" | "radio" | "number" | "email" | "password" | "date" | "tel" | "group";
 	required?: boolean;
 	placeholder?: string;
-	value?: string; // Predefined value for the field
+	value?: string | string[]; // Predefined value for the field (string[] for multiselect)
 	readonly?: boolean; // Whether the field is read-only
 	options?: string[] | { label: string; value: string }[]; // Support both string arrays and object arrays
 	multiple?: boolean;
@@ -140,7 +140,12 @@ const FormDirective: React.FC<FormDirectiveProps> = ({
 						Object.assign(initialValues, nestedValues);
 					} else if (field.value !== undefined) {
 						// Set initial value if provided
-						initialValues[field.name] = field.value;
+						// For multiselect, ensure value is an array
+						if (field.type === "multiselect") {
+							initialValues[field.name] = Array.isArray(field.value) ? field.value : [field.value];
+						} else {
+							initialValues[field.name] = field.value;
+						}
 					}
 				});
 				
@@ -238,6 +243,11 @@ const FormDirective: React.FC<FormDirectiveProps> = ({
 						if (field.type === "attachment") {
 							const fieldDocuments = getSelectedDocuments(field.name, field.type);
 							if (fieldDocuments.length === 0) {
+								return false;
+							}
+						} else if (field.type === "multiselect") {
+							// For multiselect, check if at least one option is selected
+							if (!value || !Array.isArray(value) || value.length === 0) {
 								return false;
 							}
 						} else {
@@ -417,6 +427,97 @@ ${JSON.stringify(completeFormData, null, 2)}
 						</div>
 					);
 
+				case "multiselect":
+					const selectedValues: string[] = Array.isArray(fieldValue) ? fieldValue : (fieldValue ? [fieldValue] : []);
+					
+					const handleMultiSelectChange = (optionValue: string, checked: boolean) => {
+						if (isReadonly) return;
+						
+						let newValues: string[];
+						if (checked) {
+							newValues = [...selectedValues, optionValue];
+						} else {
+							newValues = selectedValues.filter((v) => v !== optionValue);
+						}
+						handleFormInputChange(field.name, newValues);
+					};
+					
+					return (
+						<div className="mb-4" key={fieldId}>
+							<label className={labelClasses}>
+								{field.label}
+							</label>
+							<div className={`border border-gray-300 rounded-md p-3 ${isReadonly ? "bg-gray-50" : "bg-white"}`}>
+								{selectedValues.length > 0 && (
+									<div className="flex flex-wrap gap-2 mb-3 pb-3 border-b border-gray-200">
+										{selectedValues.map((value) => {
+											const option = field.options?.find((opt) => 
+												(typeof opt === "string" ? opt : opt.value) === value
+											);
+											const label = option 
+												? (typeof option === "string" ? option : option.label)
+												: value;
+											
+											return (
+												<span
+													className={`inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-md ${isReadonly ? "" : "pr-1"}`}
+													key={value}
+												>
+													{label}
+													{!isReadonly && (
+														<button
+															className="ml-1 p-0.5 hover:bg-blue-200 rounded"
+															disabled={isPending}
+															onClick={() => handleMultiSelectChange(value, false)}
+															type="button"
+														>
+															<X className="h-3 w-3" />
+														</button>
+													)}
+												</span>
+											);
+										})}
+									</div>
+								)}
+								<div className="space-y-2 max-h-48 overflow-y-auto">
+									{field.options?.map((option, index) => {
+										const optionValue = typeof option === "string" ? option : option.value;
+										const optionLabel = typeof option === "string" ? option : option.label;
+										const isChecked = selectedValues.includes(optionValue);
+										const checkboxId = `${fieldId}-${index}`;
+										
+										return (
+											<div className="flex items-center" key={checkboxId}>
+												<input
+													checked={isChecked}
+													className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded ${isReadonly ? "cursor-not-allowed" : "cursor-pointer"}`}
+													disabled={isPending || isReadonly}
+													id={checkboxId}
+													onChange={(e) => handleMultiSelectChange(optionValue, e.target.checked)}
+													type="checkbox"
+												/>
+												<label 
+													className={`ml-2 text-sm text-gray-700 ${isReadonly ? "cursor-not-allowed" : "cursor-pointer"}`} 
+													htmlFor={checkboxId}
+												>
+													{optionLabel}
+												</label>
+											</div>
+										);
+									})}
+								</div>
+								{(!field.options || field.options.length === 0) && (
+									<p className="text-sm text-gray-500 italic">No options available</p>
+								)}
+							</div>
+							{selectedValues.length > 0 && (
+								<p className="mt-1 text-xs text-gray-500">
+									{selectedValues.length} option{selectedValues.length !== 1 ? "s" : ""} selected
+								</p>
+							)}
+						</div>
+					);
+
 				case "checkbox":
 					return (
 						<div className="mb-4" key={fieldId}>
@@ -545,13 +646,13 @@ ${JSON.stringify(completeFormData, null, 2)}
 					
 					return (
 						<div className="mb-4" key={fieldId}>
-							<div className="bg-orange-50 border border-orange-200 rounded-md p-4">
+							<div className=" border  rounded-md p-4">
 								<div className="mb-3">
 									<div className="flex items-center gap-2 mb-2">
-										<span className="text-orange-600 font-medium">⚠ Unsupported field type:</span>
-										<code className="bg-orange-100 px-2 py-1 rounded text-sm">{field.type}</code>
+										{/* <span className="text-orange-600 font-medium">⚠ Unsupported field type:</span> */}
+										<code className=" px-2 py-1 rounded text-sm">{field.type}</code>
 									</div>
-									<div className="text-sm text-orange-700">
+									<div className="text-sm ">
 										<p><strong>Field:</strong> {field.label}</p>
 										{field.placeholder && <p><strong>Expected:</strong> {field.placeholder}</p>}
 										{field.options && <p><strong>Options:</strong> {field.options.join(", ")}</p>}
@@ -559,12 +660,12 @@ ${JSON.stringify(completeFormData, null, 2)}
 								</div>								
 								<div className="space-y-3">
 									<div>
-										<label className={`${labelClasses} text-orange-800`} htmlFor={`${fieldId}_fallback`}>
-											{field.label} (Fallback Input)
+										{/* <label className={`${labelClasses} text-orange-800`} htmlFor={`${fieldId}_fallback`}>
+											{field.label} 
 											{isRequired && <span className="text-red-500 ml-1">*</span>}
-										</label>
+										</label> */}
 										<textarea
-											className={`${inputClasses} border-orange-300 focus:ring-orange-500 focus:border-orange-500`}
+											className={`${inputClasses} `}
 											disabled={isPending}
 											id={`${fieldId}_fallback`}
 											name={fallbackFieldName}
@@ -576,13 +677,13 @@ ${JSON.stringify(completeFormData, null, 2)}
 										/>
 									</div>									
 									<div>
-										<label className="block text-sm font-medium text-orange-800 mb-2">
+										<label className="block text-sm font-medium  mb-2">
 											Supporting Documents (Optional)
 										</label>
 										<div className="space-y-3">
 											<div className="flex items-center gap-3">
 												{loadDocumentPanel(fallbackAttachmentName, "attachment")}
-												<span className="text-sm text-orange-700">
+												<span className="text-sm ">
 													{fallbackDocuments.length === 0 
 														? "Click to attach supporting documents"
 														: `${fallbackDocuments.length} document${fallbackDocuments.length !== 1 ? "s" : ""} attached`

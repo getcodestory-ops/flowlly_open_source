@@ -1,12 +1,10 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FileText, CornerDownLeft, Loader2, X, Search, Folder } from "lucide-react";
+import { CornerDownLeft, Loader2, Search, Folder, X } from "lucide-react";
 import { useChatStore } from "@/hooks/useChatStore";
-import { useStore } from "@/utils/store";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useStore, useViewStore } from "@/utils/store";
+import { DocTextArea, DocInput, DocRefButton, InlineDocRef } from "./DocComponents";
+import ModelSelector from "../../../../components/ModelSelector";
 
 interface KnowledgeManagerProps {
 	isPending?: boolean;
@@ -33,121 +31,15 @@ export interface KnowledgeManagerFormData {
 	}>;
 }
 
-interface DocumentSectionProps {
-	label: string;
-	isPending: boolean;
-	documents: Array<{
-		id: string;
-		name: string;
-		extension: string;
-	}>;
-	onRemoveDocument: (docId: string) => void;
-	loadDocumentPanel: () => React.ReactNode;
-}
-
-const DocumentSection = React.memo(({ 
-	label,
-	isPending,
-	documents,
-	onRemoveDocument,
-	loadDocumentPanel,
-}: DocumentSectionProps) => {
-	return (
-		<div className="space-y-3">
-			<div className="flex items-center justify-between">
-				<Label className="text-sm font-medium text-gray-700">
-					{label} <span className="text-gray-400">(optional)</span>
-				</Label>
-				<div className="flex-shrink-0">
-					{loadDocumentPanel()}
-				</div>
-			</div>
-			{documents.length > 0 && (
-				<div className="space-y-2">
-					{documents.map((document) => (
-						<div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-md border border-blue-200" key={document.id}>
-							<FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
-							<span className="text-sm text-blue-900 truncate flex-1" title={document.name}>
-								{document.name}
-							</span>
-							<Button
-								className="h-6 w-6 p-0 hover:bg-blue-200"
-								disabled={isPending}
-								onClick={() => onRemoveDocument(document.id)}
-								size="sm"
-								type="button"
-								variant="ghost"
-							>
-								<X className="h-3 w-3 text-blue-600" />
-							</Button>
-						</div>
-					))}
-				</div>
-			)}
-		</div>
-	);
-});
-
-DocumentSection.displayName = "DocumentSection";
-
-interface FolderSectionProps {
-	label: string;
-	isPending: boolean;
-	folders: Array<{
-		id: string;
-		name: string;
-	}>;
-	onRemoveFolder: (folderId: string) => void;
-}
-
-const FolderSection = React.memo(({ 
-	label,
-	isPending,
-	folders,
-	onRemoveFolder,
-}: FolderSectionProps) => {
-	return (
-		<div className="space-y-3">
-			<Label className="text-sm font-medium text-gray-700">
-				{label} <span className="text-gray-400">(optional)</span>
-			</Label>
-			{folders.length > 0 && (
-				<div className="space-y-2">
-					{folders.map((folder) => (
-						<div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-md border border-green-200" key={folder.id}>
-							<Folder className="h-4 w-4 text-green-600 flex-shrink-0" />
-							<span className="text-sm text-green-900 truncate flex-1" title={folder.name}>
-								{folder.name}
-							</span>
-							<Button
-								className="h-6 w-6 p-0 hover:bg-green-200"
-								disabled={isPending}
-								onClick={() => onRemoveFolder(folder.id)}
-								size="sm"
-								type="button"
-								variant="ghost"
-							>
-								<X className="h-3 w-3 text-green-600" />
-							</Button>
-						</div>
-					))}
-				</div>
-			)}
-		</div>
-	);
-});
-
-FolderSection.displayName = "FolderSection";
-
 export default function KnowledgeManager({
 	isPending = false,
 	isWaitingForResponse = false,
 	setChatInput,
 	handleSubmit,
-	loadDocumentPanel,
 }: KnowledgeManagerProps) {
-	const { selectedContexts, setSelectedContexts, contextFolder } = useChatStore();
+	const { selectedContexts, setSelectedContexts, contextFolder, setSidePanel, setCollapsed, setContextFolder } = useChatStore();
 	const { activeChatEntity } = useStore();
+	const { preferredModel, setPreferredModel, preferredAgentType } = useViewStore();
 	const currentChatId = activeChatEntity?.id || "untitled";
 	const selectedDocuments = selectedContexts[currentChatId] || [];
 
@@ -161,12 +53,24 @@ export default function KnowledgeManager({
 		selectedFolders: [],
 	});
 
-	// Separate folders from documents (assuming contextFolder represents selected folders)
+	// Separate folders from documents
 	const selectedFolders = contextFolder.id ? [{ id: contextFolder.id, name: contextFolder.name }] : [];
 
-	// Use ref to track the last prompt to prevent unnecessary updates
+	// Use ref to track the last prompt
 	const lastPromptRef = useRef<string>("");
 	const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+	// Document panel opener
+	const openDocumentPanel = useCallback(() => {
+		setCollapsed(true);
+		setSidePanel({
+			isOpen: true,
+			type: "folder",
+			resourceId: currentChatId,
+			contextId: currentChatId,
+			title: "Select Documents to Search",
+		});
+	}, [setCollapsed, setSidePanel, currentChatId]);
 
 	const handleInputChange = useCallback((field: keyof KnowledgeManagerFormData, value: string) => {
 		setFormData((prev) => ({
@@ -192,22 +96,18 @@ export default function KnowledgeManager({
 
 		let prompt = "Use the search agent to find the following information from the project documents:\n\n";
 
-		// Add main search query
 		if (searchQuery) {
 			prompt += `**Search Query:** ${searchQuery}\n\n`;
 		}
 
-		// Add search context
 		if (searchContext) {
 			prompt += `**Search Context:** ${searchContext}\n\n`;
 		}
 
-		// Add specific questions
 		if (specificQuestions) {
 			prompt += `**Specific Questions to Answer:**\n${specificQuestions}\n\n`;
 		}
 
-		// Add selected documents if any
 		if (selectedDocuments.length > 0) {
 			prompt += "**Focus on these specific documents:**\n";
 			selectedDocuments.forEach((doc) => {
@@ -220,7 +120,6 @@ export default function KnowledgeManager({
 			});
 		}
 
-		// Add selected folders if any
 		if (selectedFolders.length > 0) {
 			prompt += "**Focus search within these folders:**\n";
 			selectedFolders.forEach((folder) => {
@@ -243,7 +142,6 @@ export default function KnowledgeManager({
 9. Highlight the most important and relevant findings at the top.
 :::`;
 
-		// Add additional instructions if provided
 		if (additionalInstructions) {
 			prompt += `\n\n**Additional Instructions:**\n${additionalInstructions}`;
 		}
@@ -251,163 +149,204 @@ export default function KnowledgeManager({
 		return prompt;
 	}, [formData, selectedDocuments, selectedFolders]);
 
-	// Update chat input with debouncing and change detection
+	// Update chat input with debouncing
 	useEffect(() => {
 		if (isFormValid && !isWaitingForResponse) {
-			// Clear existing timeout
 			if (debounceTimeoutRef.current) {
 				clearTimeout(debounceTimeoutRef.current);
 			}
 
-			// Set new timeout for debouncing
 			debounceTimeoutRef.current = setTimeout(() => {
 				const newPrompt = generatePrompt();
 				
-				// Only update if the prompt has actually changed
 				if (newPrompt !== lastPromptRef.current) {
 					lastPromptRef.current = newPrompt;
 					setChatInput(newPrompt);
 				}
-			}, 300); // 300ms debounce
+			}, 300);
 		}
 
-		// Cleanup timeout on unmount
 		return () => {
 			if (debounceTimeoutRef.current) {
 				clearTimeout(debounceTimeoutRef.current);
 			}
 		};
-	}, [formData, selectedDocuments, selectedFolders, isFormValid, isWaitingForResponse, generatePrompt]);
+	}, [formData, selectedDocuments, selectedFolders, isFormValid, isWaitingForResponse, generatePrompt, setChatInput]);
 
 	const removeDocument = useCallback((docId: string) => {
 		const newContexts = selectedDocuments.filter((doc) => doc.id !== docId);
 		setSelectedContexts(currentChatId, newContexts);
 	}, [selectedDocuments, setSelectedContexts, currentChatId]);
 
-	const removeFolder = useCallback((folderId: string) => {
-		// Remove folder from context using the chat store
-		const { setContextFolder } = useChatStore.getState();
+	const removeFolder = useCallback(() => {
 		setContextFolder(null, "");
-	}, []);
+	}, [setContextFolder]);
+
+	const totalSelectedItems = selectedDocuments.length + selectedFolders.length;
 
 	return (
-		<ScrollArea className="w-full space-y-6 bg-white rounded-xl border border-slate-100 p-6 shadow-sm h-[85vh] p-16">
-			<div className="text-center">
-				<h3 className="text-lg font-semibold text-gray-900 mb-2">
+		<div className="max-w-[816px] mx-auto bg-white shadow-sm border border-gray-200 min-h-[900px]">
+			{/* Document content */}
+			<div className="px-12 py-10 lg:px-16 lg:py-12">
+				{/* Document Title */}
+				<h1 className="text-3xl font-normal text-gray-900 mb-4">
 					Knowledge Search & Discovery
-				</h3>
-				<p className="text-sm text-gray-600">
-					Search for specific information across your project documents. Provide search parameters and optionally select specific files or folders to focus the search.
+				</h1>
+
+				{/* Description */}
+				<p className="text-gray-600 mb-10 leading-relaxed">
+					Search for specific information across your project documents. Provide search parameters 
+					and optionally select specific files or folders to focus the search.
 				</p>
-				{(selectedDocuments.length > 0 || selectedFolders.length > 0) && (
-					<p className="text-xs text-blue-600 mt-2">
-						{selectedDocuments.length} document{selectedDocuments.length !== 1 ? "s" : ""} 
-						{selectedFolders.length > 0 && ` and ${selectedFolders.length} folder${selectedFolders.length !== 1 ? "s" : ""}`} selected
-					</p>
-				)}
-			</div>
-			<div className="space-y-6">
+
 				{/* Main Search Query */}
-				<div className="space-y-3">
-					<Label className="text-sm font-medium text-gray-700">
-						Search Query <span className="text-red-500">*</span>
-					</Label>
-					<Input
-						className="w-full"
-						disabled={isPending}
-						onChange={(e) => handleInputChange("searchQuery", e.target.value)}
-						placeholder="What information are you looking for? (e.g., 'safety protocols', 'budget requirements', 'project timeline')"
+				<div className="mb-8">
+					<h2 className="text-base font-semibold italic text-gray-900 mb-4">
+						Search Query
+					</h2>
+					<DocInput
 						value={formData.searchQuery}
+						onChange={(value) => handleInputChange("searchQuery", value)}
+						placeholder="What information are you looking for? (e.g., 'safety protocols', 'budget requirements', 'project timeline')"
+						disabled={isPending}
 					/>
 				</div>
+
 				{/* Search Context */}
-				<div className="space-y-3">
-					<Label className="text-sm font-medium text-gray-700">
-						Search Context <span className="text-gray-400">(optional)</span>
-					</Label>
-					<Textarea
-						className="w-full resize-none"
-						disabled={isPending}
-						onChange={(e) => handleInputChange("searchContext", e.target.value)}
-						placeholder="Provide additional context for your search (e.g., 'for the construction project', 'related to compliance requirements')"
+				<div className="mb-8">
+					<h2 className="text-base font-semibold italic text-gray-900 mb-4">
+						Search Context
+					</h2>
+					<DocTextArea
 						value={formData.searchContext}
+						onChange={(value) => handleInputChange("searchContext", value)}
+						placeholder="Provide additional context for your search (e.g., 'for the construction project', 'related to compliance requirements')"
+						disabled={isPending}
 					/>
 				</div>
+
 				{/* Specific Questions */}
-				<div className="space-y-3">
-					<Label className="text-sm font-medium text-gray-700">
-						Specific Questions <span className="text-gray-400">(optional)</span>
-					</Label>
-					<Textarea
-						className="w-full resize-none"
-						disabled={isPending}
-						onChange={(e) => handleInputChange("specificQuestions", e.target.value)}
-						placeholder="List specific questions you want answered (one per line)"
+				<div className="mb-8">
+					<h2 className="text-base font-semibold italic text-gray-900 mb-4">
+						Specific Questions
+					</h2>
+					<DocTextArea
 						value={formData.specificQuestions}
+						onChange={(value) => handleInputChange("specificQuestions", value)}
+						placeholder="List specific questions you want answered (one per line)"
+						disabled={isPending}
 					/>
 				</div>
+
 				{/* Document Selection */}
-				<DocumentSection
-					documents={selectedDocuments}
-					isPending={isPending}
-					label="Specific Documents to Search"
-					loadDocumentPanel={loadDocumentPanel}
-					onRemoveDocument={removeDocument}
-				/>
+				<div className="mb-8">
+					<h2 className="text-base font-semibold italic text-gray-900 mb-4">
+						Specific Documents to Search
+					</h2>
+					<div className="flex items-start gap-2 mb-2">
+					<DocRefButton
+						onClick={openDocumentPanel}
+						hasDocuments={selectedDocuments.length > 0}
+						disabled={isPending}
+						label="Select documents"
+						colorTheme="blue"
+					/>
+					<InlineDocRef
+						documents={selectedDocuments}
+						onRemove={removeDocument}
+						disabled={isPending}
+						colorTheme="blue"
+					/>
+					</div>
+				</div>
+
 				{/* Folder Selection */}
-				<FolderSection
-					folders={selectedFolders}
-					isPending={isPending}
-					label="Specific Folders to Search"
-					onRemoveFolder={removeFolder}
-				/>
+				{selectedFolders.length > 0 && (
+					<div className="mb-8">
+						<h2 className="text-base font-semibold italic text-gray-900 mb-4">
+							Selected Folders
+						</h2>
+						<div className="flex items-start gap-2">
+							{selectedFolders.map((folder) => (
+								<span key={folder.id} className="inline-flex items-center gap-1 text-blue-600">
+									<Folder className="h-3.5 w-3.5 inline" />
+									<span className="text-sm">{folder.name}</span>
+									{!isPending && (
+										<button
+											onClick={() => removeFolder()}
+											className="hover:text-red-500 transition-colors"
+										>
+											<X className="h-3 w-3" />
+										</button>
+									)}
+								</span>
+							))}
+						</div>
+					</div>
+				)}
+
 				{/* Output Format */}
-				<div className="space-y-3">
-					<Label className="text-sm font-medium text-gray-700">
-						Output Format <span className="text-gray-400">(optional)</span>
-					</Label>
-					<Input
-						className="w-full"
-						disabled={isPending}
-						onChange={(e) => handleInputChange("outputFormat", e.target.value)}
-						placeholder="How should results be formatted? (e.g., 'bullet points', 'detailed report', 'table format')"
+				<div className="mb-8">
+					<h2 className="text-base font-semibold italic text-gray-900 mb-4">
+						Output Format
+					</h2>
+					<DocInput
 						value={formData.outputFormat}
-					/>
-				</div>
-				{/* Additional Instructions */}
-				<div className="space-y-3">
-					<Label className="text-sm font-medium text-gray-700">
-						Additional Instructions <span className="text-gray-400">(optional)</span>
-					</Label>
-					<Textarea
-						className="w-full resize-none"
+						onChange={(value) => handleInputChange("outputFormat", value)}
+						placeholder="How should results be formatted? (e.g., 'bullet points', 'detailed report', 'table format')"
 						disabled={isPending}
-						onChange={(e) => handleInputChange("additionalInstructions", e.target.value)}
-						placeholder="Any additional instructions for the search agent..."
-						value={formData.additionalInstructions}
 					/>
 				</div>
+
+				{/* Additional Instructions */}
+				<div className="mb-12">
+					<h2 className="text-base font-semibold italic text-gray-900 mb-4">
+						Additional Instructions
+					</h2>
+					<DocTextArea
+						value={formData.additionalInstructions}
+						onChange={(value) => handleInputChange("additionalInstructions", value)}
+						placeholder="Any additional instructions for the search agent..."
+						disabled={isPending}
+					/>
+				</div>
+
+				{/* Status and submit */}
+				<div className="pt-6 border-t border-gray-200">
+					<div className="flex items-center justify-between">
+						<div className="text-sm text-gray-500">
+							{totalSelectedItems > 0 && (
+								<span>{totalSelectedItems} item{totalSelectedItems !== 1 ? "s" : ""} selected for search</span>
+							)}
+						</div>
+						<div className="flex items-center gap-3">
+							<ModelSelector 
+								selectedModel={preferredModel}
+								onModelChange={setPreferredModel}
+								selectedAgentType={preferredAgentType}
+							/>
+							<Button
+								onClick={handleFormSubmit}
+								disabled={isWaitingForResponse || !isFormValid}
+								className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+							>
+								{isWaitingForResponse ? (
+									<>
+										<Loader2 className="h-4 w-4 animate-spin mr-2" />
+										Searching...
+									</>
+								) : (
+									<>
+										<Search className="h-4 w-4 mr-2" />
+										Search Knowledge
+										<CornerDownLeft className="h-4 w-4 ml-2" />
+									</>
+								)}
+							</Button>
+						</div>
+					</div>
+				</div>
 			</div>
-			<div className="flex justify-end pt-4 border-t border-gray-100">
-				<Button
-					className="bg-indigo-500 hover:bg-indigo-600 text-white px-6"
-					disabled={isWaitingForResponse || !isFormValid}
-					onClick={handleFormSubmit}
-				>
-					{isWaitingForResponse ? (
-						<>
-							<Loader2 className="h-4 w-4 animate-spin mr-2" />
-							Searching...
-						</>
-					) : (
-						<>
-							<Search className="h-4 w-4 mr-2" />
-							Search Knowledge
-							<CornerDownLeft className="h-4 w-4 ml-2" />
-						</>
-					)}
-				</Button>
-			</div>
-		</ScrollArea>
+		</div>
 	);
-} 
+}

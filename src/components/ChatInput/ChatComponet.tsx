@@ -59,13 +59,13 @@ export default function ChatComponent({ heightOffset = 20 }: {heightOffset?: num
 	}, [isDragging]);
 
 	return (
-		<div className="p-2">
+		<div className="h-full">
 			<Toaster />
 			{activeProject && (
 				<div className="flex h-full resizable-container">
 					<div 
 						className={clsx(
-							"flex-shrink-0",
+							"flex-shrink-0 h-full",
 							!isDragging && "transition-all duration-200 ease-in-out",
 						)}
 						style={{ width: hasOpenTabs ? `${panelWidth}%` : "100%" }}
@@ -78,21 +78,47 @@ export default function ChatComponent({ heightOffset = 20 }: {heightOffset?: num
 					</div>
 					{hasOpenTabs && (
 						<>
+							{/* Resizable divider */}
 							<div
 								className={clsx(
-									"w-1 bg-gray-200 hover:bg-blue-400 cursor-col-resize flex-shrink-0",
-									!isDragging && "transition-colors duration-200",
-									isDragging && "bg-blue-500",
+									"group relative w-[6px] cursor-col-resize flex-shrink-0 flex items-center justify-center",
+									!isDragging && "transition-all duration-200",
 								)}
 								onMouseDown={handleMouseDown}
 							>
-								<div className="w-full h-full flex items-center justify-center">
-									<div className="w-0.5 h-8 bg-gray-400 rounded-full opacity-60" />
+								{/* Background track */}
+								<div className={clsx(
+									"absolute inset-y-0 transition-all duration-200 w-[2px] ",
+									isDragging 
+										? "bg-blue-500 " 
+										: "bg-gray-200 group-hover:bg-blue-400",
+								)} />
+								
+								{/* Handle grip dots */}
+								<div className={clsx(
+									"relative z-10 flex flex-col gap-1 py-1 px-1 rounded-md transition-all duration-200",
+									isDragging 
+										? "bg-blue-500" 
+										: "bg-transparent group-hover:bg-blue-100",
+								)}>
+									{[...Array(3)].map((_, i) => (
+										<div 
+											className={clsx(
+												"w-1 h-1 rounded-full transition-colors duration-200",
+												isDragging 
+													? "bg-white" 
+													: "bg-gray-400 group-hover:bg-blue-500",
+											)}
+											key={i} 
+										/>
+									))}
 								</div>
 							</div>
+							
+							{/* Right panel */}
 							<div 
 								className={clsx(
-									"flex-shrink-0",
+									"flex-shrink-0 h-full",
 									!isDragging && "transition-all duration-200 ease-in-out",
 								)}
 								style={{ width: `${100 - panelWidth}%` }}

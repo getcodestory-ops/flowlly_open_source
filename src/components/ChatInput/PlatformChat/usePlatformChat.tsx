@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useStore } from "@/utils/store";
+import { useStore, useViewStore } from "@/utils/store";
 import { talkToAgent, ProcessedFile, sendMessageToStreamingAgent } from "@/api/agentRoutes";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
@@ -30,8 +30,8 @@ export function usePlatformChat(
 	const setIsWaitingForResponse = useChatStore((state) => state.setIsWaitingForResponse);
 	const isWaitingForResponse = useChatStore((state) => state.isWaitingForResponse);
 	const chatTypeTags = useChatStore((state) => state.chatTypeTags);
-	const selectedModel = useChatStore((state) => state.selectedModel);
-	const selectedAgentType = useChatStore((state) => state.selectedAgentType);
+	const selectedModel = useViewStore((state) => state.preferredModel);
+	const selectedAgentType = useViewStore((state) => state.preferredAgentType);
 	// Note: streamingKey is now detected per-chat instead of using global state
 
 

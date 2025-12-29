@@ -1,10 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FileText, CornerDownLeft, Loader2 } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -12,6 +8,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useViewStore } from "@/utils/store";
+import { DocTextArea, DocInput } from "./DocComponents";
+import ModelSelector from "../../../../components/ModelSelector";
 
 interface DocumentGenerationProps {
 	isPending?: boolean;
@@ -40,8 +39,8 @@ export default function DocumentGeneration({
 	isWaitingForResponse = false,
 	setChatInput,
 	handleSubmit,
-	loadDocumentPanel,
 }: DocumentGenerationProps): React.JSX.Element {
+	const { preferredModel, setPreferredModel, preferredAgentType } = useViewStore();
 	const [formData, setFormData] = useState<DocumentGenerationFormData>({
 		documentName: "",
 		documentType: "md",
@@ -88,24 +87,20 @@ export default function DocumentGeneration({
 	// Update chat input with debouncing and change detection
 	useEffect(() => {
 		if (isFormValid && !isWaitingForResponse) {
-			// Clear existing timeout
 			if (debounceTimeoutRef.current) {
 				clearTimeout(debounceTimeoutRef.current);
 			}
 
-			// Set new timeout for debouncing
 			debounceTimeoutRef.current = setTimeout(() => {
 				const newPrompt = generatePrompt();
 				
-				// Only update if the prompt has actually changed
 				if (newPrompt !== lastPromptRef.current) {
 					lastPromptRef.current = newPrompt;
 					setChatInput(newPrompt);
 				}
-			}, 300); // 300ms debounce
+			}, 300);
 		}
 
-		// Cleanup timeout on unmount
 		return () => {
 			if (debounceTimeoutRef.current) {
 				clearTimeout(debounceTimeoutRef.current);
@@ -114,44 +109,46 @@ export default function DocumentGeneration({
 	}, [formData, isFormValid, isWaitingForResponse, generatePrompt, setChatInput]);
 
 	return (
-		<ScrollArea className="w-full space-y-6 bg-white rounded-xl border border-slate-100 shadow-sm h-[85vh] p-16">
-			<div className="text-center">
-				<h3 className="text-lg font-semibold text-gray-900 mb-2">
+		<div className="max-w-[816px] mx-auto bg-white shadow-sm border border-gray-200 min-h-[900px]">
+			{/* Document content */}
+			<div className="px-12 py-10 lg:px-16 lg:py-12">
+				{/* Document Title */}
+				<h1 className="text-3xl font-normal text-gray-900 mb-4">
 					Document Generation
-				</h3>
-				<p className="text-sm text-gray-600">
+				</h1>
+
+				{/* Description */}
+				<p className="text-gray-600 mb-10 leading-relaxed">
 					Create a new document in the sandbox. Specify the document name, type, and optional content instructions.
 				</p>
-			</div>
-			<div className="space-y-6">
+
 				{/* Document Name */}
-				<div className="space-y-3">
-					<Label className="text-sm font-medium text-gray-700">
-						Document Name <span className="text-red-500">*</span>
-					</Label>
-					<Input
-						className="w-full"
-						disabled={isPending}
-						onChange={(e) => handleInputChange("documentName", e.target.value)}
-						placeholder="Enter document name (without extension)"
+				<div className="mb-8">
+					<h2 className="text-base font-semibold italic text-gray-900 mb-4">
+						Document Name
+					</h2>
+					<DocInput
 						value={formData.documentName}
+						onChange={(value) => handleInputChange("documentName", value)}
+						placeholder="Enter document name (without extension)"
+						disabled={isPending}
 					/>
-					<p className="text-xs text-gray-500">
+					<p className="text-xs text-gray-400 mt-2">
 						Enter the name without extension (e.g., "my-document" not "my-document.txt")
 					</p>
 				</div>
 
 				{/* Document Type */}
-				<div className="space-y-3">
-					<Label className="text-sm font-medium text-gray-700">
-						Document Type <span className="text-red-500">*</span>
-					</Label>
+				<div className="mb-8">
+					<h2 className="text-base font-semibold italic text-gray-900 mb-4">
+						Document Type
+					</h2>
 					<Select
 						disabled={isPending}
 						onValueChange={(value) => handleInputChange("documentType", value)}
 						value={formData.documentType}
 					>
-						<SelectTrigger className="w-full">
+						<SelectTrigger className="w-full border-0 border-b border-gray-300 rounded-none focus:ring-0 shadow-none px-0">
 							<SelectValue placeholder="Select document type" />
 						</SelectTrigger>
 						<SelectContent>
@@ -162,65 +159,78 @@ export default function DocumentGeneration({
 							))}
 						</SelectContent>
 					</Select>
-					<p className="text-xs text-gray-500">
+					<p className="text-xs text-gray-400 mt-2">
 						Select the file type/extension for your document
 					</p>
 				</div>
 
 				{/* Content Instructions */}
-				<div className="space-y-3">
-					<Label className="text-sm font-medium text-gray-700">
-						Content Instructions <span className="text-gray-400">(optional)</span>
-					</Label>
-					<Textarea
-						className="w-full resize-none min-h-[200px]"
-						disabled={isPending}
-						onChange={(e) => handleInputChange("contentInstructions", e.target.value)}
-						placeholder="Describe what content should be in the document. Be specific about structure, sections, data, or any requirements. Leave empty for a basic template."
-						value={formData.contentInstructions}
-					/>
-					<p className="text-xs text-gray-500">
-						Provide detailed instructions for what the document should contain. The AI will generate content based on these instructions.
+				<div className="mb-8">
+					<h2 className="text-base font-semibold italic text-gray-900 mb-4">
+						Content Instructions
+					</h2>
+				<DocTextArea
+					value={formData.contentInstructions}
+					onChange={(value) => handleInputChange("contentInstructions", value)}
+					placeholder="Describe what content should be in the document. Be specific about structure, sections, data, or any requirements. Leave empty for a basic template."
+					disabled={isPending}
+					minHeight={100}
+					rows={4}
+				/>
+					<p className="text-xs text-gray-400 mt-2">
+						Provide detailed instructions for what the document should contain.
 					</p>
 				</div>
 
-				{/* Preview of filename */}
+				{/* Preview */}
 				{formData.documentName && (
-					<div className="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
-						<Label className="text-sm font-medium text-blue-900">
-							Document Preview
-						</Label>
+					<div className="mb-12 p-4 bg-violet-50 border border-violet-200 rounded">
+						<h3 className="text-sm font-medium text-violet-900 mb-2">Document Preview</h3>
 						<div className="flex items-center gap-2">
-							<FileText className="h-5 w-5 text-blue-600" />
-							<span className="text-sm font-mono text-blue-900">
+							<FileText className="h-5 w-5 text-violet-600" />
+							<span className="text-sm font-mono text-violet-900">
 								{formData.documentName}.{formData.documentType}
 							</span>
 						</div>
 					</div>
 				)}
 
-				{/* Action Button */}
-				<Button
-					className="w-full gap-2 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
-					disabled={isPending || !isFormValid}
-					onClick={handleSubmit}
-					size="lg"
-					type="button"
-				>
-					{isPending ? (
-						<>
-							<Loader2 className="h-4 w-4 animate-spin" />
-							Generating Document...
-						</>
-					) : (
-						<>
-							<FileText className="h-4 w-4" />
-							Generate Document
-							<CornerDownLeft className="h-4 w-4" />
-						</>
-					)}
-				</Button>
+				{/* Status and submit */}
+				<div className="pt-6 border-t border-gray-200">
+					<div className="flex items-center justify-between">
+						<div className="text-sm text-gray-500">
+							{formData.documentName && (
+								<span>Ready to create {formData.documentName}.{formData.documentType}</span>
+							)}
+						</div>
+						<div className="flex items-center gap-3">
+							<ModelSelector 
+								selectedModel={preferredModel}
+								onModelChange={setPreferredModel}
+								selectedAgentType={preferredAgentType}
+							/>
+							<Button
+								onClick={handleSubmit}
+								disabled={isPending || !isFormValid}
+								className="bg-violet-600 hover:bg-violet-700 text-white px-6"
+							>
+								{isPending ? (
+									<>
+										<Loader2 className="h-4 w-4 animate-spin mr-2" />
+										Generating Document...
+									</>
+								) : (
+									<>
+										<FileText className="h-4 w-4 mr-2" />
+										Generate Document
+										<CornerDownLeft className="h-4 w-4 ml-2" />
+									</>
+								)}
+							</Button>
+						</div>
+					</div>
+				</div>
 			</div>
-		</ScrollArea>
+		</div>
 	);
 }

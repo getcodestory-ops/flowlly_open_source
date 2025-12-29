@@ -90,9 +90,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 	// Ref for auto-scrolling thinking container
 	const thinkingScrollRef = useRef<HTMLDivElement>(null);
 	
-	// Ref for auto-scrolling stream content container
-	const streamScrollRef = useRef<HTMLDivElement>(null);
-	
 	// Add state to track stream completion for optimized polling
 	const streamCompleteRef = useRef(false);
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -145,13 +142,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 
 	const handleThinkingContentChange = useCallback((content: string) => {
 		setThinkingContent(content);
-	}, []);
-
-	// Callback for stream content updates - triggers auto-scroll
-	const handleContentUpdate = useCallback(() => {
-		if (streamScrollRef.current) {
-			streamScrollRef.current.scrollTop = streamScrollRef.current.scrollHeight;
-		}
 	}, []);
 
 
@@ -417,10 +407,11 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 
 	return (
 		<div className="mb-4 overflow-hidden">
-		<div className="flex items-center gap-2 px-3 py-2 ">
+		<div className="flex items-center gap-2 pl-1 ">
+			<span className="text-xs text-slate-400">Flowlly</span>
 			<Loader2 className="w-4 h-4 text-purple-500/70 animate-spin" />
 			{(isThinking ) && (
-				<span className="text-xs text-gray-500/70 dark:text-gray-400/60 leading-relaxed">Thinking...</span>
+				<span className="text-xs text-gray-500/70 dark:text-gray-400/60 leading-relaxed ">Thinking...</span>
 			)}
 		</div>
 			{isThinking && thinkingContent && (
@@ -454,17 +445,13 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 					className="px-4 py-3 rounded-t-lg transition-colors  flex items-center justify-between"
 				>
 				</div>
-				<div 
-					ref={streamScrollRef}
-					className="max-h-56 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
-				>
+				<div >
 					<StreamComponent
 						authToken={authToken}
 						key={streamingKey}
 						onStreamComplete={handleStreamComplete}
 						onThinkingChange={handleThinkingChange}
 						onThinkingContentChange={handleThinkingContentChange}
-						onContentUpdate={handleContentUpdate}
 						streamingKey={streamingKey}
 					/>
 				</div>

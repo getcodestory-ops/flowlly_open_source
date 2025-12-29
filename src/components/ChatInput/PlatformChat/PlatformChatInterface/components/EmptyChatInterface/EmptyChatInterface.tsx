@@ -1,13 +1,13 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, MessageSquare, Users, ArrowLeft, Sparkles, Plus, X } from "lucide-react";
+import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, Users, ArrowLeft, Sparkles, Plus, X, Scale, Calendar, Wand2 } from "lucide-react";
 import AtSelectorComponent from "../../../components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
+import { useViewStore } from "@/utils/store";
 import ModelSelector from "../../../components/ModelSelector";
 import AgentTypeSelector from "../../../components/AgentTypeSelector";
-import { MODELS } from "../../types";
 import BidLevelling from "./FormDirectives/BidLevelling";
 import BidLevelling2 from "./FormDirectives/BidLevelling2";
 import DailyReport from "./FormDirectives/DailyReport";
@@ -17,24 +17,45 @@ import MeetingChat from "./FormDirectives/MeetingChat";
 import DocumentGeneration from "./FormDirectives/DocumentGeneration";
 import { useTemplatesByUseCase } from "@/hooks/useTemplates";
 import type { TemplatePreview, StorageResourceEntity } from "@/api/templateRoutes";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import TemplateBuilder from "./TemplateBuilder";
 import TemplateFromExistingReport from "./FormDirectives/TemplateFromExistingReport";
+import { toast } from "@/components/ui/use-toast";
 
-// Icon mapping for dynamic loading
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-	MessageSquare,
-	FileSpreadsheet,
-	FileText,
-	FileCode,
-	Search,
-	Users,
-};
-
-// Helper function to get icon component from string
-const GET_ICON_COMPONENT = (iconName: string): React.ComponentType<{ className?: string }> => {
-	return iconMap[iconName] || MessageSquare;
+// Reusable Form Wrapper Component with fixed back button
+const FormWrapper = ({ 
+	children, 
+	onBack 
+}: { 
+	children: React.ReactNode; 
+	onBack: () => void;
+}): React.JSX.Element => {
+	return (
+		<ScrollArea className="h-full w-full" scrollbarClassName="!fixed !right-0 !top-0 !h-screen">
+			{/* Fixed back button - stays visible while scrolling (desktop only) */}
+			<button
+				onClick={onBack}
+				className="relative top-24 translate-x-0 z-20 p-2 text-gray-600 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors hidden lg:flex items-center gap-1"
+				title="Back to templates"
+			>
+				<ArrowLeft className="h-6 w-6" />
+			</button>
+			<div className="py-8 px-4">
+				{/* Mobile back button - scrolls with content */}
+				<div className="max-w-[816px] mx-auto">
+					<button
+						onClick={onBack}
+						className="lg:hidden mb-4 p-2 text-gray-500 hover:text-gray-700 transition-colors flex items-center gap-1"
+					>
+						<ArrowLeft className="h-4 w-4" />
+						<span className="text-sm">Back</span>
+					</button>
+				</div>
+				{children}
+			</div>
+		</ScrollArea>
+	);
 };
 
 // Placeholder texts constant
@@ -119,19 +140,17 @@ export default function EmptyChatInterface({
 	const { 
 		chatDirectiveType, 
 		setChatDirectiveType, 
-		selectedModel, 
-		setSelectedModel,
-		selectedAgentType,
-		setSelectedAgentType,
 		// selectedTemplateId, // No longer needed
 		setSelectedTemplateId,
 		chatContext,
 		setChatContext,
 		clearChatContext,
 	} = useChatStore();
+	const { preferredModel, setPreferredModel, preferredAgentType, setPreferredAgentType } = useViewStore();
 	const localTextareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const activeTextareaRef = textareaRef || localTextareaRef;
-	const [activeTab, setActiveTab] = React.useState("chat");
+	const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+	const [selectedTemplateName, setSelectedTemplateName] = React.useState<string | null>(null);
 
 	// Auto-expand textarea as text grows
 	React.useEffect(() => {
@@ -145,171 +164,211 @@ export default function EmptyChatInterface({
 		}
 	}, [chatInput]);
 
-	useEffect(() => {
-		if (selectedAgentType === "agent" && selectedModel === "OpenAI-gpt-5") {
-			// GPT-5 is not available in agent mode, switch to the first available model
-			const agentModels = MODELS.filter((model: { id: string }) => model.id !== "OpenAI-gpt-5");
-			if (agentModels.length > 0) {
-				setSelectedModel(agentModels[0].id);
-			}
-		}
-	}, [selectedAgentType, selectedModel, setSelectedModel]);
 
 	// Template hooks - must be declared before any conditional returns
 	const { data: templatesByUseCase, isLoading: templatesLoading, templates: allTemplates } = useTemplatesByUseCase();
 
-	// Chat types for each tab
-	interface ChatTypeCard {
+	// Chat types for template cards
+	interface TemplateCard {
 		id: "bidLevelling" | "bidLevelling2" | "dailyReport" | "reportWriting" | "knowledgeManager" | "meetingChat" | "documentGeneration" | "template" | "templateCreate" | "templateCreateAI" | "none";
 		title: string;
+		subtitle: string;
 		description: string;
 		icon: React.ComponentType<{ className?: string }>;
+		accentColor: string;
+		previewLines: string[];
 		templateId?: string;
 		useCase?: string;
 	}
 
-	// Create dynamic chat types with templates (hook: useMemo)
-	const dynamicChatTypes = React.useMemo(() => {
-		const chatTypes: Record<string, Array<ChatTypeCard>> = {
-			bidLevelling: [
-				{
-					id: "bidLevelling",
-					title: "Bid Levelling Fast",
-					description: "Analyze and compare bids",
-					icon: FileSpreadsheet,
-				},
-				{
-					id: "bidLevelling2",
-					title: "Bid Levelling Comprehensive",
-					description: "Analyze and compare bids in a comprehensive way",
-					icon: FileSpreadsheet,
-				},
-			],
-			reports: [
-				{
-					id: "dailyReport",
-					title: "Daily Report",
-					description: "Generate daily progress reports",
-					icon: FileText,
-				},
-			],
-			search: [
-				{
-					id: "knowledgeManager",
-					title: "Knowledge Search",
-					description: "Search project documents",
-					icon: Search,
-				},
-			],
-			meeting: [
-				{
-					id: "meetingChat",
-					title: "Meeting Assistant",
-					description: "Ask about meetings and transcripts",
-					icon: Users,
-				},
-			],
-			documents: [
-				{
-					id: "documentGeneration",
-					title: "Document Generation",
-					description: "Create new documents in sandbox",
-					icon: FileCode,
-				},
-			],
-			templates: [], // Will be populated dynamically
-		};
+	interface TemplateCategory {
+		id: string;
+		label: string;
+		color: string;
+		templates: TemplateCard[];
+		isLoading?: boolean;
+	}
 
-		const baseTypes = { ...chatTypes };
-		
-		// Add dynamic templates
-		if (!templatesLoading && templatesByUseCase) {
-			const templateCards: ChatTypeCard[] = Object.entries(templatesByUseCase).flatMap(([useCase, templates]) => 
+	// Create template categories organized like Google Docs
+	const templateCategories = React.useMemo((): TemplateCategory[] => {
+		const categories: TemplateCategory[] = [
+			{
+				id: "bidding",
+				label: "Bid Analysis",
+				color: "emerald",
+				templates: [
+					{
+						id: "bidLevelling",
+						title: "Quick Comparison",
+						subtitle: "Bid Levelling",
+						description: "Compare contractor bids side-by-side with variance highlights",
+						icon: Scale,
+						accentColor: "emerald",
+						previewLines: ["1. Bid Summary Table", "2. Price Comparison", "3. Scope Variance", "4. Recommendation"],
+					},
+					{
+						id: "bidLevelling2",
+						title: "Comprehensive Analysis",
+						subtitle: "Deep Dive",
+						description: "Full multi-factor evaluation with risk scoring",
+						icon: FileSpreadsheet,
+						accentColor: "emerald",
+						previewLines: ["Executive Summary", "Line Item Breakdown", "Risk Matrix", "Award Analysis"],
+					},
+				],
+			},
+			{
+				id: "reports",
+				label: "Reports",
+				color: "blue",
+				templates: [
+					{
+						id: "dailyReport",
+						title: "Daily Progress Report",
+						subtitle: "Site Report",
+						description: "Generate formatted daily reports from site data",
+						icon: Calendar,
+						accentColor: "blue",
+						previewLines: ["Weather & Conditions", "Crew & Equipment", "Work Completed", "Issues & RFIs"],
+					},
+				],
+			},
+			{
+				id: "research",
+				label: "Research & Search",
+				color: "violet",
+				templates: [
+					{
+						id: "knowledgeManager",
+						title: "Document Search",
+						subtitle: "Knowledge Base",
+						description: "Search and summarize across all project files",
+						icon: Search,
+						accentColor: "violet",
+						previewLines: ["Search Query", "Matching Documents", "Key Excerpts", "AI Summary"],
+					},
+					{
+						id: "meetingChat",
+						title: "Meeting Assistant",
+						subtitle: "Transcript Analysis",
+						description: "Ask questions about meetings and decisions",
+						icon: Users,
+						accentColor: "violet",
+						previewLines: ["Meeting Overview", "Participants", "Decisions Made", "Action Items"],
+					},
+				],
+			},
+			{
+				id: "creation",
+				label: "Document Creation",
+				color: "amber",
+				templates: [
+					{
+						id: "documentGeneration",
+						title: "Generate Document",
+						subtitle: "New Document",
+						description: "Create professionally formatted documents",
+						icon: FileText,
+						accentColor: "amber",
+						previewLines: ["Document Title", "Section Headers", "Body Content", "Attachments"],
+					},
+				],
+			},
+			{
+				id: "custom",
+				label: "Custom Templates",
+				color: "slate",
+				templates: [
+					{
+						id: "templateCreate",
+						title: "Template Builder",
+						subtitle: "Manual Design",
+						description: "Build reusable templates from scratch",
+						icon: Plus,
+						accentColor: "slate",
+						previewLines: ["Define Sections", "Add Input Fields", "Set Formatting", "Save & Reuse"],
+					},
+					{
+						id: "templateCreateAI",
+						title: "AI Template Creator",
+						subtitle: "From Example",
+						description: "Upload a report and AI creates the template",
+						icon: Wand2,
+						accentColor: "rose",
+						previewLines: ["Upload Sample PDF", "AI Extracts Structure", "Review Template", "Customize Fields"],
+					},
+				],
+			},
+		];
+
+		// Add user's saved templates - always include section to prevent layout shift
+		const savedTemplateCards: TemplateCard[] = templatesByUseCase 
+			? Object.entries(templatesByUseCase).flatMap(([useCase, templates]) => 
 				(templates as TemplatePreview[]).map((template: TemplatePreview) => ({
 					id: "template" as const,
 					title: template.name,
+					subtitle: "Saved Template",
 					description: template.description || useCase,
 					icon: Sparkles,
+					accentColor: "indigo",
+					previewLines: ["Template Header", "Custom Sections", "Your Fields", "Quick Generate"],
 					templateId: template.id,
 					useCase,
 				})),
-			);
-			// Prepend a "Create Template" card
-			baseTypes.templates = [
-				{
-					id: "templateCreate",
-					title: "Create Template (Manual)",
-					description: "Design a new report template with the builder",
-					icon: Plus,
-				},
-				{
-					id: "templateCreateAI",
-					title: "Create Template (AI)",
-					description: "Attach an existing report; AI drafts the template",
-					icon: Sparkles,
-				},
-				...templateCards,
-			];
-		}
+			)
+			: [];
 		
-		return baseTypes;
+		// Always add the "Your Templates" section to prevent layout shift
+		// Show all templates but container is width-constrained to show ~3 at a time
+		categories.push({
+			id: "saved",
+			label: "Your Templates",
+			color: "indigo",
+			templates: savedTemplateCards,
+			isLoading: templatesLoading,
+		});
+		
+		return categories;
 	}, [templatesByUseCase, templatesLoading]);
-
-	// Tab configuration
-	const tabTypes = [
-		{
-			id: "bidLevelling",
-			label: "Bid Levelling",
-			icon: FileSpreadsheet,
-		},
-		{
-			id: "reports",
-			label: "Reports",
-			icon: FileText,
-		},
-		{
-			id: "search",
-			label: "Search",
-			icon: Search,
-		},
-		{
-			id: "meeting",
-			label: "Meeting",
-			icon: Users,
-		},
-		{
-			id: "documents",
-			label: "Documents",
-			icon: FileCode,
-		},
-		{
-			id: "templates",
-			label: "Templates",
-			icon: Sparkles,
-		},
-	];
-
-	// Static fallback configuration (current system)
-	const staticTabTypes = tabTypes;
-	const staticChatTypes = dynamicChatTypes;
 
 
 	const handleTemplateSelection = React.useCallback((template: StorageResourceEntity) => {
-
-
 		setChatDirectiveType("chat");
+		// Auto-set to agent mode since templates require agent
+		setPreferredAgentType("agent");
 
 		// Add instruction directly to chat input
 		const templateContent = template.metadata.content || "";
 		setChatContext(":::instructions\n" + templateContent + "\n:::\n");
 		setChatInput("Execute instructions");
 
+		// Save the template name for display
+		setSelectedTemplateName(template.metadata.template_name || template.file_name || "Template");
+
 		// Reset template selection
 		setSelectedTemplateId(null);
+
+		// Scroll to top to show the populated chat input
+		// ScrollArea uses Radix, the actual scrollable element is the Viewport inside
+		setTimeout(() => {
+			const viewport = scrollContainerRef.current?.querySelector("[data-radix-scroll-area-viewport]");
+			if (viewport) {
+				viewport.scrollTo({ top: 0, behavior: "smooth" });
+			}
+		}, 100);
+
+		// Show toast notification
+		toast({
+			title: "Template loaded! 🎉",
+			description: "Select documents using the clip icon, then click Send to run your template",
+			duration: 8000,
+		});
 	}, [
 		setSelectedTemplateId,
 		setChatDirectiveType,
 		setChatContext,
+		setChatInput,
+		setPreferredAgentType,
 	]);
 
 	
@@ -317,15 +376,7 @@ export default function EmptyChatInterface({
 
 	if (chatDirectiveType === "bidLevelling") {
 		return (
-			<div className="flex flex-col items-center px-4 py-6">
-				<div className="w-full max-w-3xl mb-4">
-					<button
-						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-						onClick={() => setChatDirectiveType("none")}
-					>
-						<ArrowLeft className="h-4 w-4" /> Back
-					</button>
-				</div>
+			<FormWrapper onBack={() => setChatDirectiveType("none")}>
 				<BidLevelling
 					handleSubmit={handleSubmit}
 					isPending={isPending}
@@ -333,22 +384,13 @@ export default function EmptyChatInterface({
 					loadDocumentPanel={loadDocumentPanel}
 					setChatInput={setChatInput}
 				/>
-			
-			</div>
+			</FormWrapper>
 		);
 	}
 
 	if (chatDirectiveType === "bidLevelling2") {
 		return (
-			<div className="flex flex-col items-center px-4 py-6">
-				<div className="w-full max-w-3xl mb-4">
-					<button
-						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-						onClick={() => setChatDirectiveType("none")}
-					>
-						<ArrowLeft className="h-4 w-4" /> Back
-					</button>
-				</div>
+			<FormWrapper onBack={() => setChatDirectiveType("none")}>
 				<BidLevelling2
 					handleSubmit={handleSubmit}
 					isPending={isPending}
@@ -356,22 +398,13 @@ export default function EmptyChatInterface({
 					loadDocumentPanel={loadDocumentPanel}
 					setChatInput={setChatInput}
 				/>
-			
-			</div>
+			</FormWrapper>
 		);
 	}
 	// If daily report is selected, show only the form with back
 	if (chatDirectiveType === "dailyReport") {
 		return (
-			<div className="flex flex-col items-center px-4 py-6">
-				<div className="w-full max-w-3xl mb-4">
-					<button
-						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-						onClick={() => setChatDirectiveType("none")}
-					>
-						<ArrowLeft className="h-4 w-4" /> Back
-					</button>
-				</div>
+			<FormWrapper onBack={() => setChatDirectiveType("none")}>
 				<DailyReport
 					handleSubmit={handleSubmit}
 					isPending={isPending}
@@ -379,22 +412,14 @@ export default function EmptyChatInterface({
 					loadDocumentPanel={loadDocumentPanel}
 					setChatInput={setChatInput}
 				/>
-			</div>
+			</FormWrapper>
 		);
 	}
 
 	// If report writing is selected, show only the form with back
 	if (chatDirectiveType === "reportWriting") {
 		return (
-			<div className="flex flex-col items-center px-4 py-6">
-				<div className="w-full max-w-3xl mb-4">
-					<button
-						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-						onClick={() => setChatDirectiveType("none")}
-					>
-						<ArrowLeft className="h-4 w-4" /> Back
-					</button>
-				</div>
+			<FormWrapper onBack={() => setChatDirectiveType("none")}>
 				<ReportWriting
 					handleSubmit={handleSubmit}
 					isPending={isPending}
@@ -402,22 +427,14 @@ export default function EmptyChatInterface({
 					loadDocumentPanel={loadDocumentPanel}
 					setChatInput={setChatInput}
 				/>
-			</div>
+			</FormWrapper>
 		);
 	}
 
 	// If knowledge manager is selected, show only the form with back
 	if (chatDirectiveType === "knowledgeManager") {
 		return (
-			<div className="flex flex-col items-center px-4 py-6">
-				<div className="w-full max-w-3xl mb-4">
-					<button
-						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-						onClick={() => setChatDirectiveType("none")}
-					>
-						<ArrowLeft className="h-4 w-4" /> Back
-					</button>
-				</div>
+			<FormWrapper onBack={() => setChatDirectiveType("none")}>
 				<KnowledgeManager
 					handleSubmit={handleSubmit}
 					isPending={isPending}
@@ -425,22 +442,14 @@ export default function EmptyChatInterface({
 					loadDocumentPanel={loadDocumentPanel}
 					setChatInput={setChatInput}
 				/>
-			</div>
+			</FormWrapper>
 		);
 	}
 
 	// If meeting chat is selected, show only the form with back
 	if (chatDirectiveType === "meetingChat") {
 		return (
-			<div className="flex flex-col items-center px-4 py-6">
-				<div className="w-full max-w-3xl mb-4">
-					<button
-						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-						onClick={() => setChatDirectiveType("none")}
-					>
-						<ArrowLeft className="h-4 w-4" /> Back
-					</button>
-				</div>
+			<FormWrapper onBack={() => setChatDirectiveType("none")}>
 				<MeetingChat
 					handleSubmit={handleSubmit}
 					isPending={isPending}
@@ -448,45 +457,29 @@ export default function EmptyChatInterface({
 					loadDocumentPanel={loadDocumentPanel}
 					setChatInput={setChatInput}
 				/>
-			</div>
+			</FormWrapper>
 		);
 	}
 
 	// If user wants to create a template, show Template Builder
 	if (chatDirectiveType === "templateCreate") {
 		return (
-			<div className="flex flex-col items-center px-4 py-6 ">
-				<div className="w-full mb-4">
-					<button
-						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-						onClick={() => setChatDirectiveType("none")}
-					>
-						<ArrowLeft className="h-4 w-4" /> Back
-					</button>
-				</div>
-				<div className="w-full">
+			<FormWrapper onBack={() => setChatDirectiveType("none")}>
+				<div className="max-w-[816px] mx-auto">
 					<TemplateBuilder
 						onCreated={(template) => {
 							handleTemplateSelection(template);
 						}}
 					/>
 				</div>
-			</div>
+			</FormWrapper>
 		);
 	}
 
 	// If AI template creation is selected, show only the form with back
 	if (chatDirectiveType === "templateCreateAI") {
 		return (
-			<div className="flex flex-col items-center px-4 py-6 ">
-				<div className="w-full max-w-3xl mb-4">
-					<button
-						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-						onClick={() => setChatDirectiveType("none")}
-					>
-						<ArrowLeft className="h-4 w-4" /> Back
-					</button>
-				</div>
+			<FormWrapper onBack={() => setChatDirectiveType("none")}>
 				<TemplateFromExistingReport 
 					handleSubmit={handleSubmit}
 					isPending={isPending}
@@ -494,22 +487,14 @@ export default function EmptyChatInterface({
 					loadDocumentPanel={loadDocumentPanel}
 					setChatInput={setChatInput}
 				/>
-			</div>
+			</FormWrapper>
 		);
 	}
 
 	// If document generation is selected, show only the form with back
 	if (chatDirectiveType === "documentGeneration") {
 		return (
-			<div className="flex flex-col items-center px-4 py-6">
-				<div className="w-full max-w-3xl mb-4">
-					<button
-						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-						onClick={() => setChatDirectiveType("none")}
-					>
-						<ArrowLeft className="h-4 w-4" /> Back
-					</button>
-				</div>
+			<FormWrapper onBack={() => setChatDirectiveType("none")}>
 				<DocumentGeneration
 					handleSubmit={handleSubmit}
 					isPending={isPending}
@@ -517,176 +502,217 @@ export default function EmptyChatInterface({
 					loadDocumentPanel={loadDocumentPanel}
 					setChatInput={setChatInput}
 				/>
-			</div>
+			</FormWrapper>
 		);
 	}
 
+	// Color mapping for document titles
+	const titleColorClasses: Record<string, string> = {
+		emerald: "text-emerald-600",
+		blue: "text-blue-600",
+		violet: "text-violet-600",
+		amber: "text-amber-600",
+		slate: "text-slate-600",
+		rose: "text-rose-600",
+		indigo: "text-indigo-600",
+	};
+
+	// Document-style template card component
+	const TemplateDocCard = ({ template, onClick }: { template: TemplateCard; onClick: () => void }) => {
+		const titleColor = titleColorClasses[template.accentColor] || titleColorClasses.slate;
+		
+		return (
+			<button
+				className="group flex flex-col text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 rounded-sm"
+				onClick={onClick}
+			>
+				{/* Document Preview - Clean white paper look */}
+				<div className="relative w-[210px] h-[270px] rounded-sm border border-gray-200 bg-white shadow-sm group-hover:shadow-lg group-hover:border-indigo-400 transition-all duration-200 overflow-hidden">
+					{/* Document content - looks like real document */}
+					<div className="p-5 h-full flex flex-col">
+						{/* Colorful title inside document */}
+						<h3 className={`text-[13px] font-bold ${titleColor} mb-2.5 leading-tight`}>
+							{template.title}
+						</h3>
+						
+						{/* Subtitle / description line */}
+						<p className="text-[9px] text-gray-500 mb-4 leading-relaxed">
+							{template.description}
+						</p>
+						
+						{/* Preview content lines - looks like document sections */}
+						<div className="space-y-3 flex-1">
+							{template.previewLines.map((line, idx) => (
+								<div key={idx}>
+									<div className="text-[8px] font-medium text-gray-600 mb-0.5">{line}</div>
+									<div className="h-1.5 bg-gray-100 rounded-full" style={{ width: `${85 - (idx * 8)}%` }} />
+								</div>
+							))}
+						</div>
+						
+						{/* Bottom faux content */}
+						<div className="mt-auto pt-3 space-y-1.5">
+							<div className="h-1.5 bg-gray-50 rounded-full w-full" />
+							<div className="h-1.5 bg-gray-50 rounded-full w-3/4" />
+						</div>
+					</div>
+					
+					{/* Hover overlay */}
+					<div className="absolute inset-0 bg-indigo-500/0 group-hover:bg-indigo-500/5 transition-colors duration-200" />
+				</div>
+			</button>
+		);
+	};
+
 	// Otherwise, show the full chat interface
 	return (
-		<ScrollArea className="flex flex-col items-center justify-center  px-4 py-6 w-full">
-
-			<div className="w-full max-w-3xl mb-8 p-2"> {/* Centered Chat Input */}
-				<div className="w-full mb-12"> 
+		<ScrollArea className="h-full w-full" scrollbarClassName="!fixed !right-0 !top-0 !h-screen" ref={scrollContainerRef}>
+			<div className="flex flex-col items-center px-4 py-8">
+				{/* Header Section */}
+				<div className="w-full max-w-4xl mb-10">
 					<h1 className="text-4xl font-bold text-gray-500 mb-4">
 					Hi, What can I do for you?
 					</h1>
 					<p className="text-gray-600 text-lg">
-					Start by typing your task and providing necessary files and folders...
-					</p>
-					<p className="text-gray-400 text-md">
-						or select a chat type below to get started
+						Type a message or choose a template to begin
 					</p>
 				</div>
-				<div className="relative overflow-hidden rounded-xl bg-white border border-slate-200 shadow-sm focus-within:ring-1 focus-within:ring-indigo-300 transition-all">
-					<Label className="sr-only" htmlFor="empty-message">
-						Message
-					</Label>
-					<div className="absolute top-0 left-2 z-10 pt-2 ">
-						<div className="flex items-center gap-2">
-							<AtSelectorComponent />
-							{chatContext.trim() && (
-								<Badge 
-									className="h-5 px-2 text-xs font-medium bg-indigo-50 text-indigo-700 hover:bg-indigo-100 flex items-center gap-1 cursor-pointer max-w-[200px] group"
-									onClick={() => clearChatContext()}
-									variant="secondary"
-								>
-									<X className="h-3 w-3 text-indigo-600 flex-shrink-0" />
-									<Sparkles className="h-3 w-3 text-indigo-600 flex-shrink-0" />
-									<span className="truncate" title="Template Instructions">Template</span>
-								</Badge>
-							)}
-						</div>
-					</div>
-					<div className="relative ">
-						<AnimatedPlaceholder isEmpty={!chatInput.trim()} />
-						<Textarea
-							className="min-h-20 resize-none border-0 p-4 pl-12 mt-4 shadow-none focus-visible:ring-0 text-slate-800 bg-transparent text-base"
-							disabled={isPending}
-							id="empty-message"
-							onChange={(e) => setChatInput(e.target.value)}
-							onKeyDown={(e) => {
-								if (e.key === "Enter" && !e.shiftKey) {
-									e.preventDefault();
-									handleSubmit();
-								}
-							}}
-							ref={activeTextareaRef}
-							style={{ height: "auto" }}
-							value={chatInput}
-						/>
-					</div>
-					<div className="flex items-center justify-between p-6 pt-0">
-						<div className="flex items-center gap-2">
-							{loadDocumentPanel()}
-							<AgentTypeSelector 
-								onAgentTypeChange={setSelectedAgentType}
-								selectedAgentType={selectedAgentType}
-							/>
-							<ModelSelector 
-								onModelChange={setSelectedModel}
-								selectedModel={selectedModel}
-								selectedAgentType={selectedAgentType}
-							/>
-						</div>
-						<Button
-							className="gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
-							disabled={
-								isPending ||
-								(!chatInput.trim())
-							}
-							onClick={handleSubmit}
-							size="sm"
-							type="submit"
-						>
-							{isPending ? (
-								<>
-									<Loader2 className="h-3.5 w-3.5 animate-spin" />
-								</>
-							) : (
-								<>
-									Send
-									<CornerDownLeft className="h-3.5 w-3.5" />
-								</>
-							)}
-						</Button>
-					</div>
-				</div>
-				<div className="mt-6"> {/* Tab System */}
-					<div className="flex justify-center mb-6">
-						<div className="inline-flex bg-gray-100 rounded-lg p-1">
-							{staticTabTypes.map((tab) => {
-								const IconComponent = tab.icon;
-								const isActive = activeTab === tab.id;
-								
-								return (
-									<button
-										className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-											isActive 
-												? "bg-white text-indigo-600 shadow-sm" 
-												: "text-gray-600 hover:text-gray-900"
-										}`}
-										key={tab.id}
-										onClick={() => setActiveTab(tab.id)}
+
+				{/* Chat Input */}
+				<div className="w-full max-w-4xl mb-12">
+					<div className="relative overflow-hidden rounded-xl bg-white border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-300 focus-within:border-indigo-300 transition-all">
+						<Label className="sr-only" htmlFor="empty-message">
+							Message
+						</Label>
+						<div className="absolute top-0 left-2 z-10 pt-2">
+							<div className="flex items-center gap-2">
+								<AtSelectorComponent />
+								{chatContext.trim() && (
+									<Badge 
+										className="h-5 px-2 text-xs font-medium bg-indigo-50 text-indigo-700 hover:bg-indigo-100 flex items-center gap-1 cursor-pointer max-w-[200px] group"
+										onClick={() => {
+											clearChatContext();
+											setSelectedTemplateName(null);
+										}}
+										variant="secondary"
 									>
-										<IconComponent className="h-4 w-4" />
-										{tab.label}
-									</button>
-								);
-							})}
+										<X className="h-3 w-3 text-indigo-600 flex-shrink-0" />
+										<Sparkles className="h-3 w-3 text-indigo-600 flex-shrink-0" />
+										<span className="truncate" title={selectedTemplateName || "Template Instructions"}>
+											{selectedTemplateName || "Template"}
+										</span>
+									</Badge>
+								)}
+							</div>
+						</div>
+						<div className="relative">
+							<AnimatedPlaceholder isEmpty={!chatInput.trim()} />
+							<Textarea
+								className="min-h-20 resize-none border-0 p-4 pl-12 mt-4 shadow-none focus-visible:ring-0 text-slate-800 bg-transparent text-base"
+								disabled={isPending}
+								id="empty-message"
+								onChange={(e) => setChatInput(e.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === "Enter" && !e.shiftKey) {
+										e.preventDefault();
+										handleSubmit();
+									}
+								}}
+								ref={activeTextareaRef}
+								style={{ height: "auto" }}
+								value={chatInput}
+							/>
+						</div>
+						<div className="flex items-center justify-between p-4 pt-0">
+							<div className="flex items-center gap-2">
+								{loadDocumentPanel()}
+								<AgentTypeSelector 
+									onAgentTypeChange={setPreferredAgentType}
+									selectedAgentType={preferredAgentType}
+								/>
+								<ModelSelector 
+									onModelChange={setPreferredModel}
+									selectedModel={preferredModel}
+									selectedAgentType={preferredAgentType}
+								/>
+							</div>
+							<Button
+								className="gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"
+								disabled={isPending || !chatInput.trim()}
+								onClick={handleSubmit}
+								size="sm"
+								type="submit"
+							>
+								{isPending ? (
+									<Loader2 className="h-3.5 w-3.5 animate-spin" />
+								) : (
+									<>
+										Send
+										<CornerDownLeft className="h-3.5 w-3.5" />
+									</>
+								)}
+							</Button>
 						</div>
 					</div>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl  items-stretch">
-						{staticChatTypes[activeTab]?.map((type) => {
-							const IconComponent = type.icon;
-							const isSelected = chatDirectiveType === type.id;
-								
-							return (
-								<div
-									className={`cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 ${
-										isSelected 
-											? "border-indigo-500 bg-indigo-50" 
-											: "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md"
-									}`}
-									key={`${type.id}-${type.templateId || "default"}`}
-									onClick={() => {
-										if (type.id === "template" && type.templateId) {
-											// Find the full template data from the templates array
-											const fullTemplate = allTemplates?.find((t) => t.id === type.templateId);
-											if (fullTemplate) {
-												handleTemplateSelection(fullTemplate);
-											}
-										} else {
-											setChatDirectiveType(type.id);
-										}
-									}}
-								>
-									<div className="flex flex-col items-center text-center space-y-3">
-										<div className={`p-3 rounded-lg ${
-											isSelected ? "bg-indigo-100" : "bg-gray-50"
-										}`}
-										>
-											<IconComponent 
-												className={`h-6 w-6 ${
-													isSelected ? "text-indigo-600" : "text-gray-600"
-												}`} 
+				</div>
+
+				{/* Template Gallery - Google Docs Style */}
+				<div className="w-full max-w-6xl space-y-4 pb-8">
+					{templateCategories.map((category) => {
+						const categoryTitleColor = titleColorClasses[category.color] || titleColorClasses.slate;
+						// Constrain "Your Templates" width to show ~3 cards (prevents layout shift)
+						const scrollAreaClass = category.id === "saved" ? "w-full max-w-[690px]" : "w-full";
+						return (
+						<div key={category.id}>
+							{/* Category Header - Colorful */}
+							<h2 className={`text-sm font-semibold ${categoryTitleColor} mb-3 uppercase tracking-wide`}>
+								{category.label}
+							</h2>
+							
+							{/* Horizontal Scrolling Template Cards */}
+							<ScrollArea className={scrollAreaClass}>
+								<div className="flex gap-5 pb-2 min-h-[280px]">
+									{category.isLoading ? (
+										// Loading skeleton for "Your Templates"
+										<>
+											{[1, 2, 3].map((i) => (
+												<div 
+													key={i} 
+													className="w-[210px] h-[270px] rounded-sm border border-gray-200 bg-gray-50 animate-pulse flex-shrink-0"
+												/>
+											))}
+										</>
+									) : category.templates.length === 0 && category.id === "saved" ? (
+										// Empty state for "Your Templates"
+										<div className="flex items-center justify-center w-full h-[270px] text-gray-400 text-sm">
+											No saved templates yet
+										</div>
+									) : (
+										category.templates.map((template, idx) => (
+											<TemplateDocCard
+												key={`${template.id}-${template.templateId || idx}`}
+												onClick={() => {
+													if (template.id === "template" && template.templateId) {
+														const fullTemplate = allTemplates?.find((t) => t.id === template.templateId);
+														if (fullTemplate) {
+															handleTemplateSelection(fullTemplate);
+														}
+													} else {
+														// Auto-set to agent mode since templates require agent
+														setPreferredAgentType("agent");
+														setChatDirectiveType(template.id);
+													}
+												}}
+												template={template}
 											/>
-										</div>
-										<div>
-											<h4 className={`font-semibold text-sm mb-1 ${
-												isSelected ? "text-indigo-900" : "text-gray-900"
-											}`}
-											>
-												{type.title}
-											</h4>
-											<p className="text-xs text-gray-600 leading-relaxed">
-												{type.description}
-											</p>
-										</div>
-									</div>
+										))
+									)}
 								</div>
-							);
-						})}
-					</div>
+								<ScrollBar orientation="horizontal" />
+							</ScrollArea>
+						</div>
+					);
+					})}
 				</div>
 			</div>
 		</ScrollArea>

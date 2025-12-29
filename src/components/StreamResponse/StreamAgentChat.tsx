@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import MarkdownTerminal from "../Markdown/style/MarkdownTerminal";
 import { useChatStore } from "@/hooks/useChatStore";
+import MarkdownDisplay from "../Markdown/MarkDownDisplay";
 
 
 interface StreamComponentProps {
@@ -10,7 +11,6 @@ interface StreamComponentProps {
   onStreamComplete?: (content: string) => void;
   onThinkingChange?: (thinking: boolean) => void;
   onThinkingContentChange?: (content: string) => void;
-  onContentUpdate?: () => void;
 }
 
 interface ATTACHMENT_DATA {
@@ -30,7 +30,6 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	onStreamComplete,
 	onThinkingChange,
 	onThinkingContentChange,
-	onContentUpdate,
 }) => {
 	const [displayValue, setDisplayValue] = useState<string>("");
 	const displayValueRef = useRef<string>("");
@@ -39,15 +38,12 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	const [isThinking, setIsThinking] = useState(false);
 	const [THINKING_CONTENT, setThinkingContent] = useState<string>("");
 	const eventSourceRef = useRef<EventSource | null>(null);
-	const { setSidePanel, setCollapsed, setTodoState, initFileProgress, appendFileProgressDelta, endFileProgress, clearStreamTabs } = useChatStore() as any;
+	const { setSidePanel, setCollapsed, setTodoState, initFileProgress, appendFileProgressDelta, endFileProgress, closeFileProgressTab, clearStreamTabs } = useChatStore() as any;
 
-	// Keep ref in sync with state and trigger scroll on content update
+	// Keep ref in sync with state
 	useEffect(() => {
 		displayValueRef.current = displayValue;
-		if (displayValue && onContentUpdate) {
-			onContentUpdate();
-		}
-	}, [displayValue, onContentUpdate]);
+	}, [displayValue]);
 
 	// Helper function to handle attachment events
 	const handleAttachmentEvent = useCallback((attachmentDataString: string): void => {
@@ -292,6 +288,8 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 						appendFileProgressDelta(fileName, delta, "delta");
 					} else if (status === "ended") {
 						endFileProgress(fileName);
+						// Close the file progress tab - attachment event will open the final file
+						closeFileProgressTab();
 					}
 				} else if (action === "edit") {
 					if (status === "started") {
@@ -317,6 +315,8 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 						}
 					} else if (status === "ended") {
 						endFileProgress(fileName);
+						// Close the file progress tab - attachment event will open the final file
+						closeFileProgressTab();
 					}
 				}
 			} catch (e) {
@@ -364,12 +364,12 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			eventSourceRef.current = null;
 		};
 	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, setTodoState, handleAttachmentEvent, initFileProgress, appendFileProgressDelta, endFileProgress, clearStreamTabs]);
+	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setSidePanel, setCollapsed, setTodoState, handleAttachmentEvent, initFileProgress, appendFileProgressDelta, endFileProgress, closeFileProgressTab, clearStreamTabs]);
 
 	return (
 		<div className="pb-4">
 			{displayValue && (
-				<MarkdownTerminal content={displayValue} />
+				<MarkdownDisplay content={displayValue} />
 			)}
 
 		</div>

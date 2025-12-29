@@ -1,12 +1,10 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FileText, CornerDownLeft, Loader2, X, Calendar, MapPin, Folder, FileImage, StickyNote } from "lucide-react";
+import { CornerDownLeft, Loader2, Calendar, MapPin } from "lucide-react";
 import { useChatStore } from "@/hooks/useChatStore";
-import { useStore } from "@/utils/store";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useStore, useViewStore } from "@/utils/store";
+import { DocInput, DocRefButton, InlineDocRef } from "./DocComponents";
+import ModelSelector from "../../../../components/ModelSelector";
 
 interface DailyReportProps {
 	isPending?: boolean;
@@ -39,90 +37,21 @@ export interface DailyReportFormData {
 	}>;
 }
 
-interface DocumentSectionProps {
-	label: string;
-	icon: React.ReactNode;
-	documents: Array<{
-		id: string;
-		name: string;
-		extension: string;
-	}>;
-	isPending: boolean;
-	onRemoveDocument: (docId: string) => void;
-	loadDocumentPanel: () => React.ReactNode;
-	isMultiple?: boolean;
-}
-
-const DocumentSection = React.memo(({ 
-	label,
-	icon,
-	documents,
-	isPending,
-	onRemoveDocument,
-	loadDocumentPanel,
-	isMultiple = false,
-}: DocumentSectionProps) => {
-	return (
-		<div className="space-y-3">
-			<div className="flex items-center gap-2">
-				{icon}
-				<Label className="text-sm font-medium text-gray-700">
-					{label} {!isMultiple && <span className="text-gray-400">(optional)</span>}
-				</Label>
-			</div>
-			<div className="flex gap-3 items-start">
-				<div className="flex-shrink-0">
-					{loadDocumentPanel()}
-				</div>
-				<div className="flex-1 space-y-2">
-					{documents.length > 0 ? (
-						documents.map((document) => (
-							<div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-md border border-blue-200" key={document.id}>
-								<FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
-								<span className="text-sm text-blue-900 truncate flex-1" title={document.name}>
-									{document.name}
-								</span>
-								<Button
-									className="h-6 w-6 p-0 hover:bg-blue-200"
-									disabled={isPending}
-									onClick={() => onRemoveDocument(document.id)}
-									size="sm"
-									type="button"
-									variant="ghost"
-								>
-									<X className="h-3 w-3 text-blue-600" />
-								</Button>
-							</div>
-						))
-					) : (
-						<div className="text-sm text-gray-500 italic p-3 border-2 border-dashed border-gray-200 rounded-md text-center">
-							Click the attachment icon to select {label.toLowerCase()}
-						</div>
-					)}
-				</div>
-			</div>
-		</div>
-	);
-});
-
-DocumentSection.displayName = "DocumentSection";
-
 export default function DailyReport({
 	isPending = false,
 	isWaitingForResponse = false,
 	setChatInput,
 	handleSubmit,
-	loadDocumentPanel,
 }: DailyReportProps) {
-	const { selectedContexts, setSelectedContexts } = useChatStore();
+	const { selectedContexts, setSelectedContexts, setSidePanel, setCollapsed } = useChatStore();
 	const { activeChatEntity } = useStore();
+	const { preferredModel, setPreferredModel, preferredAgentType } = useViewStore();
 	const currentChatId = activeChatEntity?.id || "untitled";
 	const selectedDocuments = selectedContexts[currentChatId] || [];
 
 	const [formData, setFormData] = useState<DailyReportFormData>({
-		date: new Date().toISOString()
-			.split("T")[0], // Default to today
-		location: "Your Project Location", // Default location
+		date: new Date().toISOString().split("T")[0],
+		location: "Your Project Location",
 		employerName: "Your Company Name",
 		projectName: "Your Project Name",
 		shiftEngineer: "Your Name",
@@ -130,6 +59,18 @@ export default function DailyReport({
 		selectedNotes: [],
 		selectedImages: [],
 	});
+
+	// Document panel opener
+	const openDocumentPanel = useCallback(() => {
+		setCollapsed(true);
+		setSidePanel({
+			isOpen: true,
+			type: "folder",
+			resourceId: currentChatId,
+			contextId: currentChatId,
+			title: "Select Files for Daily Report",
+		});
+	}, [setCollapsed, setSidePanel, currentChatId]);
 
 	// Categorize selected documents
 	const { folders, notes, images } = useMemo(() => {
@@ -162,7 +103,6 @@ export default function DailyReport({
 		
 		prompt += "**Instructions for the Workflow to Generate the Report:**\n\n";
 
-		// Add folder attachments if any
 		if (folders.length > 0) {
 			prompt += "**Fetch Project Schedule:** First, retrieve the detailed project schedule\n\n";
 			prompt += "From attached folder, gather files and images using search agent.\n\n";
@@ -177,7 +117,6 @@ export default function DailyReport({
 			});
 		}
 
-		// Add notes attachments if any
 		if (notes.length > 0) {
 			prompt += "**Daily Notes and Logs:**\n\n";
 			notes.forEach((note) => {
@@ -190,7 +129,6 @@ export default function DailyReport({
 			});
 		}
 
-		// Add image attachments if any
 		if (images.length > 0) {
 			prompt += "**Images for Analysis:**\n\n";
 			prompt += "Especially images, ensure you obtain its full, directly accessible URL (e.g., the complete https://... ). Also, note the file names and their resource IDs if available.\n";
@@ -246,7 +184,7 @@ export default function DailyReport({
 		handleSubmit();
 	}, [handleSubmit]);
 
-	// Update chat input in real time whenever form data or selected documents change
+	// Update chat input in real time
 	useEffect(() => {
 		if (isFormValid && !isWaitingForResponse) {
 			const prompt = getPrompt();
@@ -259,139 +197,185 @@ export default function DailyReport({
 		setSelectedContexts(currentChatId, newContexts);
 	}, [selectedDocuments, setSelectedContexts, currentChatId]);
 
+	const totalSelectedDocuments = selectedDocuments.length;
+
 	return (
-		<ScrollArea className="w-full space-y-6 bg-white rounded-xl border border-slate-100 p-6 shadow-sm h-[85vh] p-16">
-			<div className="text-center">
-				<h3 className="text-lg font-semibold text-gray-900 mb-2">
-					Generate Daily Report
-				</h3>
-				<p className="text-sm text-gray-600">
-					Create a comprehensive daily report by selecting your date, location, and relevant documents. Either folder or notes must be selected to proceed.
+		<div className="max-w-[816px] mx-auto bg-white shadow-sm border border-gray-200 min-h-[900px]">
+			{/* Document content */}
+			<div className="px-12 py-10 lg:px-16 lg:py-12">
+				{/* Document Title */}
+				<h1 className="text-3xl font-normal text-gray-900 mb-4">
+					Daily Report Generator
+				</h1>
+
+				{/* Description */}
+				<p className="text-gray-600 mb-10 leading-relaxed">
+					Create a comprehensive daily report by selecting your date, location, and relevant documents. 
+					Either folder or notes must be selected to proceed.
 				</p>
-				{selectedDocuments.length > 0 && (
-					<p className="text-xs text-blue-600 mt-2">
-						{selectedDocuments.length} document{selectedDocuments.length !== 1 ? "s" : ""} selected
-					</p>
+
+				{/* Date and Location */}
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+					<div>
+						<h2 className="text-base font-semibold italic text-gray-900 mb-4 flex items-center gap-2">
+							<Calendar className="h-4 w-4" />
+							Report Date
+						</h2>
+						<DocInput
+							value={formData.date}
+							onChange={(value) => handleInputChange("date", value)}
+							type="date"
+							disabled={isPending}
+						/>
+					</div>
+					<div>
+						<h2 className="text-base font-semibold italic text-gray-900 mb-4 flex items-center gap-2">
+							<MapPin className="h-4 w-4" />
+							Project Location
+						</h2>
+						<DocInput
+							value={formData.location}
+							onChange={(value) => handleInputChange("location", value)}
+							placeholder="Enter project location for weather data"
+							disabled={isPending}
+						/>
+					</div>
+				</div>
+
+				{/* Project Details */}
+				<div className="mb-8">
+					<h2 className="text-base font-semibold italic text-gray-900 mb-4">
+						Project Details
+					</h2>
+					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+						<div>
+							<label className="text-sm text-gray-500 block mb-1">Employer Name</label>
+							<DocInput
+								value={formData.employerName}
+								onChange={(value) => handleInputChange("employerName", value)}
+								placeholder="Jay Dee"
+								disabled={isPending}
+							/>
+						</div>
+						<div>
+							<label className="text-sm text-gray-500 block mb-1">Project Name/Number</label>
+							<DocInput
+								value={formData.projectName}
+								onChange={(value) => handleInputChange("projectName", value)}
+								placeholder="TP-36"
+								disabled={isPending}
+							/>
+						</div>
+						<div>
+							<label className="text-sm text-gray-500 block mb-1">Shift Engineer</label>
+							<DocInput
+								value={formData.shiftEngineer}
+								onChange={(value) => handleInputChange("shiftEngineer", value)}
+								placeholder="Andrew Cozard"
+								disabled={isPending}
+							/>
+						</div>
+					</div>
+				</div>
+
+				{/* Document Selection Sections */}
+				<div className="mb-8">
+					<h2 className="text-base font-semibold italic text-gray-900 mb-4">
+						Select Folders & Files
+					</h2>
+					<div className="flex items-start gap-2 mb-4">
+					<DocRefButton
+						onClick={openDocumentPanel}
+						hasDocuments={selectedDocuments.length > 0}
+						disabled={isPending}
+						label="Select documents"
+						colorTheme="amber"
+					/>
+					<InlineDocRef
+						documents={folders}
+						onRemove={removeDocument}
+						disabled={isPending}
+						colorTheme="amber"
+					/>
+					</div>
+				</div>
+
+				{/* Notes Section */}
+				{notes.length > 0 && (
+					<div className="mb-8">
+						<h2 className="text-base font-semibold italic text-gray-900 mb-4">
+							Selected Notes
+						</h2>
+						<div className="flex items-start gap-2">
+							<InlineDocRef
+								documents={notes}
+								onRemove={removeDocument}
+								disabled={isPending}
+								colorTheme="amber"
+							/>
+						</div>
+					</div>
 				)}
-			</div>
-			<div className="space-y-6">
-				{/* Date Selector */}
-				<div className="space-y-3">
-					<div className="flex items-center gap-2">
-						<Calendar className="h-4 w-4 text-gray-600" />
-						<Label className="text-sm font-medium text-gray-700">
-							Report Date <span className="text-red-500">*</span>
-						</Label>
+
+				{/* Images Section */}
+				{images.length > 0 && (
+					<div className="mb-8">
+						<h2 className="text-base font-semibold italic text-gray-900 mb-4">
+							Selected Images
+						</h2>
+						<div className="flex items-start gap-2">
+							<InlineDocRef
+								documents={images}
+								onRemove={removeDocument}
+								disabled={isPending}
+								colorTheme="amber"
+							/>
+						</div>
 					</div>
-					<Input
-						className="w-full"
-						disabled={isPending}
-						onChange={(e) => handleInputChange("date", e.target.value)}
-						required
-						type="date"
-						value={formData.date}
-					/>
-				</div>
-				<div className="space-y-3">
-					<div className="flex items-center gap-2">
-						<MapPin className="h-4 w-4 text-gray-600" />
-						<Label className="text-sm font-medium text-gray-700">
-							Project Location <span className="text-red-500">*</span>
-						</Label>
-					</div>
-					<Input
-						className="w-full"
-						disabled={isPending}
-						onChange={(e) => handleInputChange("location", e.target.value)}
-						placeholder="Enter project location for weather data"
-						required
-						type="text"
-						value={formData.location}
-					/>
-				</div>
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-					<div className="space-y-2">
-						<Label className="text-sm font-medium text-gray-700">Employer Name</Label>
-						<Input
-							disabled={isPending}
-							onChange={(e) => handleInputChange("employerName", e.target.value)}
-							placeholder="Jay Dee"
-							type="text"
-							value={formData.employerName}
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label className="text-sm font-medium text-gray-700">Project Name/Number</Label>
-						<Input
-							disabled={isPending}
-							onChange={(e) => handleInputChange("projectName", e.target.value)}
-							placeholder="TP-36"
-							type="text"
-							value={formData.projectName}
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label className="text-sm font-medium text-gray-700">Shift Engineer</Label>
-						<Input
-							disabled={isPending}
-							onChange={(e) => handleInputChange("shiftEngineer", e.target.value)}
-							placeholder="Andrew Cozard"
-							type="text"
-							value={formData.shiftEngineer}
-						/>
-					</div>
-				</div>
-				<DocumentSection
-					documents={folders}
-					icon={<Folder className="h-4 w-4 text-gray-600" />}
-					isPending={isPending}
-					label="Select Folder"
-					loadDocumentPanel={loadDocumentPanel}
-					onRemoveDocument={removeDocument}
-				/>
-				<DocumentSection
-					documents={notes}
-					icon={<StickyNote className="h-4 w-4 text-gray-600" />}
-					isMultiple
-					isPending={isPending}
-					label="Select Notes"
-					loadDocumentPanel={loadDocumentPanel}
-					onRemoveDocument={removeDocument}
-				/>
-				<DocumentSection
-					documents={images}
-					icon={<FileImage className="h-4 w-4 text-gray-600" />}
-					isMultiple
-					isPending={isPending}
-					label="Select Images"
-					loadDocumentPanel={loadDocumentPanel}
-					onRemoveDocument={removeDocument}
-				/>
+				)}
+
+				{/* Validation message */}
 				{!isFormValid && formData.date && formData.location && (
-					<div className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-3">
+					<div className="mb-8 p-3 bg-amber-50 border border-amber-200 rounded text-sm text-amber-700">
 						⚠️ Please select either a folder or notes to generate the daily report.
 					</div>
 				)}
+
+				{/* Status and submit */}
+				<div className="pt-6 border-t border-gray-200">
+					<div className="flex items-center justify-between">
+						<div className="text-sm text-gray-500">
+							{totalSelectedDocuments > 0 && (
+								<span>{totalSelectedDocuments} document{totalSelectedDocuments !== 1 ? "s" : ""} attached</span>
+							)}
+						</div>
+						<div className="flex items-center gap-3">
+							<ModelSelector 
+								selectedModel={preferredModel}
+								onModelChange={setPreferredModel}
+								selectedAgentType={preferredAgentType}
+							/>
+							<Button
+								onClick={handleFormSubmit}
+								disabled={isWaitingForResponse || !isFormValid}
+								className="bg-amber-600 hover:bg-amber-700 text-white px-6"
+							>
+								{isWaitingForResponse ? (
+									<>
+										<Loader2 className="h-4 w-4 animate-spin mr-2" />
+										Generating Report...
+									</>
+								) : (
+									<>
+										Generate Daily Report
+										<CornerDownLeft className="h-4 w-4 ml-2" />
+									</>
+								)}
+							</Button>
+						</div>
+					</div>
+				</div>
 			</div>
-			<div className="flex justify-end pt-4 border-t border-gray-100">
-				<Button
-					className="bg-indigo-500 hover:bg-indigo-600 text-white px-6"
-					disabled={isWaitingForResponse || !isFormValid}
-					onClick={handleFormSubmit}
-				>
-					{isWaitingForResponse ? (
-						<>
-							<Loader2 className="h-4 w-4 animate-spin mr-2" />
-							Generating Report...
-						</>
-					) : (
-						<>
-							Generate Daily Report
-							<CornerDownLeft className="h-4 w-4 ml-2" />
-						</>
-					)}
-				</Button>
-			</div>
-		</ScrollArea>
+		</div>
 	);
-} 
+}

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, FolderOutput, Folder, FolderOpen, ExternalLink } from "lucide-react";
 import clsx from "clsx";
+import { cn } from "@/lib/utils";
 import { DocumentItemActions } from "./DocumentItemActions";
 import { ContextMenuContent } from "./ContextMenuContent";
 import { BulkContextMenuContent } from "./BulkContextMenuContent";
@@ -283,13 +284,18 @@ const DocumentItemComponent: React.FC<DocumentItemProps> = ({
 				{/* Icon - folder opens on hover */}
 				<div className="flex-shrink-0 transition-transform duration-150">
 					{isFolder ? (
-						isHovered ? (
-							<FolderOpen className="h-5 w-5 text-blue-600" />
-						) : (
-							<Folder className="h-5 w-5 text-blue-500" />
-						)
+						<div className={cn(
+							"flex items-center justify-center w-5 h-5 rounded",
+							isHovered ? "bg-blue-200" : "bg-blue-100"
+						)}>
+							{isHovered ? (
+								<FolderOpen className="h-3.5 w-3.5 text-blue-600" />
+							) : (
+								<Folder className="h-3.5 w-3.5 text-blue-600" />
+							)}
+						</div>
 					) : (
-						<FileTypeIcon extension={item.metadata?.extension} />
+						<FileTypeIcon extension={item.metadata?.extension} size="sm" />
 					)}
 				</div>
 
