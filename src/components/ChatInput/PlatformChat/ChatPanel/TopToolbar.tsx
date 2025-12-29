@@ -34,6 +34,7 @@ export interface TopToolbarProps {
   canPrint: boolean;
   isEditMode: boolean;
   hasUnsavedInEdit: boolean;
+  isDownloading?: boolean;
   onRename: () => void;
   onDownload: () => void;
   onSaveAs: () => void;
@@ -93,6 +94,7 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 	canPrint,
 	isEditMode,
 	hasUnsavedInEdit,
+	isDownloading = false,
 	onRename,
 	onDownload,
 	onSaveAs,
@@ -149,9 +151,9 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 
 			{/* Quick actions */}
 			<ToolbarButton
-				disabled={!canDownload}
-				icon={<Download className="h-4 w-4" />}
-				label="Download"
+				disabled={!canDownload || isDownloading}
+				icon={<Download className={cn("h-4 w-4", isDownloading && "animate-pulse")} />}
+				label={isDownloading ? "Downloading..." : "Download"}
 				onClick={onDownload}
 			/>
 

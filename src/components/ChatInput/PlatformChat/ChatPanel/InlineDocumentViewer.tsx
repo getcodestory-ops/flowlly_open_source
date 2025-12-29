@@ -146,12 +146,13 @@ export const InlineDocumentViewer = ({
     !isWopiEditable;
 
 	// Fetch regular inline document URL (for non-WOPI files)
+	// Using standardized query key: "resource" prefix for all file content fetches
 	const { data: resource } = useQuery({
 		queryKey: [
-			"getInlineFileUrl",
+			"resource",
 			activeProject?.project_id,
 			resourceId,
-			isSandboxFile,
+			isSandboxFile ? "sandbox" : "storage",
 			fileName,
 			lastReloadTime,
 		],

@@ -18,13 +18,14 @@ export const HTMLViewer = ({
 	const { session } = useStore();
 	const { activeProject } = useStore();
 
+	// Using standardized query key: "resource" prefix for all file content fetches
+	// Note: Using only project_id instead of full object to prevent unnecessary re-fetches
 	const { data: resource, isLoading, isError } = useQuery({
 		queryKey: [
-			"htmlResource",
-			session,
-			activeProject,
+			"resource",
+			activeProject?.project_id,
 			resourceId,
-			isSandboxFile,
+			isSandboxFile ? "sandbox" : "storage",
 			fileName,
 			lastReloadTime,
 		],
@@ -41,6 +42,7 @@ export const HTMLViewer = ({
 			);
 		},
 		enabled: !!session && !!activeProject?.project_id && !!resourceId,
+		staleTime: 30 * 1000, // Keep data fresh for 30 seconds
 	});
 
 	if (isLoading) {

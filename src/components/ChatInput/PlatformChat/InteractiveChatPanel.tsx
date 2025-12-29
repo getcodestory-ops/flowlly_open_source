@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useChatStore } from "@/hooks/useChatStore";
 import { Button } from "@/components/ui/button";
 import { getInlineDocument, saveDocumentAs, fetchResource } from "@/api/folderRoutes";
 import { updateDocumentName } from "@/api/documentRoutes";
 import { useStore } from "@/utils/store";
-import { useQuery } from "@tanstack/react-query";
 import { X, Folder, Plus, ChevronLeft, ChevronRight, Box } from "lucide-react";
 import TopToolbar from "./ChatPanel/TopToolbar";
 import InlineDocumentViewer from "./ChatPanel/InlineDocumentViewer";
@@ -54,30 +53,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 	const { toast } = useToast();
 
 	const activeTab = tabs.find((tab) => tab.id === activeTabId);
-
-	// Query to get resource data for download functionality
-	const { data: downloadResource } = useQuery({
-		queryKey: ["downloadResource", activeProject?.project_id, activeTab?.resourceId, activeTab?.type, activeTab?.filename],
-		queryFn: () => {
-			if (!session || !activeProject?.project_id || !activeTab?.resourceId) {
-				return Promise.reject("No session, active project, or resource ID");
-			}
-			if (!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox")) {
-				return Promise.reject("Unsupported tab type for download");
-			}
-			const isSandboxFile = activeTab.type === "sandbox";
-			const sandboxId = getSandboxId(activeTab);
-			return getInlineDocument({ 
-				session, 
-				projectId: activeProject.project_id, 
-				resourceId: sandboxId, // Use explicit sandbox_id for API call
-				isSandboxFile,
-				fileName: activeTab.filename,
-			});
-		},
-		enabled: !!session && !!activeProject?.project_id && !!activeTab?.resourceId && (activeTab?.type === "sources" || activeTab?.type === "sandbox"),
-		staleTime: 30 * 1000, // Keep data fresh for 30 seconds
-	});
+	const [isDownloading, setIsDownloading] = useState(false);
 
 	const handlePrintActiveHtml = async(): Promise<void> => {
 		try {
@@ -169,18 +145,43 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 		} catch {}
 	};
 
-	const handleDownload = () => {
-		if (downloadResource?.url && activeTab?.filename) {
-			const link = document.createElement("a");
-			link.href = downloadResource.url;
-			link.download = activeTab.filename;
-			link.target = "_blank"; // Ensure it doesn't replace current window
-			link.rel = "noopener noreferrer"; // Security best practice
-			document.body.appendChild(link);
-			link.click();
-			document.body.removeChild(link);
+	const handleDownload = useCallback(async () => {
+		if (!activeTab || (activeTab.type !== "sources" && activeTab.type !== "sandbox")) return;
+		if (!session || !activeProject?.project_id || !activeTab.resourceId) return;
+		
+		setIsDownloading(true);
+		try {
+			const isSandboxFile = activeTab.type === "sandbox";
+			const sandboxId = getSandboxId(activeTab);
+			const resource = await getInlineDocument({ 
+				session, 
+				projectId: activeProject.project_id, 
+				resourceId: sandboxId,
+				isSandboxFile,
+				fileName: activeTab.filename,
+			});
+			
+			if (resource?.url && activeTab.filename) {
+				const link = document.createElement("a");
+				link.href = resource.url;
+				link.download = activeTab.filename;
+				link.target = "_blank";
+				link.rel = "noopener noreferrer";
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+			}
+		} catch (error) {
+			console.error("Error downloading file:", error);
+			toast({
+				title: "Error",
+				description: "Failed to download file",
+				variant: "destructive",
+			});
+		} finally {
+			setIsDownloading(false);
 		}
-	};
+	}, [activeTab, session, activeProject?.project_id, toast]);
 
 	const getFileExtension = (filename?: string): string => {
 		if (!filename) return "txt";
@@ -592,11 +593,12 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 						</div>
 					</div>
 					<TopToolbar
-						canDownload={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox") && !!downloadResource?.url}
+						canDownload={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox") && !isDownloading}
 						canPrint={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox") && htmlExtensions.includes(getFileExtension(activeTab.filename))}
 						canRename={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox")}
 						canSaveAs={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox")}
 						hasUnsavedInEdit={!!(activeTab && unsavedChanges[activeTab.resourceId || activeTab.id] && (activeTab.type === "sources" || activeTab.type === "sandbox") && getCurrentViewMode(activeTab.id) === "text")}
+						isDownloading={isDownloading}
 						isEditMode={!!activeTab && getCurrentViewMode(activeTab.id) === "text"}
 						onAddFolder={handleAddFolderSelector}
 						onCloseAll={() => {
