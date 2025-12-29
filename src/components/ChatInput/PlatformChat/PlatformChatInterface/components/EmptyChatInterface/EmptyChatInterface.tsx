@@ -36,7 +36,7 @@ const FormWrapper = ({
 			{/* Fixed back button - stays visible while scrolling (desktop only) */}
 			<button
 				onClick={onBack}
-				className="fixed top-16 -translate-x-16 z-20 p-2 text-gray-600 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors hidden lg:flex items-center gap-1"
+				className="relative top-24 translate-x-0 z-20 p-2 text-gray-600 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors hidden lg:flex items-center gap-1"
 				title="Back to templates"
 			>
 				<ArrowLeft className="h-6 w-6" />
