@@ -208,24 +208,32 @@ export default function PlatformChatInterface({
 		}
 	};
 
-	// Smart scroll behavior: scroll to last user message
+	// Smart scroll behavior: different behavior for streaming vs loaded chat
 	useLayoutEffect(() => {
 		// Give DOM time to render the message
 		const timer = setTimeout(() => {
-			scrollToLastUserMessage();
+			const isCurrentlyStreaming = !!activeStreamingKey;
+			
+			if (isCurrentlyStreaming) {
+				// During streaming: keep user message at top, stream follows below
+				scrollToLastUserMessage();
+			} else {
+				// Chat loaded (not streaming): show bottom of last message at viewport bottom
+				scrollToBottomOfLastMessage();
+			}
 		}, 100);
 		return () => clearTimeout(timer);
-	}, [chats]);
+	}, [chats, activeStreamingKey]);
 
 	// Handle scroll when streaming state changes
 	useEffect(() => {
 		const isCurrentlyStreaming = !!activeStreamingKey;
 		
-		// When streaming ends, ensure we scroll to show last user message at top
+		// When streaming ends, ensure we scroll to show bottom of last message
 		if (wasStreamingRef.current && !isCurrentlyStreaming) {
-			// Streaming just ended - scroll to last user message
+			// Streaming just ended - scroll to bottom of last message
 			const timer = setTimeout(() => {
-				scrollToLastUserMessage();
+				scrollToBottomOfLastMessage();
 			}, 200);
 			return () => clearTimeout(timer);
 		}
@@ -358,6 +366,9 @@ export default function PlatformChatInterface({
 	// Ref to track the last user message element for smart scrolling
 	const lastUserMessageRef = useRef<HTMLDivElement | null>(null);
 	
+	// Ref to track the last message element (for scrolling to bottom of conversation)
+	const lastMessageRef = useRef<HTMLDivElement | null>(null);
+	
 	// Track if we were previously streaming (to detect when streaming ends)
 	const wasStreamingRef = useRef<boolean>(false);
 	
@@ -386,6 +397,20 @@ export default function PlatformChatInterface({
 		return -1;
 	};
 	
+	// Find the index of the last visible message (for scroll to bottom behavior)
+	const getLastVisibleMessageIndex = (): number => {
+		if (!chats || chats.length === 0) return -1;
+		for (let i = chats.length - 1; i >= 0; i--) {
+			const message = chats[i].message;
+			const isVisible = typeof message === "string" || 
+				!["run_workflow", "send_data_to_workflow", "continue_conversation", "start_new_conversation"].includes(message?.function_call?.name || "");
+			if (isVisible) {
+				return i;
+			}
+		}
+		return -1;
+	};
+	
 	// Scroll to position the last user message at the top of the viewport
 	const scrollToLastUserMessage = (): void => {
 		if (lastUserMessageRef.current && chatContainerRef.current) {
@@ -401,6 +426,30 @@ export default function PlatformChatInterface({
 				// with a small offset for visual breathing room
 				const offset = 16; // 16px from the top
 				const targetScroll = scrollContainer.scrollTop + (messageRect.top - containerRect.top) - offset;
+				
+				scrollContainer.scrollTo({
+					top: Math.max(0, targetScroll),
+					behavior: "smooth",
+				});
+			}
+		}
+	};
+	
+	// Scroll to show the bottom of the last message at the bottom of the viewport
+	const scrollToBottomOfLastMessage = (): void => {
+		if (lastMessageRef.current && chatContainerRef.current) {
+			const scrollContainer = chatContainerRef.current.querySelector(
+				"[data-radix-scroll-area-viewport]",
+			);
+			if (scrollContainer) {
+				// Get the position of the last message relative to the scroll container
+				const messageRect = lastMessageRef.current.getBoundingClientRect();
+				const containerRect = scrollContainer.getBoundingClientRect();
+				
+				// Calculate scroll position to put the bottom of the message at the bottom of viewport
+				// with a small offset for visual breathing room
+				const offset = 24; // 24px from the bottom
+				const targetScroll = scrollContainer.scrollTop + (messageRect.bottom - containerRect.bottom) + offset;
 				
 				scrollContainer.scrollTo({
 					top: Math.max(0, targetScroll),
@@ -576,6 +625,7 @@ export default function PlatformChatInterface({
 						{chats.map((history, index) => {
 						const isUserMessage = history.sender.toLowerCase() === "user";
 						const isLastUserMessage = isUserMessage && index === getLastUserMessageIndex();
+						const isLastVisibleMessage = index === getLastVisibleMessageIndex();
 						
 						return (
 							<div className="flex flex-col gap-2" key={index}>
@@ -586,7 +636,10 @@ export default function PlatformChatInterface({
 												? "flex justify-end mb-4"
 												: "block w-full"
 										}`}
-										ref={isLastUserMessage ? lastUserMessageRef : null}
+										ref={(el) => {
+											if (isLastUserMessage) lastUserMessageRef.current = el;
+											if (isLastVisibleMessage) lastMessageRef.current = el;
+										}}
 									>
 										<div
 											className={`${
