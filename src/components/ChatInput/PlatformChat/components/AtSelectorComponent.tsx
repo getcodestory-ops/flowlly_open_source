@@ -123,11 +123,11 @@ export default function AtSelectorComponent() : JSX.Element {
 			<Popover onOpenChange={setOpen} open={open}>
 				<PopoverTrigger asChild>
 					<Button
-						className="h-6 w-6 p-0 hover:bg-accent"
+						className="h-4 w-4 p-0 hover:bg-accent"
 						size="icon"
 						variant="ghost"
 					>
-						<AtSign className="h-4 w-4 text-gray-500" />
+						<AtSign className="h-4 w-4 text-gray-400" />
 					</Button>
 				</PopoverTrigger>
 				<PopoverContent align="start" className="w-[400px] p-0">

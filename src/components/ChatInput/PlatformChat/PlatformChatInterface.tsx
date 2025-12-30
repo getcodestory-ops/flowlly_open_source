@@ -538,11 +538,11 @@ export default function PlatformChatInterface({
 						)}
 					</div>
 				</div>
-				<div className="absolute top-0 left-2 z-10">
+				<div className="absolute top-2 left-4 z-10">
 					<AtSelectorComponent />
 				</div>
 				<Textarea
-					className="min-h-10 resize-none border-0 p-3 pb-4 mt-4 shadow-none focus-visible:ring-0"
+					className="min-h-10 resize-none border-0 p-4 pb-4 mt-4 shadow-none focus-visible:ring-0"
 					disabled={isPending}
 					id="message"
 					onChange={(e) => setChatInput(e.target.value)}
@@ -563,7 +563,7 @@ export default function PlatformChatInterface({
 					style={{ height: "auto" }}
 					value={chatInput}
 				/>
-				<div className="flex items-center justify-between p-3 pt-0">
+				<div className="flex items-center justify-between p-2 pt-0">
 					<div className="flex items-center gap-2">
 						{loadDocumentPanel()}
 						<AgentTypeSelector 
@@ -577,7 +577,7 @@ export default function PlatformChatInterface({
 						/>
 					</div>
 					<Button
-						className={`gap-1.5 transition-colors ${
+						className={`gap-1.5 transition-colors mr-2 ${
 							activeStreamingKey && !chatInput.trim()
 								? "bg-red-500 hover:bg-red-600 text-white animate-pulse" 
 								: "bg-indigo-500 hover:bg-indigo-600 text-white"

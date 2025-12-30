@@ -56,7 +56,7 @@ export default function AgentTypeSelector({
 }: AgentTypeSelectorProps): JSX.Element {
 	return (
 		<TooltipProvider delayDuration={200}>
-			<div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1 shadow-sm">
+			<div className="inline-flex rounded-md border border-slate-200 bg-slate-50 p-1 shadow-sm">
 				{AGENT_TYPES.map((type) => {
 					const TypeIcon = type.icon;
 					const isSelected = type.id === selectedAgentType;
