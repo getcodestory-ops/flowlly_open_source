@@ -52,13 +52,13 @@ export const MicrosoftEventDetailsModal: React.FC<MicrosoftEventDetailsModalProp
 
   return (
     <Dialog open={!!event} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
+      <DialogContent className="max-w-2xl h-[85vh] flex flex-col p-0 gap-0">
         <DialogHeader className="p-4 border-b flex-shrink-0">
           <DialogTitle>{event?.subject || "Event Details"}</DialogTitle>
         </DialogHeader>
 
         {event && (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden min-h-0">
             <TabsList className="mx-4 mt-2 w-fit flex-shrink-0">
               <TabsTrigger value="details" className="gap-1.5">
                 <Info className="h-3.5 w-3.5" />
@@ -175,7 +175,7 @@ export const MicrosoftEventDetailsModal: React.FC<MicrosoftEventDetailsModalProp
               </div>
             </TabsContent>
 
-            <TabsContent value="setup" className="flex-1 overflow-hidden m-0">
+            <TabsContent value="setup" className="flex-1 overflow-hidden m-0 min-h-0 flex flex-col">
               <MicrosoftEventDistributionSetup
                 meetingName={event.subject}
                 initialEmails={attendeeEmails}
