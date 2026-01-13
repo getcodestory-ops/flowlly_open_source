@@ -210,34 +210,32 @@ export default function PlatformChatInterface({
 
 	// Smart scroll behavior: different behavior for streaming vs loaded chat
 	useLayoutEffect(() => {
-		// Give DOM time to render the message
-		const timer = setTimeout(() => {
-			const isCurrentlyStreaming = !!activeStreamingKey;
-			
-			if (isCurrentlyStreaming) {
-				// During streaming: keep user message at top, stream follows below
-				scrollToLastUserMessage();
-			} else {
-				// Chat loaded (not streaming): show bottom of last message at viewport bottom
-				scrollToBottomOfLastMessage();
-			}
-		}, 100);
-		return () => clearTimeout(timer);
+		const isCurrentlyStreaming = !!activeStreamingKey;
+		const wasStreaming = wasStreamingRef.current;
+		const justFinishedStreaming = wasStreaming && !isCurrentlyStreaming;
+		
+		if (isCurrentlyStreaming) {
+			// During streaming: keep user message at top, stream follows below
+			scrollToLastUserMessage();
+		} else if (!justFinishedStreaming) {
+			// Fresh chat load (not coming from streaming): show bottom of last message at viewport bottom
+			scrollToBottomOfLastMessage();
+		}
+		// If justFinishedStreaming: streaming just ended - maintain scroll position
+		// Don't scroll so user doesn't lose their reading position
 	}, [chats, activeStreamingKey]);
 
 	// Handle scroll when streaming state changes
 	useEffect(() => {
 		const isCurrentlyStreaming = !!activeStreamingKey;
 		
-		// When streaming ends, ensure we scroll to show bottom of last message
+		// When streaming ends, reset user scroll tracking for next streaming session
+		// DON'T scroll - maintain the user's current reading position
 		if (wasStreamingRef.current && !isCurrentlyStreaming) {
-			// Streaming just ended - scroll to bottom of last message
-			const timer = setTimeout(() => {
-				scrollToBottomOfLastMessage();
-			}, 200);
-			return () => clearTimeout(timer);
+			userHasScrolledRef.current = false;
 		}
 		
+		// Always update the streaming state ref
 		wasStreamingRef.current = isCurrentlyStreaming;
 	}, [activeStreamingKey]);
 	
