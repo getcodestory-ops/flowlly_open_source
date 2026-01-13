@@ -210,34 +210,32 @@ export default function PlatformChatInterface({
 
 	// Smart scroll behavior: different behavior for streaming vs loaded chat
 	useLayoutEffect(() => {
-		// Give DOM time to render the message
-		const timer = setTimeout(() => {
-			const isCurrentlyStreaming = !!activeStreamingKey;
-			
-			if (isCurrentlyStreaming) {
-				// During streaming: keep user message at top, stream follows below
-				scrollToLastUserMessage();
-			} else {
-				// Chat loaded (not streaming): show bottom of last message at viewport bottom
-				scrollToBottomOfLastMessage();
-			}
-		}, 100);
-		return () => clearTimeout(timer);
+		const isCurrentlyStreaming = !!activeStreamingKey;
+		const wasStreaming = wasStreamingRef.current;
+		const justFinishedStreaming = wasStreaming && !isCurrentlyStreaming;
+		
+		if (isCurrentlyStreaming) {
+			// During streaming: keep user message at top, stream follows below
+			scrollToLastUserMessage();
+		} else if (!justFinishedStreaming) {
+			// Fresh chat load (not coming from streaming): show bottom of last message at viewport bottom
+			scrollToBottomOfLastMessage();
+		}
+		// If justFinishedStreaming: streaming just ended - maintain scroll position
+		// Don't scroll so user doesn't lose their reading position
 	}, [chats, activeStreamingKey]);
 
 	// Handle scroll when streaming state changes
 	useEffect(() => {
 		const isCurrentlyStreaming = !!activeStreamingKey;
 		
-		// When streaming ends, ensure we scroll to show bottom of last message
+		// When streaming ends, reset user scroll tracking for next streaming session
+		// DON'T scroll - maintain the user's current reading position
 		if (wasStreamingRef.current && !isCurrentlyStreaming) {
-			// Streaming just ended - scroll to bottom of last message
-			const timer = setTimeout(() => {
-				scrollToBottomOfLastMessage();
-			}, 200);
-			return () => clearTimeout(timer);
+			userHasScrolledRef.current = false;
 		}
 		
+		// Always update the streaming state ref
 		wasStreamingRef.current = isCurrentlyStreaming;
 	}, [activeStreamingKey]);
 	
@@ -538,11 +536,11 @@ export default function PlatformChatInterface({
 						)}
 					</div>
 				</div>
-				<div className="absolute top-0 left-2 z-10">
+				<div className="absolute top-2 left-4 z-10">
 					<AtSelectorComponent />
 				</div>
 				<Textarea
-					className="min-h-10 resize-none border-0 p-3 pb-4 mt-4 shadow-none focus-visible:ring-0"
+					className="min-h-10 resize-none border-0 p-4 pb-4 mt-4 shadow-none focus-visible:ring-0"
 					disabled={isPending}
 					id="message"
 					onChange={(e) => setChatInput(e.target.value)}
@@ -563,7 +561,7 @@ export default function PlatformChatInterface({
 					style={{ height: "auto" }}
 					value={chatInput}
 				/>
-				<div className="flex items-center justify-between p-3 pt-0">
+				<div className="flex items-center justify-between p-2 pt-0">
 					<div className="flex items-center gap-2">
 						{loadDocumentPanel()}
 						<AgentTypeSelector 
@@ -577,7 +575,7 @@ export default function PlatformChatInterface({
 						/>
 					</div>
 					<Button
-						className={`gap-1.5 transition-colors ${
+						className={`gap-1.5 transition-colors mr-2 ${
 							activeStreamingKey && !chatInput.trim()
 								? "bg-red-500 hover:bg-red-600 text-white animate-pulse" 
 								: "bg-indigo-500 hover:bg-indigo-600 text-white"

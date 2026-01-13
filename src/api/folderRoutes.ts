@@ -194,7 +194,9 @@ export const uploadFileInFolder = async(
 
 	const formData = new FormData();
 	formData.append("file", file);
-	formData.append("folder_id", folderId || "");
+	if (folderId) {
+		formData.append("folder_id", folderId);
+	}
 	formData.append("extract_method", "unstructured");
 
 	// If progress tracking is requested, use axios with progress event
