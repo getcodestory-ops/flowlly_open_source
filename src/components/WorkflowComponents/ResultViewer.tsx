@@ -8,6 +8,7 @@ import {
 	Calendar,
 	ArrowLeft,
 	X,
+	Settings,
 } from "lucide-react";
 import ActionItemViewer from "@/components/AiActions/ActionItemViewer";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -18,12 +19,11 @@ import { useStore } from "@/utils/store";
 import { useWorkflow } from "@/hooks/useWorkflow";
 import { useRouter } from "next/navigation";
 import { useChatStore } from "@/hooks/useChatStore";
-
 import StreamComponent from "@/components/StreamResponse/StreamAgentChat";
 import MeetingChatFromMeetingInstance from "./Meeting/MeetingChatFromMeetingInstance";
 import MeetingRecording from "./Meeting/MeetingRecording";
-import MinutesViewer from "./Meeting/MinutesViewer";
 import MeetingAgendaViewer from "./Meeting/MeetingAgendaViewer";
+import DistributionSetup from "./Meeting/DistributionSetup";
 
 interface ResultViewerProps {
   currentResult: EventResult;
@@ -119,10 +119,10 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 			hasData: !!(recordingNode || transcribeNode),
 		},
 		{
-			id: "minutes",
-			label: "Minutes",
-			icon: <FileText className="h-3.5 w-3.5" />,
-			hasData: !!minutesNode,
+			id: "setup",
+			label: "Setup",
+			icon: <Settings className="h-3.5 w-3.5" />,
+			hasData: !!minutesNode || !!distributeNode,
 		},
 		{
 			id: "questions",
@@ -263,12 +263,13 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 							/>
 						</TabsContent>
 						<TabsContent 
-							className="h-full m-0 p-4 overflow-auto" 
-							value="minutes"
+							className="h-full m-0 overflow-hidden" 
+							value="setup"
 						>
-							<MinutesViewer 
+							<DistributionSetup 
 								distributeNode={distributeNode}
 								minutesNode={minutesNode}
+								meetingName={currentResult?.name || currentResult?.event_name}
 							/>
 						</TabsContent>
 						<TabsContent 
