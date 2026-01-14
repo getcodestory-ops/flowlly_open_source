@@ -84,7 +84,7 @@ export const useDocumentActions = ({
 	};
 
 	// Delete file
-	const handleDeleteFile = async (fileId: string): Promise<boolean> => {
+	const handleDeleteFile = async (fileId: string, folderId: string): Promise<boolean> => {
 		if (!session || !activeProject) {
 			toast({
 				title: "Error",
@@ -100,6 +100,7 @@ export const useDocumentActions = ({
 				session,
 				projectId: activeProject.project_id,
 				fileId,
+				folderId,
 			});
 			toast({
 				title: "File deleted",

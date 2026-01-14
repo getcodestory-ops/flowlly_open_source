@@ -54,7 +54,6 @@ export const BulkContextMenuContent: React.FC<BulkContextMenuContentProps> = ({
 			<DropdownMenuItem onClick={(e) => { e.stopPropagation(); onMove(); }}>
 				<FolderInput className="mr-2 h-4 w-4" />
 				Move {selectedCount} items...
-				<span className="ml-auto text-xs text-gray-400">Soon</span>
 			</DropdownMenuItem>
 
 			<DropdownMenuSeparator />

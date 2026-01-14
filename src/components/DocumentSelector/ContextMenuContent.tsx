@@ -116,7 +116,7 @@ export const ContextMenuContent: React.FC<ContextMenuContentProps> = ({
 			<DropdownMenuItem onClick={(e) => { e.stopPropagation(); onMove(); }}>
 				<FolderInput className="mr-2 h-4 w-4" />
 				Move to...
-				<span className="ml-auto text-xs text-gray-400">Soon</span>
+				{isFolder && <span className="ml-auto text-xs text-gray-400">Soon</span>}
 			</DropdownMenuItem>
 
 			<DropdownMenuSeparator />

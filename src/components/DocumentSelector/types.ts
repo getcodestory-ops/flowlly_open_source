@@ -169,6 +169,8 @@ export interface DocumentGridProps {
   onBulkCopy?: () => void;
   // Copy single file
   onCopyFile?: (fileId: string, fileName: string) => void;
+  // Move single file
+  onMoveFile?: (fileId: string, fileName: string) => void;
   // Prefetch on hover
   onPrefetchFolder?: (folderId: string) => void;
   // Folder operations (create/upload)
@@ -189,7 +191,7 @@ export interface DocumentDropZoneProps {
 export interface UseDocumentActionsReturn {
   // File operations
   renameFile: (fileId: string, newName: string) => Promise<boolean>;
-  deleteFile: (fileId: string) => Promise<boolean>;
+  deleteFile: (fileId: string, folderId: string) => Promise<boolean>;
   // Folder placeholder operations
   renameFolder: (folderId: string, newName: string) => void;
   deleteFolder: (folderId: string) => void;

@@ -28,6 +28,7 @@ export const DocumentGrid: React.FC<DocumentGridProps> = ({
 	onBulkAddToChat,
 	onBulkCopy,
 	onCopyFile,
+	onMoveFile,
 	onPrefetchFolder,
 	onCreateFolder,
 	onCreateFile,
@@ -146,11 +147,16 @@ export const DocumentGrid: React.FC<DocumentGridProps> = ({
 						onBulkCopy={onBulkCopy}
 						onBulkDelete={onBulkDelete}
 						onBulkMove={onBulkMove}
-						onCopy={
-							item.type === "file" && onCopyFile
-								? () => onCopyFile(item.id, item.name)
-								: undefined
-						}
+					onCopy={
+						item.type === "file" && onCopyFile
+							? () => onCopyFile(item.id, item.name)
+							: undefined
+					}
+					onMove={
+						item.type === "file" && onMoveFile
+							? () => onMoveFile(item.id, item.name)
+							: undefined
+					}
 						onCreateFile={onCreateFile}
 						onCreateFolder={onCreateFolder}
 						onDelete={async () => {
@@ -168,9 +174,6 @@ export const DocumentGrid: React.FC<DocumentGridProps> = ({
 								? () => onPrefetchFolder(item.id)
 								: undefined
 						}
-						onMove={() => {
-							// Placeholder - will be implemented later
-						}}
 						onOpenInSidePanel={
 							item.type === "file"
 								? () => onOpenInSidePanel(item.id, item.name)

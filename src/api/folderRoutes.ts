@@ -325,10 +325,12 @@ export const deleteFile = async({
 	session,
 	projectId,
 	fileId,
+	folderId,
 }: {
   session: Session;
   projectId: string;
   fileId: string;
+  folderId: string;
 }) => {
 	if (!session) {
 		return;
@@ -338,6 +340,7 @@ export const deleteFile = async({
 
 	const params = {
 		file_id: fileId,
+		folder_id: folderId,
 	};
 
 	const response = await axios.delete(baseUrl, {

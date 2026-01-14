@@ -167,7 +167,7 @@ export const useDocumentOperations = ({
 			folderId: string; 
 		}) => {
 			if (!session) throw new Error("No session");
-			return deleteFile({ session, projectId: activeProjectId, fileId });
+			return deleteFile({ session, projectId: activeProjectId, fileId, folderId });
 		},
 		onSuccess: (data, variables) => {
 			// Remove file from store

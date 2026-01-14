@@ -16,6 +16,7 @@ import { DocumentSelectorHeader } from "./DocumentSelectorHeader";
 import { DocumentGrid } from "./DocumentGrid";
 import { DocumentDropZone } from "./DocumentDropZone";
 import { CopyToFolderDialog } from "./CopyToFolderDialog";
+import { MoveToFolderDialog } from "./MoveToFolderDialog";
 import { CreateFileDialog } from "./CreateFileDialog";
 import { useDocumentActions } from "./useDocumentActions";
 import { DocumentSelectorProps, SelectedItem, SortField, SortDirection, DocumentSelectorItem, SelectionEvent } from "./types";
@@ -55,6 +56,11 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 	const [showCopyDialog, setShowCopyDialog] = React.useState(false);
 	const [itemsToCopy, setItemsToCopy] = React.useState<{ id: string; name: string }[]>([]);
 	const [isCopying, setIsCopying] = React.useState(false);
+
+	// Move to folder dialog state
+	const [showMoveDialog, setShowMoveDialog] = React.useState(false);
+	const [itemsToMove, setItemsToMove] = React.useState<{ id: string; name: string }[]>([]);
+	const [isMoving, setIsMoving] = React.useState(false);
 	
 	// Create folder/file dialog state
 	const [showCreateFolderModal, setShowCreateFolderModal] = React.useState(false);
@@ -355,7 +361,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 		// Delete files one by one
 		let successCount = 0;
 		for (const file of filesToDelete) {
-			const success = await deleteFile(file.id);
+			const success = await deleteFile(file.id, effectiveFolderId);
 			if (success) successCount++;
 		}
 		
@@ -365,7 +371,103 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 	};
 
 	const handleBulkMove = () => {
-		toast({ title: "Coming Soon", description: "Moving multiple files will be available in a future update", duration: 3000 });
+		// Filter only files (folders can't be moved yet)
+		const filesToMove = selectedItems
+			.filter((item) => item.type === "file")
+			.map((item) => ({ id: item.id, name: item.name }));
+		
+		if (filesToMove.length === 0) {
+			toast({ title: "No files selected", description: "Only files can be moved. Folder moving coming soon.", duration: 3000 });
+			return;
+		}
+		
+		setItemsToMove(filesToMove);
+		setShowMoveDialog(true);
+	};
+
+	// Move single file to another folder
+	const handleMoveFile = (fileId: string, fileName: string) => {
+		setItemsToMove([{ id: fileId, name: fileName }]);
+		setShowMoveDialog(true);
+	};
+
+	// Move files: copy to target folder, then delete from source
+	const handleMoveToFolder = async (targetFolderId: string, folderName: string) => {
+		if (!session || !activeProject?.project_id) return;
+		
+		setIsMoving(true);
+		let copySuccessCount = 0;
+		let deleteSuccessCount = 0;
+		const successfullyMovedIds: string[] = [];
+		
+		try {
+			// Step 1: Copy all files to target folder
+			for (const item of itemsToMove) {
+				const result = await saveDocumentAs(session, activeProject.project_id, item.id, targetFolderId);
+				if (result) {
+					copySuccessCount++;
+					successfullyMovedIds.push(item.id);
+				}
+			}
+			
+			// Step 2: Delete successfully copied files from source folder
+			if (copySuccessCount > 0) {
+				for (const fileId of successfullyMovedIds) {
+					const success = await deleteFile(fileId, effectiveFolderId);
+					if (success) deleteSuccessCount++;
+				}
+			}
+			
+			if (deleteSuccessCount > 0) {
+				// Invalidate target folder's cache
+				setFiles(targetFolderId, []);
+				queryClient.invalidateQueries({
+					queryKey: ["files", session.access_token, activeProject.project_id, targetFolderId, isProjectWide],
+				});
+				
+				// Clear selection after successful move
+				if (shouldUseChatContext && effectiveContextId) {
+					const currentContexts = selectedContexts[effectiveContextId] || [];
+					const movedIds = new Set(successfullyMovedIds);
+					setSelectedContexts(effectiveContextId, currentContexts.filter((ctx) => !movedIds.has(ctx.id)));
+				} else if (propSetSelectedItems) {
+					propSetSelectedItems((prev) => prev.filter((item) => !successfullyMovedIds.includes(item.id)));
+				}
+				
+				toast({
+					title: "Files Moved",
+					description: `${deleteSuccessCount} file(s) moved to "${folderName}"`,
+					duration: 3000,
+				});
+				setShowMoveDialog(false);
+				setItemsToMove([]);
+			} else if (copySuccessCount > 0) {
+				// Files were copied but not deleted - warn user
+				toast({
+					title: "Partial Move",
+					description: "Files were copied but could not be removed from the original location.",
+					variant: "destructive",
+					duration: 4000,
+				});
+			} else {
+				toast({
+					title: "Move Failed",
+					description: "Failed to move files. Please try again.",
+					variant: "destructive",
+					duration: 3000,
+				});
+			}
+		} catch (error) {
+			console.error("Error moving files:", error);
+			toast({
+				title: "Move Failed",
+				description: "An error occurred while moving files.",
+				variant: "destructive",
+				duration: 3000,
+			});
+		} finally {
+			setIsMoving(false);
+		}
 	};
 
 	const handleBulkAddToChat = () => {
@@ -556,12 +658,13 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 									onBulkDelete={handleBulkDelete}
 									onBulkMove={handleBulkMove}
 									onCopyFile={handleCopyFile}
+									onMoveFile={handleMoveFile}
 									onCreateFile={handleContextCreateFile}
 									onCreateFolder={handleContextCreateFolder}
-									onDeleteFile={async (fileId, fileName) => {
-										const success = await deleteFile(fileId);
-										return success;
-									}}
+								onDeleteFile={async (fileId, fileName) => {
+									const success = await deleteFile(fileId, effectiveFolderId);
+									return success;
+								}}
 									onFolderClick={(folderId, folderName) => navigateToFolder(folderId, folderName)}
 									onOpenInSidePanel={(fileId, fileName) => {
 										addTab({ isOpen: true, type: "sources", resourceId: fileId, filename: fileName });
@@ -595,6 +698,15 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 				open={showCopyDialog}
 			/>
 
+			{/* Move to Folder Dialog */}
+			<MoveToFolderDialog
+				isMoving={isMoving}
+				itemsToMove={itemsToMove}
+				onMove={handleMoveToFolder}
+				onOpenChange={setShowMoveDialog}
+				open={showMoveDialog}
+				currentFolderId={effectiveFolderId}
+			/>
 
 			<AddNewFolderModal
 				onAdd={handleCreateFolder}
