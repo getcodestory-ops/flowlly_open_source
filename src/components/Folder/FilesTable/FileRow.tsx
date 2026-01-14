@@ -61,6 +61,7 @@ export const FileRow: React.FC<FileRowProps> = ({
 			session,
 			projectId: activeProject.project_id,
 			fileId: resource.id,
+			folderId,
 		});
 	};
 

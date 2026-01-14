@@ -469,6 +469,7 @@ const FileRow = ({
 			session,
 			projectId: activeProject.project_id,
 			fileId: resource.id,
+			folderId,
 		});
 	};
 
