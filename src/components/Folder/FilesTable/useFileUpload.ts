@@ -232,6 +232,7 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 	// Get MIME type based on file extension
 	const getMimeType = (filename: string): string => {
 		const extension = filename.split('.').pop()?.toLowerCase();
+
 		const mimeTypes: Record<string, string> = {
 			'txt': 'text/plain',
 			'md': 'text/markdown',
@@ -248,9 +249,14 @@ export const useFileUpload = (folderId: string, session: any, activeProject: any
 		const fileName = fileNameParam || textFileName;
 		if (!fileName) return;
 
-		const mimeType = getMimeType(fileName);
+		const extension = fileName.split('.').pop()?.toLowerCase();
 		
-		const file = new File([''], fileName, { type: mimeType });
+		// Add .txt extension if no extension is present
+		const finalFileName = !extension || extension === fileName.toLowerCase() ? `${fileName}.md` : fileName;
+
+		const mimeType = getMimeType(finalFileName);
+		
+		const file = new File([''], finalFileName, { type: mimeType });
 
 		// Add the file to the upload progress UI
 		const fileStatus: FileUploadStatus = {

@@ -3,6 +3,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -51,6 +58,7 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 	const queryClient = useQueryClient();
 	const { addFolder } = useDocumentStore();
 	const [containerWidth, setContainerWidth] = useState(1200);
+	const [isCreateFileDialogOpen, setIsCreateFileDialogOpen] = useState(false);
 	
 	// File upload state management - lifted to this level so it persists when dropdown closes
 	const {
@@ -63,6 +71,14 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 		handleCreateTextFile,
 		closeUploadProgress,
 	} = useFileUpload(currentFolderId, session, activeProject, isProjectWide);
+
+	const handleCreateFile = () => {
+		if (textFileName.trim()) {
+			handleCreateTextFile(textFileName.trim());
+			setIsCreateFileDialogOpen(false);
+			setTextFileName("");
+		}
+	};
 
 	const COLLAPSE_BREAKPOINT = 750; // Start collapsing at this container width (more conservative)
 	const FULL_COLLAPSE_BREAKPOINT = 500; // Collapse everything except essentials
@@ -175,14 +191,9 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 										</DropdownMenuItem>
 									</AddNewFolderModal>
 									<FileUploadMenuItems
-										activeProject={activeProject}
 										fileInputRef={fileInputRef}
-										folderId={currentFolderId}
-										handleCreateTextFile={handleCreateTextFile}
 										handleFileUpload={handleFileUpload}
-										session={session}
-										setTextFileName={setTextFileName}
-										textFileName={textFileName}
+										onNewFileClick={() => setIsCreateFileDialogOpen(true)}
 									/>
 									{shouldCollapseViewOps && <DropdownMenuSeparator />}
 								</>
@@ -336,6 +347,39 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 					onClose={closeUploadProgress}
 				/>
 			)}
+
+			{/* Create File Dialog - rendered outside dropdown to avoid focus issues */}
+			<Dialog open={isCreateFileDialogOpen} onOpenChange={setIsCreateFileDialogOpen}>
+				<DialogContent className="sm:max-w-[400px]">
+					<DialogHeader>
+						<DialogTitle>Create File</DialogTitle>
+						<DialogDescription>
+							Enter name - file.docx
+						</DialogDescription>
+					</DialogHeader>
+					<div className="flex flex-col gap-3">
+						<Input
+							onChange={(e) => setTextFileName(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" && textFileName.trim()) {
+									handleCreateFile();
+								}
+							}}
+							placeholder="Enter file name"
+							type="text"
+							value={textFileName}
+							autoFocus
+						/>
+						<Button 
+							disabled={!textFileName.trim()}
+							onClick={handleCreateFile}
+							size="sm"
+						>
+							Create File
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }; 

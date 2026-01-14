@@ -54,9 +54,9 @@ export const FileUploadButton: React.FC<FileUploadButtonProps> = ({
 		<PopoverContent className="w-80">
 			<div className="flex flex-col gap-3">
 				<div className="space-y-2">
-					<h4 className="font-medium">Create Text File</h4>
+					<h4 className="font-medium">Create File</h4>
 					<p className="text-sm text-muted-foreground">
-						Enter a name for your new text file
+						Enter name - file.docx
 					</p>
 				</div>
 			<Input
@@ -102,7 +102,7 @@ export const FileUploadButton: React.FC<FileUploadButtonProps> = ({
 							variant="ghost"
 						>
 							<FileText className="mr-1" size={14} />
-								New text file
+								New file
 						</Button>
 					</PopoverTrigger>
 					{textFilePopoverContent}
