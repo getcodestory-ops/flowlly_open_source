@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { getInlineDocument, saveDocumentAs, fetchResource } from "@/api/folderRoutes";
 import { updateDocumentName } from "@/api/documentRoutes";
 import { useStore } from "@/utils/store";
-import { X, Folder, Plus, ChevronLeft, ChevronRight, Box } from "lucide-react";
+import { X, Folder, Plus, ChevronLeft, ChevronRight, Box, PanelLeft, PanelLeftClose } from "lucide-react";
 import TopToolbar from "./ChatPanel/TopToolbar";
 import InlineDocumentViewer from "./ChatPanel/InlineDocumentViewer";
 import { htmlExtensions } from "./ChatPanel/fileExtensions";
@@ -34,7 +34,7 @@ const getSandboxId = (tab: any): string => {
 };
 
 const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : React.ReactNode => {
-	const { tabs, activeTabId, setActiveTab, removeTab, clearAllTabs, addTab } = useChatStore();
+	const { tabs, activeTabId, setActiveTab, removeTab, clearAllTabs, addTab, chatLayoutMode, setChatLayoutMode } = useChatStore();
 	const [viewModes, setViewModes] = useState<{[tabId: string]: "original" | "text"}>({});
 	const [editingTabId, setEditingTabId] = useState<string | null>(null);
 	const [editedName, setEditedName] = useState<string>("");
@@ -627,7 +627,32 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 						<div className="text-center">
 							<Folder className="h-16 w-16 mx-auto mb-4 text-gray-300" />
 							<p className="text-lg font-medium mb-2">No files or folders selected</p>
-							<p className="text-sm">Click &ldquo;Select Files and Folders&rdquo; to get started</p>
+							<p className="text-sm mb-4">Click &ldquo;Select Files and Folders&rdquo; to get started</p>
+							
+							{/* Mode toggle when empty */}
+							<Button
+								className={cn(
+									"gap-2 transition-all duration-200",
+									chatLayoutMode === "agent"
+										? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-indigo-200"
+										: "hover:bg-gray-100 text-gray-600 hover:text-gray-900"
+								)}
+								onClick={() => setChatLayoutMode(chatLayoutMode === "agent" ? "split" : "agent")}
+								size="sm"
+								variant="outline"
+							>
+								{chatLayoutMode === "agent" ? (
+									<>
+										<PanelLeft className="h-4 w-4" />
+										<span>Switch to Split View</span>
+									</>
+								) : (
+									<>
+										<PanelLeftClose className="h-4 w-4" />
+										<span>Switch to Focus Mode</span>
+									</>
+								)}
+							</Button>
 						</div>
 					</div>
 				)}

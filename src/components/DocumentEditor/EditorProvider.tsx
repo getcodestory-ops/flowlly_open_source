@@ -115,10 +115,7 @@ const EditorProvider = ({ editor, pageSize = "a4", zoom = DEFAULT_ZOOM }: Editor
 				padding: "40px 20px",
 			}}
 		>
-			{/* Page count indicator */}
-			<div className="fixed bottom-4 right-4 bg-black/70 text-white px-3 py-1.5 rounded-full text-xs z-50">
-				{pageCount} {pageCount === 1 ? "page" : "pages"} • {zoom}%
-			</div>
+	
 
 			{/* Zoom wrapper - centers and scales the page */}
 			<div 

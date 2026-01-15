@@ -66,7 +66,7 @@ export default function ChatComponent({ heightOffset = 20 }: {heightOffset?: num
 			<div className="h-full relative">
 				<Toaster />
 				
-				{/* Chat Drawer - slides from left */}
+				{/* Chat Drawer - slides from right */}
 				<ChatDrawer heightOffset={heightOffset}>
 					<PlatformChatComponent
 						chatTarget="agent"
@@ -75,15 +75,15 @@ export default function ChatComponent({ heightOffset = 20 }: {heightOffset?: num
 					/>
 				</ChatDrawer>
 
-				{/* Main content area - full width */}
-				<div className="h-full flex flex-col">
-					{/* Attachment Tray - persistent when attachments exist */}
-					{chatAttachments.length > 0 && <AttachmentTray />}
-					
-					{/* Interactive Panel - takes remaining height */}
-					<div className="flex-1 min-h-0">
-						<InteractiveChatPanel heightOffset={heightOffset + (chatAttachments.length > 0 ? 48 : 0)} />
+				{/* Main content area - horizontal layout */}
+				<div className="h-full flex">
+					{/* Interactive Panel - takes remaining width */}
+					<div className="flex-1 min-w-0 h-full">
+						<InteractiveChatPanel heightOffset={heightOffset} />
 					</div>
+					
+					{/* Side Panel - always shown in agent mode for chat toggle */}
+					<AttachmentTray />
 				</div>
 			</div>
 		);

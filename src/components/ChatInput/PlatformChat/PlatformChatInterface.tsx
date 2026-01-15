@@ -70,8 +70,25 @@ export default function PlatformChatInterface({
 		activeChatEntity,
 		setIsWaitingForResponse,
 	} = usePlatformChat(folderId, chatTarget, includeContext);
-	const { setSidePanel, setCollapsed, contextFolder, selectedContexts, setSelectedContexts } = useChatStore();
+	const { setSidePanel, setCollapsed, contextFolder, selectedContexts, setSelectedContexts, clearChatAttachments } = useChatStore();
 	const { preferredModel, setPreferredModel, preferredAgentType, setPreferredAgentType } = useViewStore();
+	
+	// Track previous chat entity ID to only clear attachments on actual chat change
+	const prevChatEntityIdRef = useRef<string | null | undefined>(undefined);
+	
+	// Clear chat attachments only when active chat actually changes (not on mount/remount)
+	useEffect(() => {
+		const currentId = activeChatEntity?.id;
+		const prevId = prevChatEntityIdRef.current;
+		
+		// Only clear if we had a previous value and it's different
+		// This prevents clearing on initial mount or mode switch remount
+		if (prevId !== undefined && prevId !== currentId) {
+			clearChatAttachments();
+		}
+		
+		prevChatEntityIdRef.current = currentId;
+	}, [activeChatEntity?.id, clearChatAttachments]);
 	
 	// Model change handler - directly updates the persisted store
 	const handleModelChange = (model: string) => {
