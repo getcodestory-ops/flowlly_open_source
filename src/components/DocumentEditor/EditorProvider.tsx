@@ -1,30 +1,16 @@
 import { type Editor } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import {
+	PAGE_SIZES,
+	PAGE_MARGINS,
+	getPageContentHeight,
+	isPagedView,
+	type PageSizeType,
+} from "./extensions/PageSizeConfig";
 
-// Page size definitions (dimensions in pixels at 96 DPI)
-export type PageSizeType = "none" | "a4" | "letter" | "legal" | "a3" | "a5";
-
-export interface PageSize {
-	id: PageSizeType;
-	name: string;
-	width: number;  // in pixels at 96 DPI
-	height: number; // in pixels at 96 DPI
-}
-
-export const PAGE_SIZES: Record<PageSizeType, PageSize> = {
-	none: { id: "none", name: "None", width: 768, height: 0 },        // No pagination
-	a4: { id: "a4", name: "A4", width: 794, height: 1123 },           // 210mm x 297mm
-	letter: { id: "letter", name: "US Letter", width: 816, height: 1056 }, // 8.5" x 11"
-	legal: { id: "legal", name: "US Legal", width: 816, height: 1344 },    // 8.5" x 14"
-	a3: { id: "a3", name: "A3", width: 1123, height: 1587 },          // 297mm x 420mm
-	a5: { id: "a5", name: "A5", width: 559, height: 794 },            // 148mm x 210mm
-};
-
-// Margins in pixels (~25mm top/bottom, ~20mm sides)
-const PAGE_MARGIN_TOP = 96;
-const PAGE_MARGIN_BOTTOM = 96;
-const PAGE_MARGIN_SIDES = 76;
+// Re-export for backwards compatibility
+export { PAGE_SIZES, type PageSizeType } from "./extensions/PageSizeConfig";
 
 interface EditorProviderProps {
     editor: Editor;
@@ -32,15 +18,15 @@ interface EditorProviderProps {
 }
 
 const EditorProvider = ({ editor, pageSize = "a4" }: EditorProviderProps ) : React.ReactNode => {
-	const pagedView = pageSize !== "none";
+	const pagedView = isPagedView(pageSize);
 	const contentRef = useRef<HTMLDivElement>(null);
 	const [pageCount, setPageCount] = useState(1);
 
 	// Get current page dimensions
 	const currentPageSize = PAGE_SIZES[pageSize];
 	const pageContentHeight = useMemo(() => 
-		currentPageSize.height - PAGE_MARGIN_TOP - PAGE_MARGIN_BOTTOM,
-		[currentPageSize.height]
+		getPageContentHeight(pageSize),
+		[pageSize]
 	);
 
 	// Calculate page count based on actual content height
@@ -135,10 +121,10 @@ const EditorProvider = ({ editor, pageSize = "a4" }: EditorProviderProps ) : Rea
 				style={{ 
 					width: currentPageSize.width,
 					minHeight: currentPageSize.height,
-					paddingTop: PAGE_MARGIN_TOP,
-					paddingBottom: PAGE_MARGIN_BOTTOM,
-					paddingLeft: PAGE_MARGIN_SIDES,
-					paddingRight: PAGE_MARGIN_SIDES,
+					paddingTop: PAGE_MARGINS.top,
+					paddingBottom: PAGE_MARGINS.bottom,
+					paddingLeft: PAGE_MARGINS.left,
+					paddingRight: PAGE_MARGINS.right,
 					boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
 				}}
 			>
@@ -148,7 +134,7 @@ const EditorProvider = ({ editor, pageSize = "a4" }: EditorProviderProps ) : Rea
 						key={index}
 						className="absolute left-0 right-0 pointer-events-none"
 						style={{
-							top: (index + 1) * currentPageSize.height - PAGE_MARGIN_TOP,
+							top: (index + 1) * currentPageSize.height - PAGE_MARGINS.top,
 							height: 0,
 							borderTop: "2px dashed #cbd5e1",
 							zIndex: 10,
@@ -167,7 +153,7 @@ const EditorProvider = ({ editor, pageSize = "a4" }: EditorProviderProps ) : Rea
 				<div 
 					className="absolute text-xs text-gray-400 pointer-events-none"
 					style={{
-						bottom: PAGE_MARGIN_BOTTOM / 2 - 8,
+						bottom: PAGE_MARGINS.bottom / 2 - 8,
 						left: "50%",
 						transform: "translateX(-50%)",
 					}}

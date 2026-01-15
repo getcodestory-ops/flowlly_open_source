@@ -21,7 +21,8 @@ import { ClassPreservationExtension } from "./extensions/ClassPreservationExtens
 import { DivExtension } from "./extensions/DivExtension";
 import { SpanExtension } from "./extensions/SpanExtension";
 import ResizeImage from "tiptap-extension-resize-image";
-import EditorProvider, { type PageSizeType } from "./EditorProvider";
+import EditorProvider from "./EditorProvider";
+import { type PageSizeType, DEFAULT_PAGE_SIZE } from "./extensions/PageSizeConfig";
 import ReactChartDisplayExtension from "./extensions/ReactChartDisplayExtension";
 import CommentsPanel from "./CommentsPanel";
 import EditorBubbleMenu from "./BubbleMenu";
@@ -55,7 +56,7 @@ const ContentEditor = ({
 }: EditorBlockProps): React.ReactNode => {
 	const { session } = useStore();
 	const userEmail = session?.user?.email || "Anonymous";
-	const [pageSize, setPageSize] = useState<PageSizeType>("a4");
+	const [pageSize, setPageSize] = useState<PageSizeType>(DEFAULT_PAGE_SIZE);
 
 	const {
 		threads,

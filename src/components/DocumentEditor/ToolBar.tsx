@@ -25,7 +25,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { PAGE_SIZES, type PageSizeType } from "./EditorProvider";
+import { PAGE_SIZES, type PageSizeType } from "./extensions/PageSizeConfig";
 import { cn } from "@/lib/utils";
 (pdfMake as any).vfs = pdfFonts.vfs;
 import { type Editor } from "@tiptap/react";
