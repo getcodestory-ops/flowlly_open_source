@@ -683,7 +683,7 @@ export default function PlatformChatInterface({
 						);
 					})}
 					{/* Spacer to allow scrolling last user message to top */}
-					<ChatResponseFeedback />
+					<ChatResponseFeedback isStreaming={isWaitingForResponse} />
 					<div className="min-h-[60vh]" />
 					</div>
 						

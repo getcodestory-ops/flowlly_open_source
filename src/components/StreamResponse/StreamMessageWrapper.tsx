@@ -144,8 +144,6 @@ const StreamMessageWrapper: React.FC<StreamMessageWrapperProps> = ({
 		setThinkingContent(content);
 	}, []);
 
-
-
 	useEffect(() => {
 		if (!streamingKey || !session) return;
 

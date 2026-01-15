@@ -396,10 +396,11 @@ export const updateChatEntityMetadata = async(
 	session: Session,
 	chatEntityId: string,
 	metadata: {
-		tags: {
+		tags?: {
 			name: string;
 			parent: string;
 		}[];
+		notify_email?: boolean;
 	},
 ) => {
 	const url = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/agent/chat_entity/metadata/${chatEntityId}`;

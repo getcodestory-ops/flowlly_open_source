@@ -85,18 +85,21 @@ export interface ScheduleResponse {
   result?: any;
 }
 
+export interface ChatEntityMetadata {
+  tags?: {
+    name: string;
+    parent: string;
+  }[];
+  notify_email?: boolean;
+}
+
 export interface CreateAgentChatEntity {
   project_id: string;
   chat_name: string;
   chat_details?: string;
   relation_id?: string;
   relation_type?: string;
-  metadata?: {
-    tags?: {
-      name: string;
-      parent: string;
-    }[];
-  };
+  metadata?: ChatEntityMetadata;
 }
 
 export interface AgentChatEntity {
@@ -104,12 +107,7 @@ export interface AgentChatEntity {
   project_id: string;
   chat_name: string;
   chat_details?: string;
-  metadata?: {
-    tags?: {
-      name: string;
-      parent: string;
-    }[];
-  };
+  metadata?: ChatEntityMetadata;
   hidden?: boolean;
   created_at: string;
 }
