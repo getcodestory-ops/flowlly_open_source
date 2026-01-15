@@ -7,6 +7,8 @@ import {
 	getPageContentHeight,
 	isPagedView,
 	type PageSizeType,
+	type ZoomLevel,
+	DEFAULT_ZOOM,
 } from "./extensions/PageSizeConfig";
 
 // Re-export for backwards compatibility
@@ -15,9 +17,10 @@ export { PAGE_SIZES, type PageSizeType } from "./extensions/PageSizeConfig";
 interface EditorProviderProps {
     editor: Editor;
     pageSize?: PageSizeType;
+    zoom?: ZoomLevel;
 }
 
-const EditorProvider = ({ editor, pageSize = "a4" }: EditorProviderProps ) : React.ReactNode => {
+const EditorProvider = ({ editor, pageSize = "a4", zoom = DEFAULT_ZOOM }: EditorProviderProps ) : React.ReactNode => {
 	const pagedView = isPagedView(pageSize);
 	const contentRef = useRef<HTMLDivElement>(null);
 	const [pageCount, setPageCount] = useState(1);
@@ -28,6 +31,9 @@ const EditorProvider = ({ editor, pageSize = "a4" }: EditorProviderProps ) : Rea
 		getPageContentHeight(pageSize),
 		[pageSize]
 	);
+	
+	// Calculate zoom scale factor
+	const zoomScale = zoom / 100;
 
 	// Calculate page count based on actual content height
 	const updatePageCount = useCallback(() => {
@@ -111,23 +117,31 @@ const EditorProvider = ({ editor, pageSize = "a4" }: EditorProviderProps ) : Rea
 		>
 			{/* Page count indicator */}
 			<div className="fixed bottom-4 right-4 bg-black/70 text-white px-3 py-1.5 rounded-full text-xs z-50">
-				{pageCount} {pageCount === 1 ? "page" : "pages"}
+				{pageCount} {pageCount === 1 ? "page" : "pages"} • {zoom}%
 			</div>
 
-			{/* Single page container with white background */}
+			{/* Zoom wrapper - centers and scales the page */}
 			<div 
-				ref={contentRef}
-				className="mx-auto bg-white relative"
-				style={{ 
-					width: currentPageSize.width,
-					minHeight: currentPageSize.height,
-					paddingTop: PAGE_MARGINS.top,
-					paddingBottom: PAGE_MARGINS.bottom,
-					paddingLeft: PAGE_MARGINS.left,
-					paddingRight: PAGE_MARGINS.right,
-					boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+				style={{
+					transform: `scale(${zoomScale})`,
+					transformOrigin: "top center",
+					marginBottom: `${(zoomScale - 1) * currentPageSize.height}px`,
 				}}
 			>
+				{/* Single page container with white background */}
+				<div 
+					ref={contentRef}
+					className="mx-auto bg-white relative"
+					style={{ 
+						width: currentPageSize.width,
+						minHeight: currentPageSize.height,
+						paddingTop: PAGE_MARGINS.top,
+						paddingBottom: PAGE_MARGINS.bottom,
+						paddingLeft: PAGE_MARGINS.left,
+						paddingRight: PAGE_MARGINS.right,
+						boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+					}}
+				>
 				{/* Page break indicators */}
 				{pageCount > 1 && Array.from({ length: pageCount - 1 }).map((_, index) => (
 					<div
@@ -184,6 +198,7 @@ const EditorProvider = ({ editor, pageSize = "a4" }: EditorProviderProps ) : Rea
 						"
 						editor={editor}
 					/>
+				</div>
 			</div>
 		</div>
 	);

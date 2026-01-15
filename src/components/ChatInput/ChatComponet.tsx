@@ -121,7 +121,7 @@ export default function ChatComponent({ heightOffset = 20 }: {heightOffset?: num
 									"flex-shrink-0 h-full",
 									!isDragging && "transition-all duration-200 ease-in-out",
 								)}
-								style={{ width: `${100 - panelWidth}%` }}
+								style={{ width: `${99.3 - panelWidth}%` }}
 							>
 								<InteractiveChatPanel heightOffset={heightOffset} />
 							</div>

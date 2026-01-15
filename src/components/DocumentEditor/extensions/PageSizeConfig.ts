@@ -82,3 +82,19 @@ export const isPagedView = (pageSizeId: PageSizeType): boolean => {
 
 // Default page size
 export const DEFAULT_PAGE_SIZE: PageSizeType = "letter";
+
+// Zoom level configuration
+export type ZoomLevel = 50 | 75 | 80 | 90 | 100 | 125 | 150;
+
+export const ZOOM_LEVELS: { value: ZoomLevel; label: string }[] = [
+	{ value: 50, label: "50%" },
+	{ value: 75, label: "75%" },
+	{ value: 80, label: "80%" },
+	{ value: 90, label: "90%" },
+	{ value: 100, label: "100%" },
+	{ value: 125, label: "125%" },
+	{ value: 150, label: "150%" },
+];
+
+// Default zoom level - 80% shows more content while remaining readable
+export const DEFAULT_ZOOM: ZoomLevel = 75;

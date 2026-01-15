@@ -22,7 +22,7 @@ import { DivExtension } from "./extensions/DivExtension";
 import { SpanExtension } from "./extensions/SpanExtension";
 import ResizeImage from "tiptap-extension-resize-image";
 import EditorProvider from "./EditorProvider";
-import { type PageSizeType, DEFAULT_PAGE_SIZE } from "./extensions/PageSizeConfig";
+import { type PageSizeType, DEFAULT_PAGE_SIZE, type ZoomLevel, DEFAULT_ZOOM } from "./extensions/PageSizeConfig";
 import ReactChartDisplayExtension from "./extensions/ReactChartDisplayExtension";
 import CommentsPanel from "./CommentsPanel";
 import EditorBubbleMenu from "./BubbleMenu";
@@ -57,6 +57,7 @@ const ContentEditor = ({
 	const { session } = useStore();
 	const userEmail = session?.user?.email || "Anonymous";
 	const [pageSize, setPageSize] = useState<PageSizeType>(DEFAULT_PAGE_SIZE);
+	const [zoom, setZoom] = useState<ZoomLevel>(DEFAULT_ZOOM);
 
 	const {
 		threads,
@@ -189,9 +190,11 @@ const ContentEditor = ({
 					onAIEditedContent={handleAIEditedContent}
 					onPageSizeChange={setPageSize}
 					onShowComments={handleShowComments}
+					onZoomChange={setZoom}
 					pageSize={pageSize}
 					saveFunction={saveFunction}
 					showComments={isCommentsVisible}
+					zoom={zoom}
 				/>
 
 				{isCommentsVisible && (
@@ -201,7 +204,7 @@ const ContentEditor = ({
 				)}
 
 				{/* Editor with optional paged view */}
-				<EditorProvider editor={editorInstance} pageSize={pageSize} />
+				<EditorProvider editor={editorInstance} pageSize={pageSize} zoom={zoom} />
 				<EditorBubbleMenu 
 					editor={editorInstance} 
 					onCreateComment={createThreadFromToolbar} 

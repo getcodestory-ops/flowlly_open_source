@@ -25,7 +25,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { PAGE_SIZES, type PageSizeType } from "./extensions/PageSizeConfig";
+import { PAGE_SIZES, type PageSizeType, ZOOM_LEVELS, type ZoomLevel } from "./extensions/PageSizeConfig";
 import { cn } from "@/lib/utils";
 (pdfMake as any).vfs = pdfFonts.vfs;
 import { type Editor } from "@tiptap/react";
@@ -54,6 +54,8 @@ interface ToolbarProps {
 	onShowComments?: () => void;
 	pageSize?: PageSizeType;
 	onPageSizeChange?: (size: PageSizeType) => void;
+	zoom?: ZoomLevel;
+	onZoomChange?: (zoom: ZoomLevel) => void;
 }
 
 
@@ -69,6 +71,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
 	onShowComments,
 	pageSize = "a4",
 	onPageSizeChange,
+	zoom = 75,
+	onZoomChange,
 }) => {
 	const [saveStatus, setSaveStatus] = useState(SaveStatus.SAVED);
 	const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
@@ -257,8 +261,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
 		return null;
 	}
 	return (
-		<div className="flex top-0 sticky z-10 bg-white border border-gray-200 rounded-md shadow-sm w-full">
-			<div className="flex px-2 py-1.5 rounded-lg justify-between w-full">
+		<div className="flex top-0 sticky z-10 bg-white border border-gray-200 w-full">
+			<div className="flex px-2 py-1.5 rounded-lg justify-between w-full ">
 				<div className="flex items-center gap-0.5">
 					{/* File Operations */}
 					<SaveButton 
@@ -297,6 +301,21 @@ const Toolbar: React.FC<ToolbarProps> = ({
 				
 				{/* Right Side Actions */}
 				<div className="flex items-center gap-2">
+					{/* Zoom Selector - only show in paged view */}
+					{onZoomChange && pageSize !== "none" && (
+						<Select value={zoom.toString()} onValueChange={(value) => onZoomChange(Number(value) as ZoomLevel)}>
+							<SelectTrigger className="h-8 w-[70px] text-xs">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{ZOOM_LEVELS.map((level) => (
+									<SelectItem key={level.value} value={level.value.toString()} className="text-xs">
+										{level.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					)}
 					{/* Page Size Selector */}
 					{onPageSizeChange && (
 						<Select value={pageSize} onValueChange={(value) => onPageSizeChange(value as PageSizeType)}>
