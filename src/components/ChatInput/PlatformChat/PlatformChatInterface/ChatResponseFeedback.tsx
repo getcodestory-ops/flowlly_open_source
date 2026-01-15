@@ -39,6 +39,13 @@ export default function ChatResponseFeedback({ isStreaming = false }: ChatRespon
         }
     }, [activeChatEntity?.metadata?.notify_email, activeChatEntity?.id]);
 
+    // Reset email notification state when streaming ends (backend resets notify_email after sending)
+    useEffect(() => {
+        if (!isStreaming) {
+            setEmailNotificationEnabled(false);
+        }
+    }, [isStreaming]);
+
     // Handle email notification opt-in
     const handleEmailNotificationToggle = async() => {
         if (!session || !activeChatEntity?.id || emailNotificationEnabled) return;
