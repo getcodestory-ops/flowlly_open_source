@@ -48,6 +48,12 @@ const getProviderLogo = (modelId: string): string => {
 	if (modelId.includes("z-ai") || modelId.includes("glm")) {
 		return "/providerLogos/zai.svg";
 	}
+	if (modelId.includes("moonshotai") || modelId.includes("kimi")) {
+		return "/providerLogos/moonshot.svg";
+	}
+	if (modelId.includes("xiaomi") || modelId.includes("mimo")) {
+		return "/providerLogos/xiaomimimo.svg";
+	}
 	// Default fallback
 	return "/providerLogos/openai.svg";
 };
