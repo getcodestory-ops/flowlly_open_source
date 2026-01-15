@@ -35,16 +35,13 @@ import {
 	ExportTools,
 	UndoRedoTools,
 	HeadingTextStyles,
-	TextFormatting,
-	ColorTools,
-	ListTools,
-	TableTools,
-	ImageTools,
-	AITools,
 	SaveButton,
 	SaveStatus,
 	UnsavedChangesDialog,
-	FontTools,
+	FormatMenu,
+	InsertMenu,
+	TableContextMenu,
+	ImageContextMenu,
 } from "./ToolBarItems";
 interface ToolbarProps {
 	documentType: string;
@@ -263,30 +260,42 @@ const Toolbar: React.FC<ToolbarProps> = ({
 		<div className="flex top-0 sticky z-10 bg-white border border-gray-200 rounded-md shadow-sm w-full">
 			<div className="flex px-2 py-1.5 rounded-lg justify-between w-full">
 				<div className="flex items-center gap-0.5">
+					{/* File Operations */}
 					<SaveButton 
 						editor={editor}
 						hasUnsavedChanges={hasUnsavedChanges}
 						onSave={handleSave}
 						saveStatus={saveStatus}
 					/>
-					<Separator className="mx-1" orientation="vertical" />
 					<ExportTools 
 						editor={editor} 
 						onShowSaveAsDialog={() => setShowSaveAsDialog(true)} 
 					/>
-					<Separator className="mx-1" orientation="vertical" />
+					
+					<Separator className="mx-1.5 h-6" orientation="vertical" />
+					
+					{/* History */}
 					<UndoRedoTools editor={editor} />
-					<Separator className="mx-1" orientation="vertical" />
+					
+					<Separator className="mx-1.5 h-6" orientation="vertical" />
+					
+					{/* Text Structure */}
 					<HeadingTextStyles editor={editor} />
-					<FontTools editor={editor} />
-					<TextFormatting editor={editor} />
-					<Separator className="mx-1" orientation="vertical" />
-					<ColorTools editor={editor} />
-					<ListTools editor={editor} />
-					<Separator className="mx-1" orientation="vertical" />
-					<TableTools editor={editor} />
-					<ImageTools editor={editor} />
+					
+					{/* Format Menu - combines font, formatting, colors, lists */}
+					<FormatMenu editor={editor} />
+					
+					<Separator className="mx-1.5 h-6" orientation="vertical" />
+					
+					{/* Insert Menu - combines tables, images */}
+					<InsertMenu editor={editor} />
+					
+					{/* Contextual Tools - appear when table/image is selected */}
+					<TableContextMenu editor={editor} />
+					<ImageContextMenu editor={editor} />
 				</div>
+				
+				{/* Right Side Actions */}
 				<div className="flex items-center gap-2">
 					{/* Page Size Selector */}
 					{onPageSizeChange && (
