@@ -71,9 +71,9 @@ export default function AttachmentTray(): JSX.Element | null {
 								className={cn(
 									"w-full h-9 gap-2 text-xs transition-all duration-200 relative",
 									isChatDrawerOpen
-										? "bg-purple-50 text-purple-600 hover:bg-purple-100 border-purple-200"
-										: "hover:bg-gray-100 text-gray-700 hover:text-purple-600",
-									isWaitingForResponse && !isChatDrawerOpen && "border-purple-300 bg-purple-50"
+										? "hover:bg-gray-100 text-gray-600 hover:text-gray-900"
+										: "bg-purple-50 text-purple-600 hover:bg-purple-100 border-purple-200",
+									isWaitingForResponse && !isChatDrawerOpen && "border-purple-300"
 								)}
 								onClick={() => setIsChatDrawerOpen(!isChatDrawerOpen)}
 								size="sm"
@@ -81,7 +81,7 @@ export default function AttachmentTray(): JSX.Element | null {
 							>
 								<MessageSquare className={cn(
 									"h-4 w-4",
-									isWaitingForResponse && "text-purple-600 animate-pulse"
+									isWaitingForResponse && !isChatDrawerOpen && "text-purple-600 animate-pulse"
 								)} />
 								<span>{isChatDrawerOpen ? "Hide Chat" : "Show Chat"}</span>
 								{/* Activity indicator */}
