@@ -71,9 +71,9 @@ export default function AttachmentTray(): JSX.Element | null {
 								className={cn(
 									"w-full h-9 gap-2 text-xs transition-all duration-200 relative",
 									isChatDrawerOpen
-										? "bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200"
-										: "hover:bg-gray-100 text-gray-700 hover:text-blue-600",
-									isWaitingForResponse && !isChatDrawerOpen && "border-blue-300 bg-blue-50"
+										? "bg-purple-50 text-purple-600 hover:bg-purple-100 border-purple-200"
+										: "hover:bg-gray-100 text-gray-700 hover:text-purple-600",
+									isWaitingForResponse && !isChatDrawerOpen && "border-purple-300 bg-purple-50"
 								)}
 								onClick={() => setIsChatDrawerOpen(!isChatDrawerOpen)}
 								size="sm"
@@ -81,14 +81,14 @@ export default function AttachmentTray(): JSX.Element | null {
 							>
 								<MessageSquare className={cn(
 									"h-4 w-4",
-									isWaitingForResponse && "text-blue-600 animate-pulse"
+									isWaitingForResponse && "text-purple-600 animate-pulse"
 								)} />
 								<span>{isChatDrawerOpen ? "Hide Chat" : "Show Chat"}</span>
 								{/* Activity indicator */}
 								{isWaitingForResponse && !isChatDrawerOpen && (
 									<span className="absolute top-1 right-1 flex h-2 w-2">
-										<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-										<span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+										<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
+										<span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500" />
 									</span>
 								)}
 							</Button>
@@ -185,7 +185,7 @@ export default function AttachmentTray(): JSX.Element | null {
 								className={cn(
 									"w-full h-8 gap-1.5 text-xs transition-all duration-200",
 									isAgentMode
-										? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+										? "bg-purple-50 text-purple-600 hover:bg-purple-100"
 										: "hover:bg-white text-gray-600 hover:text-gray-900"
 								)}
 								onClick={() => setChatLayoutMode(isAgentMode ? "split" : "agent")}
