@@ -59,7 +59,7 @@ export default function AttachmentTray(): JSX.Element | null {
 
 	return (
 		<div 
-			className="h-full flex flex-col bg-white border-l border-gray-200"
+			className="h-screen flex flex-col bg-white border-l border-gray-200"
 			style={{ width: `${PANEL_WIDTH}px` }}
 		>
 			{/* Chat Toggle Button */}
