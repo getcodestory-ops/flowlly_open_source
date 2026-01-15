@@ -18,6 +18,14 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { PAGE_SIZES, type PageSizeType } from "./EditorProvider";
 import { cn } from "@/lib/utils";
 (pdfMake as any).vfs = pdfFonts.vfs;
 import { type Editor } from "@tiptap/react";
@@ -47,6 +55,8 @@ interface ToolbarProps {
 	editor: Editor;
 	showComments?: boolean;
 	onShowComments?: () => void;
+	pageSize?: PageSizeType;
+	onPageSizeChange?: (size: PageSizeType) => void;
 }
 
 
@@ -60,6 +70,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
 	editor,
 	showComments = true,
 	onShowComments,
+	pageSize = "a4",
+	onPageSizeChange,
 }) => {
 	const [saveStatus, setSaveStatus] = useState(SaveStatus.SAVED);
 	const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
@@ -276,6 +288,21 @@ const Toolbar: React.FC<ToolbarProps> = ({
 					<ImageTools editor={editor} />
 				</div>
 				<div className="flex items-center gap-2">
+					{/* Page Size Selector */}
+					{onPageSizeChange && (
+						<Select value={pageSize} onValueChange={(value) => onPageSizeChange(value as PageSizeType)}>
+							<SelectTrigger className="h-8 w-[100px] text-xs">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{Object.values(PAGE_SIZES).map((size) => (
+									<SelectItem key={size.id} value={size.id} className="text-xs">
+										{size.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					)}
 					{!showComments && onShowComments && (
 						<TooltipProvider>
 							<Tooltip>

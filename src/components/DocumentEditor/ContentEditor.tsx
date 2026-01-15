@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useEditor } from "@tiptap/react";
 import { StarterKit } from "@tiptap/starter-kit";
 import { TextStyle } from "@tiptap/extension-text-style";
@@ -21,7 +21,7 @@ import { ClassPreservationExtension } from "./extensions/ClassPreservationExtens
 import { DivExtension } from "./extensions/DivExtension";
 import { SpanExtension } from "./extensions/SpanExtension";
 import ResizeImage from "tiptap-extension-resize-image";
-import EditorProvider from "./EditorProvider";
+import EditorProvider, { type PageSizeType } from "./EditorProvider";
 import ReactChartDisplayExtension from "./extensions/ReactChartDisplayExtension";
 import CommentsPanel from "./CommentsPanel";
 import EditorBubbleMenu from "./BubbleMenu";
@@ -55,6 +55,7 @@ const ContentEditor = ({
 }: EditorBlockProps): React.ReactNode => {
 	const { session } = useStore();
 	const userEmail = session?.user?.email || "Anonymous";
+	const [pageSize, setPageSize] = useState<PageSizeType>("a4");
 
 	const {
 		threads,
@@ -178,30 +179,33 @@ const ContentEditor = ({
 
 	return editorInstance && (
 		<div className="flex h-full w-full relative min-h-[80vh]">
-			<div className="flex-1 overflow-hidden">
+			<div className="flex-1 overflow-hidden flex flex-col">
 				<Toolbar
 					documentId={documentId}
 					documentName={documentName}
 					documentType={documentType}
 					editor={editorInstance}
 					onAIEditedContent={handleAIEditedContent}
+					onPageSizeChange={setPageSize}
 					onShowComments={handleShowComments}
+					pageSize={pageSize}
 					saveFunction={saveFunction}
 					showComments={isCommentsVisible}
 				/>
+
 				{isCommentsVisible && (
-			
 					<CommentsPanel
 						onCommentsChange={onCommentsChange}
 					/>
 				)}
-				<EditorProvider editor={editorInstance} />
+
+				{/* Editor with optional paged view */}
+				<EditorProvider editor={editorInstance} pageSize={pageSize} />
 				<EditorBubbleMenu 
 					editor={editorInstance} 
 					onCreateComment={createThreadFromToolbar} 
 				/>
 			</div>
-
 		</div>
 	);
 };

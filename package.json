@@ -98,6 +98,7 @@
     "next": "^16.0.7",
     "next-connect": "^1.0.0",
     "next-http-proxy-middleware": "^1.2.5",
+    "pagedjs": "^0.4.3",
     "pdfjs-dist": "4.7.76",
     "pdfmake": "^0.2.10",
     "posthog-js": "^1.164.1",
@@ -139,8 +140,8 @@
     "npm": ">=10.0.0"
   },
   "resolutions": {
-  "canvas": "npm:empty-npm-package@1.0.0"
-},
+    "canvas": "npm:empty-npm-package@1.0.0"
+  },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/typography": "^0.5.15",
