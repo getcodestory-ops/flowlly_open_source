@@ -15,9 +15,27 @@ interface SidePanel {
 	singleSelect?: boolean;
 }
 
+// Attachment type for agent mode
+interface ChatAttachment {
+	name: string;
+	uuid: string;
+	type?: string;
+	is_sandbox_file?: boolean;
+}
+
 interface ChatStore {
 	collapsed: boolean;
 	setCollapsed: (collapsed: boolean) => void;
+	// Chat layout mode: split (side-by-side) or agent (full interactive panel with drawer)
+	chatLayoutMode: "split" | "agent";
+	setChatLayoutMode: (mode: "split" | "agent") => void;
+	// Chat drawer open state (for agent mode)
+	isChatDrawerOpen: boolean;
+	setIsChatDrawerOpen: (isOpen: boolean) => void;
+	// Collected attachments from chat messages (for agent mode attachment tray)
+	chatAttachments: ChatAttachment[];
+	addChatAttachments: (attachments: ChatAttachment[]) => void;
+	clearChatAttachments: () => void;
 	// Legacy single panel support for backward compatibility
 	sidePanel: SidePanel | null;
 	setSidePanel: (sidePanel: Omit<SidePanel, "id"> | null) => void;
@@ -122,6 +140,23 @@ const generateTabId = (): string => `tab_${Date.now()}_${Math.random().toString(
 export const useChatStore = create<ChatStore>((set, get) => ({
 	collapsed: false,
 	setCollapsed: (collapsed) => set({ collapsed }),
+	// Chat layout mode
+	chatLayoutMode: "split",
+	setChatLayoutMode: (mode) => set({ chatLayoutMode: mode }),
+	// Chat drawer state
+	isChatDrawerOpen: true,
+	setIsChatDrawerOpen: (isOpen) => set({ isChatDrawerOpen: isOpen }),
+	// Chat attachments for agent mode
+	chatAttachments: [],
+	addChatAttachments: (attachments) => set((state) => {
+		// Deduplicate by uuid to avoid duplicate attachments
+		const existingUuids = new Set(state.chatAttachments.map((a) => a.uuid));
+		const newAttachments = attachments.filter((a) => !existingUuids.has(a.uuid));
+		return {
+			chatAttachments: [...state.chatAttachments, ...newAttachments],
+		};
+	}),
+	clearChatAttachments: () => set({ chatAttachments: [] }),
 	sidePanel: null,
 	setSidePanel: (sidePanel) => {
 		if (sidePanel === null) {
@@ -446,6 +481,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		isFromMeetingInstance: false,
 		selectedTemplateId: null,
 		streamingKey: null,
+		chatAttachments: [], // Clear attachments for new chat
 	}),
 }));
 

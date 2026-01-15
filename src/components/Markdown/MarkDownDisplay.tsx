@@ -1,5 +1,5 @@
 // MarkdownRenderer.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkDirective from "remark-directive";
@@ -278,47 +278,69 @@ interface Attachment {
 
 // Update AttachmentsComponent to use AttachmentViewer
 const AttachmentsComponent: React.FC<{ attachments: string }> = ({ attachments }) => {
-	try {
-		let parsedAttachments;
-		
+	const { addChatAttachments } = useChatStore();
+	
+	// Parse attachments with memoization to avoid re-parsing
+	const { parsedAttachments, files, parseError } = useMemo(() => {
 		try {
-			// First try to parse as-is (valid JSON)
-			parsedAttachments = JSON.parse(attachments);
-		} catch (firstError) {
-			// If that fails, try to convert Python dict format to JSON
-			const jsonString = attachments
-				.replace(/'/g, "\"")  // Replace single quotes with double quotes
-				.replace(/True/g, "true")  // Replace Python True with JSON true
-				.replace(/False/g, "false")  // Replace Python False with JSON false
-				.replace(/None/g, "null");  // Replace Python None with JSON null
+			let parsed;
 			
-			parsedAttachments = JSON.parse(jsonString);
+			try {
+				// First try to parse as-is (valid JSON)
+				parsed = JSON.parse(attachments);
+			} catch (firstError) {
+				// If that fails, try to convert Python dict format to JSON
+				const jsonString = attachments
+					.replace(/'/g, "\"")  // Replace single quotes with double quotes
+					.replace(/True/g, "true")  // Replace Python True with JSON true
+					.replace(/False/g, "false")  // Replace Python False with JSON false
+					.replace(/None/g, "null");  // Replace Python None with JSON null
+				
+				parsed = JSON.parse(jsonString);
+			}
+			
+			// UUID regex pattern to check if resource_id is a valid UUID
+			const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+			
+			const fileList = parsed.map((attachment: Attachment) => {
+				const resourceId = attachment.is_sandbox_file 
+					? `${attachment.uuid}::${attachment.name}` // Use sandbox_id::filename for unique identification
+					: attachment.uuid;
+				const type = isUUID(attachment.uuid) ? "storage" : "sandbox";
+				
+				return {
+					resource_id: resourceId,
+					resource_name: attachment.name,
+					extension: attachment.type || attachment.extension,
+					url: attachment.url, // Include URL if present
+					type,
+					focus: attachment.focus,
+					sandbox_id: attachment.is_sandbox_file ? attachment.uuid : undefined, // Explicit sandbox ID for API calls
+				};
+			});
+			
+			return { parsedAttachments: parsed, files: fileList, parseError: null };
+		} catch (error) {
+			console.error("Error parsing attachments:", error);
+			console.error("Attachments string that failed:", attachments);
+			return { parsedAttachments: null, files: [], parseError: error };
 		}
-		
-		// UUID regex pattern to check if resource_id is a valid UUID
-		const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
-		
-		const files = parsedAttachments.map((attachment: Attachment) => {
-			const resourceId = attachment.is_sandbox_file 
-				? `${attachment.uuid}::${attachment.name}` // Use sandbox_id::filename for unique identification
-				: attachment.uuid;
-			const type = isUUID(attachment.uuid) ? "storage" : "sandbox";
-			
-			return {
-				resource_id: resourceId,
-				resource_name: attachment.name,
-				extension: attachment.type || attachment.extension,
-				url: attachment.url, // Include URL if present
-				type,
-				focus: attachment.focus,
-				sandbox_id: attachment.is_sandbox_file ? attachment.uuid : undefined, // Explicit sandbox ID for API calls
-			};
-		});
+	}, [attachments]);
+	
+	// Add attachments to store for agent mode attachment tray
+	useEffect(() => {
+		if (parsedAttachments && parsedAttachments.length > 0) {
+			const attachmentsForStore = parsedAttachments.map((attachment: Attachment) => ({
+				name: attachment.name,
+				uuid: attachment.uuid,
+				type: attachment.type || attachment.extension,
+				is_sandbox_file: attachment.is_sandbox_file,
+			}));
+			addChatAttachments(attachmentsForStore);
+		}
+	}, [parsedAttachments, addChatAttachments]);
 
-		return <AttachmentViewer files={files} />;
-	} catch (error) {
-		console.error("Error parsing attachments:", error);
-		console.error("Attachments string that failed:", attachments);
+	if (parseError) {
 		return (
 			<div className="bg-red-50 border border-red-200 rounded p-2 text-sm">
 				<div className="text-red-700 font-medium">Error parsing attachments</div>
@@ -326,6 +348,8 @@ const AttachmentsComponent: React.FC<{ attachments: string }> = ({ attachments }
 			</div>
 		);
 	}
+
+	return <AttachmentViewer files={files} />;
 };
 
 // Custom directive plugin that transforms directives to custom components

@@ -5,11 +5,13 @@ import { useStore } from "@/utils/store";
 import { useChatStore } from "@/hooks/useChatStore";
 import { clsx } from "clsx";
 import InteractiveChatPanel from "@/components/ChatInput/PlatformChat/InteractiveChatPanel";
+import ChatDrawer from "@/components/ChatInput/PlatformChat/ChatDrawer";
+import AttachmentTray from "@/components/ChatInput/PlatformChat/AttachmentTray";
 import { useEffect, useState } from "react";
 
 export default function ChatComponent({ heightOffset = 20 }: {heightOffset?: number}) : JSX.Element {
 	const activeProject = useStore((state) => state.activeProject);
-	const { tabs, chatDirectiveType, setChatDirectiveType } = useChatStore();
+	const { tabs, chatLayoutMode, chatAttachments } = useChatStore();
 	const hasOpenTabs = tabs.length > 0;
 	const [panelWidth, setPanelWidth] = useState(50); // Percentage width for the chat panel
 	const [isDragging, setIsDragging] = useState(false);
@@ -58,6 +60,36 @@ export default function ChatComponent({ heightOffset = 20 }: {heightOffset?: num
 		};
 	}, [isDragging]);
 
+	// Agent mode layout
+	if (chatLayoutMode === "agent" && activeProject) {
+		return (
+			<div className="h-full relative">
+				<Toaster />
+				
+				{/* Chat Drawer - slides from left */}
+				<ChatDrawer heightOffset={heightOffset}>
+					<PlatformChatComponent
+						chatTarget="agent"
+						folderId={activeProject.project_id}
+						heightOffset={heightOffset} // Match drawer's height calculation
+					/>
+				</ChatDrawer>
+
+				{/* Main content area - full width */}
+				<div className="h-full flex flex-col">
+					{/* Attachment Tray - persistent when attachments exist */}
+					{chatAttachments.length > 0 && <AttachmentTray />}
+					
+					{/* Interactive Panel - takes remaining height */}
+					<div className="flex-1 min-h-0">
+						<InteractiveChatPanel heightOffset={heightOffset + (chatAttachments.length > 0 ? 48 : 0)} />
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	// Split mode layout (default)
 	return (
 		<div className="h-full">
 			<Toaster />
