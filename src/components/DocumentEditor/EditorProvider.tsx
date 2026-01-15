@@ -151,12 +151,11 @@ const EditorProvider = ({ editor, pageSize = "a4", zoom = DEFAULT_ZOOM }: Editor
 							zIndex: 10,
 						}}
 					>
-						{/* Page break label */}
-						<div 
+						{/* <div 
 							className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-100 text-gray-400 text-xs px-2 py-0.5 rounded"
 						>
 							Page {index + 1} / {index + 2}
-						</div>
+						</div> */}
 					</div>
 				))}
 
