@@ -4,13 +4,14 @@ import { getTaskStatus } from "@/api/schedule_routes";
 import { useToast } from "@/components/ui/use-toast";
 import { ProcessedFile } from "@/api/agentRoutes";
 import { Session } from "@supabase/supabase-js";
+import { isFileSupported, getFileExtension, getFileCategory, getExtensionFromMimeType } from "./useDragDropUpload";
 
 interface PasteUploadOptions {
   session: Session | null;
-  activeProject: any;
+  activeProject: { project_id: string } | null;
   onUploadStart?: (file: File) => void;
   onUploadProgress?: (progress: number) => void;
-  onUploadComplete?: (result: any, processedFile: ProcessedFile) => void;
+  onUploadComplete?: (result: unknown, processedFile: ProcessedFile) => void;
   onUploadError?: (error: string) => void;
   onProcessingStart?: () => void;
 }
@@ -84,22 +85,34 @@ export const usePasteUpload = ({
 		const clipboardItems = event.clipboardData?.items;
 		if (!clipboardItems) return;
 
-		// Look for image items in clipboard
+		// Look for supported file items in clipboard (images and files)
 		for (let i = 0; i < clipboardItems.length; i++) {
 			const item = clipboardItems[i];
       
-			// Check if the item is an image
-			if (item.type.startsWith("image/")) {
-				event.preventDefault();
-        
+			// Check if the item is a file (image or other supported type)
+			if (item.kind === "file") {
 				const file = item.getAsFile();
 				if (!file) continue;
 
+				// Check if file type is supported
+				if (!isFileSupported(file)) {
+					// Skip unsupported file types silently for paste (user might be pasting text)
+					continue;
+				}
+
+				event.preventDefault();
+
+				// Get the file extension from filename or MIME type
+				const extension = getFileExtension(file.name) || 
+					(file.type && getExtensionFromMimeType(file.type)) || 
+					"file";
+
 				// Generate a filename with timestamp
-				const timestamp = new Date().toISOString()
-					.replace(/[:.]/g, "-");
-				const extension = file.type.split("/")[1] || "png";
-				const filename = `pasted-image-${timestamp}.${extension}`;
+				const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+				const category = getFileCategory(file);
+				const filename = file.name && file.name !== "image.png" && file.name !== "blob"
+					? file.name
+					: `pasted-${category}-${timestamp}.${extension}`;
         
 				// Create a new file with a proper name
 				const namedFile = new File([file], filename, { type: file.type });
@@ -118,8 +131,6 @@ export const usePasteUpload = ({
 							// Check if the response contains a task_id for async processing
 							if (data && data.task_id) {
 								// File upload completed, now processing asynchronously
-								// File uploaded, starting async processing
-								
 								// Notify that processing has started
 								onProcessingStart?.();
 								
@@ -144,25 +155,26 @@ export const usePasteUpload = ({
 						},
 					);
 
+					const categoryLabel = category.charAt(0).toUpperCase() + category.slice(1);
 					toast({
-						title: "Image Pasted Successfully",
+						title: `${categoryLabel} Pasted Successfully`,
 						description: `${filename} has been uploaded and is ready to use in your chat`,
 						duration: 3000,
 					});
 				} catch (error) {
-					console.error("Error uploading pasted image:", error);
+					console.error("Error uploading pasted file:", error);
 					const errorMessage = error instanceof Error ? error.message : "Upload failed";
           
 					onUploadError?.(errorMessage);
           
 					toast({
 						title: "Upload Failed",
-						description: `Failed to upload pasted image: ${errorMessage}`,
+						description: `Failed to upload pasted file: ${errorMessage}`,
 						variant: "destructive",
 					});
 				}
 
-				// Only process the first image found
+				// Only process the first file found
 				break;
 			}
 		}

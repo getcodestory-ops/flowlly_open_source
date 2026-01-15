@@ -21,9 +21,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { usePlatformChat } from "./usePlatformChat";
 import { useToast } from "@/components/ui/use-toast";
 import { usePasteUpload } from "@/hooks/usePasteUpload";
+import { useDragDropUpload } from "@/hooks/useDragDropUpload";
 import { FileUploadProgress } from "@/components/Folder/FilesTable/FileUploadProgress";
 import { FileUploadStatus as FolderFileUploadStatus } from "@/components/Folder/FilesTable/types";
 import { FileUploadStatus } from "./PlatformChatInterface/types";
+import { Upload } from "lucide-react";
 // Removed Badge, File, X imports since we no longer render separate file attachments
 import clsx from "clsx";
 import AtSelectorComponent from "./components/AtSelectorComponent";
@@ -78,42 +80,46 @@ export default function PlatformChatInterface({
 	
 
 	
-	// Paste upload functionality
-	const { handlePasteEvent } = usePasteUpload({
-		session,
-		activeProject,
-		onUploadStart: (file) => {
+	// Common upload callbacks - shared between paste and drag/drop
+	const uploadCallbacks = {
+		onUploadStart: (file: File) => {
 			const fileStatus: FileUploadStatus = {
 				file,
 				status: "uploading",
 				progress: 0,
 			};
-			setUploadingFiles([fileStatus]);
+			setUploadingFiles((prev) => [...prev, fileStatus]);
 			setShowUploadProgress(true);
 		},
-		onUploadProgress: (progress) => {
+		onUploadProgress: (progress: number) => {
 			setUploadingFiles((prev) =>
-				prev.map((item) => ({ ...item, progress })),
+				prev.map((item) => 
+					item.status === "uploading" ? { ...item, progress } : item
+				),
 			);
 		},
 		onProcessingStart: () => {
 			// Update status to processing when async processing starts
 			setUploadingFiles((prev) =>
-				prev.map((item) => ({ 
-					...item, 
-					status: "processing", 
-					progress: 100,
-				})),
+				prev.map((item) => 
+					item.status === "uploading" ? { 
+						...item, 
+						status: "processing" as const, 
+						progress: 100,
+					} : item
+				),
 			);
 		},
-		onUploadComplete: (_result, processedFile) => {
+		onUploadComplete: (_result: unknown, processedFile: { type: string; resource_id: string; resource_url: string; resource_name: string; extension: string }) => {
 			setUploadingFiles((prev) =>
-				prev.map((item) => ({ 
-					...item, 
-					status: "success", 
-					progress: 100,
-					result: processedFile,
-				})),
+				prev.map((item) => 
+					item.status === "processing" || item.status === "uploading" ? { 
+						...item, 
+						status: "success" as const, 
+						progress: 100,
+						result: processedFile,
+					} : item
+				),
 			);
 			
 			// Add to selectedContexts for consistency with document selector
@@ -125,16 +131,33 @@ export default function PlatformChatInterface({
 				extension: processedFile.extension,
 			};
 			
-			
 			if (!currentContexts.some((ctx) => ctx.id === processedFile.resource_id)) {
 				setSelectedContexts(chatEntityId, [...currentContexts, newContext]);
 			}
 		},
-		onUploadError: (error) => {
+		onUploadError: (error: string) => {
 			setUploadingFiles((prev) =>
-				prev.map((item) => ({ ...item, status: "error", error })),
+				prev.map((item) => 
+					item.status === "uploading" || item.status === "processing" 
+						? { ...item, status: "error" as const, error } 
+						: item
+				),
 			);
 		},
+	};
+
+	// Paste upload functionality
+	const { handlePasteEvent } = usePasteUpload({
+		session,
+		activeProject,
+		...uploadCallbacks,
+	});
+
+	// Drag and drop upload functionality
+	const { isDragging, dragHandlers } = useDragDropUpload({
+		session,
+		activeProject,
+		...uploadCallbacks,
 	});
 	
 	// Close upload progress modal
@@ -147,6 +170,24 @@ export default function PlatformChatInterface({
 			// Don't clear files here - let them be cleared after chat submission
 		}
 	};
+	
+	// Auto-close upload progress modal after all files are processed
+	useEffect(() => {
+		if (!showUploadProgress || uploadingFiles.length === 0) return;
+		
+		const allProcessed = uploadingFiles.every(
+			(file) => file.status === "success" || file.status === "error",
+		);
+		
+		if (allProcessed) {
+			// Auto-close after a short delay to let user see the success state
+			const timer = setTimeout(() => {
+				setShowUploadProgress(false);
+			}, 1500);
+			
+			return () => clearTimeout(timer);
+		}
+	}, [uploadingFiles, showUploadProgress]);
 	
 	// Note: We no longer need separate file attachment display since pasted files
 	// are now integrated with selectedContexts and will appear in the standard
@@ -320,8 +361,13 @@ export default function PlatformChatInterface({
 			files: [], 
 		});
 		
+		// Clear uploaded files and attachment references after submission
 		setUploadingFiles([]);
 		setShowUploadProgress(false);
+		
+		// Clear selected contexts (attachments) for this chat
+		const chatEntityId = activeChatEntity?.id || "untitled";
+		setSelectedContexts(chatEntityId, []);
 	};
 
 
@@ -610,7 +656,22 @@ export default function PlatformChatInterface({
 	);
 
 	return (
-		<div className="flex flex-col h-full max-w-4xl mx-auto">
+		<div 
+			className="flex flex-col h-full max-w-4xl mx-auto relative"
+			{...dragHandlers}
+		>
+			{/* Drag and drop overlay */}
+			{isDragging && (
+				<div className="absolute inset-0 z-50 flex items-center justify-center bg-indigo-50/90 border-2 border-dashed border-indigo-400 rounded-xl backdrop-blur-sm">
+					<div className="flex flex-col items-center gap-3 text-indigo-600">
+						<Upload className="h-12 w-12 animate-bounce" />
+						<span className="text-lg font-medium">Drop files here to attach</span>
+						<span className="text-sm text-indigo-500">
+							Supports images, PDFs, documents, audio, and more
+						</span>
+					</div>
+				</div>
+			)}
 			{chats && chats.length > 0 ? (
 			// Regular chat view when there are messages
 				<ScrollArea
@@ -699,6 +760,7 @@ export default function PlatformChatInterface({
 						loadDocumentPanel={loadDocumentPanel}
 						setChatInput={setChatInput}
 						textareaRef={emptyTextareaRef}
+						isDragging={isDragging}
 					/>
 				</div>
 			)}

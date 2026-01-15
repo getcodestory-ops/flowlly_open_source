@@ -2,7 +2,7 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, Users, ArrowLeft, Sparkles, Plus, X, Scale, Calendar, Wand2 } from "lucide-react";
+import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, Users, ArrowLeft, Sparkles, Plus, X, Scale, Calendar, Wand2, Upload } from "lucide-react";
 import AtSelectorComponent from "../../../components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
 import { useViewStore } from "@/utils/store";
@@ -126,6 +126,7 @@ interface EmptyChatInterfaceProps {
 	handleSubmit: () => void;
 	loadDocumentPanel: () => React.ReactNode;
 	textareaRef?: React.RefObject<HTMLTextAreaElement | null>;
+	isDragging?: boolean;
 }
 
 export default function EmptyChatInterface({
@@ -136,6 +137,7 @@ export default function EmptyChatInterface({
 	handleSubmit,
 	loadDocumentPanel,
 	textareaRef,
+	isDragging = false,
 }: EmptyChatInterfaceProps): React.JSX.Element {
 	const { 
 		chatDirectiveType, 
@@ -580,7 +582,23 @@ export default function EmptyChatInterface({
 
 				{/* Chat Input */}
 				<div className="w-full max-w-4xl mb-12">
-					<div className="relative overflow-hidden rounded-xl bg-white border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-indigo-300 focus-within:border-indigo-300 transition-all">
+					<div className={`relative overflow-hidden rounded-xl bg-white border shadow-sm transition-all ${
+						isDragging 
+							? "border-indigo-400 ring-2 ring-indigo-300 border-dashed" 
+							: "border-slate-200 focus-within:ring-2 focus-within:ring-indigo-300 focus-within:border-indigo-300"
+					}`}>
+						{/* Drag overlay for chat input area */}
+						{isDragging && (
+							<div className="absolute inset-0 z-20 flex items-center justify-center bg-indigo-50/95 backdrop-blur-sm">
+								<div className="flex flex-col items-center gap-2 text-indigo-600">
+									<Upload className="h-10 w-10 animate-bounce" />
+									<span className="text-base font-medium">Drop files here to attach</span>
+									<span className="text-xs text-indigo-500">
+										Images, PDFs, documents, audio & more
+									</span>
+								</div>
+							</div>
+						)}
 						<Label className="sr-only" htmlFor="empty-message">
 							Message
 						</Label>
