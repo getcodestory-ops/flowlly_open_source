@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useStore, useViewStore } from "@/utils/store";
 import { talkToAgent, ProcessedFile, sendMessageToStreamingAgent } from "@/api/agentRoutes";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -26,6 +26,7 @@ export function usePlatformChat(
 	const appendChatEntity = useStore((state) => state.appendChatEntity);
 	const chatDirectiveType = useChatStore((state) => state.chatDirectiveType);
 	const selectedContexts = useChatStore((state) => state.selectedContexts);
+	const setSelectedContexts = useChatStore((state) => state.setSelectedContexts);
 	const contextFolder = useChatStore((state) => state.contextFolder);
 	const setIsWaitingForResponse = useChatStore((state) => state.setIsWaitingForResponse);
 	const isWaitingForResponse = useChatStore((state) => state.isWaitingForResponse);
@@ -39,7 +40,8 @@ export function usePlatformChat(
 	const localChats = useStore((state) => state.localChats);
 	const setLocalChats = useStore((state) => state.setLocalChats);
 
-	
+	// Track the chatEntityId that was used when submitting, so we can clear the correct contexts on success
+	const pendingChatEntityIdRef = useRef<string | null>(null);
 
 	const [isOpen, setIsOpen] = useState(false);
 	const onClose = () => setIsOpen(false);
@@ -98,9 +100,15 @@ export function usePlatformChat(
 		setLocalChats([...localChats, streamMessage]);
 		setIsWaitingForResponse(true);
 		
-		// Only clear chat input on successful submission
+		// Only clear chat input and contexts on successful submission
 		setChatInput("");
 		clearChatContext();
+		
+		// Clear the selected contexts (attachments) for the chat that was submitted
+		if (pendingChatEntityIdRef.current) {
+			setSelectedContexts(pendingChatEntityIdRef.current, []);
+			pendingChatEntityIdRef.current = null;
+		}
 	},
 		
 	});
@@ -228,6 +236,9 @@ export function usePlatformChat(
 
 
 		let chatEntityId: string = activeChatEntity?.id || "untitled";
+		// Store the chatEntityId so we can clear its contexts on success
+		pendingChatEntityIdRef.current = chatEntityId;
+		
 		const currentContexts = selectedContexts[chatEntityId] || [];
 		if (currentContexts.length > 0 && chatDirectiveType === "chat") {
 			const attachmentsJson = JSON.stringify(currentContexts.map((ctx) => ({

@@ -378,13 +378,9 @@ export default function PlatformChatInterface({
 			files: [], 
 		});
 		
-		// Clear uploaded files and attachment references after submission
+
 		setUploadingFiles([]);
 		setShowUploadProgress(false);
-		
-		// Clear selected contexts (attachments) for this chat
-		const chatEntityId = activeChatEntity?.id || "untitled";
-		setSelectedContexts(chatEntityId, []);
 	};
 
 
