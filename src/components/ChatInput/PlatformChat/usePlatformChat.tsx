@@ -83,21 +83,25 @@ export function usePlatformChat(
 				return;
 			}
 
-			const streamMessage: AgentChat = {
-				id: (Date.now() + 1).toString(),
-				sender: "Flowlly",
-				receiver: "User",
-				project_id: activeProject?.project_id || "",
-				message: {
-					type: "stream",
-					streaming_key: data.agent_response,
-					role: "assistant",
-				},
-				created_at: new Date().toISOString(),
-			};
-			setLocalChats([...localChats, streamMessage]);
-			setIsWaitingForResponse(true);
-		},
+		const streamMessage: AgentChat = {
+			id: (Date.now() + 1).toString(),
+			sender: "Flowlly",
+			receiver: "User",
+			project_id: activeProject?.project_id || "",
+			message: {
+				type: "stream",
+				streaming_key: data.agent_response,
+				role: "assistant",
+			},
+			created_at: new Date().toISOString(),
+		};
+		setLocalChats([...localChats, streamMessage]);
+		setIsWaitingForResponse(true);
+		
+		// Only clear chat input on successful submission
+		setChatInput("");
+		clearChatContext();
+	},
 		
 	});
 
@@ -166,16 +170,16 @@ export function usePlatformChat(
 		}
 
 		try {
-			// Clear input and context
-			setChatInput("");
-			clearChatContext();
-
 			// Send message to streaming agent
 			const response = await sendMessageToStreamingAgent({
 				session,
 				streamingKey,
 				message,
 			});
+
+			// Only clear input and context on successful submission
+			setChatInput("");
+			clearChatContext();
 
 			toast({
 				title: "Message added to queue",
@@ -248,8 +252,8 @@ export function usePlatformChat(
 
 		setLocalChats([...localChats, userMessage]);
 
-		setChatInput("");
-		clearChatContext(); // Clear context after message is sent
+		// Note: setChatInput and clearChatContext are now called in onSuccess
+		// to preserve the user's input if the submission fails
 
 		if (chatEntityId === "untitled") {
 			try {
