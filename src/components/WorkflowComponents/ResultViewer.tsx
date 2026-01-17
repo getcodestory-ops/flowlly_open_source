@@ -126,7 +126,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
 		},
 		{
 			id: "questions",
-			label: "Chat",
+			label: "Meeting Assistant",
 			icon: <MessageSquare className="h-3.5 w-3.5" />,
 			hasData: true, // Always available
 		},		{
