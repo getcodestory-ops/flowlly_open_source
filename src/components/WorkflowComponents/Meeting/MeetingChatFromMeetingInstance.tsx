@@ -28,9 +28,11 @@ export default function MeetingChatFromMeetingInstance({
 	);
 	
 	// Get workflow state and actions  
-	const { currentGraph, setCurrentResult } = useWorkflow((state) => ({
+	const { currentGraph, graphs, setCurrentResult, setCurrentGraph } = useWorkflow((state) => ({
 		currentGraph: state.currentGraph,
+		graphs: state.graphs,
 		setCurrentResult: state.setCurrentResult,
+		setCurrentGraph: state.setCurrentGraph,
 	}));
 	
 	const { setChatContext, setMeetingChatTags, resetForNewChat, setMeetingChatDirective, setMeetingWorkflowData, setIsFromMeetingInstance } = useChatStore();
@@ -44,6 +46,19 @@ export default function MeetingChatFromMeetingInstance({
 		};
 	}, [setIsFromMeetingInstance]);
 
+	// Find the meeting type (graph) from the graphs list using currentResult.event_id
+	const meetingType = useMemo(() => {
+		// First check if currentGraph matches
+		if (currentGraph && currentGraph.id === currentResult?.event_id) {
+			return currentGraph;
+		}
+		// Otherwise, find the meeting type from graphs list
+		if (graphs && currentResult?.event_id) {
+			return graphs.find((graph) => graph.id === currentResult.event_id) || null;
+		}
+		return currentGraph;
+	}, [currentGraph, graphs, currentResult?.event_id]);
+
 	// Extract meeting information and transcript
 	const meetingInfo = useMemo(() => {
 		if (!currentResult || !currentResult.nodes) {
@@ -53,9 +68,59 @@ export default function MeetingChatFromMeetingInstance({
 		const meetingName = currentResult.name || "Meeting";
 		const meetingDate = currentResult.run_time ? new Date(currentResult.run_time).toLocaleDateString() : "Unknown date";
 		
-		// Find transcription from nodes
-		const transcribeNode = currentResult.nodes.find((node) => node.id === "transcribe_meeting");
-		const transcription = transcribeNode ? transcribeNode.output : "No transcription available";
+		// Find transcript from nodes - prioritize raw_transcript_data from record_meeting
+		const recordingNode = currentResult.nodes.find((node) => 
+			node.id.toLowerCase().includes("record_meeting")
+		);
+		const rawTranscriptData = recordingNode?.output?.raw_transcript_data;
+		
+		let transcription = "No transcription available";
+		
+		if (rawTranscriptData && Array.isArray(rawTranscriptData) && rawTranscriptData.length > 0) {
+			// Format raw transcript data into readable text
+			// Group by participant and extract words
+			const formattedTranscript: string[] = [];
+			let currentParticipant = "";
+			let currentText: string[] = [];
+			
+			rawTranscriptData.forEach((entry: any) => {
+				const participantName = entry.participant?.name || "Unknown";
+				const words = entry.words?.map((w: any) => w.text || w.word || "").join(" ") || "";
+				
+				if (participantName !== currentParticipant) {
+					// Save previous participant's text
+					if (currentParticipant && currentText.length > 0) {
+						formattedTranscript.push(`${currentParticipant}: ${currentText.join(" ")}`);
+					}
+					currentParticipant = participantName;
+					currentText = [words];
+				} else {
+					currentText.push(words);
+				}
+			});
+			
+			// Add last participant's text
+			if (currentParticipant && currentText.length > 0) {
+				formattedTranscript.push(`${currentParticipant}: ${currentText.join(" ")}`);
+			}
+			
+			transcription = formattedTranscript.join("\n\n");
+		} else {
+			// Fallback to transcribe_meeting node output
+			const transcribeNode = currentResult.nodes.find((node) => 
+				node.id.toLowerCase().includes("transcribe_meeting")
+			);
+			if (transcribeNode?.output) {
+				// Check if output is a string or object
+				if (typeof transcribeNode.output === "string") {
+					transcription = transcribeNode.output;
+				} else if (transcribeNode.output.text) {
+					transcription = transcribeNode.output.text;
+				} else if (transcribeNode.output.transcript) {
+					transcription = transcribeNode.output.transcript;
+				}
+			}
+		}
 
 		return {
 			meetingName,
@@ -66,19 +131,13 @@ export default function MeetingChatFromMeetingInstance({
 
 	const getPrompt = useCallback(() => {
 		if (!meetingInfo) {
-			return "Ask questions about this meeting.";
+			return "";
 		}
 
-		let prompt = ":::context\nYou have been provided with a meeting transcript and additional context for analysis:\n\n";
-
-		// Add meeting transcript
-		prompt += `**Meeting: ${meetingInfo.meetingName}**\n`;
-		prompt += `**Date: ${meetingInfo.meetingDate}**\n\n`;
-		prompt += `**Transcript:**\n${meetingInfo.transcription}\n\n`;
-
-		// Note: Additional documents will be handled through the chat interface
-
-		prompt += "**Please analyze the meeting content and answer questions based on the transcript and any additional documents provided.**\n:::\n";
+		// Build context using :::context for collapsible UI
+		// Format transcript to be on single line (replace newlines with separator)
+		const formattedTranscript = meetingInfo.transcription.replace(/\n\n/g, " | ").replace(/\n/g, " ");
+		const prompt = `:::context\nMeeting "${meetingInfo.meetingName}" on ${meetingInfo.meetingDate}. Transcript: ${formattedTranscript}\n:::`;
 
 		return prompt;
 	}, [meetingInfo]);
@@ -88,6 +147,11 @@ export default function MeetingChatFromMeetingInstance({
 		if (meetingInfo) {
 			// Ensure workflow state is synced with the current meeting result
 			setCurrentResult(currentResult);
+			
+			// Also set the currentGraph if we found the meetingType
+			if (meetingType) {
+				setCurrentGraph(meetingType);
+			}
 			
 			// Reset for new chat to ensure fresh start
 			setActiveChatEntity(null);
@@ -101,14 +165,16 @@ export default function MeetingChatFromMeetingInstance({
 			setIsFromMeetingInstance(true);
 			
 			// Store complete meeting workflow data for the form
-			if (currentGraph && setMeetingWorkflowData) {
+			// Use meetingType which is derived from graphs list if currentGraph is not available
+			// Always set meetingWorkflowData with at least the instance so downstream code can use currentResult.event_id
+			if (setMeetingWorkflowData) {
 				setMeetingWorkflowData({
-					meetingType: currentGraph,
+					meetingType: meetingType || null,
 					meetingInstance: currentResult,
 				});
 			}
 		}
-	}, [meetingInfo?.meetingName, resetForNewChat, setActiveChatEntity, setLocalChats, setMeetingChatDirective, currentResult, currentGraph, setMeetingWorkflowData, setCurrentResult, setIsFromMeetingInstance]); // Only trigger when meeting name changes
+	}, [meetingInfo?.meetingName, resetForNewChat, setActiveChatEntity, setLocalChats, setMeetingChatDirective, currentResult, meetingType, setMeetingWorkflowData, setCurrentResult, setIsFromMeetingInstance, setCurrentGraph]); // Only trigger when meeting name changes
 
 	// Set up meeting chat context and tags after reset
 	useEffect(() => {

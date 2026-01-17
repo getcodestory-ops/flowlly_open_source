@@ -57,10 +57,12 @@ export default function MeetingChat({
 	}));
 
 	const [formData, setFormData] = useState<MeetingChatFormData>({
-		selectedMeetingTypeId: meetingWorkflowData?.meetingType?.id || currentGraph?.id || "",
+		selectedMeetingTypeId: meetingWorkflowData?.meetingType?.id || currentGraph?.id || meetingWorkflowData?.meetingInstance?.event_id || currentResult?.event_id || "",
 		selectedMeetingInstanceId: meetingWorkflowData?.meetingInstance?.id || currentResult?.id || selectedMeetingId || "",
 		meetingQuestion: "",
 	});
+
+
 
 	const [formId] = useState(() => `meeting_chat_directive_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
 
@@ -106,15 +108,49 @@ export default function MeetingChat({
 	});
 
 	const availableMeetingTypes = useMemo(() => {
-		if (graphs) {
-			return graphs.filter((graph: GraphData) => graph.event_type === "meeting");
+		let meetingTypes: GraphData[] = [];
+		
+		// Include meeting type from meetingWorkflowData if available (from ResultViewer)
+		if (meetingWorkflowData?.meetingType) {
+			meetingTypes.push(meetingWorkflowData.meetingType);
+		} else if (meetingWorkflowData?.meetingInstance?.event_id) {
+			// If meetingType is null but we have meetingInstance, construct a minimal meeting type
+			// This happens when coming from ResultViewer and graphs is not populated
+			const instance = meetingWorkflowData.meetingInstance;
+			const minimalMeetingType = {
+				id: instance.event_id,
+				name: instance.event_name || instance.name || "Meeting",
+				event_type: "meeting" as const,
+				description: "",
+			} as GraphData;
+			meetingTypes.push(minimalMeetingType);
 		}
 		
-		if (!meetingsData) return [];
-		return meetingsData
-			.map((d: ProjectEvents) => d.project_events)
-			.filter((graph: GraphData) => graph.event_type === "meeting");
-	}, [graphs, meetingsData]);
+		if (graphs) {
+			const graphMeetings = graphs.filter((graph: GraphData) => graph.event_type === "meeting");
+			// Add graphs that aren't already in the list
+			graphMeetings.forEach((graph) => {
+				if (!meetingTypes.find((m) => m.id === graph.id)) {
+					meetingTypes.push(graph);
+				}
+			});
+			return meetingTypes;
+		}
+		
+		if (meetingsData) {
+			const dataMeetings = meetingsData
+				.map((d: ProjectEvents) => d.project_events)
+				.filter((graph: GraphData) => graph.event_type === "meeting");
+			// Add meetings that aren't already in the list
+			dataMeetings.forEach((graph: GraphData) => {
+				if (!meetingTypes.find((m) => m.id === graph.id)) {
+					meetingTypes.push(graph);
+				}
+			});
+		}
+		
+		return meetingTypes;
+	}, [graphs, meetingsData, meetingWorkflowData?.meetingType, meetingWorkflowData?.meetingInstance]);
 
 	const selectedMeetingType = useMemo(() => {
 		if (meetingWorkflowData?.meetingType) {
@@ -123,8 +159,24 @@ export default function MeetingChat({
 		if (currentGraph && currentGraph.event_type === "meeting") {
 			return currentGraph;
 		}
-		return availableMeetingTypes.find((meeting: GraphData) => meeting.id === formData.selectedMeetingTypeId);
-	}, [meetingWorkflowData, currentGraph, availableMeetingTypes, formData.selectedMeetingTypeId]);
+		// Try to find by formData.selectedMeetingTypeId first
+		const byFormId = availableMeetingTypes.find((meeting: GraphData) => meeting.id === formData.selectedMeetingTypeId);
+		if (byFormId) return byFormId;
+		
+		// Fallback: try to find by currentResult.event_id (useful when coming from ResultViewer)
+		if (currentResult?.event_id) {
+			const byEventId = availableMeetingTypes.find((meeting: GraphData) => meeting.id === currentResult.event_id);
+			if (byEventId) return byEventId;
+		}
+		
+		// Fallback: try to find by meetingWorkflowData.meetingInstance.event_id
+		if (meetingWorkflowData?.meetingInstance?.event_id) {
+			const byInstanceEventId = availableMeetingTypes.find((meeting: GraphData) => meeting.id === meetingWorkflowData.meetingInstance.event_id);
+			if (byInstanceEventId) return byInstanceEventId;
+		}
+		
+		return undefined;
+	}, [meetingWorkflowData, currentGraph, availableMeetingTypes, formData.selectedMeetingTypeId, currentResult?.event_id]);
 
 	const availableMeetingInstances = useMemo(() => {
 		let instances: EventResult[] = [];
@@ -133,8 +185,11 @@ export default function MeetingChat({
 			return instances;
 		}
 		
+		// Include instance from meetingWorkflowData if it matches the selected meeting type
+		// Check both meetingType.id and meetingInstance.event_id since meetingType might be null
 		if (meetingWorkflowData?.meetingInstance && 
-			meetingWorkflowData.meetingType?.id === selectedMeetingType.id) {
+			(meetingWorkflowData.meetingType?.id === selectedMeetingType.id ||
+			 meetingWorkflowData.meetingInstance.event_id === selectedMeetingType.id)) {
 			instances.push(meetingWorkflowData.meetingInstance);
 		}
 		
@@ -180,7 +235,8 @@ export default function MeetingChat({
 	}, [meetingWorkflowData, currentResult, availableMeetingInstances, formData.selectedMeetingInstanceId]);
 
 	useEffect(() => {
-		const workflowMeetingTypeId = meetingWorkflowData?.meetingType?.id || currentGraph?.id || "";
+		// Use event_id from currentResult or meetingInstance as fallback when meetingWorkflowData.meetingType and currentGraph are not available
+		const workflowMeetingTypeId = meetingWorkflowData?.meetingType?.id || currentGraph?.id || meetingWorkflowData?.meetingInstance?.event_id || currentResult?.event_id || "";
 		const workflowMeetingInstanceId = meetingWorkflowData?.meetingInstance?.id || currentResult?.id || "";
 		
 		if (workflowMeetingTypeId !== formData.selectedMeetingTypeId || 
@@ -194,7 +250,7 @@ export default function MeetingChat({
 	}, [currentGraph, currentResult, meetingWorkflowData, formData.selectedMeetingTypeId, formData.selectedMeetingInstanceId, availableMeetingInstances.length]);
 
 	useEffect(() => {
-		const workflowMeetingTypeId = meetingWorkflowData?.meetingType?.id || currentGraph?.id;
+		const workflowMeetingTypeId = meetingWorkflowData?.meetingType?.id || currentGraph?.id || currentResult?.event_id;
 		const workflowMeetingInstanceId = meetingWorkflowData?.meetingInstance || currentResult;
 		
 		if (formData.selectedMeetingTypeId && 
@@ -212,31 +268,72 @@ export default function MeetingChat({
 			return "";
 		}
 
-		let context = ":::context\nYou have been provided with a meeting transcript and additional context for analysis:\n\n";
-
-		context += `**Meeting Type: ${selectedMeetingType.name}**\n`;
-		context += `**Meeting Instance: ${selectedMeetingInstance.name || "Meeting Instance"}**\n`;
-		context += `**Date: ${selectedMeetingInstance.run_time ? new Date(selectedMeetingInstance.run_time).toLocaleDateString() : "Unknown date"}**\n\n`;
-
-		const transcribeNode = selectedMeetingInstance.nodes?.find((node: NodeData) => node.id === "transcribe_meeting");
-		const transcription = transcribeNode ? transcribeNode.output : "No transcription available";
+		// Get transcript - prioritize raw_transcript_data from record_meeting node
+		const recordingNode = selectedMeetingInstance.nodes?.find((node: NodeData) => 
+			node.id.toLowerCase().includes("record_meeting")
+		);
+		const rawTranscriptData = recordingNode?.output?.raw_transcript_data;
 		
-		context += `**Transcript:**\n${transcription}\n\n`;
+		let transcription = "No transcription available";
+		
+		if (rawTranscriptData && Array.isArray(rawTranscriptData) && rawTranscriptData.length > 0) {
+			// Format raw transcript data into readable text
+			const formattedTranscript: string[] = [];
+			let currentParticipant = "";
+			let currentText: string[] = [];
+			
+			rawTranscriptData.forEach((entry: any) => {
+				const participantName = entry.participant?.name || "Unknown";
+				const words = entry.words?.map((w: any) => w.text || w.word || "").join(" ") || "";
+				
+				if (participantName !== currentParticipant) {
+					if (currentParticipant && currentText.length > 0) {
+						formattedTranscript.push(`${currentParticipant}: ${currentText.join(" ")}`);
+					}
+					currentParticipant = participantName;
+					currentText = [words];
+				} else {
+					currentText.push(words);
+				}
+			});
+			
+			if (currentParticipant && currentText.length > 0) {
+				formattedTranscript.push(`${currentParticipant}: ${currentText.join(" ")}`);
+			}
+			
+			transcription = formattedTranscript.join(" | ");
+		} else {
+			// Fallback to transcribe_meeting node output
+			const transcribeNode = selectedMeetingInstance.nodes?.find((node: NodeData) => 
+				node.id.toLowerCase().includes("transcribe_meeting")
+			);
+			if (transcribeNode?.output) {
+				if (typeof transcribeNode.output === "string") {
+					transcription = transcribeNode.output;
+				} else if (transcribeNode.output.text) {
+					transcription = transcribeNode.output.text;
+				} else if (transcribeNode.output.transcript) {
+					transcription = transcribeNode.output.transcript;
+				}
+			}
+		}
 
+		// Build context using :::context for collapsible UI - keep it on minimal lines
+		const meetingDate = selectedMeetingInstance.run_time ? new Date(selectedMeetingInstance.run_time).toLocaleDateString() : "Unknown date";
+		let context = `:::context\nMeeting "${selectedMeetingType.name}" - "${selectedMeetingInstance.name || "Meeting Instance"}" on ${meetingDate}. Transcript: ${transcription}\n:::\n\n`;
+
+		// Add additional documents as attachments OUTSIDE the :::context block
 		const additionalDocuments = getSelectedDocuments("additional");
 		if (additionalDocuments.length > 0) {
-			context += "**Additional Documents:**\n";
 			additionalDocuments.forEach((doc) => {
 				const attachment = {
 					uuid: doc.id,
 					name: doc.name,
 					specialInstructions: "Please analyze this document in context of the meeting discussion.",
 				};
-				context += `\n::attachments[[${JSON.stringify(attachment)}]]\n`;
+				context += `::attachments[[${JSON.stringify(attachment)}]]\n`;
 			});
 		}
-
-		context += "**Please analyze the meeting content and answer questions based on the transcript and any additional documents provided.**\n:::\n";
 
 		return context;
 	}, [selectedMeetingInstance, selectedMeetingType, getSelectedDocuments]);
@@ -306,6 +403,13 @@ export default function MeetingChat({
 					<h2 className="text-base font-semibold italic text-gray-900 mb-4">
 						{isFromMeetingInstance ? "Selected Meeting" : "Select Meeting"}
 					</h2>
+					{meetingWorkflowData?.meetingInstance && (
+						<div className="mb-4">
+							<p className="text-sm text-gray-500">
+								Selected Meeting Instance: {meetingWorkflowData.meetingInstance.name}
+							</p>
+						</div>
+					)}
 					<Select
 						disabled={isPending || isLoadingMeetings || isFromMeetingInstance}
 						onValueChange={(value) => handleInputChange("selectedMeetingTypeId", value)}
