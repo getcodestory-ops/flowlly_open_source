@@ -147,7 +147,7 @@ export const InlineDocumentViewer = ({
 
 	// Fetch regular inline document URL (for non-WOPI files)
 	// Using standardized query key: "resource" prefix for all file content fetches
-	const { data: resource } = useQuery({
+	const { data: resource, isLoading: resourceLoading } = useQuery({
 		queryKey: [
 			"resource",
 			activeProject?.project_id,
@@ -290,6 +290,17 @@ export const InlineDocumentViewer = ({
 
 	// Handle image files - display via URL or show fallback for TIF
 	if (imageExtensions.includes(fileExtension)) {
+		// Show loading state while fetching image URL
+		if (resourceLoading) {
+			return (
+				<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+					<div className="flex flex-col items-center gap-2">
+						<Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+						<p className="text-sm text-gray-600">Loading image...</p>
+					</div>
+				</div>
+			);
+		}
 		if (tifExtensions.includes(fileExtension)) {
 			return (
 				<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
@@ -337,6 +348,18 @@ export const InlineDocumentViewer = ({
 				<pre className="h-full w-full p-4 overflow-auto text-sm whitespace-pre-wrap break-words">
 					{resource}
 				</pre>
+			</div>
+		);
+	}
+
+	// Show loading state while fetching resource
+	if (resourceLoading) {
+		return (
+			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+				<div className="flex flex-col items-center gap-2">
+					<Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+					<p className="text-sm text-gray-600">Loading file...</p>
+				</div>
 			</div>
 		);
 	}
