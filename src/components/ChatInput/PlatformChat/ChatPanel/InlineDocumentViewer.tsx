@@ -260,16 +260,7 @@ export const InlineDocumentViewer = ({
 		);
 	}
 
-	if (typeof resource === "string") {
-		return (
-			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
-				<pre className="h-full w-full p-4 overflow-auto text-sm whitespace-pre-wrap break-words">
-					{resource}
-				</pre>
-			</div>
-		);
-	}
-
+	// Handle CSV files first - they have their own dedicated viewer
 	if (csvExtensions.includes(fileExtension)) {
 		return (
 			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
@@ -283,6 +274,7 @@ export const InlineDocumentViewer = ({
 		);
 	}
 
+	// Handle HTML files - they have their own dedicated viewer
 	if (htmlExtensions.includes(fileExtension)) {
 		return (
 			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
@@ -296,32 +288,73 @@ export const InlineDocumentViewer = ({
 		);
 	}
 
+	// Handle image files - display via URL or show fallback for TIF
+	if (imageExtensions.includes(fileExtension)) {
+		if (tifExtensions.includes(fileExtension)) {
+			return (
+				<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+					<div className="flex flex-col items-center justify-center p-4">
+						<FileImage className="h-16 w-16 text-gray-400" />
+						<p className="mt-2 text-sm text-gray-600">TIF viewer not supported in browser</p>
+						{resource?.url && (
+							<a className="mt-2 text-blue-500 hover:underline text-sm"
+								download
+								href={resource.url}
+							>
+								Download file to view
+							</a>
+						)}
+					</div>
+				</div>
+			);
+		}
+		// Regular images (png, jpg, etc.)
+		if (resource?.url) {
+			return (
+				<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+					<img alt="Resource"
+						className="max-w-full max-h-full object-contain"
+						src={resource.url}
+					/>
+				</div>
+			);
+		}
+		// Fallback if no URL available for image
+		return (
+			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+				<div className="flex flex-col items-center gap-2">
+					<FileImage className="h-12 w-12 text-gray-400" />
+					<p className="text-sm text-gray-600">Unable to load image</p>
+				</div>
+			</div>
+		);
+	}
+
+	// Fallback for plain text string content (only for actual text files, not binary)
+	if (typeof resource === "string") {
+		return (
+			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
+				<pre className="h-full w-full p-4 overflow-auto text-sm whitespace-pre-wrap break-words">
+					{resource}
+				</pre>
+			</div>
+		);
+	}
+
+	// Default fallback - display via iframe if URL available
 	return (
 		<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
-			{resource && imageExtensions.includes(fileExtension) && !tifExtensions.includes(fileExtension) && (
-				<img alt="Resource"
-					className="max-w-full max-h-full object-contain"
-					src={resource?.url}
-				/>
-			)}
-			{resource && tifExtensions.includes(fileExtension) && (
-				<div className="flex flex-col items-center justify-center p-4">
-					<FileImage className="h-16 w-16 text-gray-400" />
-					<p className="mt-2 text-sm text-gray-600">TIF viewer not supported in browser</p>
-					<a className="mt-2 text-blue-500 hover:underline text-sm"
-						download
-						href={resource?.url}
-					>
-            Download file to view
-					</a>
-				</div>
-			)}
-			{resource && !imageExtensions.includes(fileExtension) && (
+			{resource?.url ? (
 				<iframe className="border-0"
 					height="100%"
-					src={resource?.url}
+					src={resource.url}
 					width="100%"
 				/>
+			) : (
+				<div className="flex flex-col items-center gap-2">
+					<FileImage className="h-12 w-12 text-gray-400" />
+					<p className="text-sm text-gray-600">Unable to load file</p>
+				</div>
 			)}
 		</div>
 	);
