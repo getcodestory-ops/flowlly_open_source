@@ -152,8 +152,8 @@ export const MODELS: ModelType[] = [
 		contextSize: "medium",
 	},
 	{
-		id: "claude-opus-4",
-		name: "claude opus 4",
+		id: "claude-opus-4.5",
+		name: "claude opus 4.5",
 		speed: 3,
 		performance: 5,
 		cost: "high",
