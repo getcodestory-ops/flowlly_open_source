@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
-import { getInlineDocument, getWopiSandboxEditorUrl, getWopiStorageEditorUrl } from "@/api/folderRoutes";
+import { getInlineDocument, getWopiSandboxEditorUrl, getWopiStorageEditorUrl, getSandboxImageAsDataUrl } from "@/api/folderRoutes";
 import { FileImage, Loader2, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CSVViewer } from "./CSVViewer";
@@ -218,6 +218,33 @@ export const InlineDocumentViewer = ({
 		staleTime: 30 * 1000, // Keep data fresh for 30 seconds
 	});
 
+	// Check if this is a sandbox binary image that needs special handling (excludes SVG which is text-based)
+	const isSandboxBinaryImage = isSandboxFile && imageExtensions.includes(fileExtension) && !tifExtensions.includes(fileExtension) && fileExtension !== "svg";
+
+	// Fetch sandbox binary images as blob and convert to data URL
+	const { data: sandboxImageDataUrl, isLoading: sandboxImageLoading } = useQuery({
+		queryKey: [
+			"sandboxImage",
+			activeProject?.project_id,
+			resourceId,
+			fileName,
+			lastReloadTime,
+		],
+		queryFn: () => {
+			if (!session || !activeProject?.project_id || !fileName) {
+				return Promise.reject("No session, active project, or file name");
+			}
+			return getSandboxImageAsDataUrl({
+				session,
+				projectId: activeProject.project_id,
+				sandboxId: resourceId,
+				fileName,
+			});
+		},
+		enabled: isSandboxBinaryImage && !!session && !!activeProject?.project_id && !!fileName,
+		staleTime: 30 * 1000,
+	});
+
 	// Determine which WOPI editor to use
 	const wopiEditor = isWopiSandbox ? wopiSandboxEditor : wopiStorageEditor;
 	const wopiLoading = isWopiSandbox ? wopiSandboxLoading : wopiStorageLoading;
@@ -290,17 +317,7 @@ export const InlineDocumentViewer = ({
 
 	// Handle image files - display via URL or show fallback for TIF
 	if (imageExtensions.includes(fileExtension)) {
-		// Show loading state while fetching image URL
-		if (resourceLoading) {
-			return (
-				<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
-					<div className="flex flex-col items-center gap-2">
-						<Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-						<p className="text-sm text-gray-600">Loading image...</p>
-					</div>
-				</div>
-			);
-		}
+		// TIF files are not supported in browser
 		if (tifExtensions.includes(fileExtension)) {
 			return (
 				<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
@@ -319,11 +336,91 @@ export const InlineDocumentViewer = ({
 				</div>
 			);
 		}
-		// Regular images (png, jpg, etc.)
+
+		// For sandbox SVG files (text-based), convert the text content to a data URL
+		if (isSandboxFile && fileExtension === "svg") {
+			if (resourceLoading) {
+				return (
+					<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+						<div className="flex flex-col items-center gap-2">
+							<Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+							<p className="text-sm text-gray-600">Loading image...</p>
+						</div>
+					</div>
+				);
+			}
+			const svgContent = resource as unknown;
+			if (typeof svgContent === "string" && svgContent.trim().startsWith("<")) {
+				// Convert SVG text to data URL
+				const svgDataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgContent)}`;
+				return (
+					<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+						<img alt={fileName || "SVG Image"}
+							className="max-w-full max-h-full object-contain"
+							src={svgDataUrl}
+						/>
+					</div>
+				);
+			}
+			// Fallback if SVG content is not valid
+			return (
+				<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+					<div className="flex flex-col items-center gap-2">
+						<FileImage className="h-12 w-12 text-gray-400" />
+						<p className="text-sm text-gray-600">Unable to load SVG</p>
+					</div>
+				</div>
+			);
+		}
+
+		// For sandbox binary images (png, jpg, etc.), use the dedicated blob-based query
+		if (isSandboxFile) {
+			if (sandboxImageLoading) {
+				return (
+					<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+						<div className="flex flex-col items-center gap-2">
+							<Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+							<p className="text-sm text-gray-600">Loading image...</p>
+						</div>
+					</div>
+				);
+			}
+			if (sandboxImageDataUrl) {
+				return (
+					<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+						<img alt={fileName || "Image"}
+							className="max-w-full max-h-full object-contain"
+							src={sandboxImageDataUrl}
+						/>
+					</div>
+				);
+			}
+			// Fallback if sandbox image failed to load
+			return (
+				<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+					<div className="flex flex-col items-center gap-2">
+						<FileImage className="h-12 w-12 text-gray-400" />
+						<p className="text-sm text-gray-600">Unable to load image</p>
+					</div>
+				</div>
+			);
+		}
+
+		// Regular storage images (with URL)
+		if (resourceLoading) {
+			return (
+				<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+					<div className="flex flex-col items-center gap-2">
+						<Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+						<p className="text-sm text-gray-600">Loading image...</p>
+					</div>
+				</div>
+			);
+		}
 		if (resource?.url) {
 			return (
 				<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
-					<img alt="Resource"
+					<img alt={fileName || "Image"}
 						className="max-w-full max-h-full object-contain"
 						src={resource.url}
 					/>

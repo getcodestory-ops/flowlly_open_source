@@ -482,6 +482,115 @@ export const getInlineDocument = async({
 	}
 };
 
+/**
+ * Fetch sandbox image as a data URL
+ * Uses native fetch with Accept header to request raw binary
+ */
+export const getSandboxImageAsDataUrl = async({
+	session,
+	projectId,
+	sandboxId,
+	fileName,
+}: {
+	session: Session;
+	projectId: string;
+	sandboxId: string;
+	fileName: string;
+}): Promise<string | null> => {
+	const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/file/view/${projectId}/${sandboxId}`;
+	const params = new URLSearchParams();
+	params.append("is_sandbox_file", "true");
+	params.append("file_name", fileName);
+	const fullUrl = `${baseUrl}?${params.toString()}`;
+
+	// Get MIME type from file extension
+	const ext = fileName.split(".").pop()?.toLowerCase() || "png";
+	const mimeTypes: Record<string, string> = {
+		png: "image/png",
+		jpg: "image/jpeg",
+		jpeg: "image/jpeg",
+		gif: "image/gif",
+		webp: "image/webp",
+		ico: "image/x-icon",
+		bmp: "image/bmp",
+	};
+	const mimeType = mimeTypes[ext] || "image/png";
+
+	try {
+		// Use native fetch with Accept header to request raw binary
+		const response = await fetch(fullUrl, {
+			method: "GET",
+			headers: {
+				"Authorization": `Bearer ${session.access_token}`,
+				"Accept": `${mimeType}, application/octet-stream, */*`,
+			},
+		});
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const contentType = response.headers.get("content-type") || "";
+
+		// If response is JSON, try to extract content
+		if (contentType.includes("application/json")) {
+			const data = await response.json();
+			
+			// If response is already a data URL, return it directly
+			if (typeof data === "string" && data.startsWith("data:")) {
+				return data;
+			}
+
+			// If response is a base64 string
+			if (typeof data === "string" && isBase64(data)) {
+				return `data:${mimeType};base64,${data}`;
+			}
+
+			// If response is an object with content field
+			if (data && typeof data === "object") {
+				const content = data.content || data.data || data.base64;
+				if (typeof content === "string") {
+					if (content.startsWith("data:")) {
+						return content;
+					}
+					if (isBase64(content)) {
+						return `data:${mimeType};base64,${content}`;
+					}
+				}
+				// Check if there's a URL in the response
+				if (data.url) {
+					return data.url;
+				}
+			}
+
+			console.error("Sandbox image JSON response format not supported");
+			return null;
+		}
+
+		// Response is raw binary - convert to data URL
+		const blob = await response.blob();
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onloadend = () => resolve(reader.result as string);
+			reader.onerror = reject;
+			reader.readAsDataURL(blob);
+		});
+	} catch (error) {
+		console.error("Error getting sandbox image:", error);
+		return null;
+	}
+};
+
+// Helper to check if a string looks like valid base64
+function isBase64(str: string): boolean {
+	if (!str || str.length < 20) return false;
+	// Base64 should only contain these characters and possibly = padding
+	const base64Regex = /^[A-Za-z0-9+/]+=*$/;
+	// Check first 100 chars to avoid processing huge strings
+	const sample = str.substring(0, 100).replace(/\s/g, "");
+	return base64Regex.test(sample);
+}
+
 // WOPI Editor Response type
 export type WopiEditorResponse = {
 	editor_url: string;
