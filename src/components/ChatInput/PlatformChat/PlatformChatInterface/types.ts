@@ -51,6 +51,16 @@ export const MODELS: ModelType[] = [
 		contextSize: "large",
 	},
 	{
+		id: "moonshotai/kimi-k2.5",
+		name: "Flowlly",
+		speed: 4,
+		performance: 5,
+		cost: "high",
+		description: "In house model from Flowlly.",
+		bestFor: "Highly complex tasks requiring maximum intelligence",
+		contextSize: "large",
+	},
+	{
 		id: "moonshotai/kimi-k2:free",
 		name: "moonshotai/kimi-k2:free",
 		speed: 4,

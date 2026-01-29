@@ -31,6 +31,7 @@ const MAIN_MODEL_IDS = [
 	"gemini-3-flash-preview", 
 	"claude-opus-4.5",
 	"z-ai/glm-4.7",
+	"moonshotai/kimi-k2.5",
 	"gpt-5",
 ];
 
@@ -47,6 +48,9 @@ const getProviderLogo = (modelId: string): string => {
 	}
 	if (modelId.includes("z-ai") || modelId.includes("glm")) {
 		return "/providerLogos/zai.svg";
+	}
+	if (modelId.includes("moonshotai/kimi-k2.5")) {
+		return "/providerLogos/flowlly.svg";
 	}
 	if (modelId.includes("moonshotai") || modelId.includes("kimi")) {
 		return "/providerLogos/moonshot.svg";
