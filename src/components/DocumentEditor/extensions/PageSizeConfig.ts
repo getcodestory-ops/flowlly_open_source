@@ -81,7 +81,7 @@ export const isPagedView = (pageSizeId: PageSizeType): boolean => {
 };
 
 // Default page size
-export const DEFAULT_PAGE_SIZE: PageSizeType = "letter";
+export const DEFAULT_PAGE_SIZE: PageSizeType = "none";
 
 // Zoom level configuration
 export type ZoomLevel = 50 | 75 | 80 | 90 | 100 | 125 | 150;
