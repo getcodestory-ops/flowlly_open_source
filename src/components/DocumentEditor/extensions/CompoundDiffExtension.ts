@@ -32,9 +32,9 @@ declare module "@tiptap/core" {
 export const CompoundDiffExtension = Node.create<CompoundDiffOptions>({
 	name: "compoundDiff",
 
-	group: "block",
+	group: "inline",
 
-	inline: false,
+	inline: true,
 
 	atom: true,
 

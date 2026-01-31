@@ -199,9 +199,11 @@ const EditorBubbleMenu: React.FC<BubbleMenuProps> = ({ editor, onCreateComment }
 
 		setIsLoading(true);
 		try {
-			// Get the selected text
+			// Store the selection positions and text BEFORE the async call
 			const { selection } = editor.state;
-			const selectedText = editor.state.doc.textBetween(selection.from, selection.to);
+			const selectionFrom = selection.from;
+			const selectionTo = selection.to;
+			const selectedText = editor.state.doc.textBetween(selectionFrom, selectionTo);
 
 			const response = await getAIDocumentLineEdit(
 				session,
@@ -214,22 +216,24 @@ const EditorBubbleMenu: React.FC<BubbleMenuProps> = ({ editor, onCreateComment }
 				const diffGroupId = `diff-${Date.now()}-${Math.random().toString(36)
 					.substring(2, 11)}`;
 
-				// Delete the selected text and insert a compound diff
+				// Replace the selected text with the compound diff node
 				editor.chain()
 					.focus()
-					.setTextSelection({ from: selection.from, to: selection.to })
-					.deleteSelection()
-					.insertCompoundDiff({
-						originalContent: selectedText,
-						revisedContent: response.data.updated_content,
-						diffGroup: diffGroupId,
+					.setTextSelection({ from: selectionFrom, to: selectionTo })
+					.insertContent({
+						type: "compoundDiff",
+						attrs: {
+							originalContent: selectedText,
+							revisedContent: response.data.updated_content,
+							diffGroup: diffGroupId,
+						},
 					})
 					.run();
 				
 				setUserComments("");
 				setShowRevisionInput(false);
-				// Clear the selection to hide the bubble menu after revision submission
-				editor.commands.setTextSelection(selection.from);
+				// Move cursor after the inserted node
+				editor.commands.setTextSelection(selectionFrom + 1);
 			}
 		} catch (error) {
 			console.error("Error getting AI revision:", error);
