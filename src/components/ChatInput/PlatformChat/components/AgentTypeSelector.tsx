@@ -12,6 +12,8 @@ interface AgentTypeSelectorProps {
 	selectedAgentType: "agent" | "chat";
 	onAgentTypeChange: (agentType: "agent" | "chat") => void;
 	className?: string;
+	isLocked?: boolean;
+	lockReason?: string;
 }
 
 const AGENT_TYPES = [
@@ -53,6 +55,8 @@ const AGENT_TYPES = [
 export default function AgentTypeSelector({ 
 	onAgentTypeChange,
 	selectedAgentType, 
+	isLocked = false,
+	lockReason = "Mode is locked once a chat starts.",
 }: AgentTypeSelectorProps): JSX.Element {
 	return (
 		<TooltipProvider delayDuration={200}>
@@ -60,39 +64,48 @@ export default function AgentTypeSelector({
 				{AGENT_TYPES.map((type) => {
 					const TypeIcon = type.icon;
 					const isSelected = type.id === selectedAgentType;
+					const isDisabled = isLocked;
 					
 					return (
 						<Tooltip key={type.id}>
 							<TooltipTrigger asChild>
-								<button
-									className={cn(
-										"relative flex items-center gap-2 px-3 rounded-md transition-all duration-200 text-xs font-medium",
-										isSelected
-											? `${type.bgColor} ${type.textColor} shadow-sm`
-											: "text-slate-600 hover:text-slate-900 hover:bg-white",
-									)}
-									onClick={() => onAgentTypeChange(type.id as "agent" | "chat")}
-								>
-									<div
+								<span className="inline-flex">
+									<button
 										className={cn(
-											"flex items-center justify-center rounded-md transition-all",
+											"relative flex items-center gap-2 px-3 rounded-md transition-all duration-200 text-xs font-medium",
 											isSelected
-												? `bg-gradient-to-r ${type.gradient} p-1`
-												: "",
+												? `${type.bgColor} ${type.textColor} shadow-sm`
+												: "text-slate-600 hover:text-slate-900 hover:bg-white",
+											isDisabled && "opacity-60 cursor-not-allowed hover:bg-transparent hover:text-slate-600",
 										)}
+										disabled={isDisabled}
+										onClick={
+											isDisabled
+												? undefined
+												: () => onAgentTypeChange(type.id as "agent" | "chat")
+										}
 									>
-										<TypeIcon
+										<div
 											className={cn(
-												"h-3.5 w-3.5 transition-colors",
-												isSelected ? "text-white" : "",
+												"flex items-center justify-center rounded-md transition-all",
+												isSelected
+													? `bg-gradient-to-r ${type.gradient} p-1`
+													: "",
 											)}
-										/>
-									</div>
-									<span>{type.name}</span>
-									{isSelected && (
-										<div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-gradient-to-r ${type.gradient}" />
-									)}
-								</button>
+										>
+											<TypeIcon
+												className={cn(
+													"h-3.5 w-3.5 transition-colors",
+													isSelected ? "text-white" : "",
+												)}
+											/>
+										</div>
+										<span>{type.name}</span>
+										{isSelected && (
+											<div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-gradient-to-r ${type.gradient}" />
+										)}
+									</button>
+								</span>
 							</TooltipTrigger>
 							<TooltipContent
 								className="w-72 p-0  bg-white border border-slate-200 shadow-lg"
@@ -100,6 +113,11 @@ export default function AgentTypeSelector({
 								sideOffset={8}
 							>
 								<div className="p-4 space-y-3">
+									{isLocked && (
+										<p className="text-xs font-medium text-amber-600">
+											{lockReason}
+										</p>
+									)}
 									<div className="flex items-start gap-3">
 										<div
 											className={cn(

@@ -647,6 +647,7 @@ export default function EmptyChatInterface({
 								<AgentTypeSelector 
 									onAgentTypeChange={setPreferredAgentType}
 									selectedAgentType={preferredAgentType}
+									isLocked={false}
 								/>
 								<ModelSelector 
 									onModelChange={setPreferredModel}
