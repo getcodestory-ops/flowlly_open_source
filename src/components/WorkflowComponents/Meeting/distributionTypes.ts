@@ -2,7 +2,7 @@
  * Distribution Settings Types - Matches backend models
  */
 
-export type TemplateId = "notion" | "executive" | "detailed" | "minimal";
+export type TemplateId = "notion" | "executive" | "detailed" | "minimal" | "custom";
 
 /**
  * Full distribution settings from backend (snake_case to match API)
@@ -14,6 +14,7 @@ export interface DistributionSettings {
 	template_id: TemplateId;
 	subject: string;
 	selected_recipients?: string[];
+	custom_prompt?: string | null;
 	created_at?: string;
 	updated_at?: string;
 	created_by?: string;
@@ -28,6 +29,7 @@ export interface CreateDistributionSettingsRequest {
 	template_id: TemplateId;
 	subject: string;
 	selected_recipients?: string[];
+	custom_prompt?: string | null;
 }
 
 /**
@@ -38,4 +40,5 @@ export interface UpdateDistributionSettingsRequest {
 	template_id?: TemplateId;
 	subject?: string;
 	selected_recipients?: string[];
+	custom_prompt?: string | null;
 }

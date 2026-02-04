@@ -20,8 +20,11 @@ export const getDistributionSettings = async (
 	
 	try {
 		const response = await axios.get(
-			`${BASE_URL}/distribution-settings/meeting/${projectAccessId}/${encodeURIComponent(meetingName)}`,
+			`${BASE_URL}/distribution-settings/meeting/${projectAccessId}`,
 			{
+				params: {
+					meeting_name: meetingName,
+				},
 				headers: {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${session.access_token}`,

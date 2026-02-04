@@ -33,6 +33,7 @@ interface OriginalSettings {
 	template: string;
 	subject: string;
 	recipients: Recipient[];
+	customPrompt: string;
 }
 
 // Email validation
@@ -69,6 +70,7 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 	const [newEmail, setNewEmail] = useState("");
 	const [emailError, setEmailError] = useState<string | null>(null);
 	const [emailSubject, setEmailSubject] = useState("Meeting Minutes - " + SAMPLE_TEMPLATE_DATA.DATE);
+	const [customPrompt, setCustomPrompt] = useState("");
 	const [showSuggestions, setShowSuggestions] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 	
@@ -84,6 +86,7 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 		template: "notion",
 		subject: "Meeting Minutes - " + SAMPLE_TEMPLATE_DATA.DATE,
 		recipients: [],
+		customPrompt: "",
 	});
 	const isInitialized = useRef(false);
 
@@ -94,9 +97,10 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 		const templateChanged = selectedTemplate !== originalSettings.template;
 		const subjectChanged = emailSubject !== originalSettings.subject;
 		const recipientsChanged = !areRecipientsEqual(recipients, originalSettings.recipients);
+		const customPromptChanged = customPrompt !== originalSettings.customPrompt;
 		
-		return templateChanged || subjectChanged || recipientsChanged;
-	}, [selectedTemplate, emailSubject, recipients, originalSettings]);
+		return templateChanged || subjectChanged || recipientsChanged || customPromptChanged;
+	}, [selectedTemplate, emailSubject, recipients, customPrompt, originalSettings]);
 
 	// Fetch existing settings from backend
 	useEffect(() => {
@@ -111,6 +115,11 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 					setSelectedTemplate(settings.template_id);
 					setEmailSubject(settings.subject);
 					
+					// Load custom prompt if available
+					if (settings.custom_prompt) {
+						setCustomPrompt(settings.custom_prompt);
+					}
+					
 					// Apply selected_recipients to recipients after they're loaded
 					if (settings.selected_recipients && settings.selected_recipients.length > 0) {
 						setRecipients(prev => prev.map(r => ({
@@ -124,6 +133,7 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 						...prev,
 						template: settings.template_id,
 						subject: settings.subject,
+						customPrompt: settings.custom_prompt || "",
 					}));
 				}
 			} catch (error) {
@@ -151,6 +161,7 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 					template: "notion",
 					subject: emailSubject,
 					recipients: parsedRecipients,
+					customPrompt: "",
 				});
 				isInitialized.current = true;
 			}
@@ -160,6 +171,7 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 				template: "notion",
 				subject: emailSubject,
 				recipients: [],
+				customPrompt: "",
 			});
 			isInitialized.current = true;
 		}
@@ -248,6 +260,8 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 					subject: emailSubject,
 					// Send explicit list if any removed or unselected, empty means "all"
 					selected_recipients: shouldSendAll ? [] : selectedEmails,
+					// Only include custom_prompt if using custom template
+					custom_prompt: selectedTemplate === "custom" ? customPrompt : null,
 				};
 				
 				const updated = await updateDistributionSettings(session, existingSettingsId, updates);
@@ -271,6 +285,8 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 					subject: emailSubject,
 					// Send explicit list if any removed or unselected, empty means "all"
 					selected_recipients: shouldSendAll ? [] : selectedEmails,
+					// Only include custom_prompt if using custom template
+					custom_prompt: selectedTemplate === "custom" ? customPrompt : null,
 				};
 				
 				const created = await createDistributionSettings(session, createRequest);
@@ -283,6 +299,7 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 				template: selectedTemplate,
 				subject: emailSubject,
 				recipients: [...recipients],
+				customPrompt: selectedTemplate === "custom" ? customPrompt : "",
 			});
 			
 			toast({
@@ -499,6 +516,8 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 				<TemplateSelector
 					selectedTemplate={selectedTemplate}
 					onSelect={setSelectedTemplate}
+					customPrompt={customPrompt}
+					onCustomPromptChange={setCustomPrompt}
 				/>
 			</div>
 

@@ -459,6 +459,12 @@ export const EMAIL_TEMPLATES: EmailTemplate[] = [
 		description: "Simple, elegant format",
 		html: MINIMAL_TEMPLATE 
 	},
+	{ 
+		id: "custom", 
+		name: "Custom", 
+		description: "Use your own prompt to generate minutes",
+		html: "" 
+	},
 ];
 
 // Sample data for preview

@@ -11,11 +11,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 interface TemplateSelectorProps {
 	selectedTemplate: string;
 	onSelect: (templateId: string) => void;
+	customPrompt?: string;
+	onCustomPromptChange?: (prompt: string) => void;
 }
 
 export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 	selectedTemplate,
 	onSelect,
+	customPrompt = "",
+	onCustomPromptChange,
 }) => {
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
 	
@@ -114,25 +118,62 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 			>
 				{templatePreviews.map((template) => {
 					const isSelected = selectedTemplate === template.id;
+					const isCustomTemplate = template.id === "custom";
+					
 					return (
 						<div
 							key={template.id}
-							onClick={() => onSelect(template.id)}
+							onClick={() => !isCustomTemplate && onSelect(template.id)}
 							className={`
-								flex-shrink-0 w-full rounded-lg overflow-hidden cursor-pointer transition-all snap-center
+								flex-shrink-0 w-full rounded-lg overflow-hidden transition-all snap-center
+								${!isCustomTemplate ? "cursor-pointer" : ""}
 							`}
 						>
 							<ScrollArea className="h-[80vh] overflow-hidden bg-white relative">
-								<iframe
-									srcDoc={template.previewHtml}
-									className="w-full h-[1000vh] border-0 pointer-events-none"
-									title={`${template.name} Preview`}
-									style={{ 
-										transform: "scale(0.9)", 
-										transformOrigin: "top left", 
+								{isCustomTemplate ? (
+									// Custom template - show editable prompt area
+									<div className="p-6 h-full flex flex-col">
+										<div className="text-center mb-6">
+											<h2 className="text-xl font-semibold text-gray-900 mb-2">Custom Template</h2>
+											<p className="text-sm text-gray-500">
+												Write your own instructions to customize how meeting minutes are generated
+											</p>
+										</div>
 										
-									}}
-								/>
+										<div className="flex-1 flex flex-col">
+											<textarea
+												value={customPrompt}
+												onChange={(e) => onCustomPromptChange?.(e.target.value)}
+												onClick={(e) => e.stopPropagation()}
+												placeholder="Describe how you want your meeting minutes formatted. For example:
+
+• Focus on action items and decisions made
+• Use bullet points for easy scanning
+• Include a brief executive summary at the top
+• Highlight any blockers or risks mentioned
+• Group discussions by topic
+• List attendees and their contributions
+• Add timestamps for key moments"
+												className="flex-1 min-h-[200px] w-full px-4 py-3 text-sm border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+											/>
+											<p className="mt-2 text-xs text-gray-500">
+												Your instructions will guide the AI in generating the meeting minutes format and content emphasis.
+											</p>
+										</div>
+									</div>
+								) : (
+									// Regular template - show preview iframe
+									<iframe
+										srcDoc={template.previewHtml}
+										className="w-full h-[1000vh] border-0 pointer-events-none"
+										title={`${template.name} Preview`}
+										style={{ 
+											transform: "scale(0.9)", 
+											transformOrigin: "top left", 
+										}}
+									/>
+								)}
+								
 								{/* Selection checkbox - always visible */}
 								<button
 									onClick={(e) => {
