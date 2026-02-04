@@ -126,7 +126,10 @@ export function usePlatformChat(
 				chat_details: messageContent,
 				relation_id: folderId,
 				relation_type: chatTarget,
-				metadata: chatTypeTags.length > 0 ? { tags: chatTypeTags } : undefined,
+				metadata: {
+					...(chatTypeTags.length > 0 ? { tags: chatTypeTags } : {}),
+					agent_type: selectedAgentType,
+				},
 			});
 
 			appendChatEntity(response);

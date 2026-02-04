@@ -13,7 +13,6 @@ interface AgentTypeSelectorProps {
 	onAgentTypeChange: (agentType: "agent" | "chat") => void;
 	className?: string;
 	isLocked?: boolean;
-	lockReason?: string;
 }
 
 const AGENT_TYPES = [
@@ -56,15 +55,18 @@ export default function AgentTypeSelector({
 	onAgentTypeChange,
 	selectedAgentType, 
 	isLocked = false,
-	lockReason = "Mode is locked once a chat starts.",
 }: AgentTypeSelectorProps): JSX.Element {
+	// When locked, only show the selected type
+	const typesToShow = isLocked 
+		? AGENT_TYPES.filter((type) => type.id === selectedAgentType)
+		: AGENT_TYPES;
+
 	return (
 		<TooltipProvider delayDuration={200}>
 			<div className="inline-flex rounded-md border border-slate-200 bg-slate-50 p-1 shadow-sm">
-				{AGENT_TYPES.map((type) => {
+				{typesToShow.map((type) => {
 					const TypeIcon = type.icon;
 					const isSelected = type.id === selectedAgentType;
-					const isDisabled = isLocked;
 					
 					return (
 						<Tooltip key={type.id}>
@@ -76,11 +78,9 @@ export default function AgentTypeSelector({
 											isSelected
 												? `${type.bgColor} ${type.textColor} shadow-sm`
 												: "text-slate-600 hover:text-slate-900 hover:bg-white",
-											isDisabled && "opacity-60 cursor-not-allowed hover:bg-transparent hover:text-slate-600",
 										)}
-										disabled={isDisabled}
 										onClick={
-											isDisabled
+											isLocked
 												? undefined
 												: () => onAgentTypeChange(type.id as "agent" | "chat")
 										}
@@ -113,11 +113,6 @@ export default function AgentTypeSelector({
 								sideOffset={8}
 							>
 								<div className="p-4 space-y-3">
-									{isLocked && (
-										<p className="text-xs font-medium text-amber-600">
-											{lockReason}
-										</p>
-									)}
 									<div className="flex items-start gap-3">
 										<div
 											className={cn(

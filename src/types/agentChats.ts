@@ -91,6 +91,7 @@ export interface ChatEntityMetadata {
     parent: string;
   }[];
   notify_email?: boolean;
+  agent_type?: "agent" | "chat";
 }
 
 export interface CreateAgentChatEntity {

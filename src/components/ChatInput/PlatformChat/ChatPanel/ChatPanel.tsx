@@ -11,7 +11,7 @@ import {
 	X,
 	Check,
 } from "lucide-react";
-import { useStore } from "@/utils/store";
+import { useStore, useViewStore } from "@/utils/store";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getPlatformChatEntities, getAgentChats, updateChatName, updateChatEntityMetadata } from "@/api/agentRoutes";
 import { AgentChatEntity } from "@/types/agentChats";
@@ -36,6 +36,7 @@ export default function ChatPanel({
 	onCreateNewChat,
 }: ChatPanelProps) {
 	const { setIsWaitingForResponse, resetForNewChat, clearChatContext, setChatDirectiveType } = useChatStore();
+	const { setPreferredAgentType } = useViewStore();
 	const { toast } = useToast();
 	const router = useRouter();
 	const [editingChatId, setEditingChatId] = useState<string | null>(null);
@@ -233,6 +234,12 @@ export default function ChatPanel({
 		// Clear context and reset chat directive type when switching chats
 		clearChatContext();
 		setChatDirectiveType("chat");
+		
+		// Restore the agent type from the chat entity's metadata
+		const savedAgentType = chatEntity.metadata?.agent_type;
+		if (savedAgentType === "agent" || savedAgentType === "chat") {
+			setPreferredAgentType(savedAgentType);
+		}
 		
 		// Set app view to AI Chat when selecting a chat
 		setAppView("agent");
