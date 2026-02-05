@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Settings, FileText, Crown, UserCheck, AlertCircle, Users, ArrowLeft } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Settings, FileText, Crown, UserCheck, AlertCircle, Users, ArrowLeft, Mail } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,6 +18,7 @@ import { getProjectEvents } from "@/api/taskQueue";
 import type { ProjectEvents } from "@/components/WorkflowComponents/types";
 import LoaderAnimation from "@/components/Animations/LoaderAnimation";
 import { useRouter } from "next/navigation";
+import { MicrosoftEventDistributionSetup } from "@/components/Calendar/MicrosoftEventDistributionSetup";
 
 interface MeetingSettingsProps {}
 
@@ -159,6 +160,14 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = () => {
 
 	const roleBadge = getRoleBadge();
 
+	// Extract participant emails for distribution setup
+	const participantEmails = useMemo(() => {
+		if (!eventParticipants) return [];
+		return eventParticipants
+			.filter((p) => p.participant_metadata?.metadata?.email)
+			.map((p) => p.participant_metadata.metadata.email as string);
+	}, [eventParticipants]);
+
 	return (
 		<div className="h-full overflow-auto">
 			<div className="p-6 h-full ">
@@ -179,7 +188,7 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = () => {
 									</Button>
 								</Tooltipped>
 							</div>
-							<TabsList className="grid grid-cols-3 h-11">
+							<TabsList className="grid grid-cols-4 h-11">
 								<TabsTrigger className="flex items-center gap-2 text-sm font-medium" value="all-meetings">
 									<Users className="h-4 w-4" />
 								Meetings
@@ -188,11 +197,14 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = () => {
 									<FileText className="h-4 w-4" />
 								Meeting Template
 								</TabsTrigger>
+								<TabsTrigger className="flex items-center gap-2 text-sm font-medium" value="distribution">
+									<Mail className="h-4 w-4" />
+								Distribution Setup
+								</TabsTrigger>
 								<TabsTrigger className="flex items-center gap-2 text-sm font-medium" value="meeting-settings">
 									<Settings className="h-4 w-4" />
 								Meeting Setup
 								</TabsTrigger>
-	
 							</TabsList>
 						</div>
 						{roleBadge && (
@@ -206,6 +218,26 @@ export const MeetingSettings: React.FC<MeetingSettingsProps> = () => {
 						<div className="h-full">
 							<MeetingTemplates />
 						</div>
+					</TabsContent>
+					<TabsContent className="flex-1 overflow-hidden" value="distribution">
+						{currentGraph ? (
+							<div className="h-full border rounded-lg overflow-hidden">
+								<MicrosoftEventDistributionSetup
+									meetingName={currentGraph.name}
+									initialEmails={participantEmails}
+								/>
+							</div>
+						) : (
+							<div className="text-center py-12 px-6">
+								<div className="mb-4">
+									<div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mx-auto">
+										<Mail className="h-6 w-6 text-gray-400" />
+									</div>
+								</div>
+								<h3 className="text-sm font-medium text-gray-900 mb-2">No meeting selected</h3>
+								<p className="text-xs text-gray-500 mb-4">Please select a meeting first to configure distribution settings</p>
+							</div>
+						)}
 					</TabsContent>
 					<TabsContent className="flex-1" value="meeting-settings">
 						<div className="space-y-8">

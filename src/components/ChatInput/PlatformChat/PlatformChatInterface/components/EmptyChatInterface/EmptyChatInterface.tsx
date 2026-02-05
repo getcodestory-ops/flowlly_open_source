@@ -2,7 +2,7 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, Users, ArrowLeft, Sparkles, Plus, X, Scale, Calendar, Wand2, Upload } from "lucide-react";
+import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, Users, ArrowLeft, Sparkles, Plus, X, Scale, Calendar, Wand2, Upload, Info } from "lucide-react";
 import AtSelectorComponent from "../../../components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
 import { useViewStore } from "@/utils/store";
@@ -672,6 +672,18 @@ export default function EmptyChatInterface({
 								)}
 							</Button>
 						</div>
+						{/* Chat mode limitation notice */}
+						{preferredAgentType === "chat" && (
+							<div className="mx-4 mb-3 flex items-start gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-amber-800">
+								<Info className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-600" />
+								<p className="text-xs leading-relaxed">
+									<span className="font-medium">Chat mode</span> is optimized for quick Q&A. For document generation, complex formatting, research, or working with files, switch to <button 
+										onClick={() => setPreferredAgentType("agent")}
+										className="font-semibold text-purple-700 hover:text-purple-900 underline underline-offset-2"
+									>Agent mode</button>.
+								</p>
+							</div>
+						)}
 					</div>
 				</div>
 

@@ -20,9 +20,10 @@ export const getDistributionSettings = async (
 	
 	try {
 		const response = await axios.get(
-			`${BASE_URL}/distribution-settings/meeting/${projectAccessId}`,
+			`${BASE_URL}/distribution-settings/meeting`,
 			{
 				params: {
+					project_access_id: projectAccessId,
 					meeting_name: meetingName,
 				},
 				headers: {
