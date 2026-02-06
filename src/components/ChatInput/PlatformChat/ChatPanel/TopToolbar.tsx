@@ -188,7 +188,6 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 									) : (
 										<>
 											<Pencil className="h-4 w-4" />
-											<span className="text-xs font-medium">Edit</span>
 										</>
 									)}
 									{hasUnsavedInEdit && (
@@ -231,7 +230,6 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 								) : (
 									<>
 										<Paperclip className="h-4 w-4" />
-										<span className="text-xs font-medium">+ Context</span>
 									</>
 								)}
 							</Button>

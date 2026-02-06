@@ -6,6 +6,7 @@ import { useStorageTextFileSave } from "../DocumentEditor/useStorageTextSave";
 import { useSandboxFileSave } from "../DocumentEditor/useSandboxFileSave";
 import LoaderAnimation from "../Animations/LoaderAnimation";
 import CodeEditor from "../DocumentEditor/CodeEditor";
+import ExcalidrawEditor from "../DocumentEditor/ExcalidrawEditor";
 
 export function ResourceTextViewer({ 
 	resource_id, 
@@ -68,6 +69,10 @@ export function ResourceTextViewer({
 		// Exclude .md so it renders in TipTap ContentEditor
 		return [".py", ".js", ".ts", ".tsx", ".css", ".json", ".jsonl", ".txt"].some((ext) => lower.endsWith(ext));
 	};
+	const isExcalidrawFile = (name?: string) => {
+		const lower = (name || "").toLowerCase();
+		return lower.endsWith(".excalidraw");
+	};
 
 	return (
 		<div className="h-full ">
@@ -77,7 +82,14 @@ export function ResourceTextViewer({
 				</div>
 			) : content !== null ? (
 				<div className="h-full">
-					{isCodeFile(documentName) ? (
+					{isExcalidrawFile(documentName) ? (
+						<ExcalidrawEditor
+							content={typeof content === "string" ? content : String(content)}
+							documentName={documentName}
+							isSaving={isPending}
+							onSave={(updated) => onSubmit(updated)}
+						/>
+					) : isCodeFile(documentName) ? (
 						<CodeEditor
 							content={typeof content === "string" ? content : String(content)}
 							documentName={documentName}

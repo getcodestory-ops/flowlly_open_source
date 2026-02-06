@@ -43,6 +43,8 @@ export const csvExtensions = ["csv"];
 
 export const gltfExtensions = ["gltf", "glb"];
 
+export const excalidrawExtensions = ["excalidraw"];
+
 export const inlineViewableExtensions = [
 	"pdf",
 	"oga",
@@ -81,6 +83,7 @@ export const inlineViewableExtensions = [
 	"tsx",
 	"gltf",
 	"glb",
+	"excalidraw",
 ];
 
 
