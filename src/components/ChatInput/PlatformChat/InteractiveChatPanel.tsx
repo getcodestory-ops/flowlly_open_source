@@ -34,7 +34,7 @@ const getSandboxId = (tab: any): string => {
 };
 
 const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : React.ReactNode => {
-	const { tabs, activeTabId, setActiveTab, removeTab, clearAllTabs, addTab, chatLayoutMode, setChatLayoutMode } = useChatStore();
+	const { tabs, activeTabId, setActiveTab, removeTab, clearAllTabs, addTab, chatLayoutMode, setChatLayoutMode, selectedContexts, setSelectedContexts } = useChatStore();
 	const [viewModes, setViewModes] = useState<{[tabId: string]: "original" | "text"}>({});
 	const [editingTabId, setEditingTabId] = useState<string | null>(null);
 	const [editedName, setEditedName] = useState<string>("");
@@ -49,11 +49,40 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 	const [showRightArrow, setShowRightArrow] = useState(false);
 	const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 	const tabAreaRef = React.useRef<HTMLDivElement>(null);
-	const { session, activeProject, unsavedChanges, setUnsavedChanges, clearUnsavedChanges, clearAllUnsavedChanges } = useStore();
+	const { session, activeProject, activeChatEntity, unsavedChanges, setUnsavedChanges, clearUnsavedChanges, clearAllUnsavedChanges } = useStore();
 	const { toast } = useToast();
 
 	const activeTab = tabs.find((tab) => tab.id === activeTabId);
 	const [isDownloading, setIsDownloading] = useState(false);
+
+	// Context attachment logic for the active tab
+	const currentChatId = activeChatEntity?.id || "untitled";
+	const currentContexts = selectedContexts[currentChatId] || [];
+	const isActiveTabInContext = !!(
+		activeTab &&
+		activeTab.resourceId &&
+		(activeTab.type === "sources" || activeTab.type === "sandbox") &&
+		currentContexts.some((ctx) => ctx.id === activeTab.resourceId)
+	);
+	const canAddActiveTabAsContext = !!(
+		activeTab &&
+		activeTab.resourceId &&
+		(activeTab.type === "sources" || activeTab.type === "sandbox")
+	);
+
+	const handleToggleContext = useCallback(() => {
+		if (!activeTab || !activeTab.resourceId) return;
+		const fileId = activeTab.resourceId;
+		const fileName = activeTab.filename || activeTab.title || "file";
+		const extension = getFileExtension(fileName);
+
+		const isAlreadyAdded = currentContexts.some((ctx) => ctx.id === fileId);
+		if (isAlreadyAdded) {
+			setSelectedContexts(currentChatId, currentContexts.filter((ctx) => ctx.id !== fileId));
+		} else {
+			setSelectedContexts(currentChatId, [...currentContexts, { id: fileId, name: fileName, extension }]);
+		}
+	}, [activeTab, currentChatId, currentContexts, setSelectedContexts]);
 
 	const handlePrintActiveHtml = async(): Promise<void> => {
 		try {
@@ -593,11 +622,13 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 						</div>
 					</div>
 					<TopToolbar
+						canAddContext={canAddActiveTabAsContext}
 						canDownload={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox") && !isDownloading}
 						canPrint={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox") && htmlExtensions.includes(getFileExtension(activeTab.filename))}
 						canRename={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox")}
 						canSaveAs={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox")}
 						hasUnsavedInEdit={!!(activeTab && unsavedChanges[activeTab.resourceId || activeTab.id] && (activeTab.type === "sources" || activeTab.type === "sandbox") && getCurrentViewMode(activeTab.id) === "text")}
+						isAddedAsContext={isActiveTabInContext}
 						isDownloading={isDownloading}
 						isEditMode={!!activeTab && getCurrentViewMode(activeTab.id) === "text"}
 						onAddFolder={handleAddFolderSelector}
@@ -617,6 +648,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 						onPrint={handlePrintActiveHtml}
 						onRename={() => activeTab && handleFileNameDoubleClick(activeTab)}
 						onSaveAs={() => setShowSaveAsDialog(true)}
+						onToggleContext={handleToggleContext}
 						onToggleMode={() => activeTab && handleModeSwitch(activeTab.id)}
 					/>
 				</div>

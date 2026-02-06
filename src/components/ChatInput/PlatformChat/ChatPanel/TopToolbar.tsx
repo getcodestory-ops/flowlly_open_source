@@ -12,7 +12,9 @@ import {
 	MoreHorizontal,
 	Copy,
 	PanelLeftClose,
-	PanelLeft
+	PanelLeft,
+	Paperclip,
+	Check,
 } from "lucide-react";
 import {
 	DropdownMenu,
@@ -38,6 +40,10 @@ export interface TopToolbarProps {
   isEditMode: boolean;
   hasUnsavedInEdit: boolean;
   isDownloading?: boolean;
+  /** Whether the current file is already added as chat context */
+  isAddedAsContext?: boolean;
+  /** Whether the "Add to Context" button should be shown */
+  canAddContext?: boolean;
   onRename: () => void;
   onDownload: () => void;
   onSaveAs: () => void;
@@ -45,6 +51,8 @@ export interface TopToolbarProps {
   onAddFolder: () => void;
   onCloseAll: () => void;
   onPrint: () => void;
+  /** Toggle adding/removing the current file from chat context */
+  onToggleContext?: () => void;
 }
 
 // Toolbar button with tooltip
@@ -98,6 +106,8 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 	isEditMode,
 	hasUnsavedInEdit,
 	isDownloading = false,
+	isAddedAsContext = false,
+	canAddContext = false,
 	onRename,
 	onDownload,
 	onSaveAs,
@@ -105,6 +115,7 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 	onAddFolder,
 	onCloseAll,
 	onPrint,
+	onToggleContext,
 }) => {
 	const { chatLayoutMode, setChatLayoutMode } = useChatStore();
 	const isAgentMode = chatLayoutMode === "agent";
@@ -196,6 +207,44 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 				</>
 			)}
 
+			{/* Add to Context toggle */}
+			{canAddContext && onToggleContext && (
+				<TooltipProvider delayDuration={300}>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								className={cn(
+									"h-8 px-2.5 gap-1.5 transition-all duration-200",
+									isAddedAsContext
+										? "bg-green-50 text-green-600 hover:bg-green-100"
+										: "hover:bg-white hover:shadow-sm text-gray-600 hover:text-gray-900"
+								)}
+								onClick={onToggleContext}
+								size="sm"
+								variant="ghost"
+							>
+								{isAddedAsContext ? (
+									<>
+										<Check className="h-4 w-4" />
+										<span className="text-xs font-medium">Context</span>
+									</>
+								) : (
+									<>
+										<Paperclip className="h-4 w-4" />
+										<span className="text-xs font-medium">+ Context</span>
+									</>
+								)}
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent side="bottom" sideOffset={5}>
+							<p className="text-xs">{isAddedAsContext ? "Remove file from chat context" : "Add file as chat context"}</p>
+						</TooltipContent>
+					</Tooltip>
+				</TooltipProvider>
+			)}
+
+			{canAddContext && <div className="w-px h-5 bg-gray-300 mx-1" />}
+
 			{/* Quick actions */}
 			<ToolbarButton
 				disabled={!canDownload || isDownloading}
@@ -240,6 +289,18 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 						<Printer className="h-4 w-4" />
 						<span>Print</span>
 					</DropdownMenuItem>
+					{canAddContext && onToggleContext && (
+						<>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem 
+								className={cn("gap-2 cursor-pointer", isAddedAsContext && "text-green-600 focus:text-green-600")}
+								onClick={onToggleContext}
+							>
+								{isAddedAsContext ? <Check className="h-4 w-4" /> : <Paperclip className="h-4 w-4" />}
+								<span>{isAddedAsContext ? "Remove from Context" : "Add to Context"}</span>
+							</DropdownMenuItem>
+						</>
+					)}
 					<DropdownMenuSeparator />
 					<DropdownMenuItem 
 						className="gap-2 cursor-pointer"
