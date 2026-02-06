@@ -92,6 +92,7 @@ export const fetchFolders = async(
 ): Promise<GetFolderSubFolderProp[]> => {
 	if (!session || !session.access_token || folderId === "root") {
 		return [];
+
 	}
 	const { baseUrl, data } = getUrlInput(
 		session,

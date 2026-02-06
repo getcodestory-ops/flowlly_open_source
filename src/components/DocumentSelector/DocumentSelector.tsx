@@ -117,37 +117,32 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 		}
 	}, [activeProject?.project_id, isProjectWide, setProjectContext]);
 
-	// Initialize root folder
-	useQuery({
-		queryKey: ["initRootFolder", session?.access_token, activeProject?.project_id, isProjectWide],
-		queryFn: async () => {
-			if (!session || !activeProject?.project_id) return Promise.reject("Session or project not available");
-			const data = await fetchFolders(session, activeProject?.project_id, null, isProjectWide);
-			const rootFolder = data.find((folder: GetFolderSubFolderProp) => folder.name === "root");
-			if (rootFolder) {
-				setRootId(rootFolder.id, rootFolder.name);
-				if (!currentFolderStructure) {
-					setCurrentFolderStructure({
-						folderId: "root", folderName: isProjectWide ? "Project Database" : "Personal Database",
-						depth: 0, parent: null,
-					});
-				}
-			}
-			return data;
-		},
-		enabled: !!session && !!activeProject,
-		staleTime: 5 * 60 * 1000,
-	});
-
 	const cachedSubFolders = getSubFoldersForFolder(effectiveFolderId) || [];
 	const cachedFiles = getFilesForFolder(effectiveFolderId) || [];
 
-	// Fetch folders
+	// Fetch folders - handles both root initialization and subfolder navigation
+	// Uses effectiveFolderId in query key for consistency (null becomes "root")
 	const { data: foldersData, isFetching: isFetchingFolders } = useQuery({
-		queryKey: ["folders", session?.access_token, activeProject?.project_id, currentFolderId, isProjectWide],
+		queryKey: ["folders", session?.access_token, activeProject?.project_id, effectiveFolderId, isProjectWide],
 		queryFn: async () => {
 			if (!session || !activeProject?.project_id) return Promise.reject("Session or project not available");
+			// Use currentFolderId (null for root) for the API call
 			const data = await fetchFolders(session, activeProject?.project_id, currentFolderId, isProjectWide);
+			
+			// If fetching root (currentFolderId is null), also initialize root folder structure
+			if (currentFolderId === null) {
+				const rootFolder = data.find((folder: GetFolderSubFolderProp) => folder.name === "root");
+				if (rootFolder) {
+					setRootId(rootFolder.id, rootFolder.name);
+					if (!currentFolderStructure) {
+						setCurrentFolderStructure({
+							folderId: "root", folderName: isProjectWide ? "Project Database" : "Personal Database",
+							depth: 0, parent: null,
+						});
+					}
+				}
+			}
+			
 			setSubFolders(effectiveFolderId, data);
 			return data;
 		},
@@ -155,11 +150,12 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
 		staleTime: 5 * 60 * 1000,
 	});
 
-	// Fetch files
+	// Fetch files - uses effectiveFolderId in query key for consistency with folders query
 	const { data: filesData, isFetching: isFetchingFiles } = useQuery({
-		queryKey: ["files", session?.access_token, activeProject?.project_id, currentFolderId, isProjectWide],
+		queryKey: ["files", session?.access_token, activeProject?.project_id, effectiveFolderId, isProjectWide],
 		queryFn: async () => {
 			if (!session || !activeProject?.project_id) return Promise.reject("Session or project not available");
+			// Use currentFolderId (null for root) for the API call
 			const data = await fetchFiles(session, activeProject?.project_id, currentFolderId, isProjectWide);
 			const files: StorageResourceEntity[] = [];
 			data?.forEach((folder: GetFolderFileProp) => {
