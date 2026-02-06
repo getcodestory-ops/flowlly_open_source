@@ -51,6 +51,16 @@ export const MODELS: ModelType[] = [
 		contextSize: "large",
 	},
 	{
+		id: "claude-opus-4.6",
+		name: "Claude Opus 4.6",
+		speed: 4,
+		performance: 5,
+		cost: "high",
+		description: "Best model for working with office work.",
+		bestFor: "Highly complex tasks requiring maximum intelligence",
+		contextSize: "medium",
+	},
+	{
 		id: "moonshotai/kimi-k2.5",
 		name: "Flowlly",
 		speed: 4,
@@ -101,6 +111,16 @@ export const MODELS: ModelType[] = [
 		contextSize: "large",
 	},
 	{
+		id: "gpt-5", 
+		name: "OpenAI GPT-5",
+		speed: 3,
+		performance: 4,
+		cost: "high",
+		description: "Top-tier model for the most demanding tasks",
+		bestFor: "Highly complex tasks requiring maximum intelligence",
+		contextSize: "medium",
+	},
+	{
 		id: "z-ai/glm-4.7",
 		name: "Z-AI GLM 4.7",
 		speed: 1,
@@ -109,6 +129,16 @@ export const MODELS: ModelType[] = [
 		description: "Experimental may make mistakes.",
 		bestFor: "Highly complex tasks requiring maximum intelligence",
 		contextSize: "small",
+	},
+	{ 
+		id: "claude-sonnet-4", 
+		name: "Claude Sonnet 4",
+		speed: 3,
+		performance: 5,
+		cost: "high",
+		description: "Top-tier model for the most demanding tasks",
+		bestFor: "Highly complex tasks requiring maximum intelligence",
+		contextSize: "medium",
 	},
 	{
 		id: "gemini-3-flash-preview",
@@ -119,27 +149,6 @@ export const MODELS: ModelType[] = [
 		description: "Experimental may hallucinates",
 		bestFor: "Highly complex tasks requiring maximum intelligence",
 		contextSize: "large",
-	},
-	{
-		id: "gpt-5", 
-		name: "OpenAI GPT-5",
-		speed: 3,
-		performance: 4,
-		cost: "high",
-		description: "Top-tier model for the most demanding tasks",
-		bestFor: "Highly complex tasks requiring maximum intelligence",
-		contextSize: "medium",
-	},
-
-	{ 
-		id: "claude-sonnet-4", 
-		name: "Claude Sonnet 4",
-		speed: 3,
-		performance: 5,
-		cost: "high",
-		description: "Top-tier model for the most demanding tasks",
-		bestFor: "Highly complex tasks requiring maximum intelligence",
-		contextSize: "medium",
 	},
 	{ 
 		id: "gemini-2.5-pro", 
@@ -171,4 +180,5 @@ export const MODELS: ModelType[] = [
 		bestFor: "Highly complex tasks requiring maximum intelligence",
 		contextSize: "medium",
 	},
+
 ]; 

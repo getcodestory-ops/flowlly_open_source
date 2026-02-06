@@ -29,7 +29,7 @@ const RECOMMENDED_MODEL = "gemini-3-pro-preview";
 const MAIN_MODEL_IDS = [
 	"gemini-3-pro-preview",
 	"gemini-3-flash-preview", 
-	"claude-opus-4.5",
+	"claude-opus-4.6",
 	"z-ai/glm-4.7",
 	"moonshotai/kimi-k2.5",
 	"gpt-5",
