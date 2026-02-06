@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
+import FloatingSaveIndicator from "./FloatingSaveIndicator";
 
 // Define types locally to avoid import issues
 interface ExcalidrawElementBase {
@@ -241,37 +242,17 @@ const ExcalidrawEditor: React.FC<ExcalidrawEditorProps> = ({
 	}
 
 	return (
-		<div className="h-full w-full flex flex-col">
-			{/* Header with save button */}
-			<div className="flex items-center justify-between px-3 py-2 border-b bg-gray-50 flex-shrink-0">
-				<div className="flex items-center gap-2">
-					<div className="text-sm text-gray-600 truncate">
-						{documentName || "Excalidraw"}
-					</div>
-					{hasChanges && (
-						<span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
-							Unsaved changes
-						</span>
-					)}
-				</div>
-				<button
-					className="text-xs px-3 py-1 rounded bg-blue-600 text-white disabled:opacity-50 hover:bg-blue-700 transition-colors"
-					disabled={isSaving || !hasChanges}
-					onClick={handleSave}
-					type="button"
-				>
-					{isSaving ? "Saving..." : "Save"}
-				</button>
-			</div>
-			
-			{/* Excalidraw canvas */}
-			<div className="flex-1 relative">
-				<ExcalidrawCanvas
-					initialData={initialData}
-					onApiReady={setExcalidrawAPI}
-					onChange={handleChange}
-				/>
-			</div>
+		<div className="h-full w-full relative">
+			<ExcalidrawCanvas
+				initialData={initialData}
+				onApiReady={setExcalidrawAPI}
+				onChange={handleChange}
+			/>
+			<FloatingSaveIndicator
+				hasChanges={hasChanges}
+				isSaving={isSaving}
+				onSave={handleSave}
+			/>
 		</div>
 	);
 };
