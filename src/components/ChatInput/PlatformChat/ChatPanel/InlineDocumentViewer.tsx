@@ -137,7 +137,8 @@ export const InlineDocumentViewer = ({
 
 	// Check if this file extension supports WOPI editing (both sandbox and storage)
 	const isWopiEditable = wopiEditableExtensions.includes(fileExtension);
-	const isWopiSandbox = isSandboxFile && isWopiEditable;
+	// Explicitly check for truthy isSandboxFile to avoid undefined being misinterpreted
+	const isWopiSandbox = !!isSandboxFile && isWopiEditable;
 	const isWopiStorage = !isSandboxFile && isWopiEditable;
 
 	const needsInlineUrl =
@@ -175,9 +176,10 @@ export const InlineDocumentViewer = ({
 	// Fetch WOPI editor URL for sandbox files
 	const { data: wopiSandboxEditor, isLoading: wopiSandboxLoading } = useQuery({
 		queryKey: [
-			"getWopiSandboxEditorUrl",
+			"wopiEditor",
 			activeProject?.project_id,
 			resourceId,
+			"sandbox",
 			fileName,
 			lastReloadTime,
 		],
@@ -192,16 +194,17 @@ export const InlineDocumentViewer = ({
 				fileName,
 			});
 		},
-		enabled: isWopiSandbox && !!session && !!activeProject?.project_id && !!fileName,
+		enabled: !!isSandboxFile && isWopiSandbox && !!session && !!activeProject?.project_id && !!fileName,
 		staleTime: 30 * 1000, // Keep data fresh for 30 seconds
 	});
 
 	// Fetch WOPI editor URL for storage (GCS) files
 	const { data: wopiStorageEditor, isLoading: wopiStorageLoading } = useQuery({
 		queryKey: [
-			"getWopiStorageEditorUrl",
+			"wopiEditor",
 			activeProject?.project_id,
 			resourceId,
+			"storage",
 			lastReloadTime,
 		],
 		queryFn: () => {
@@ -214,19 +217,21 @@ export const InlineDocumentViewer = ({
 				resourceId,
 			});
 		},
-		enabled: isWopiStorage && !!session && !!activeProject?.project_id,
+		enabled: !isSandboxFile && isWopiStorage && !!session && !!activeProject?.project_id,
 		staleTime: 30 * 1000, // Keep data fresh for 30 seconds
 	});
 
 	// Check if this is a sandbox binary image that needs special handling (excludes SVG which is text-based)
-	const isSandboxBinaryImage = isSandboxFile && imageExtensions.includes(fileExtension) && !tifExtensions.includes(fileExtension) && fileExtension !== "svg";
+	const isSandboxBinaryImage = !!isSandboxFile && imageExtensions.includes(fileExtension) && !tifExtensions.includes(fileExtension) && fileExtension !== "svg";
 
 	// Fetch sandbox binary images as blob and convert to data URL
 	const { data: sandboxImageDataUrl, isLoading: sandboxImageLoading } = useQuery({
 		queryKey: [
-			"sandboxImage",
+			"resource",
 			activeProject?.project_id,
 			resourceId,
+			"sandbox",
+			"image",
 			fileName,
 			lastReloadTime,
 		],
