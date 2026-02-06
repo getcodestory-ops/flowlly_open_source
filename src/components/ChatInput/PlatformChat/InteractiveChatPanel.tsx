@@ -627,6 +627,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 						canPrint={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox") && htmlExtensions.includes(getFileExtension(activeTab.filename))}
 						canRename={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox")}
 						canSaveAs={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox")}
+						canToggleEditMode={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox") && htmlExtensions.includes(getFileExtension(activeTab.filename))}
 						hasUnsavedInEdit={!!(activeTab && unsavedChanges[activeTab.resourceId || activeTab.id] && (activeTab.type === "sources" || activeTab.type === "sandbox") && getCurrentViewMode(activeTab.id) === "text")}
 						isAddedAsContext={isActiveTabInContext}
 						isDownloading={isDownloading}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import { useChatStore } from "@/hooks/useChatStore";
 import MarkDownDisplay from "@/components/Markdown/MarkDownDisplay";
 
@@ -18,10 +18,7 @@ const FileProgressPanel = ({ fileName }: { fileName: string }): React.ReactNode 
 		return fileProgress[fileName] || null;
 	}, [fileName, fileProgress]);
 
-	useEffect(() => {
-		if (!contentRef.current) return;
-		contentRef.current.scrollTop = contentRef.current.scrollHeight;
-	}, [effective?.content]);
+	// Auto-scroll disabled - let user control scroll position while content streams
 
 	if (!effective) {
 		return (

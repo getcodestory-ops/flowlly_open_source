@@ -37,6 +37,8 @@ export interface TopToolbarProps {
   canDownload: boolean;
   canSaveAs: boolean;
   canPrint: boolean;
+  /** Whether to show the edit/view mode toggle (only for HTML files) */
+  canToggleEditMode?: boolean;
   isEditMode: boolean;
   hasUnsavedInEdit: boolean;
   isDownloading?: boolean;
@@ -103,6 +105,7 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 	canDownload,
 	canSaveAs,
 	canPrint,
+	canToggleEditMode = false,
 	isEditMode,
 	hasUnsavedInEdit,
 	isDownloading = false,
@@ -163,8 +166,8 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 			{/* Divider */}
 			<div className="w-px h-5 bg-gray-300 mx-1" />
 
-			{/* Primary action: Edit/View toggle - only show when available */}
-			{canRename && (
+			{/* Primary action: Edit/View toggle - only show for HTML files */}
+			{canToggleEditMode && (
 				<>
 					<TooltipProvider delayDuration={300}>
 						<Tooltip>
