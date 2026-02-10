@@ -1,8 +1,12 @@
 import "./globals.css";
 // import { CSPostHogProvider } from "./providers";
 export const metadata = {
-	title: "Construction Documentation",
+	title: "Flowlly",
 	description: "Your personal assistant for construction professionals",
+	icons: {
+		icon: "/icon.svg",
+		apple: "/apple-icon.svg",
+	},
 };
 
 export default function RootLayout({
