@@ -60,7 +60,10 @@ function Login() {
 			});
 			return;
 		}
-		const { error } = await supabase.auth.resetPasswordForEmail(email);
+		const redirectTo = `${window.location.origin}/auth/passwordChange`;
+		const { error } = await supabase.auth.resetPasswordForEmail(email, {
+			redirectTo,
+		});
 
 		if (error) {
 			toast({

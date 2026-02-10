@@ -11,15 +11,17 @@ function ResetPassword() {
 
 	useEffect(() => {
 		async function loginCheck() {
-			const { token_hash } = router.query;
+			const { token_hash, type } = router.query;
 
 			if (!token_hash) {
 				router.replace("/login");
 				return;
 			}
 			if (typeof token_hash === "string") {
+				const rawType = typeof type === "string" ? type : "";
+				const otpType = rawType === "resetPassword" ? "recovery" : rawType || "recovery";
 				const { data: userSession, error } = await supabase.auth.verifyOtp({
-					type: "email",
+					type: otpType as "recovery" | "email",
 					token_hash,
 				});
 
