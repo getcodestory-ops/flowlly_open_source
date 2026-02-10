@@ -22,18 +22,38 @@ interface ModelSelectorProps {
 	selectedAgentType?: string;
 }
 
-// Recommended model ID
-const RECOMMENDED_MODEL = "gemini-3-pro-preview";
-
-// Main models to show prominently
-const MAIN_MODEL_IDS = [
-	"gemini-3-pro-preview",
-	"gemini-3-flash-preview", 
+// Main models per mode
+const AGENT_MODEL_IDS = [
 	"claude-opus-4.6",
+	"gemini-3-pro-preview",
+	"gpt-5.2",
 	"z-ai/glm-4.7",
 	"moonshotai/kimi-k2.5",
-	"gpt-5",
 ];
+
+const CHAT_MODEL_IDS = [
+	"gemini-3-flash-preview",
+	"gpt-5-nano",
+	"claude-haiku-4.5",
+	"moonshotai/kimi-k2.5",
+];
+
+// Helper to get the main model IDs based on agent type
+const getMainModelIds = (agentType?: string): string[] => {
+	if (agentType === "chat") return CHAT_MODEL_IDS;
+	return AGENT_MODEL_IDS;
+};
+
+// Get provider key for grouping (used for dividers)
+const getProviderKey = (modelId: string): string => {
+	if (modelId.includes("claude") || modelId.includes("sonnet") || modelId.includes("opus") || modelId.includes("haiku")) return "claude";
+	if (modelId.includes("gpt") || modelId.includes("openai")) return "openai";
+	if (modelId.includes("gemini")) return "gemini";
+	if (modelId.includes("z-ai") || modelId.includes("glm")) return "z-ai";
+	if (modelId.includes("moonshotai") || modelId.includes("kimi")) return "moonshotai";
+	if (modelId.includes("xiaomi") || modelId.includes("mimo")) return "xiaomi";
+	return "other";
+};
 
 // Get provider logo path based on model ID
 const getProviderLogo = (modelId: string): string => {
@@ -155,6 +175,11 @@ const getModelBadges = (model: ModelType): JSX.Element[] => {
 	return badges;
 };
 
+// Subtle divider between provider groups
+const ProviderDivider = (): JSX.Element => (
+	<div className="my-1 border-t border-slate-100" />
+);
+
 // Model row component
 const ModelRow = ({ 
 	model, 
@@ -200,6 +225,7 @@ export default function ModelSelector({
 	className = "",
 	onModelChange,
 	selectedModel,
+	selectedAgentType,
 }: ModelSelectorProps): JSX.Element {
 	const [open, setOpen] = React.useState(false);
 	const [showArchived, setShowArchived] = React.useState(false);
@@ -207,9 +233,10 @@ export default function ModelSelector({
 	// Show all models
 	const filteredModels = MODELS;
 	
-	// Split into main and archived models
-	const mainModels = filteredModels.filter((model) => MAIN_MODEL_IDS.includes(model.id));
-	const archivedModels = filteredModels.filter((model) => !MAIN_MODEL_IDS.includes(model.id));
+	// Split into main and archived models based on agent type
+	const mainModelIds = getMainModelIds(selectedAgentType);
+	const mainModels = filteredModels.filter((model) => mainModelIds.includes(model.id));
+	const archivedModels = filteredModels.filter((model) => !mainModelIds.includes(model.id));
 	
 	const currentModel = filteredModels.find((model) => model.id === selectedModel);
 
@@ -233,49 +260,56 @@ export default function ModelSelector({
 					className="w-[420px] p-2"
 					sideOffset={4}
 				>
-					{/* Main Models */}
-					<div className="space-y-1">
-						{mainModels.map((model: ModelType) => (
-							<ModelRow
-								isSelected={model.id === selectedModel}
-								key={model.id}
-								model={model}
-								onSelect={() => handleSelect(model.id)}
-							/>
-						))}
+					{/* Scrollable model list */}
+					<div className="max-h-[60vh] overflow-y-auto pr-1">
+						{/* Main Models */}
+						<div className="space-y-1">
+							{mainModels.map((model: ModelType) => (
+								<ModelRow
+									isSelected={model.id === selectedModel}
+									key={model.id}
+									model={model}
+									onSelect={() => handleSelect(model.id)}
+								/>
+							))}
+						</div>
+						
+						{/* Archived Models Section */}
+						{archivedModels.length > 0 && (
+							<div className="mt-2 pt-2 border-t border-slate-100">
+								<button
+									className="w-full px-3 py-2 flex items-center gap-2 text-xs text-slate-500 hover:text-slate-700 transition-colors"
+									onClick={() => setShowArchived(!showArchived)}
+								>
+									<Archive className="h-3.5 w-3.5" />
+									<span>Other models</span>
+									<ChevronDown className={cn(
+										"h-3 w-3 ml-auto transition-transform",
+										showArchived && "rotate-180"
+									)} />
+								</button>
+								
+								{showArchived && (
+									<div className="mt-1 space-y-1">
+										{archivedModels.map((model: ModelType, index: number) => (
+											<React.Fragment key={model.id}>
+												{index > 0 && getProviderKey(model.id) !== getProviderKey(archivedModels[index - 1].id) && (
+													<ProviderDivider />
+												)}
+												<ModelRow
+													isSelected={model.id === selectedModel}
+													model={model}
+													onSelect={() => handleSelect(model.id)}
+												/>
+											</React.Fragment>
+										))}
+									</div>
+								)}
+							</div>
+						)}
 					</div>
 					
-					{/* Archived Models Section */}
-					{archivedModels.length > 0 && (
-						<div className="mt-2 pt-2 border-t border-slate-100">
-							<button
-								className="w-full px-3 py-2 flex items-center gap-2 text-xs text-slate-500 hover:text-slate-700 transition-colors"
-								onClick={() => setShowArchived(!showArchived)}
-							>
-								<Archive className="h-3.5 w-3.5" />
-								<span>Other models</span>
-								<ChevronDown className={cn(
-									"h-3 w-3 ml-auto transition-transform",
-									showArchived && "rotate-180"
-								)} />
-							</button>
-							
-							{showArchived && (
-								<div className="mt-1 space-y-1">
-									{archivedModels.map((model: ModelType) => (
-										<ModelRow
-											isSelected={model.id === selectedModel}
-											key={model.id}
-											model={model}
-											onSelect={() => handleSelect(model.id)}
-										/>
-									))}
-								</div>
-							)}
-						</div>
-					)}
-					
-					{/* Legend */}
+					{/* Legend - pinned outside scroll area */}
 					<div className="mt-3 pt-3 border-t border-slate-100">
 						<div className="flex flex-wrap gap-3 text-[10px] text-slate-500">
 							<div className="flex items-center gap-1">

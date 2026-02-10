@@ -17,32 +17,39 @@ import {
 import { Views, View } from "react-big-calendar";
 import { ViewMode } from "@/components/Schedule/gantt-task-react-main/src/types/public-types";
 import { AgentChat } from "@/types/agentChats";
+import {
+	DEFAULT_MODEL_AGENT,
+	DEFAULT_MODEL_CHAT,
+	resolveModel,
+} from "@/components/ChatInput/PlatformChat/PlatformChatInterface/types";
 
 interface ViewState {
-  workbenchView: "table" | "calendar";
-  calendarSubView: "current" | "integrations";
-  rowsPerPage: number;
-  scheduleView: "list" | "gantt";
-  calendarView: View;
-  calendarDate: Date;
-  ganttView: ViewMode;
-  preferredModel: string;
-  preferredAgentType: "agent" | "chat";
-  setWorkbenchView: (view: "table" | "calendar") => void;
-  setRowsPerPage: (rows: number) => void;
-  setScheduleView: (view: "list" | "gantt") => void;
-  setCalendarView: (view: View) => void;
-  setCalendarDate: (date: Date) => void;
-  setGanttView: (view: ViewMode) => void;
-  setCalendarSubView: (view: "current" | "integrations") => void;
-  setPreferredModel: (model: string) => void;
-  setPreferredAgentType: (type: "agent" | "chat") => void;
+	workbenchView: "table" | "calendar";
+	calendarSubView: "current" | "integrations";
+	rowsPerPage: number;
+	scheduleView: "list" | "gantt";
+	calendarView: View;
+	calendarDate: Date;
+	ganttView: ViewMode;
+	preferredModel: string;
+	preferredModelAgent: string;
+	preferredModelChat: string;
+	preferredAgentType: "agent" | "chat";
+	setWorkbenchView: (view: "table" | "calendar") => void;
+	setRowsPerPage: (rows: number) => void;
+	setScheduleView: (view: "list" | "gantt") => void;
+	setCalendarView: (view: View) => void;
+	setCalendarDate: (date: Date) => void;
+	setGanttView: (view: ViewMode) => void;
+	setCalendarSubView: (view: "current" | "integrations") => void;
+	setPreferredModel: (model: string) => void;
+	setPreferredAgentType: (type: "agent" | "chat") => void;
 }
 
 // Create new persisted store
 export const useViewStore = create<ViewState>()(
 	persist(
-		(set) => ({
+		(set, get) => ({
 			workbenchView: "table",
 			calendarSubView: "current",
 			rowsPerPage: 10,
@@ -50,7 +57,9 @@ export const useViewStore = create<ViewState>()(
 			calendarView: Views.WEEK,
 			calendarDate: new Date(),
 			ganttView: ViewMode.Week,
-			preferredModel: "gemini-3-pro-preview",
+			preferredModel: DEFAULT_MODEL_AGENT,
+			preferredModelAgent: DEFAULT_MODEL_AGENT,
+			preferredModelChat: DEFAULT_MODEL_CHAT,
 			preferredAgentType: "agent",
 			setWorkbenchView: (view) => set(() => ({ workbenchView: view })),
 			setRowsPerPage: (rows) => set(() => ({ rowsPerPage: rows })),
@@ -59,12 +68,51 @@ export const useViewStore = create<ViewState>()(
 			setCalendarDate: (date) => set(() => ({ calendarDate: date })),
 			setGanttView: (view) => set(() => ({ ganttView: view })),
 			setCalendarSubView: (view) => set(() => ({ calendarSubView: view })),
-			setPreferredModel: (model) => set(() => ({ preferredModel: model })),
-			setPreferredAgentType: (type) => set(() => ({ preferredAgentType: type })),
+			setPreferredModel: (model) =>
+				set((s) => {
+					const resolved = resolveModel(model, s.preferredAgentType);
+					const updates: Partial<ViewState> = { preferredModel: resolved };
+					if (s.preferredAgentType === "agent") {
+						updates.preferredModelAgent = resolved;
+					} else {
+						updates.preferredModelChat = resolved;
+					}
+					return updates;
+				}),
+			setPreferredAgentType: (type) =>
+				set((s) => {
+					if (s.preferredAgentType === type) return {};
+					const stored = type === "agent" ? s.preferredModelAgent : s.preferredModelChat;
+					const resolved = resolveModel(stored, type);
+					return {
+						preferredAgentType: type,
+						preferredModel: resolved,
+						...(type === "agent" ? { preferredModelAgent: resolved } : { preferredModelChat: resolved }),
+					};
+				}),
 		}),
 		{
 			name: "view-storage",
 			storage: createJSONStorage(() => localStorage),
+			merge: (persisted, current) => {
+				const p = (persisted ?? {}) as Partial<ViewState>;
+				const migrated = { ...current, ...p } as ViewState;
+				// Migration: old storage had preferredModel but not preferredModelAgent/preferredModelChat
+				if (p.preferredModelAgent == null) {
+					migrated.preferredModelAgent = resolveModel(
+						(p.preferredModel as string) ?? DEFAULT_MODEL_AGENT,
+						"agent",
+					);
+				}
+				if (p.preferredModelChat == null) {
+					migrated.preferredModelChat = DEFAULT_MODEL_CHAT;
+				}
+				// Ensure preferredModel is in sync with the active mode
+				const agentType = (p.preferredAgentType ?? current.preferredAgentType) as "agent" | "chat";
+				const stored = agentType === "agent" ? migrated.preferredModelAgent : migrated.preferredModelChat;
+				migrated.preferredModel = resolveModel(stored, agentType);
+				return migrated;
+			},
 		},
 	),
 );
