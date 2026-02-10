@@ -7,6 +7,8 @@ import {
 	Calendar,
 	Trash2,
 	GitMerge,
+	Info,
+	Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,10 +61,12 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { useStore } from "@/utils/store";
-import { deleteProjectEvent, mergeProjectEvents } from "@/api/taskQueue";
+import { deleteProjectEvent, mergeProjectEvents, getEventParticipants } from "@/api/taskQueue";
 // import ImportMeetingsDialog from "./ImportMeetingsDialog";
 import CreateJob from "./CreateJob";
 import { fetchLatestMeetingEvents, type MeetingEvent } from "@/utils/supabase/SupabaseService";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MicrosoftEventDistributionSetup } from "@/components/Calendar/MicrosoftEventDistributionSetup";
 const localeText = {
 	searchWorkflows: "Filter meetings by name or type...",
 };
@@ -80,12 +84,14 @@ export const EventListViewer: React.FC = ({
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [selectedEventType, setSelectedEventType] = useState<string | null>( null );
 	const [selectedEventData, setSelectedEventData] = useState<GraphData | null>( null );
+	const [activeEditTab, setActiveEditTab] = useState("details");
 	const [isCreateMeetingOpen, setIsCreateMeetingOpen] = useState(false);
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 	const [isMergeMode, setIsMergeMode] = useState(false);
 	const [selectedEventsForMerge, setSelectedEventsForMerge] = useState<string[]>([]);
 	const [isMergeDialogOpen, setIsMergeDialogOpen] = useState(false);
 	const [meetingEvents, setMeetingEvents] = useState<MeetingEvent[]>([]);
+	const [selectedMeetingParticipants, setSelectedMeetingParticipants] = useState<string[]>([]);
 	const queryClient = useQueryClient();
 	const { toast } = useToast();
 	const { session, activeProject } = useStore();
@@ -198,8 +204,44 @@ export const EventListViewer: React.FC = ({
 		const eventType = info.event_type;
 		setSelectedEventType(eventType);
 		setSelectedEventData(info);
+		setActiveEditTab("details");
 		setIsDialogOpen(true);
 	};
+
+	useEffect(() => {
+		const fetchSelectedMeetingParticipants = async(): Promise<void> => {
+			if (
+				!isDialogOpen ||
+				selectedEventType !== "meeting" ||
+				!selectedEventData?.id ||
+				!session ||
+				!activeProject?.project_id
+			) {
+				setSelectedMeetingParticipants([]);
+				return;
+			}
+
+			try {
+				const participants = await getEventParticipants({
+					session,
+					projectId: activeProject.project_id,
+					eventId: selectedEventData.id,
+				});
+				const participantEmails = Array.isArray(participants)
+					? participants
+						.map((p) => p?.participant_metadata?.metadata?.email)
+						.filter((email): email is string => !!email)
+					: [];
+
+				setSelectedMeetingParticipants(participantEmails);
+			} catch (error) {
+				console.error("Failed to fetch event participants for distribution setup:", error);
+				setSelectedMeetingParticipants([]);
+			}
+		};
+
+		void fetchSelectedMeetingParticipants();
+	}, [isDialogOpen, selectedEventType, selectedEventData?.id, session, activeProject?.project_id]);
 
 	const handleMergeClick = (): void => {
 		if (selectedEventsForMerge.length === 2) {
@@ -518,13 +560,34 @@ export const EventListViewer: React.FC = ({
 				<Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
 					<DialogContent className="max-w-[90vw]">
 						{selectedEventType === "meeting" && (
-							<>
-								<h2 className="text-lg font-semibold">Edit Meeting</h2>
-								<ProjectEventCreationForm
-									editData={selectedEventData!}
-									onClose={() => setIsDialogOpen(false)}
-								/>
-							</>
+							<Tabs
+								className="w-full"
+								onValueChange={setActiveEditTab}
+								value={activeEditTab}
+							>
+								<TabsList className="mb-3 w-fit">
+									<TabsTrigger className="gap-1.5" value="details">
+										<Info className="h-3.5 w-3.5" />
+										Edit Meeting
+									</TabsTrigger>
+									<TabsTrigger className="gap-1.5" value="setup">
+										<Settings className="h-3.5 w-3.5" />
+										Distribution Setup
+									</TabsTrigger>
+								</TabsList>
+								<TabsContent className="m-0" value="details">
+									<ProjectEventCreationForm
+										editData={selectedEventData!}
+										onClose={() => setIsDialogOpen(false)}
+									/>
+								</TabsContent>
+								<TabsContent className="m-0 h-[75vh] overflow-hidden" value="setup">
+									<MicrosoftEventDistributionSetup
+										initialEmails={selectedMeetingParticipants}
+										meetingName={selectedEventData?.name || ""}
+									/>
+								</TabsContent>
+							</Tabs>
 						)}
 					</DialogContent>
 				</Dialog>

@@ -3,7 +3,7 @@ import {
 	Plus, 
 	X, 
 	Save,
-	Loader2
+	Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import {
 	createDistributionSettings, 
 	updateDistributionSettings 
 } from "@/api/distributionSettingsRoutes";
+import { useDragDropUpload } from "@/hooks/useDragDropUpload";
 
 interface Recipient {
 	email: string;
@@ -34,6 +35,12 @@ interface OriginalSettings {
 	subject: string;
 	recipients: Recipient[];
 	customPrompt: string;
+	attachmentIds: string[];
+}
+
+interface AttachmentReference {
+	id: string;
+	name: string;
 }
 
 // Email validation
@@ -49,6 +56,13 @@ const areRecipientsEqual = (a: Recipient[], b: Recipient[]): boolean => {
 	return sortedA.every((item, index) => 
 		item.email === sortedB[index].email && item.selected === sortedB[index].selected
 	);
+};
+
+const areAttachmentIdsEqual = (a: string[], b: string[]): boolean => {
+	if (a.length !== b.length) return false;
+	const sortedA = [...a].sort();
+	const sortedB = [...b].sort();
+	return sortedA.every((item, index) => item === sortedB[index]);
 };
 
 export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributionSetupProps> = ({
@@ -71,6 +85,8 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 	const [emailError, setEmailError] = useState<string | null>(null);
 	const [emailSubject, setEmailSubject] = useState("Meeting Minutes - " + SAMPLE_TEMPLATE_DATA.DATE);
 	const [customPrompt, setCustomPrompt] = useState("");
+	const [attachments, setAttachments] = useState<AttachmentReference[]>([]);
+	const [isUploadingAttachments, setIsUploadingAttachments] = useState(false);
 	const [showSuggestions, setShowSuggestions] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 	
@@ -87,6 +103,7 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 		subject: "Meeting Minutes - " + SAMPLE_TEMPLATE_DATA.DATE,
 		recipients: [],
 		customPrompt: "",
+		attachmentIds: [],
 	});
 	const isInitialized = useRef(false);
 
@@ -98,9 +115,13 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 		const subjectChanged = emailSubject !== originalSettings.subject;
 		const recipientsChanged = !areRecipientsEqual(recipients, originalSettings.recipients);
 		const customPromptChanged = customPrompt !== originalSettings.customPrompt;
+		const attachmentIdsChanged = !areAttachmentIdsEqual(
+			attachments.map((attachment) => attachment.id),
+			originalSettings.attachmentIds,
+		);
 		
-		return templateChanged || subjectChanged || recipientsChanged || customPromptChanged;
-	}, [selectedTemplate, emailSubject, recipients, customPrompt, originalSettings]);
+		return templateChanged || subjectChanged || recipientsChanged || customPromptChanged || attachmentIdsChanged;
+	}, [selectedTemplate, emailSubject, recipients, customPrompt, attachments, originalSettings]);
 
 	// Fetch existing settings from backend
 	useEffect(() => {
@@ -119,6 +140,13 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 					if (settings.custom_prompt) {
 						setCustomPrompt(settings.custom_prompt);
 					}
+					const savedAttachmentIds = settings.metadata?.attachment_ids || [];
+					setAttachments(
+						savedAttachmentIds.map((attachmentId) => ({
+							id: attachmentId,
+							name: attachmentId,
+						})),
+					);
 					
 					// Apply selected_recipients to recipients after they're loaded
 					if (settings.selected_recipients && settings.selected_recipients.length > 0) {
@@ -134,6 +162,7 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 						template: settings.template_id,
 						subject: settings.subject,
 						customPrompt: settings.custom_prompt || "",
+						attachmentIds: savedAttachmentIds,
 					}));
 				}
 			} catch (error) {
@@ -162,6 +191,7 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 					subject: emailSubject,
 					recipients: parsedRecipients,
 					customPrompt: "",
+					attachmentIds: [],
 				});
 				isInitialized.current = true;
 			}
@@ -172,10 +202,63 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 				subject: emailSubject,
 				recipients: [],
 				customPrompt: "",
+				attachmentIds: [],
 			});
 			isInitialized.current = true;
 		}
 	}, [initialEmails]);
+
+	const { uploadFile } = useDragDropUpload({
+		session,
+		activeProject: activeProject ? { project_id: activeProject.project_id } : null,
+		onUploadComplete: (_result, processedFile) => {
+			if (!processedFile.resource_id) return;
+			setAttachments((prev) => {
+				if (prev.some((attachment) => attachment.id === processedFile.resource_id)) {
+					return prev;
+				}
+				return [
+					...prev,
+					{
+						id: processedFile.resource_id,
+						name: processedFile.resource_name || processedFile.resource_id,
+					},
+				];
+			});
+		},
+		onUploadError: (error) => {
+			toast({
+				title: "Attachment upload failed",
+				description: error || "Could not upload attachment.",
+				variant: "destructive",
+			});
+		},
+	});
+
+	const handleUploadAttachments = async(files: File[]): Promise<void> => {
+		if (!session || !projectAccessId) {
+			toast({
+				title: "Error",
+				description: "You must be logged in and have an active project to upload attachments.",
+				variant: "destructive",
+			});
+			return;
+		}
+		if (!files.length) return;
+
+		setIsUploadingAttachments(true);
+		try {
+			for (let fileIndex = 0; fileIndex < files.length; fileIndex += 1) {
+				await uploadFile(files[fileIndex], fileIndex);
+			}
+		} finally {
+			setIsUploadingAttachments(false);
+		}
+	};
+
+	const handleRemoveAttachment = (attachmentId: string): void => {
+		setAttachments((prev) => prev.filter((attachment) => attachment.id !== attachmentId));
+	};
 
 	// Handle adding new recipient
 	const handleAddRecipient = (): void => {
@@ -262,6 +345,9 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 					selected_recipients: shouldSendAll ? [] : selectedEmails,
 					// Only include custom_prompt if using custom template
 					custom_prompt: selectedTemplate === "custom" ? customPrompt : null,
+					metadata: {
+						attachment_ids: attachments.map((attachment) => attachment.id),
+					},
 				};
 				
 				const updated = await updateDistributionSettings(session, existingSettingsId, updates);
@@ -287,6 +373,9 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 					selected_recipients: shouldSendAll ? [] : selectedEmails,
 					// Only include custom_prompt if using custom template
 					custom_prompt: selectedTemplate === "custom" ? customPrompt : null,
+					metadata: {
+						attachment_ids: attachments.map((attachment) => attachment.id),
+					},
 				};
 				
 				const created = await createDistributionSettings(session, createRequest);
@@ -300,6 +389,7 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 				subject: emailSubject,
 				recipients: [...recipients],
 				customPrompt: selectedTemplate === "custom" ? customPrompt : "",
+				attachmentIds: attachments.map((attachment) => attachment.id),
 			});
 			
 			toast({
@@ -518,6 +608,10 @@ export const MicrosoftEventDistributionSetup: React.FC<MicrosoftEventDistributio
 					onSelect={setSelectedTemplate}
 					customPrompt={customPrompt}
 					onCustomPromptChange={setCustomPrompt}
+					attachments={attachments}
+					isUploadingAttachments={isUploadingAttachments}
+					onUploadAttachments={handleUploadAttachments}
+					onRemoveAttachment={handleRemoveAttachment}
 				/>
 			</div>
 

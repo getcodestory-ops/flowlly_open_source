@@ -1,10 +1,10 @@
 import React, { useMemo, useCallback, useState, useEffect } from "react";
 import { Calendar, View } from "react-big-calendar";
-import { FileText, X } from "lucide-react";
+import { X, Info, Settings } from "lucide-react";
 import { localizer, formatLocalTime, parseGraphDateTime } from "./calendar-utils";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./CalendarView.module.css";
-import { useViewStore } from "@/utils/store";
+import { useStore, useViewStore } from "@/utils/store";
 import { MicrosoftCalendarEvent } from "@/types/calendar";
 import type { EventResult } from "../WorkflowComponents/types";
 import type { GraphData } from "../WorkflowComponents/types";
@@ -16,6 +16,9 @@ import { ResultViewer } from "../WorkflowComponents/ResultViewer";
 import { Button } from "@/components/ui/button";
 import { MicrosoftEventDetailsModal } from "./MicrosoftEventDetailsModal";
 import ProjectEventCreationForm from "../ProjectEvent/ProjectEventCreationForm";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MicrosoftEventDistributionSetup } from "./MicrosoftEventDistributionSetup";
+import { getEventParticipants } from "@/api/taskQueue";
 
 
 interface CalendarViewProps {
@@ -32,7 +35,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const [selectedEventResult, setSelectedEventResult] = useState<EventResult | null>(null);
   const [selectedMicrosoftEvent, setSelectedMicrosoftEvent] = useState<MicrosoftCalendarEvent | null>(null);
   const [selectedGraphData, setSelectedGraphData] = useState<GraphData | null>(null);
+  const [activeGraphEditTab, setActiveGraphEditTab] = useState("details");
+  const [selectedMeetingParticipants, setSelectedMeetingParticipants] = useState<string[]>([]);
   const { calendarData, isLoadingEvents, loadedDateRange, setLoadedDateRange, isLoadingMeetingEventResults, graphs, allEvents } = useCalendarHook();
+  const { session, activeProject } = useStore();
 
 
   const handleRangeChange = useCallback((range: Date[] | { start: Date; end: Date }) => {
@@ -79,8 +85,37 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       setSelectedMicrosoftEvent(event.resource as MicrosoftCalendarEvent);
     } else if (event.resourceType === "graphData" && event.resource) {
       setSelectedGraphData(event.resource as GraphData);
+      setActiveGraphEditTab("details");
     }
   };
+
+  useEffect(() => {
+    const fetchSelectedMeetingParticipants = async (): Promise<void> => {
+      if (!selectedGraphData?.id || !session || !activeProject?.project_id) {
+        setSelectedMeetingParticipants([]);
+        return;
+      }
+
+      try {
+        const participants = await getEventParticipants({
+          session,
+          projectId: activeProject.project_id,
+          eventId: selectedGraphData.id,
+        });
+        const participantEmails = Array.isArray(participants)
+          ? participants
+            .map((p) => p?.participant_metadata?.metadata?.email)
+            .filter((email): email is string => !!email)
+          : [];
+        setSelectedMeetingParticipants(participantEmails);
+      } catch (error) {
+        console.error("Failed to fetch event participants for distribution setup:", error);
+        setSelectedMeetingParticipants([]);
+      }
+    };
+
+    void fetchSelectedMeetingParticipants();
+  }, [selectedGraphData?.id, session, activeProject?.project_id]);
 
 
   const eventPropGetter = (event: { resource: MicrosoftCalendarEvent | EventResult | GraphData; resourceType?: "microsoft" | "eventResult" | "graphData"; isReconciled?: boolean }): { style: React.CSSProperties } => {
@@ -205,7 +240,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-xl font-semibold">Edit Meeting</h2>
+              <h2 className="text-xl font-semibold">{selectedGraphData.name}</h2>
               <Button
                 className="h-8 w-8 p-0"
                 onClick={() => setSelectedGraphData(null)}
@@ -216,10 +251,36 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               </Button>
             </div>
             <div className="flex-1 overflow-hidden">
-              <ProjectEventCreationForm
-                editData={selectedGraphData}
-                onClose={() => setSelectedGraphData(null)}
-              />
+              <Tabs
+                className="h-full flex flex-col"
+                onValueChange={setActiveGraphEditTab}
+                value={activeGraphEditTab}
+              >
+                <div className="px-4 pt-3 border-b">
+                  <TabsList className="w-fit">
+                    <TabsTrigger className="gap-1.5" value="details">
+                      <Info className="h-3.5 w-3.5" />
+                      Edit Meeting
+                    </TabsTrigger>
+                    <TabsTrigger className="gap-1.5" value="setup">
+                      <Settings className="h-3.5 w-3.5" />
+                      Distribution Setup
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+                <TabsContent className="m-0 flex-1 overflow-hidden" value="details">
+                  <ProjectEventCreationForm
+                    editData={selectedGraphData}
+                    onClose={() => setSelectedGraphData(null)}
+                  />
+                </TabsContent>
+                <TabsContent className="m-0 flex-1 overflow-hidden" value="setup">
+                  <MicrosoftEventDistributionSetup
+                    initialEmails={selectedMeetingParticipants}
+                    meetingName={selectedGraphData.name}
+                  />
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </div>

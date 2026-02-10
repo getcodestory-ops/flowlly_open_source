@@ -4,6 +4,10 @@
 
 export type TemplateId = "notion" | "executive" | "detailed" | "minimal" | "custom";
 
+export interface DistributionSettingsMetadata {
+	attachment_ids?: string[];
+}
+
 /**
  * Full distribution settings from backend (snake_case to match API)
  */
@@ -15,6 +19,7 @@ export interface DistributionSettings {
 	subject: string;
 	selected_recipients?: string[];
 	custom_prompt?: string | null;
+	metadata?: DistributionSettingsMetadata | null;
 	created_at?: string;
 	updated_at?: string;
 	created_by?: string;
@@ -30,6 +35,7 @@ export interface CreateDistributionSettingsRequest {
 	subject: string;
 	selected_recipients?: string[];
 	custom_prompt?: string | null;
+	metadata?: DistributionSettingsMetadata | null;
 }
 
 /**
@@ -41,4 +47,5 @@ export interface UpdateDistributionSettingsRequest {
 	subject?: string;
 	selected_recipients?: string[];
 	custom_prompt?: string | null;
+	metadata?: DistributionSettingsMetadata | null;
 }
