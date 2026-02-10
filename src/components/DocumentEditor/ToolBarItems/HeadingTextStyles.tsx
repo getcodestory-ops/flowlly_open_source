@@ -1,124 +1,156 @@
 import React from "react";
 import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
 import { type Editor } from "@tiptap/react";
+import { cn } from "@/lib/utils";
 
 interface HeadingTextStylesProps {
 	editor: Editor;
 }
 
+const labelMap: Record<string, string> = {
+	p: "Paragraph",
+	h1: "Heading 1",
+	h2: "Heading 2",
+	h3: "Heading 3",
+	h4: "Heading 4",
+	h5: "Heading 5",
+	h6: "Heading 6",
+	none: "Normal Text",
+	primary: "Primary Blue",
+	success: "Success Green",
+	warning: "Warning Orange",
+	danger: "Danger Red",
+	muted: "Muted Gray",
+	"construction-note": "Construction Note",
+	"project-milestone": "Project Milestone",
+	"task-priority-high": "High Priority",
+	"task-priority-medium": "Medium Priority",
+	"task-priority-low": "Low Priority",
+};
+
+const getEditorStyleValue = (editor: Editor): string => {
+	if (editor.isActive("heading", { level: 1 })) return "h1";
+	if (editor.isActive("heading", { level: 2 })) return "h2";
+	if (editor.isActive("heading", { level: 3 })) return "h3";
+	if (editor.isActive("heading", { level: 4 })) return "h4";
+	if (editor.isActive("heading", { level: 5 })) return "h5";
+	if (editor.isActive("heading", { level: 6 })) return "h6";
+
+	const colorAttr = editor.getAttributes("textStyle").color;
+	switch (colorAttr) {
+		case "#2563eb": return "primary";
+		case "#16a34a": return "success";
+		case "#ea580c": return "warning";
+		case "#dc2626": return "danger";
+		case "#6b7280": return "muted";
+		case "#f59e0b": return "construction-note";
+		case "#7c3aed": return "project-milestone";
+		default: return "p";
+	}
+};
+
 const HeadingTextStyles: React.FC<HeadingTextStylesProps> = ({ editor }) => {
-	return (
-		<Select
-			onValueChange={(value) => {
-				// Handle heading changes
-				if (value === "p") {
-					editor.chain().focus()
-						.setParagraph()
-						.unsetMark("textStyle")
-						.run();
-				} else if (value.startsWith("h")) {
-					const level = parseInt(value.charAt(1)) as 1 | 2 | 3 | 4 | 5 | 6;
-					editor.chain().focus()
-						.toggleHeading({ level })
-						.unsetMark("textStyle")
-						.run();
-				} else if (value === "none") {
-					// Remove all custom styles but keep current paragraph/heading
-					editor.chain().focus()
-						.unsetMark("textStyle")
-						.unsetColor()
-						.run();
-				} else {
-					// Apply inline styles based on selection
-					const styleMap = {
-						primary: { color: "#2563eb" },
-						success: { color: "#16a34a" },
-						warning: { color: "#ea580c" },
-						danger: { color: "#dc2626" },
-						muted: { color: "#6b7280" },
-						"construction-note": { color: "#f59e0b" },
-						"project-milestone": { color: "#7c3aed" },
-						"task-priority-high": { color: "#dc2626" },
-						"task-priority-medium": { color: "#ea580c" },
-						"task-priority-low": { color: "#16a34a" },
-					};
-					
-					const styles = styleMap[value as keyof typeof styleMap];
-					if (styles) {
-						editor.chain().focus()
-							.setColor(styles.color)
-							.run();
-					}
-				}
-			}}
-			value={
-				editor.isActive("heading", { level: 1 }) ? "h1" 
-					: editor.isActive("heading", { level: 2 }) ? "h2" 
-						: editor.isActive("heading", { level: 3 }) ? "h3" 
-							: editor.isActive("heading", { level: 4 }) ? "h4"
-								: editor.isActive("heading", { level: 5 }) ? "h5"
-									: editor.isActive("heading", { level: 6 }) ? "h6"
-										: (() => {
-											const colorAttr = editor.getAttributes("textStyle").color;
-											
-											// Check for color-based styles
-											switch (colorAttr) {
-												case "#2563eb": return "primary";
-												case "#16a34a": 
-													// Could be success or task-priority-low, just default to success
-													return "success";
-												case "#ea580c": 
-													// Could be warning or task-priority-medium, just default to warning
-													return "warning";
-												case "#dc2626": 
-													// Could be danger or task-priority-high, just default to danger
-													return "danger";
-												case "#6b7280": return "muted";
-												case "#f59e0b": return "construction-note";
-												case "#7c3aed": return "project-milestone";
-												default: return "p";
-											}
-										})()
+	const currentValue = getEditorStyleValue(editor);
+
+	const applyStyle = (value: string) => {
+		if (value === "p") {
+			editor.chain().focus()
+				.setParagraph()
+				.unsetMark("textStyle")
+				.run();
+		} else if (value.startsWith("h")) {
+			const level = parseInt(value.charAt(1)) as 1 | 2 | 3 | 4 | 5 | 6;
+			editor.chain().focus()
+				.setHeading({ level })
+				.unsetMark("textStyle")
+				.run();
+		} else if (value === "none") {
+			editor.chain().focus()
+				.unsetMark("textStyle")
+				.unsetColor()
+				.run();
+		} else {
+			const styleMap: Record<string, { color: string }> = {
+				primary: { color: "#2563eb" },
+				success: { color: "#16a34a" },
+				warning: { color: "#ea580c" },
+				danger: { color: "#dc2626" },
+				muted: { color: "#6b7280" },
+				"construction-note": { color: "#f59e0b" },
+				"project-milestone": { color: "#7c3aed" },
+				"task-priority-high": { color: "#dc2626" },
+				"task-priority-medium": { color: "#ea580c" },
+				"task-priority-low": { color: "#16a34a" },
+			};
+
+			const styles = styleMap[value];
+			if (styles) {
+				editor.chain().focus()
+					.setColor(styles.color)
+					.run();
 			}
-		>
-			<SelectTrigger className="w-28">
-				<SelectValue placeholder="Style" />
-			</SelectTrigger>
-			<SelectContent>
-				<SelectGroup>
-					<div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">Structure</div>
-					<SelectItem value="p">Paragraph</SelectItem>
-					<SelectItem value="h1">Heading 1</SelectItem>
-					<SelectItem value="h2">Heading 2</SelectItem>
-					<SelectItem value="h3">Heading 3</SelectItem>
-					<SelectItem value="h4">Heading 4</SelectItem>
-					<SelectItem value="h5">Heading 5</SelectItem>
-					<SelectItem value="h6">Heading 6</SelectItem>
-				</SelectGroup>
-				<SelectGroup>
-					<div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">Text Styles</div>
-					<SelectItem value="none">Normal Text</SelectItem>
-					<SelectItem value="primary">Primary Blue</SelectItem>
-					<SelectItem value="success">Success Green</SelectItem>
-					<SelectItem value="warning">Warning Orange</SelectItem>
-					<SelectItem value="danger">Danger Red</SelectItem>
-					<SelectItem value="muted">Muted Gray</SelectItem>
-					<SelectItem value="construction-note">Construction Note</SelectItem>
-					<SelectItem value="project-milestone">Project Milestone</SelectItem>
-					<SelectItem value="task-priority-high">High Priority</SelectItem>
-					<SelectItem value="task-priority-medium">Medium Priority</SelectItem>
-					<SelectItem value="task-priority-low">Low Priority</SelectItem>
-				</SelectGroup>
-			</SelectContent>
-		</Select>
+		}
+	};
+
+	const structureItems = ["p", "h1", "h2", "h3", "h4", "h5", "h6"];
+	const textStyleItems = [
+		"none", "primary", "success", "warning", "danger", "muted",
+		"construction-note", "project-milestone",
+		"task-priority-high", "task-priority-medium", "task-priority-low",
+	];
+
+	return (
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<button
+					className="flex h-9 w-28 items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring"
+				>
+					<span className="line-clamp-1">{labelMap[currentValue] ?? "Style"}</span>
+					<ChevronDownIcon className="h-4 w-4 opacity-50" />
+				</button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent className="w-48 max-h-96 overflow-y-auto">
+				<DropdownMenuLabel className="text-xs font-semibold text-gray-500 uppercase">
+					Structure
+				</DropdownMenuLabel>
+				<DropdownMenuGroup>
+					{structureItems.map((item) => (
+						<DropdownMenuItem
+							key={item}
+							className={cn(currentValue === item && "bg-accent")}
+							onSelect={() => applyStyle(item)}
+						>
+							{labelMap[item]}
+						</DropdownMenuItem>
+					))}
+				</DropdownMenuGroup>
+				<DropdownMenuSeparator />
+				<DropdownMenuLabel className="text-xs font-semibold text-gray-500 uppercase">
+					Text Styles
+				</DropdownMenuLabel>
+				<DropdownMenuGroup>
+					{textStyleItems.map((item) => (
+						<DropdownMenuItem
+							key={item}
+							className={cn(currentValue === item && "bg-accent")}
+							onSelect={() => applyStyle(item)}
+						>
+							{labelMap[item]}
+						</DropdownMenuItem>
+					))}
+				</DropdownMenuGroup>
+			</DropdownMenuContent>
+		</DropdownMenu>
 	);
 };
 
-export default HeadingTextStyles; 
+export default HeadingTextStyles;
