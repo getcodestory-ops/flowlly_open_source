@@ -674,7 +674,7 @@ export default function EmptyChatInterface({
 						</div>
 						{/* Chat mode limitation notice */}
 						{preferredAgentType === "chat" && (
-							<div className="mx-4 mb-3 flex items-start gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-amber-800">
+							<div className="mx-4 mb-3 flex items-start gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 animate-in fade-in slide-in-from-left-2 duration-500">
 								<Info className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-600" />
 								<p className="text-xs leading-relaxed">
 									<span className="font-medium">Chat mode</span> is optimized for quick Q&A. For document generation, complex formatting, research, or working with files, switch to <button 
