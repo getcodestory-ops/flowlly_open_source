@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	Plus,
 	Search,
@@ -21,6 +21,12 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { useChatStore } from "@/hooks/useChatStore";
 import { useRouter } from "next/navigation";
+import {
+	getCachedChatEntities,
+	getCachedChatHistory,
+	setCachedChatEntities,
+	setCachedChatHistory,
+} from "@/utils/chatCache";
 
 interface ChatPanelProps {
 	folderId: string;
@@ -65,6 +71,32 @@ export default function ChatPanel({
 	}));
 
 	const queryClient = useQueryClient();
+	const chatEntityQueryKey = ["documentChatEntityList", session, activeProject];
+
+	// Hydrate chat entity list from IndexedDB cache first.
+	useEffect(() => {
+		if (!activeProject?.project_id || !folderId || !chatTarget) return;
+		let cancelled = false;
+
+		(async() => {
+			try {
+				const cached = await getCachedChatEntities(
+					activeProject.project_id,
+					folderId,
+					chatTarget,
+				);
+				if (!cancelled && cached?.length) {
+					queryClient.setQueryData(chatEntityQueryKey, cached);
+				}
+			} catch {
+				// best effort cache
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [activeProject?.project_id, chatTarget, folderId, queryClient, session]);
 
 	// Get all unique custom tags from all chats (excluding system tags)
 	const getAllCustomTags = (): string[] => {
@@ -171,17 +203,24 @@ export default function ChatPanel({
 
 	// Query chat entities
 	const { data: chatEntities, isLoading: chatsLoading } = useQuery({
-		queryKey: ["documentChatEntityList", session, activeProject],
-		queryFn: () => {
+		queryKey: chatEntityQueryKey,
+		queryFn: async() => {
 			if (!session || !activeProject) {
 				return Promise.reject("No session or active project");
 			}
-			return getPlatformChatEntities(
+			const entities = await getPlatformChatEntities(
 				session,
 				activeProject.project_id,
 				folderId,
 				chatTarget,
 			);
+			await setCachedChatEntities(
+				activeProject.project_id,
+				folderId,
+				chatTarget,
+				entities,
+			);
+			return entities;
 		},
 	});
 
@@ -252,8 +291,18 @@ export default function ChatPanel({
 		// Manually fetch chats for this entity
 		if (session && chatEntity.id) {
 			try {
+				const cachedChats = await getCachedChatHistory(chatEntity.id);
+				if (cachedChats?.length) {
+					setLocalChats(cachedChats);
+				}
+			} catch {
+				// best effort cache
+			}
+
+			try {
 				const chats = await getAgentChats(session, chatEntity.id);
 				setLocalChats(chats);
+				await setCachedChatHistory(chatEntity.id, chats);
 				
 				// Optional: Update React Query cache
 				queryClient.setQueryData(

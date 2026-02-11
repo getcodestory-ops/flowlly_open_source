@@ -117,12 +117,13 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 
 	const handleAddFolder = (name: string): void => {
 		if (!activeProject) return;
+		const apiFolderId = currentFolderId === "root" ? null : currentFolderId;
 		
 		createSubFolder(
 			session,
 			activeProject.project_id,
 			name,
-			currentFolderId,
+			apiFolderId,
 			isProjectWide,
 			(data) => {
 				addFolder(currentFolderId, data);

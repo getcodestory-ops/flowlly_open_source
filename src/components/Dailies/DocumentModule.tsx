@@ -340,14 +340,21 @@ const FolderDetails: React.FC<
 		setFilesLoading,
 		isFolderLoaded,
 		navigateToFolder,
+		rootId,
+		getScopedFolderKey,
 	} = useDocumentStore();
+
+	const cacheFolderKey = getScopedFolderKey(currentFolderStructure.folderId);
+	const apiFolderId = currentFolderStructure.folderId === "root"
+		? rootId
+		: currentFolderStructure.folderId;
 
 	// Get cached data
 	const cachedSubFolders = getSubFoldersForFolder(currentFolderStructure.folderId);
 	const cachedFiles = getFilesForFolder(currentFolderStructure.folderId);
 	const isFolderDataLoaded = isFolderLoaded(currentFolderStructure.folderId);
-	const isFolderPending = loadingFolders.has(currentFolderStructure.folderId);
-	const isFilePending = loadingFiles.has(currentFolderStructure.folderId);
+	const isFolderPending = loadingFolders.has(cacheFolderKey);
+	const isFilePending = loadingFiles.has(cacheFolderKey);
 
 	// Fetch subfolders
 	const { data: subFolders } = useQuery({
@@ -363,7 +370,7 @@ const FolderDetails: React.FC<
 				const data = await fetchFolders(
 					session,
 					activeProject?.project_id,
-					currentFolderStructure.folderId,
+					apiFolderId ?? null,
 					isProjectWide,
 				);
 				setSubFolders(currentFolderStructure.folderId, data);
@@ -372,7 +379,7 @@ const FolderDetails: React.FC<
 				setFolderLoading(currentFolderStructure.folderId, false);
 			}
 		},
-		enabled: !!session && !!activeProject && !!currentFolderStructure.folderId && !cachedSubFolders,
+		enabled: !!session && !!activeProject && (!!apiFolderId || currentFolderStructure.folderId === "root") && !cachedSubFolders,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 
@@ -391,7 +398,7 @@ const FolderDetails: React.FC<
 				const data = await fetchFiles(
 					session,
 					activeProject?.project_id,
-					currentFolderStructure.folderId,
+					apiFolderId ?? null,
 					isProjectWide,
 					(data: GetFolderFileProp[]) => {
 						if (!data || !data.length || !data[0].storage_relations) return;
@@ -406,7 +413,7 @@ const FolderDetails: React.FC<
 				setFilesLoading(currentFolderStructure.folderId, false);
 			}
 		},
-		enabled: !!session && !!activeProject && !!currentFolderStructure.folderId && !cachedFiles,
+		enabled: !!session && !!activeProject && (!!apiFolderId || currentFolderStructure.folderId === "root") && !cachedFiles,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 
@@ -430,6 +437,7 @@ const FolderDetails: React.FC<
 				folders={displaySubFolders}
 				isProjectWide={isProjectWide}
 				onFolderClick={(folderId, folderName) => {
+					if (folderId === "root" || folderName === "root") return;
 					navigateToFolder(folderId, folderName);
 				}}
 				session={session}

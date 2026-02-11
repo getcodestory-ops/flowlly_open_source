@@ -91,8 +91,14 @@ export const updateSession = async (request: NextRequest) => {
 				const projects = await fetchProjects(session.access_token);
 
 				if (projects.length > 0 && projects[0].project_id) {
+					// Prefer the persisted active project from cookie, fall back to first project
+					const savedProjectId = request.cookies.get("activeProjectId")?.value;
+					const targetProject = savedProjectId && projects.some((p) => p.project_id === savedProjectId)
+						? savedProjectId
+						: projects[0].project_id;
+
 					const redirectUrl = new URL(
-						`/project/${projects[0].project_id}/agent`,
+						`/project/${targetProject}/agent`,
 						request.url,
 					);
 					return NextResponse.redirect(redirectUrl);

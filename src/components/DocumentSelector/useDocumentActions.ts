@@ -9,14 +9,14 @@ import { UseDocumentActionsReturn } from "./types";
 interface UseDocumentActionsProps {
   session: any;
   activeProject: any;
-  currentFolderId: string | null;
+  cacheFolderId: string;
   isProjectWide: boolean;
 }
 
 export const useDocumentActions = ({
 	session,
 	activeProject,
-	currentFolderId,
+	cacheFolderId,
 	isProjectWide,
 }: UseDocumentActionsProps): UseDocumentActionsReturn => {
 	const { toast } = useToast();
@@ -29,10 +29,9 @@ export const useDocumentActions = ({
 	const deleteMutation = useMutation({
 		mutationFn: deleteFile,
 		onSuccess: (_, variables) => {
-			const folderId = currentFolderId || "root";
-			removeFile(folderId, variables.fileId);
+			removeFile(cacheFolderId, variables.fileId);
 			queryClient.invalidateQueries({
-				queryKey: ["files", session?.access_token, activeProject?.project_id, currentFolderId, isProjectWide],
+				queryKey: ["files", session?.access_token, activeProject?.project_id, cacheFolderId, isProjectWide],
 			});
 		},
 	});
@@ -53,8 +52,7 @@ export const useDocumentActions = ({
 			const response = await updateDocumentName(session, fileId, newName);
 			if (response) {
 				// Update local store immediately for instant UI feedback
-				const folderId = currentFolderId || "root";
-				updateFile(folderId, fileId, { file_name: newName });
+				updateFile(cacheFolderId, fileId, { file_name: newName });
 				
 				toast({
 					title: "File renamed",

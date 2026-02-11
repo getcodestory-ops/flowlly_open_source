@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { GetFolderSubFolderProp } from "@/api/folderRoutes";
 import { StorageResourceEntity } from "@/types/document";
 
@@ -24,6 +25,10 @@ export interface FolderData {
 }
 
 export interface DocumentStore {
+	hasHydrated: boolean;
+	setHasHydrated: (hydrated: boolean) => void;
+	getScopedFolderKey: (folderId: string) => string;
+
 	// Project context
 	activeProjectId: string | null;
 	isProjectWide: boolean;
@@ -71,6 +76,7 @@ export interface DocumentStore {
 }
 
 const initialState = {
+	hasHydrated: false,
 	activeProjectId: null,
 	isProjectWide: true,
 	rootId: null,
@@ -80,17 +86,37 @@ const initialState = {
 	loadingFiles: new Set<string>(),
 };
 
-export const useDocumentStore = create<DocumentStore>((set, get) => ({
+export const useDocumentStore = create<DocumentStore>()(
+	persist(
+		(set, get) => ({
 	...initialState,
+
+	getScopedFolderKey: (folderId: string) => {
+		if (folderId.includes(":")) return folderId;
+		const { activeProjectId, isProjectWide } = get();
+		const projectKey = activeProjectId ?? "no-project";
+		const scopeKey = isProjectWide ? "project" : "personal";
+		return `${projectKey}:${scopeKey}:${folderId}`;
+	},
+
+	setHasHydrated: (hydrated) => set({ hasHydrated: hydrated }),
 	
 	setProjectContext: (projectId, isProjectWide) => {
 		const state = get();
+		if (!state.hasHydrated) {
+			// Avoid clearing pre-hydrated cache during initial mount race.
+			set({
+				activeProjectId: projectId,
+				isProjectWide,
+			});
+			return;
+		}
 		if (state.activeProjectId !== projectId || state.isProjectWide !== isProjectWide) {
-			// Clear cache when switching projects or contexts
+			// Reset navigation context when switching projects/scopes.
+			// Keep folder cache entries; callers should use scoped keys.
 			set({
 				activeProjectId: projectId,
 				isProjectWide: isProjectWide,
-				folders: {},
 				currentFolderStructure: null,
 				rootId: null,
 				loadingFolders: new Set(),
@@ -100,15 +126,22 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
 	},
 	
 	setRootId: (rootId, rootName) => {
-		const { isProjectWide } = get();
+		const { isProjectWide, currentFolderStructure } = get();
+		const rootLabel = isProjectWide ? "Project Database" : "Personal Database";
 		set({
 			rootId,
-			currentFolderStructure: {
-				folderId: rootId,
-				folderName: isProjectWide ? "Project Database" : "Personal Database",
-				depth: 0,
-				parent: null,
-			},
+			// Do not clobber navigation history while browsing subfolders.
+			currentFolderStructure: currentFolderStructure
+				? (currentFolderStructure.folderId === "root"
+					? { ...currentFolderStructure, folderName: rootLabel }
+					: currentFolderStructure)
+				: {
+					// Keep a stable synthetic ID for UI/cache; API root requests use null.
+					folderId: "root",
+					folderName: rootLabel,
+					depth: 0,
+					parent: null,
+				},
 		});
 	},
 	
@@ -132,66 +165,78 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
 		}
 	},
 	
-	setFolderData: (folderId, data) => set((state) => ({
-		folders: {
-			...state.folders,
-			[folderId]: {
-				...state.folders[folderId],
-				...data,
-				id: folderId,
-				lastFetched: new Date(),
+	setFolderData: (folderId, data) => set((state) => {
+		const resolvedFolderId = state.getScopedFolderKey(folderId);
+		return {
+			folders: {
+				...state.folders,
+				[resolvedFolderId]: {
+					...state.folders[resolvedFolderId],
+					...data,
+					id: resolvedFolderId,
+					lastFetched: new Date(),
+				},
 			},
-		},
-	})),
+		};
+	}),
 	
-	setSubFolders: (folderId, subFolders) => set((state) => ({
-		folders: {
-			...state.folders,
-			[folderId]: {
-				...state.folders[folderId],
-				id: folderId,
-				subFolders,
-				isLoaded: true,
-				lastFetched: new Date(),
+	setSubFolders: (folderId, subFolders) => set((state) => {
+		const resolvedFolderId = state.getScopedFolderKey(folderId);
+		return {
+			folders: {
+				...state.folders,
+				[resolvedFolderId]: {
+					...state.folders[resolvedFolderId],
+					id: resolvedFolderId,
+					subFolders,
+					isLoaded: true,
+					lastFetched: new Date(),
+				},
 			},
-		},
-	})),
+		};
+	}),
 	
-	setFiles: (folderId, files) => set((state) => ({
-		folders: {
-			...state.folders,
-			[folderId]: {
-				...state.folders[folderId],
-				id: folderId,
-				files,
-				isLoaded: true,
-				lastFetched: new Date(),
+	setFiles: (folderId, files) => set((state) => {
+		const resolvedFolderId = state.getScopedFolderKey(folderId);
+		return {
+			folders: {
+				...state.folders,
+				[resolvedFolderId]: {
+					...state.folders[resolvedFolderId],
+					id: resolvedFolderId,
+					files,
+					isLoaded: true,
+					lastFetched: new Date(),
+				},
 			},
-		},
-	})),
+		};
+	}),
 	
 	setFolderLoading: (folderId, loading) => set((state) => {
+		const resolvedFolderId = state.getScopedFolderKey(folderId);
 		const newLoadingFolders = new Set(state.loadingFolders);
 		if (loading) {
-			newLoadingFolders.add(folderId);
+			newLoadingFolders.add(resolvedFolderId);
 		} else {
-			newLoadingFolders.delete(folderId);
+			newLoadingFolders.delete(resolvedFolderId);
 		}
 		return { loadingFolders: newLoadingFolders };
 	}),
 	
 	setFilesLoading: (folderId, loading) => set((state) => {
+		const resolvedFolderId = state.getScopedFolderKey(folderId);
 		const newLoadingFiles = new Set(state.loadingFiles);
 		if (loading) {
-			newLoadingFiles.add(folderId);
+			newLoadingFiles.add(resolvedFolderId);
 		} else {
-			newLoadingFiles.delete(folderId);
+			newLoadingFiles.delete(resolvedFolderId);
 		}
 		return { loadingFiles: newLoadingFiles };
 	}),
 	
 	addFolder: (parentFolderId, folder) => set((state) => {
-		const parentFolder = state.folders[parentFolderId];
+		const resolvedParentFolderId = state.getScopedFolderKey(parentFolderId);
+		const parentFolder = state.folders[resolvedParentFolderId];
 		if (!parentFolder) return state;
 		
 		const updatedParentFolder = {
@@ -202,23 +247,27 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
 		return {
 			folders: {
 				...state.folders,
-				[parentFolderId]: updatedParentFolder,
+				[resolvedParentFolderId]: updatedParentFolder,
 			},
 		};
 	}),
 	
 	removeFolder: (folderId, parentFolderId) => set((state) => {
+		const resolvedFolderId = state.getScopedFolderKey(folderId);
+		const resolvedParentFolderId = parentFolderId
+			? state.getScopedFolderKey(parentFolderId)
+			: undefined;
 		const newFolders = { ...state.folders };
 		
 		// Remove the folder itself
-		delete newFolders[folderId];
+		delete newFolders[resolvedFolderId];
 		
 		// Remove from parent's subFolders if parentFolderId is provided
-		if (parentFolderId && newFolders[parentFolderId]) {
-			const parentFolder = newFolders[parentFolderId];
-			newFolders[parentFolderId] = {
+		if (resolvedParentFolderId && newFolders[resolvedParentFolderId]) {
+			const parentFolder = newFolders[resolvedParentFolderId];
+			newFolders[resolvedParentFolderId] = {
 				...parentFolder,
-				subFolders: parentFolder.subFolders?.filter((f) => f.id !== folderId) || [],
+				subFolders: parentFolder.subFolders?.filter((f) => f.id !== resolvedFolderId) || [],
 			};
 		}
 		
@@ -226,7 +275,8 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
 	}),
 	
 	addFile: (folderId, file) => set((state) => {
-		const folder = state.folders[folderId];
+		const resolvedFolderId = state.getScopedFolderKey(folderId);
+		const folder = state.folders[resolvedFolderId];
 		if (!folder) return state;
 		
 		const updatedFolder = {
@@ -237,13 +287,14 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
 		return {
 			folders: {
 				...state.folders,
-				[folderId]: updatedFolder,
+				[resolvedFolderId]: updatedFolder,
 			},
 		};
 	}),
 	
 	removeFile: (folderId, fileId) => set((state) => {
-		const folder = state.folders[folderId];
+		const resolvedFolderId = state.getScopedFolderKey(folderId);
+		const folder = state.folders[resolvedFolderId];
 		if (!folder) return state;
 		
 		const updatedFolder = {
@@ -254,13 +305,14 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
 		return {
 			folders: {
 				...state.folders,
-				[folderId]: updatedFolder,
+				[resolvedFolderId]: updatedFolder,
 			},
 		};
 	}),
 	
 	updateFile: (folderId, fileId, updates) => set((state) => {
-		const folder = state.folders[folderId];
+		const resolvedFolderId = state.getScopedFolderKey(folderId);
+		const folder = state.folders[resolvedFolderId];
 		if (!folder) return state;
 		
 		const updatedFolder = {
@@ -273,19 +325,20 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
 		return {
 			folders: {
 				...state.folders,
-				[folderId]: updatedFolder,
+				[resolvedFolderId]: updatedFolder,
 			},
 		};
 	}),
 	
 	invalidateFolder: (folderId) => set((state) => {
-		const folder = state.folders[folderId];
+		const resolvedFolderId = state.getScopedFolderKey(folderId);
+		const folder = state.folders[resolvedFolderId];
 		if (!folder) return state;
 		
 		return {
 			folders: {
 				...state.folders,
-				[folderId]: {
+				[resolvedFolderId]: {
 					...folder,
 					isLoaded: false,
 					subFolders: undefined,
@@ -305,22 +358,48 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
 	
 	// Utility methods
 	getFolderById: (folderId) => {
-		const { folders } = get();
-		return folders[folderId];
+		const { folders, getScopedFolderKey } = get();
+		return folders[getScopedFolderKey(folderId)];
 	},
 	
 	getFilesForFolder: (folderId) => {
-		const { folders } = get();
-		return folders[folderId]?.files;
+		const { folders, getScopedFolderKey } = get();
+		return folders[getScopedFolderKey(folderId)]?.files;
 	},
 	
 	getSubFoldersForFolder: (folderId) => {
-		const { folders } = get();
-		return folders[folderId]?.subFolders;
+		const { folders, getScopedFolderKey } = get();
+		return folders[getScopedFolderKey(folderId)]?.subFolders;
 	},
 	
 	isFolderLoaded: (folderId) => {
-		const { folders } = get();
-		return folders[folderId]?.isLoaded || false;
+		const { folders, getScopedFolderKey } = get();
+		return folders[getScopedFolderKey(folderId)]?.isLoaded || false;
 	},
-})); 
+}),
+		{
+			name: "flowlly-document-store",
+			version: 2,
+			storage: createJSONStorage(() => localStorage),
+			onRehydrateStorage: () => (state) => {
+				state?.setHasHydrated(true);
+			},
+			migrate: (persistedState, version) => {
+				if (version < 2 && persistedState && typeof persistedState === "object") {
+					return {
+						...(persistedState as Record<string, unknown>),
+						folders: {},
+					};
+				}
+				return persistedState as DocumentStore;
+			},
+			// Only persist the data cache — not transient states like loading sets or navigation
+			partialize: (state) => ({
+				folders: state.folders,
+				activeProjectId: state.activeProjectId,
+				isProjectWide: state.isProjectWide,
+				rootId: state.rootId,
+			}),
+		},
+	),
+);

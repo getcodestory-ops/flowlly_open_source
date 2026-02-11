@@ -1,12 +1,18 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useStore, useViewStore } from "@/utils/store";
 import { talkToAgent, ProcessedFile, sendMessageToStreamingAgent } from "@/api/agentRoutes";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
-import { createPlatformChatEntity } from "@/api/agentRoutes";
+import { createPlatformChatEntity, getPlatformChatEntities, getAgentChats } from "@/api/agentRoutes";
 import { AgentChat, AgentChatEntity } from "@/types/agentChats";
 import { useChatStore } from "@/hooks/useChatStore";
 import { FunctionApproval } from "@/types/agentChats";
+import {
+	getCachedChatEntities,
+	getCachedChatHistory,
+	setCachedChatEntities,
+	setCachedChatHistory,
+} from "@/utils/chatCache";
 
 export function usePlatformChat(
 	folderId: string,
@@ -39,6 +45,103 @@ export function usePlatformChat(
 	// Use localChats from the store instead of local state
 	const localChats = useStore((state) => state.localChats);
 	const setLocalChats = useStore((state) => state.setLocalChats);
+
+	// Restore persisted active chat entity on initial load
+	const persistedChatEntityId = useViewStore((state) => state.activeChatEntityId);
+	const hasRestoredChat = useRef(false);
+
+	// Fetch chat entities so we can match the persisted ID
+	const chatEntityQueryKey = ["documentChatEntityList", session, activeProject];
+
+	useEffect(() => {
+		if (!activeProject?.project_id || !folderId || !chatTarget) return;
+		let cancelled = false;
+
+		(async() => {
+			try {
+				const cached = await getCachedChatEntities(
+					activeProject.project_id,
+					folderId,
+					chatTarget,
+				);
+				if (cancelled || !cached || cached.length === 0) return;
+				queryClient.setQueryData(chatEntityQueryKey, cached);
+			} catch {
+				// Best-effort cache read
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [activeProject?.project_id, chatTarget, folderId, queryClient, session]);
+
+	const { data: chatEntitiesForRestore } = useQuery({
+		queryKey: chatEntityQueryKey,
+		queryFn: async() => {
+			if (!session || !activeProject) {
+				return Promise.reject("No session or active project");
+			}
+			const entities = await getPlatformChatEntities(
+				session,
+				activeProject.project_id,
+				folderId,
+				chatTarget,
+			);
+			await setCachedChatEntities(
+				activeProject.project_id,
+				folderId,
+				chatTarget,
+				entities,
+			);
+			return entities;
+		},
+		enabled: !!session?.access_token && !!activeProject?.project_id,
+	});
+
+	useEffect(() => {
+		if (
+			hasRestoredChat.current ||
+			!persistedChatEntityId ||
+			!chatEntitiesForRestore ||
+			activeChatEntity // already has an active chat
+		) {
+			return;
+		}
+
+		const match = chatEntitiesForRestore.find(
+			(e: AgentChatEntity) => e.id === persistedChatEntityId,
+		);
+		if (!match || !session) return;
+
+		hasRestoredChat.current = true;
+		useStore.getState().setActiveChatEntity(match);
+
+		// Also restore the agent type from the chat entity's metadata
+		const savedAgentType = match.metadata?.agent_type;
+		if (savedAgentType === "agent" || savedAgentType === "chat") {
+			useViewStore.getState().setPreferredAgentType(savedAgentType);
+		}
+
+		// Restore cached history instantly, then refresh from backend.
+		getCachedChatHistory(match.id)
+			.then((cachedChats) => {
+				if (cachedChats?.length) setLocalChats(cachedChats);
+			})
+			.catch(() => {});
+
+		getAgentChats(session, match.id)
+			.then(async(chats) => {
+				setLocalChats(chats);
+				await setCachedChatHistory(match.id, chats);
+			})
+			.catch(() => {/* silently fail, user can refresh */});
+	}, [persistedChatEntityId, chatEntitiesForRestore, activeChatEntity, session, setLocalChats]);
+
+	useEffect(() => {
+		if (!activeChatEntity?.id || !localChats) return;
+		setCachedChatHistory(activeChatEntity.id, localChats).catch(() => {});
+	}, [activeChatEntity?.id, localChats]);
 
 	// Track the chatEntityId that was used when submitting, so we can clear the correct contexts on success
 	const pendingChatEntityIdRef = useRef<string | null>(null);
@@ -134,13 +237,19 @@ export function usePlatformChat(
 
 			appendChatEntity(response);
 
-			const queryKey = ["documentChatEntityList", session, activeProject];
 			const currentEntities =
-        queryClient.getQueryData<AgentChatEntity[]>(queryKey) || [];
-			queryClient.setQueryData(queryKey, [response, ...currentEntities]);
+        queryClient.getQueryData<AgentChatEntity[]>(chatEntityQueryKey) || [];
+			const updatedEntities = [response, ...currentEntities];
+			queryClient.setQueryData(chatEntityQueryKey, updatedEntities);
+			setCachedChatEntities(
+				activeProject.project_id,
+				folderId,
+				chatTarget,
+				updatedEntities,
+			).catch(() => {});
 
-			// Set this as the active chat entity
-			useStore.setState({ activeChatEntity: response });
+			// Set this as the active chat entity (use the setter to also persist the ID)
+			useStore.getState().setActiveChatEntity(response);
 			return response;
 		},
 		onError: (error) => {

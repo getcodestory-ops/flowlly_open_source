@@ -37,6 +37,7 @@ interface ViewState {
 	preferredAgentType: "agent" | "chat";
 	chatLayoutMode: "split" | "agent";
 	activeProjectId: string | null;
+	activeChatEntityId: string | null;
 	setWorkbenchView: (view: "table" | "calendar") => void;
 	setRowsPerPage: (rows: number) => void;
 	setScheduleView: (view: "list" | "gantt") => void;
@@ -48,6 +49,7 @@ interface ViewState {
 	setPreferredAgentType: (type: "agent" | "chat") => void;
 	setChatLayoutMode: (mode: "split" | "agent") => void;
 	setActiveProjectId: (id: string | null) => void;
+	setActiveChatEntityId: (id: string | null) => void;
 }
 
 // Create new persisted store
@@ -67,6 +69,7 @@ export const useViewStore = create<ViewState>()(
 			preferredAgentType: "agent",
 			chatLayoutMode: "split",
 			activeProjectId: null,
+			activeChatEntityId: null,
 			setWorkbenchView: (view) => set(() => ({ workbenchView: view })),
 			setRowsPerPage: (rows) => set(() => ({ rowsPerPage: rows })),
 			setScheduleView: (view) => set(() => ({ scheduleView: view })),
@@ -97,7 +100,18 @@ export const useViewStore = create<ViewState>()(
 					};
 				}),
 			setChatLayoutMode: (mode) => set(() => ({ chatLayoutMode: mode })),
-			setActiveProjectId: (id) => set(() => ({ activeProjectId: id })),
+			setActiveProjectId: (id) => {
+				// Also store in a cookie so server-side middleware can read it
+				if (typeof document !== "undefined") {
+					if (id) {
+						document.cookie = `activeProjectId=${id};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
+					} else {
+						document.cookie = "activeProjectId=;path=/;max-age=0";
+					}
+				}
+				set(() => ({ activeProjectId: id }));
+			},
+			setActiveChatEntityId: (id) => set(() => ({ activeChatEntityId: id })),
 		}),
 		{
 			name: "view-storage",
@@ -192,8 +206,10 @@ export const useStore = create<State>()((set, get) => ({
 		set((state) => ({
 			chatEntities: [...state.chatEntities, chatEntity],
 		})),
-	setActiveChatEntity: (activeChatEntity: AgentChatEntity | null) =>
-		set(() => ({ activeChatEntity })),
+	setActiveChatEntity: (activeChatEntity: AgentChatEntity | null) => {
+		useViewStore.getState().setActiveChatEntityId(activeChatEntity?.id ?? null);
+		set(() => ({ activeChatEntity }));
+	},
 	setSidePanelExtensionView: (sidePanelExtensionView: SidePanelExtension) =>
 		set((state) => ({
 			sidePanelExtensionView:

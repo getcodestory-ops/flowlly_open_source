@@ -13,6 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getPlatformChatEntities } from "@/api/agentRoutes";
 import AddNewPlatformChatEntity from "./AddNewPlatformChatEntity";
+import { getCachedChatEntities, setCachedChatEntities } from "@/utils/chatCache";
 
 
 const PlatformChatSelector = ({
@@ -24,6 +25,7 @@ const PlatformChatSelector = ({
 }) => {
 	const queryClient = useQueryClient();
 	const [isOpen, setIsOpen] = useState(false);
+	const relationType = chatTarget ?? "folder";
 	const { activeChatEntity, setActiveChatEntity, activeProject, session } =
     useStore((state) => ({
     	activeChatEntity: state.activeChatEntity,
@@ -32,18 +34,51 @@ const PlatformChatSelector = ({
     	session: state.session,
     }));
 
+	const chatEntityQueryKey = ["documentChatEntityList", session, activeProject];
+
+	useEffect(() => {
+		if (!activeProject?.project_id || !folderId) return;
+		let cancelled = false;
+
+		(async() => {
+			try {
+				const cached = await getCachedChatEntities(
+					activeProject.project_id,
+					folderId,
+					relationType,
+				);
+				if (!cancelled && cached?.length) {
+					queryClient.setQueryData(chatEntityQueryKey, cached);
+				}
+			} catch {
+				// best effort cache
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [activeProject?.project_id, relationType, folderId, queryClient, session]);
+
 	const { data: chatEntities, isLoading: chatsLoading } = useQuery({
-		queryKey: ["documentChatEntityList", session, activeProject],
-		queryFn: () => {
+		queryKey: chatEntityQueryKey,
+		queryFn: async() => {
 			if (!session || !activeProject) {
 				return Promise.reject("No session or active project");
 			}
-			return getPlatformChatEntities(
+			const entities = await getPlatformChatEntities(
 				session,
 				activeProject.project_id,
 				folderId,
 				chatTarget,
 			);
+			await setCachedChatEntities(
+				activeProject.project_id,
+				folderId,
+				relationType,
+				entities,
+			);
+			return entities;
 		},
 	});
 
