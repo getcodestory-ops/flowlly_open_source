@@ -103,7 +103,7 @@ const CapabilityBadge = ({
 	iconColor,
 	title 
 }: { 
-	icon: React.ElementType; 
+	icon: React.ComponentType<{ className?: string }>; 
 	bgColor: string; 
 	iconColor: string;
 	title: string;
