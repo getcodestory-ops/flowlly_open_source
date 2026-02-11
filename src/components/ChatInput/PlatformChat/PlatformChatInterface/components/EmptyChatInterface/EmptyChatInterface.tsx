@@ -3,6 +3,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, Users, ArrowLeft, Sparkles, Plus, X, Scale, Calendar, Wand2, Upload, Info } from "lucide-react";
+import NewUserTips from "../InputArea/NewUserTips";
+import { useNewUserTips } from "@/hooks/useNewUserTips";
 import LayoutModeToggle from "../../../components/LayoutModeToggle";
 import AtSelectorComponent from "../../../components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
@@ -149,6 +151,7 @@ export default function EmptyChatInterface({
 		setChatContext,
 		clearChatContext,
 	} = useChatStore();
+	const { show: showNewUserTips, dismiss: dismissNewUserTips } = useNewUserTips();
 	const { preferredModel, setPreferredModel, preferredAgentType, setPreferredAgentType } = useViewStore();
 	const localTextareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const activeTextareaRef = textareaRef || localTextareaRef;
@@ -568,7 +571,7 @@ export default function EmptyChatInterface({
 	};
 
 	// Otherwise, show the full chat interface
-	return (
+		return (
 		<ScrollArea className="h-full w-full" scrollbarClassName="!fixed !right-0 !top-0 !h-screen" ref={scrollContainerRef}>
 			<div className="flex flex-col items-center px-4 py-8">
 				{/* Header Section */}
@@ -688,6 +691,13 @@ export default function EmptyChatInterface({
 						)}
 					</div>
 				</div>
+
+				{/* New user tips — below chat input */}
+				{showNewUserTips && (
+					<div className="w-full max-w-4xl mb-8">
+						<NewUserTips onDismiss={dismissNewUserTips} onTryPrompt={(prompt) => setChatInput(prompt)} />
+					</div>
+				)}
 
 				{/* Template Gallery - Google Docs Style */}
 				<div className="w-full max-w-6xl space-y-4 pb-8">

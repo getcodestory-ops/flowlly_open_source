@@ -9,6 +9,7 @@ import EmptyStateInput from "./components/InputArea/EmptyStateInput";
 import FileUploadProgress from "./components/FileUpload/FileUploadProgress";
 import BrainSelector from "./components/BrainSelector/BrainSelector";
 import { usePathname } from "next/navigation";
+import { useNewUserTips } from "@/hooks/useNewUserTips";
 
 export default function PlatformChatInterface({
 	folderId,
@@ -47,6 +48,7 @@ export default function PlatformChatInterface({
 	const [applyingChanges, setApplyingChanges] = useState<{
     [key: number]: boolean;
   }>({});
+	const { show: showNewUserTips, dismiss: dismissNewUserTips } = useNewUserTips();
 
 	// Example prompts for empty state
 	const examplePrompts: string[] = [];
@@ -359,6 +361,7 @@ export default function PlatformChatInterface({
 						googleSearch={googleSearch}
 						isPending={isPending}
 						isWaitingForResponse={isWaitingForResponse}
+						onDismissNewUserTips={dismissNewUserTips}
 						onRemoveFile={handleRemoveFile}
 						onSubmit={handleSubmit}
 						selectedContextFolder={selectedContextFolder}
@@ -367,6 +370,7 @@ export default function PlatformChatInterface({
 						setGoogleSearch={setGoogleSearch}
 						setShowBrainSelector={setShowBrainSelector}
 						showBrainSelector={showBrainSelector}
+						showNewUserTips={showNewUserTips}
 						uploadingFiles={uploadingFiles}
 					/>
 				</div>

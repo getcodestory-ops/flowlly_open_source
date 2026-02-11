@@ -165,11 +165,11 @@ export const MODELS: ModelType[] = [
 	// Other (Z-AI, Moonshotai, Xiaomi)
 	{
 		id: "z-ai/glm-5",
-		name: "Flowlly agent",
+		name: "Flowlly agent✨",
 		speed: 3,
 		performance: 5,
 		cost: "high",
-		description: "Experimental may make mistakes.",
+		description: "Recommended for complex tasks.",
 		bestFor: "Highly complex tasks requiring maximum intelligence",
 		contextSize: "large",
 	},

@@ -6,6 +6,7 @@ import { CornerDownLeft, Loader2 } from "lucide-react";
 import FileInput from "../FileUpload/FileInput";
 import FileDisplay from "../FileUpload/FileDisplay";
 import Image from "next/image";
+import NewUserTips from "./NewUserTips";
 import { FileUploadStatus } from "../../types";
 
 interface EmptyStateInputProps {
@@ -24,6 +25,8 @@ interface EmptyStateInputProps {
   showBrainSelector: boolean;
   setShowBrainSelector: (value: boolean) => void;
   selectedContextFolder: { id: string | null; name: string };
+  showNewUserTips?: boolean;
+  onDismissNewUserTips?: () => void;
 }
 
 export const EmptyStateInput: React.FC<EmptyStateInputProps> = ({
@@ -42,6 +45,8 @@ export const EmptyStateInput: React.FC<EmptyStateInputProps> = ({
 	showBrainSelector,
 	setShowBrainSelector,
 	selectedContextFolder,
+	showNewUserTips,
+	onDismissNewUserTips,
 }) => {
 	return (
 		<div className="flex flex-col items-center px-4 py-6">
@@ -135,6 +140,11 @@ export const EmptyStateInput: React.FC<EmptyStateInputProps> = ({
 					</Button>
 				</div>
 			</div>
+			{showNewUserTips && onDismissNewUserTips && (
+				<div className="mt-4 w-full max-w-md">
+					<NewUserTips onDismiss={onDismissNewUserTips} onTryPrompt={(prompt) => setChatInput(prompt)} />
+				</div>
+			)}
 		</div>
 	);
 };
