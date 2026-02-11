@@ -1,20 +1,41 @@
 "use client";
 import PlatformChatComponent from "../ChatInput/PlatformChat/PlatformChatComponent";
 import { Toaster } from "@/components/ui/toaster";
-import { useStore } from "@/utils/store";
+import { useStore, useViewStore } from "@/utils/store";
 import { useChatStore } from "@/hooks/useChatStore";
 import { clsx } from "clsx";
 import InteractiveChatPanel from "@/components/ChatInput/PlatformChat/InteractiveChatPanel";
-import ChatDrawer from "@/components/ChatInput/PlatformChat/ChatDrawer";
 import AttachmentTray from "@/components/ChatInput/PlatformChat/AttachmentTray";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function ChatComponent({ heightOffset = 20 }: {heightOffset?: number}) : JSX.Element {
 	const activeProject = useStore((state) => state.activeProject);
-	const { tabs, chatLayoutMode, chatAttachments } = useChatStore();
+	const { tabs, activeTabId, chatAttachments, addTab, setActiveTab, removeTab } = useChatStore();
+	const { chatLayoutMode } = useViewStore();
 	const hasOpenTabs = tabs.length > 0;
 	const [panelWidth, setPanelWidth] = useState(50); // Percentage width for the chat panel
 	const [isDragging, setIsDragging] = useState(false);
+	const prevLayoutMode = useRef(chatLayoutMode);
+
+	// Auto-add/remove Chat tab when switching layout modes
+	useEffect(() => {
+		const chatTab = tabs.find((t) => t.type === "chat");
+		
+		if (chatLayoutMode === "agent" && !chatTab) {
+			// Add Chat as a permanent tab in agent mode
+			addTab({
+				isOpen: true,
+				type: "chat",
+				resourceId: "chat-panel",
+				title: "Chat",
+			});
+		} else if (chatLayoutMode === "split" && chatTab) {
+			// Remove chat tab when switching to split (chat has its own panel)
+			removeTab(chatTab.id);
+		}
+		
+		prevLayoutMode.current = chatLayoutMode;
+	}, [chatLayoutMode]);
 
 	const handleMouseDown = (e: React.MouseEvent): void => {
 		e.preventDefault();
@@ -61,19 +82,13 @@ export default function ChatComponent({ heightOffset = 20 }: {heightOffset?: num
 	}, [isDragging]);
 
 	// Agent mode layout
+	const activeAgentTab = tabs.find((t) => t.id === activeTabId);
+	const isChatTabActive = activeAgentTab?.type === "chat";
+
 	if (chatLayoutMode === "agent" && activeProject) {
 		return (
 			<div className="h-full relative">
 				<Toaster />
-				
-				{/* Chat Drawer - slides from right */}
-				<ChatDrawer heightOffset={heightOffset}>
-					<PlatformChatComponent
-						chatTarget="agent"
-						folderId={activeProject.project_id}
-						heightOffset={heightOffset} // Match drawer's height calculation
-					/>
-				</ChatDrawer>
 
 				{/* Main content area - horizontal layout */}
 				<div className="h-full flex">
@@ -81,9 +96,9 @@ export default function ChatComponent({ heightOffset = 20 }: {heightOffset?: num
 					<div className="flex-1 min-w-0 h-full">
 						<InteractiveChatPanel heightOffset={heightOffset} />
 					</div>
-					
-					{/* Side Panel - always shown in agent mode for chat toggle */}
-					<AttachmentTray />
+
+					{/* Attachment tray - only visible when Chat tab is active */}
+					{isChatTabActive && <AttachmentTray />}
 				</div>
 			</div>
 		);

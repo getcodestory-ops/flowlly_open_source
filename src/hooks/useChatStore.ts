@@ -3,7 +3,7 @@ import { create } from "zustand";
 interface SidePanel {
 	id: string;
 	isOpen: boolean;
-	type: "sources" | "editor" | "pdfViewer" | "log" | "folder" | "sandbox" | "todo" | "fileProgress";
+	type: "sources" | "editor" | "pdfViewer" | "log" | "folder" | "sandbox" | "todo" | "fileProgress" | "chat";
 	resourceId: string;
 	filename?: string;
 	title?: string;
@@ -26,9 +26,6 @@ interface ChatAttachment {
 interface ChatStore {
 	collapsed: boolean;
 	setCollapsed: (collapsed: boolean) => void;
-	// Chat layout mode: split (side-by-side) or agent (full interactive panel with drawer)
-	chatLayoutMode: "split" | "agent";
-	setChatLayoutMode: (mode: "split" | "agent") => void;
 	// Chat drawer open state (for agent mode)
 	isChatDrawerOpen: boolean;
 	setIsChatDrawerOpen: (isOpen: boolean) => void;
@@ -140,9 +137,6 @@ const generateTabId = (): string => `tab_${Date.now()}_${Math.random().toString(
 export const useChatStore = create<ChatStore>((set, get) => ({
 	collapsed: false,
 	setCollapsed: (collapsed) => set({ collapsed }),
-	// Chat layout mode
-	chatLayoutMode: "split",
-	setChatLayoutMode: (mode) => set({ chatLayoutMode: mode }),
 	// Chat drawer state
 	isChatDrawerOpen: true,
 	setIsChatDrawerOpen: (isOpen) => set({ isChatDrawerOpen: isOpen }),
@@ -289,7 +283,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		};
 	}),
 	setActiveTab: (tabId) => set({ activeTabId: tabId }),
-	clearAllTabs: () => set({ tabs: [], activeTabId: null }),
+	clearAllTabs: () => set((state) => {
+		// Preserve the chat tab when clearing all tabs
+		const chatTab = state.tabs.find((tab) => tab.type === "chat");
+		if (chatTab) {
+			return { tabs: [chatTab], activeTabId: chatTab.id };
+		}
+		return { tabs: [], activeTabId: null };
+	}),
 	clearStreamTabs: () => set((state) => {
 		// Remove tabs that were opened during streaming (attachments, todos, file progress)
 		const streamTabTypes = ["sandbox", "todo", "fileProgress"];

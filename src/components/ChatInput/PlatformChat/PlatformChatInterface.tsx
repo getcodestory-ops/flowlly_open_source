@@ -14,8 +14,9 @@ import {
 	Paperclip,
 	Bird,
 	FolderOpen,
-	StopCircle
+	StopCircle,
 } from "lucide-react";
+import LayoutModeToggle from "./components/LayoutModeToggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { usePlatformChat } from "./usePlatformChat";
@@ -634,6 +635,7 @@ export default function PlatformChatInterface({
 							selectedModel={preferredModel}
 							selectedAgentType={preferredAgentType}
 						/>
+						<LayoutModeToggle />
 					</div>
 					<Button
 						className={`gap-1.5 transition-colors mr-2 ${

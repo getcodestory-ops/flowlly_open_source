@@ -11,8 +11,6 @@ import {
 	Printer,
 	MoreHorizontal,
 	Copy,
-	PanelLeftClose,
-	PanelLeft,
 	Paperclip,
 	Check,
 } from "lucide-react";
@@ -30,7 +28,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { useChatStore } from "@/hooks/useChatStore";
+import LayoutModeToggle from "../components/LayoutModeToggle";
 
 export interface TopToolbarProps {
   canRename: boolean;
@@ -120,48 +118,10 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 	onPrint,
 	onToggleContext,
 }) => {
-	const { chatLayoutMode, setChatLayoutMode } = useChatStore();
-	const isAgentMode = chatLayoutMode === "agent";
-
-	const handleLayoutModeToggle = () => {
-		setChatLayoutMode(isAgentMode ? "split" : "agent");
-	};
-
 	return (
 		<div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border-l border-gray-200 rounded-tr-lg">
 			{/* Layout mode toggle */}
-			<TooltipProvider delayDuration={300}>
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<Button
-							className={cn(
-								"h-8 px-2.5 gap-1.5 transition-all duration-200",
-								isAgentMode
-									? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
-									: "hover:bg-white hover:shadow-sm text-gray-600 hover:text-gray-900"
-							)}
-							onClick={handleLayoutModeToggle}
-							size="sm"
-							variant="ghost"
-						>
-							{isAgentMode ? (
-								<>
-									<PanelLeft className="h-4 w-4" />
-									<span className="text-xs font-medium">Split</span>
-								</>
-							) : (
-								<>
-									<PanelLeftClose className="h-4 w-4" />
-									<span className="text-xs font-medium">Focus</span>
-								</>
-							)}
-						</Button>
-					</TooltipTrigger>
-					<TooltipContent side="bottom" sideOffset={5}>
-						<p className="text-xs">{isAgentMode ? "Switch to split view" : "Switch to focus mode (full panel)"}</p>
-					</TooltipContent>
-				</Tooltip>
-			</TooltipProvider>
+			<LayoutModeToggle />
 
 			{/* Divider */}
 			<div className="w-px h-5 bg-gray-300 mx-1" />

@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
-import { Paperclip, X, Box, PanelLeft, MessageSquare } from "lucide-react";
+import { Paperclip, X, Box, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/hooks/useChatStore";
+import { useViewStore } from "@/utils/store";
 import { cn } from "@/lib/utils";
 import { FileIconSvg, getFileConfig } from "@/utils/fileIconConfig";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -27,19 +28,15 @@ const getExtension = (filename: string): string => {
 const isUUID = (str: string): boolean => 
 	/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
-const PANEL_WIDTH = 200;
+const PANEL_WIDTH = 300;
 
 export default function AttachmentTray(): JSX.Element | null {
 	const { 
 		chatAttachments, 
 		clearChatAttachments, 
 		addTab, 
-		chatLayoutMode, 
-		setChatLayoutMode,
-		isChatDrawerOpen,
-		setIsChatDrawerOpen,
-		isWaitingForResponse,
 	} = useChatStore();
+	const { chatLayoutMode, setChatLayoutMode } = useViewStore();
 	const isAgentMode = chatLayoutMode === "agent";
 
 	const handleAttachmentClick = (attachment: typeof chatAttachments[0]) => {
@@ -62,45 +59,7 @@ export default function AttachmentTray(): JSX.Element | null {
 			className="h-screen flex flex-col bg-white border-l border-gray-200"
 			style={{ width: `${PANEL_WIDTH}px` }}
 		>
-			{/* Chat Toggle Button */}
-			<div className="px-2 py-2 border-b border-gray-100">
-				<TooltipProvider delayDuration={300}>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button
-								className={cn(
-									"w-full h-9 gap-2 text-xs transition-all duration-200 relative",
-									isChatDrawerOpen
-										? "hover:bg-gray-100 text-gray-600 hover:text-gray-900"
-										: "bg-purple-50 text-purple-600 hover:bg-purple-100 border-purple-200",
-									isWaitingForResponse && !isChatDrawerOpen && "border-purple-300"
-								)}
-								onClick={() => setIsChatDrawerOpen(!isChatDrawerOpen)}
-								size="sm"
-								variant="outline"
-							>
-								<MessageSquare className={cn(
-									"h-4 w-4",
-									isWaitingForResponse && !isChatDrawerOpen && "text-purple-600 animate-pulse"
-								)} />
-								<span>{isChatDrawerOpen ? "Hide Chat" : "Show Chat"}</span>
-								{/* Activity indicator */}
-								{isWaitingForResponse && !isChatDrawerOpen && (
-									<span className="absolute top-1 right-1 flex h-2 w-2">
-										<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
-										<span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500" />
-									</span>
-								)}
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent side="left" sideOffset={5}>
-							<p className="text-xs">{isChatDrawerOpen ? "Close chat panel" : "Open chat panel"}</p>
-						</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
-			</div>
-
-			{/* Files Header - only show when there are files */}
+		{/* Files Header - only show when there are files */}
 			{chatAttachments.length > 0 && (
 				<div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-gray-50">
 					<div className="flex items-center gap-1.5 text-xs font-medium text-gray-600">
@@ -176,32 +135,7 @@ export default function AttachmentTray(): JSX.Element | null {
 				)}
 			</ScrollArea>
 
-			{/* Footer with mode toggle */}
-			<div className="px-2 py-2 border-t border-gray-100 bg-gray-50">
-				<TooltipProvider delayDuration={300}>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button
-								className={cn(
-									"w-full h-8 gap-1.5 text-xs transition-all duration-200",
-									isAgentMode
-										? "bg-purple-50 text-purple-600 hover:bg-purple-100"
-										: "hover:bg-white text-gray-600 hover:text-gray-900"
-								)}
-								onClick={() => setChatLayoutMode(isAgentMode ? "split" : "agent")}
-								size="sm"
-								variant="ghost"
-							>
-								<PanelLeft className="h-3.5 w-3.5" />
-								<span>Switch to Split</span>
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent side="left" sideOffset={5}>
-							<p className="text-xs">Switch to split view with chat panel</p>
-						</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
-			</div>
+		
 		</div>
 	);
 }

@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { CornerDownLeft, Loader2, FileSpreadsheet, FileText, FileCode, Search, Users, ArrowLeft, Sparkles, Plus, X, Scale, Calendar, Wand2, Upload, Info } from "lucide-react";
+import LayoutModeToggle from "../../../components/LayoutModeToggle";
 import AtSelectorComponent from "../../../components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
 import { useViewStore } from "@/utils/store";
@@ -654,6 +655,7 @@ export default function EmptyChatInterface({
 									selectedModel={preferredModel}
 									selectedAgentType={preferredAgentType}
 								/>
+								<LayoutModeToggle />
 							</div>
 							<Button
 								className="gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white transition-colors"

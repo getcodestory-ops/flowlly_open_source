@@ -3,8 +3,8 @@ import { useChatStore } from "@/hooks/useChatStore";
 import { Button } from "@/components/ui/button";
 import { getInlineDocument, saveDocumentAs, fetchResource } from "@/api/folderRoutes";
 import { updateDocumentName } from "@/api/documentRoutes";
-import { useStore } from "@/utils/store";
-import { X, Folder, Plus, ChevronLeft, ChevronRight, Box, PanelLeft, PanelLeftClose } from "lucide-react";
+import { useStore, useViewStore } from "@/utils/store";
+import { X, Folder, Plus, ChevronLeft, ChevronRight, Box, PanelLeft, PanelLeftClose, MessageSquare, Loader2 } from "lucide-react";
 import TopToolbar from "./ChatPanel/TopToolbar";
 import InlineDocumentViewer from "./ChatPanel/InlineDocumentViewer";
 import { htmlExtensions } from "./ChatPanel/fileExtensions";
@@ -22,6 +22,8 @@ import { UnsavedChangesDialog } from "@/components/DocumentEditor/ToolBarItems";
 import TodoPanel from "@/components/StreamResponse/TodoPanel";
 import { cn } from "@/lib/utils";
 import { FileIconSvg, getFileConfig } from "@/utils/fileIconConfig";
+import PlatformChatComponent from "./PlatformChatComponent";
+import LayoutModeToggle from "./components/LayoutModeToggle";
 
 // Helper function to get sandbox_id for API calls
 const getSandboxId = (tab: any): string => {
@@ -34,7 +36,8 @@ const getSandboxId = (tab: any): string => {
 };
 
 const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : React.ReactNode => {
-	const { tabs, activeTabId, setActiveTab, removeTab, clearAllTabs, addTab, chatLayoutMode, setChatLayoutMode, selectedContexts, setSelectedContexts } = useChatStore();
+	const { tabs, activeTabId, setActiveTab, removeTab, clearAllTabs, addTab, selectedContexts, setSelectedContexts, isWaitingForResponse, streamingKey } = useChatStore();
+	const { chatLayoutMode, setChatLayoutMode } = useViewStore();
 	const [viewModes, setViewModes] = useState<{[tabId: string]: "original" | "text"}>({});
 	const [editingTabId, setEditingTabId] = useState<string | null>(null);
 	const [editedName, setEditedName] = useState<string>("");
@@ -543,7 +546,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 								msOverflowStyle: "none",
 							}}
 						>
-							<div className="flex items-center px-1.5 gap-0.5 h-[36px]">
+							<div className="flex items-center px-1.5 gap-0.25 h-[36px]">
 								{tabs.map((tab, index) => {
 									const isActive = tab.id === activeTabId;
 									const fileExtension = getFileExtension(tab.filename);
@@ -552,27 +555,35 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 									return (
 										<button
 											className={cn(
-												"group relative flex items-center gap-1.5 px-2.5 h-[28px] text-xs transition-all duration-150 flex-shrink-0 max-w-[160px] border-t border-gray-300 rounded-t-md",
+												"group relative flex items-center gap-1.5 px-2.5 h-[28px] text-xs transition-all duration-150 flex-shrink-0 max-w-[160px] border border-indigo-100 rounded-t-md",
 												isActive 
-													? "bg-white text-gray-900 rounded-md shadow-sm border-gray-300" 
+													? "bg-indigo-100 text-gray-900  border border-gray-300 rounded-t-md" 
 													: "text-gray-600 hover:text-gray-900 hover:bg-gray-100 "
 											)}
 											key={tab.id}
 											onClick={() => setActiveTab(tab.id)}
 										>
-											{/* File icon */}
-											{tab.type === "folder" ? (
-												<div className="flex-shrink-0 flex items-center justify-center w-4 h-4 rounded bg-blue-100">
-													<Folder className="h-3 w-3 text-blue-600" />
-												</div>
-											) : (
-												<div className={cn(
-													"flex-shrink-0 flex items-center justify-center w-4 h-4 rounded",
-													fileConfig.bg, fileConfig.color
-												)}>
-													<FileIconSvg className="h-4 w-4" iconKey={fileConfig.iconKey} />
-												</div>
-											)}
+										{/* File icon */}
+										{tab.type === "chat" ? (
+											<div className="flex-shrink-0 flex items-center justify-center w-4 h-4 rounded bg-purple-100">
+												{(isWaitingForResponse || streamingKey) ? (
+													<Loader2 className="h-3 w-3 text-purple-600 animate-spin" />
+												) : (
+													<MessageSquare className="h-3 w-3 text-purple-600" />
+												)}
+											</div>
+										) : tab.type === "folder" ? (
+											<div className="flex-shrink-0 flex items-center justify-center w-4 h-4 rounded bg-blue-100">
+												<Folder className="h-3 w-3 text-blue-600" />
+											</div>
+										) : (
+											<div className={cn(
+												"flex-shrink-0 flex items-center justify-center w-4 h-4 rounded",
+												fileConfig.bg, fileConfig.color
+											)}>
+												<FileIconSvg className="h-4 w-4" iconKey={fileConfig.iconKey} />
+											</div>
+										)}
 											
 											{/* File name */}
 											<span className="truncate min-w-0 flex-1" title={tab.filename || tab.title}>
@@ -603,7 +614,8 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 												<span className="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0" />
 											)}
 											
-											{/* Close button - visible on hover or when active */}
+										{/* Close button - visible on hover or when active, hidden for permanent chat tab */}
+										{tab.type !== "chat" && (
 											<div
 												className={cn(
 													"h-4 w-4 flex-shrink-0 inline-flex items-center justify-center rounded-sm cursor-pointer transition-all",
@@ -615,12 +627,18 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 											>
 												<X className="h-3 w-3" />
 											</div>
+										)}
 										</button>
 									);
 								})}
 							</div>
 						</div>
 					</div>
+					{activeTab?.type === "chat" ? (
+					<div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border-l border-gray-200 rounded-tr-lg">
+						<LayoutModeToggle />
+					</div>
+				) : (
 					<TopToolbar
 						canAddContext={canAddActiveTabAsContext}
 						canDownload={!!activeTab && (activeTab.type === "sources" || activeTab.type === "sandbox") && !isDownloading}
@@ -652,6 +670,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 						onToggleContext={handleToggleContext}
 						onToggleMode={() => activeTab && handleModeSwitch(activeTab.id)}
 					/>
+				)}
 				</div>
 			)}
 			<div className="flex-1 overflow-auto relative b">
@@ -806,10 +825,17 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 						{tab.type === "todo" && (
 							<TodoPanel file={tab.resourceId} />
 						)}
-						{tab.type === "fileProgress" && (
-							<FileProgressPanel fileName={tab.resourceId} />
-						)}
-					</div>
+					{tab.type === "fileProgress" && (
+						<FileProgressPanel fileName={tab.resourceId} />
+					)}
+					{tab.type === "chat" && activeProject && (
+						<PlatformChatComponent
+							chatTarget="agent"
+							folderId={activeProject.project_id}
+							heightOffset={heightOffset + 42}
+						/>
+					)}
+				</div>
 				))}
 			</div>
 			<Dialog onOpenChange={setShowSaveAsDialog} open={showSaveAsDialog}>

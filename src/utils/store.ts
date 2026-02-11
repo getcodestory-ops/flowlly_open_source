@@ -35,6 +35,7 @@ interface ViewState {
 	preferredModelAgent: string;
 	preferredModelChat: string;
 	preferredAgentType: "agent" | "chat";
+	chatLayoutMode: "split" | "agent";
 	setWorkbenchView: (view: "table" | "calendar") => void;
 	setRowsPerPage: (rows: number) => void;
 	setScheduleView: (view: "list" | "gantt") => void;
@@ -44,6 +45,7 @@ interface ViewState {
 	setCalendarSubView: (view: "current" | "integrations") => void;
 	setPreferredModel: (model: string) => void;
 	setPreferredAgentType: (type: "agent" | "chat") => void;
+	setChatLayoutMode: (mode: "split" | "agent") => void;
 }
 
 // Create new persisted store
@@ -61,6 +63,7 @@ export const useViewStore = create<ViewState>()(
 			preferredModelAgent: DEFAULT_MODEL_AGENT,
 			preferredModelChat: DEFAULT_MODEL_CHAT,
 			preferredAgentType: "agent",
+			chatLayoutMode: "split",
 			setWorkbenchView: (view) => set(() => ({ workbenchView: view })),
 			setRowsPerPage: (rows) => set(() => ({ rowsPerPage: rows })),
 			setScheduleView: (view) => set(() => ({ scheduleView: view })),
@@ -90,6 +93,7 @@ export const useViewStore = create<ViewState>()(
 						...(type === "agent" ? { preferredModelAgent: resolved } : { preferredModelChat: resolved }),
 					};
 				}),
+			setChatLayoutMode: (mode) => set(() => ({ chatLayoutMode: mode })),
 		}),
 		{
 			name: "view-storage",
