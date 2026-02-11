@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { GetFolderSubFolderProp } from "@/api/folderRoutes";
 import { StorageResourceEntity } from "@/types/document";
+import { useViewStore } from "@/utils/viewStore";
 
 // Current folder structure for navigation
 export interface CurrentFolderStructure {
@@ -29,9 +30,9 @@ export interface DocumentStore {
 	setHasHydrated: (hydrated: boolean) => void;
 	getScopedFolderKey: (folderId: string) => string;
 
-	// Project context
-	activeProjectId: string | null;
+	// Project scope (project vs personal drive); projectId comes from useViewStore.activeProjectId
 	isProjectWide: boolean;
+	_lastProjectContext: { projectId: string; isProjectWide: boolean } | null;
 	setProjectContext: (projectId: string, isProjectWide: boolean) => void;
 	
 	// Root folder
@@ -77,8 +78,8 @@ export interface DocumentStore {
 
 const initialState = {
 	hasHydrated: false,
-	activeProjectId: null,
 	isProjectWide: true,
+	_lastProjectContext: null as { projectId: string; isProjectWide: boolean } | null,
 	rootId: null,
 	currentFolderStructure: null,
 	folders: {},
@@ -93,9 +94,8 @@ export const useDocumentStore = create<DocumentStore>()(
 
 	getScopedFolderKey: (folderId: string) => {
 		if (folderId.includes(":")) return folderId;
-		const { activeProjectId, isProjectWide } = get();
-		const projectKey = activeProjectId ?? "no-project";
-		const scopeKey = isProjectWide ? "project" : "personal";
+		const projectKey = useViewStore.getState().activeProjectId ?? "no-project";
+		const scopeKey = get().isProjectWide ? "project" : "personal";
 		return `${projectKey}:${scopeKey}:${folderId}`;
 	},
 
@@ -103,20 +103,16 @@ export const useDocumentStore = create<DocumentStore>()(
 	
 	setProjectContext: (projectId, isProjectWide) => {
 		const state = get();
+		const prev = state._lastProjectContext;
+		const changed = !prev || prev.projectId !== projectId || prev.isProjectWide !== isProjectWide;
 		if (!state.hasHydrated) {
-			// Avoid clearing pre-hydrated cache during initial mount race.
-			set({
-				activeProjectId: projectId,
-				isProjectWide,
-			});
+			set({ isProjectWide, _lastProjectContext: { projectId, isProjectWide } });
 			return;
 		}
-		if (state.activeProjectId !== projectId || state.isProjectWide !== isProjectWide) {
-			// Reset navigation context when switching projects/scopes.
-			// Keep folder cache entries; callers should use scoped keys.
+		if (changed) {
 			set({
-				activeProjectId: projectId,
-				isProjectWide: isProjectWide,
+				isProjectWide,
+				_lastProjectContext: { projectId, isProjectWide },
 				currentFolderStructure: null,
 				rootId: null,
 				loadingFolders: new Set(),
@@ -379,24 +375,22 @@ export const useDocumentStore = create<DocumentStore>()(
 }),
 		{
 			name: "flowlly-document-store",
-			version: 2,
+			version: 3,
 			storage: createJSONStorage(() => localStorage),
 			onRehydrateStorage: () => (state) => {
 				state?.setHasHydrated(true);
 			},
 			migrate: (persistedState, version) => {
-				if (version < 2 && persistedState && typeof persistedState === "object") {
-					return {
-						...(persistedState as Record<string, unknown>),
-						folders: {},
-					};
+				if (persistedState && typeof persistedState === "object") {
+					const p = persistedState as Record<string, unknown>;
+					if (version < 2) (p as Record<string, unknown>).folders = {};
+					delete p.activeProjectId; // removed - use useViewStore.activeProjectId
 				}
 				return persistedState as DocumentStore;
 			},
 			// Only persist the data cache — not transient states like loading sets or navigation
 			partialize: (state) => ({
 				folders: state.folders,
-				activeProjectId: state.activeProjectId,
 				isProjectWide: state.isProjectWide,
 				rootId: state.rootId,
 			}),

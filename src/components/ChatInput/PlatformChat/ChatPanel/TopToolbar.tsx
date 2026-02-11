@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
 	Edit3, 
 	Download, 
@@ -118,6 +119,8 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 	onPrint,
 	onToggleContext,
 }) => {
+	const [isContextHovered, setIsContextHovered] = useState(false);
+
 	return (
 		<div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border-l border-gray-200 rounded-tr-lg">
 			{/* Layout mode toggle */}
@@ -169,39 +172,45 @@ const TopToolbar: React.FC<TopToolbarProps> = ({
 				</>
 			)}
 
-			{/* Add to Context toggle */}
+			{/* Add to Context checkbox - consistent with DocumentItem */}
 			{canAddContext && onToggleContext && (
-				<TooltipProvider delayDuration={300}>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button
-								className={cn(
-									"h-8 px-2.5 gap-1.5 transition-all duration-200",
-									isAddedAsContext
-										? "bg-green-50 text-green-600 hover:bg-green-100"
-										: "hover:bg-white hover:shadow-sm text-gray-600 hover:text-gray-900"
-								)}
-								onClick={onToggleContext}
-								size="sm"
-								variant="ghost"
-							>
-								{isAddedAsContext ? (
-									<>
-										<Check className="h-4 w-4" />
-										<span className="text-xs font-medium">Context</span>
-									</>
-								) : (
-									<>
-										<Paperclip className="h-4 w-4" />
-									</>
-								)}
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent side="bottom" sideOffset={5}>
-							<p className="text-xs">{isAddedAsContext ? "Remove file from chat context" : "Add file as chat context"}</p>
-						</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
+				<div
+					className={cn(
+						"flex-shrink-0 relative px-2 py-1 -mx-1 rounded transition-all duration-150 flex items-center gap-1.5",
+						isContextHovered && !isAddedAsContext && "bg-green-50 ring-2 ring-green-200"
+					)}
+					onClick={(e) => {
+						e.stopPropagation();
+						onToggleContext();
+					}}
+					onMouseEnter={() => setIsContextHovered(true)}
+					onMouseLeave={() => setIsContextHovered(false)}
+					title={isAddedAsContext ? "Remove file from chat context" : "Add file as chat context"}
+				>
+					<Checkbox
+						checked={isAddedAsContext}
+						className={cn(
+							"h-4 w-4 transition-all duration-150 flex-shrink-0",
+							isAddedAsContext
+								? "border-green-600 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+								: isContextHovered
+									? "border-green-500 scale-110"
+									: "border-gray-300"
+						)}
+					/>
+					<span className={cn(
+						"text-xs font-medium whitespace-nowrap transition-colors",
+						isAddedAsContext ? "text-green-600" : "text-gray-600"
+					)}>
+						Context
+					</span>
+					{/* Hover hint label - consistent with DocumentItem */}
+					{isContextHovered && (
+						<span className="absolute left-1/2 -translate-x-1/2 -bottom-6 whitespace-nowrap text-[10px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded animate-in fade-in duration-150 pointer-events-none shadow-sm border border-green-200 z-10">
+							{isAddedAsContext ? "Remove" : "+ Context"}
+						</span>
+					)}
+				</div>
 			)}
 
 			{canAddContext && <div className="w-px h-5 bg-gray-300 mx-1" />}
