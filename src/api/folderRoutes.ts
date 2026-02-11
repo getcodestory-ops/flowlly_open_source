@@ -582,6 +582,94 @@ export const getSandboxImageAsDataUrl = async({
 	}
 };
 
+/**
+ * Fetch sandbox 3D model (GLB/GLTF) as a Blob URL.
+ * Uses native fetch to get binary data from the backend and creates
+ * an Object URL that Three.js can load directly (same-origin, no CORS).
+ *
+ * Handles multiple response formats:
+ * - Raw binary (when backend has glb/gltf in binary_extensions) -> blob directly
+ * - JSON with url field (resource metadata) -> proxy through /api/proxy-model
+ * - Text (corrupted binary as string) -> error
+ */
+export const getSandboxModelAsBlobUrl = async ({
+	session,
+	projectId,
+	sandboxId,
+	fileName,
+}: {
+	session: Session;
+	projectId: string;
+	sandboxId: string;
+	fileName: string;
+}): Promise<string | null> => {
+	const baseUrl = `${process.env.NEXT_PUBLIC_DEVELOPMENT_SERVER_URL}/storage/file/view/${projectId}/${sandboxId}`;
+	const params = new URLSearchParams();
+	params.append("is_sandbox_file", "true");
+	params.append("file_name", fileName);
+	const fullUrl = `${baseUrl}?${params.toString()}`;
+
+	const ext = fileName.split(".").pop()?.toLowerCase() || "glb";
+	const mimeType = ext === "gltf" ? "model/gltf+json" : "model/gltf-binary";
+
+	try {
+		const response = await fetch(fullUrl, {
+			method: "GET",
+			headers: {
+				"Authorization": `Bearer ${session.access_token}`,
+				"Accept": `${mimeType}, application/octet-stream, */*`,
+			},
+		});
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const contentType = response.headers.get("content-type") || "";
+
+		// If the backend returns JSON (resource metadata with url field),
+		// use the signed URL via the proxy instead
+		if (contentType.includes("application/json")) {
+			const data = await response.json();
+			if (data && typeof data === "object" && data.url) {
+				// Return the proxy URL so GLTFViewer routes it through /api/proxy-model
+				return data.url;
+			}
+			console.error("Sandbox model: JSON response without url field", data);
+			return null;
+		}
+
+		// If the response is text/plain, the binary was corrupted as text — 
+		// this means glb/gltf is not in backend binary_extensions yet.
+		if (contentType.includes("text/plain")) {
+			console.error(
+				"Sandbox model: received text/plain instead of binary. " +
+				"Add 'glb'/'gltf' to binary_extensions in the backend."
+			);
+			return null;
+		}
+
+		// Raw binary response — use an ArrayBuffer for clean byte handling
+		const arrayBuffer = await response.arrayBuffer();
+
+		// Quick sanity check: GLB files start with magic bytes "glTF" (0x67 0x6C 0x54 0x46)
+		if (ext === "glb" && arrayBuffer.byteLength >= 4) {
+			const header = new Uint8Array(arrayBuffer, 0, 4);
+			const magic = String.fromCharCode(...header);
+			if (magic !== "glTF") {
+				console.error("Sandbox model: binary data does not have valid GLB header, got:", magic);
+				return null;
+			}
+		}
+
+		const blob = new Blob([arrayBuffer], { type: mimeType });
+		return URL.createObjectURL(blob);
+	} catch (error) {
+		console.error("Error getting sandbox 3D model:", error);
+		return null;
+	}
+};
+
 // Helper to check if a string looks like valid base64
 function isBase64(str: string): boolean {
 	if (!str || str.length < 20) return false;

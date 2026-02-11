@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "@/utils/store";
-import { getInlineDocument, getWopiSandboxEditorUrl, getWopiStorageEditorUrl, getSandboxImageAsDataUrl } from "@/api/folderRoutes";
+import { getInlineDocument, getWopiSandboxEditorUrl, getWopiStorageEditorUrl, getSandboxImageAsDataUrl, getSandboxModelAsBlobUrl } from "@/api/folderRoutes";
 import { FileImage, Loader2, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CSVViewer } from "./CSVViewer";
 import HTMLViewer from "./HTMLViewer";
+import GLTFViewer from "./GLTFViewer";
 import {
 	csvExtensions,
+	gltfExtensions,
 	htmlExtensions,
 	imageExtensions,
 	tifExtensions,
@@ -141,10 +143,13 @@ export const InlineDocumentViewer = ({
 	const isWopiSandbox = !!isSandboxFile && isWopiEditable;
 	const isWopiStorage = !isSandboxFile && isWopiEditable;
 
+	const isSandboxModel = !!isSandboxFile && gltfExtensions.includes(fileExtension);
+
 	const needsInlineUrl =
     !csvExtensions.includes(fileExtension) &&
     !htmlExtensions.includes(fileExtension) &&
-    !isWopiEditable;
+    !isWopiEditable &&
+    !isSandboxModel;
 
 	// Fetch regular inline document URL (for non-WOPI files)
 	// Using standardized query key: "resource" prefix for all file content fetches
@@ -247,6 +252,33 @@ export const InlineDocumentViewer = ({
 			});
 		},
 		enabled: isSandboxBinaryImage && !!session && !!activeProject?.project_id && !!fileName,
+		staleTime: 30 * 1000,
+	});
+
+
+	// Fetch sandbox 3D models as blob URL
+	const { data: sandboxModelBlobUrl, isLoading: sandboxModelLoading } = useQuery({
+		queryKey: [
+			"resource",
+			activeProject?.project_id,
+			resourceId,
+			"sandbox",
+			"model",
+			fileName,
+			lastReloadTime,
+		],
+		queryFn: () => {
+			if (!session || !activeProject?.project_id || !fileName) {
+				return Promise.reject("No session, active project, or file name");
+			}
+			return getSandboxModelAsBlobUrl({
+				session,
+				projectId: activeProject.project_id,
+				sandboxId: resourceId,
+				fileName,
+			});
+		},
+		enabled: isSandboxModel && !!session && !!activeProject?.project_id && !!fileName,
 		staleTime: 30 * 1000,
 	});
 
@@ -438,6 +470,65 @@ export const InlineDocumentViewer = ({
 				<div className="flex flex-col items-center gap-2">
 					<FileImage className="h-12 w-12 text-gray-400" />
 					<p className="text-sm text-gray-600">Unable to load image</p>
+				</div>
+			</div>
+		);
+	}
+
+	// Handle GLTF/GLB 3D model files
+	if (gltfExtensions.includes(fileExtension)) {
+		// Sandbox: fetch binary from backend as blob URL
+		if (isSandboxFile) {
+			if (sandboxModelLoading) {
+				return (
+					<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+						<div className="flex flex-col items-center gap-2">
+							<Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+							<p className="text-sm text-gray-600">Loading 3D model...</p>
+						</div>
+					</div>
+				);
+			}
+			if (sandboxModelBlobUrl) {
+				return (
+					<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
+						<GLTFViewer fileName={fileName} url={sandboxModelBlobUrl} />
+					</div>
+				);
+			}
+			return (
+				<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+					<div className="flex flex-col items-center gap-2">
+						<FileImage className="h-12 w-12 text-gray-400" />
+						<p className="text-sm text-gray-600">Unable to load 3D model</p>
+					</div>
+				</div>
+			);
+		}
+
+		// Storage: use signed GCS URL (proxied through /api/proxy-model in GLTFViewer)
+		if (resourceLoading) {
+			return (
+				<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+					<div className="flex flex-col items-center gap-2">
+						<Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+						<p className="text-sm text-gray-600">Loading 3D model...</p>
+					</div>
+				</div>
+			);
+		}
+		if (resource?.url) {
+			return (
+				<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm">
+					<GLTFViewer fileName={fileName} url={resource.url} />
+				</div>
+			);
+		}
+		return (
+			<div className="h-full w-full rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+				<div className="flex flex-col items-center gap-2">
+					<FileImage className="h-12 w-12 text-gray-400" />
+					<p className="text-sm text-gray-600">Unable to load 3D model</p>
 				</div>
 			</div>
 		);

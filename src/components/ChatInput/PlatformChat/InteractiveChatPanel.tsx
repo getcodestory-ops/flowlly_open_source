@@ -295,7 +295,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 		setShowUnsavedDialog(false);
 	};
 
-	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", "docx", "doc", "xlsx", "xls", "ppt", "pptx", "odt", "ods", "odp", "md", "jsonl", "py", "css", "js", "ts", "tsx", "template", "database", "excalidraw"];
+	const inLineViewableExtensions = ["pdf", "oga", "wav", "mp3", "mp4", "webm", "ogg", "jpg", "jpeg", "png", "gif", "svg", "ico", "webp", "tif", "tiff", "csv", "json", "xml", "html", "docx", "doc", "xlsx", "xls", "ppt", "pptx", "odt", "ods", "odp", "md", "jsonl", "py", "css", "js", "ts", "tsx", "template", "database", "excalidraw", "glb", "gltf"];
 
 	const handleFileNameEdit = async(tabId: string, newName: string) => {
 		if (!session || !activeProject) return;
