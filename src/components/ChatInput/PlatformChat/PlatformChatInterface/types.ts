@@ -164,14 +164,14 @@ export const MODELS: ModelType[] = [
 	},
 	// Other (Z-AI, Moonshotai, Xiaomi)
 	{
-		id: "z-ai/glm-4.7",
-		name: "Z-AI GLM 4.7",
-		speed: 1,
+		id: "z-ai/glm-5",
+		name: "Flowlly agent",
+		speed: 3,
 		performance: 5,
 		cost: "high",
 		description: "Experimental may make mistakes.",
 		bestFor: "Highly complex tasks requiring maximum intelligence",
-		contextSize: "small",
+		contextSize: "large",
 	},
 	{
 		id: "z-ai/glm-4.5-air:free",
@@ -185,7 +185,7 @@ export const MODELS: ModelType[] = [
 	},
 	{
 		id: "moonshotai/kimi-k2.5",
-		name: "Flowlly",
+		name: "Moonshotai Kimi K2.5",
 		speed: 4,
 		performance: 5,
 		cost: "high",

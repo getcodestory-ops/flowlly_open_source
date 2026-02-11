@@ -27,7 +27,7 @@ const AGENT_MODEL_IDS = [
 	"claude-opus-4.6",
 	"gemini-3-pro-preview",
 	"gpt-5.2",
-	"z-ai/glm-4.7",
+	"z-ai/glm-5",
 	"moonshotai/kimi-k2.5",
 ];
 
@@ -66,11 +66,11 @@ const getProviderLogo = (modelId: string): string => {
 	if (modelId.includes("gpt") || modelId.includes("openai")) {
 		return "/providerLogos/openai.svg";
 	}
+	if (modelId.includes("z-ai/glm-5")) {
+		return "/providerLogos/flowlly.svg";
+	}
 	if (modelId.includes("z-ai") || modelId.includes("glm")) {
 		return "/providerLogos/zai.svg";
-	}
-	if (modelId.includes("moonshotai/kimi-k2.5")) {
-		return "/providerLogos/flowlly.svg";
 	}
 	if (modelId.includes("moonshotai") || modelId.includes("kimi")) {
 		return "/providerLogos/moonshot.svg";
