@@ -12,7 +12,7 @@ export default function ChatComponent({ heightOffset = 20 }: {heightOffset?: num
 	const activeProject = useStore((state) => state.activeProject);
 	const { tabs, activeTabId, chatAttachments, addTab, setActiveTab, removeTab } = useChatStore();
 	const { chatLayoutMode } = useViewStore();
-	const hasOpenTabs = tabs.length > 0;
+	const hasOpenTabs = tabs.filter((t) => t.type !== "chat").length > 0;
 	const [panelWidth, setPanelWidth] = useState(50); // Percentage width for the chat panel
 	const [isDragging, setIsDragging] = useState(false);
 	const prevLayoutMode = useRef(chatLayoutMode);

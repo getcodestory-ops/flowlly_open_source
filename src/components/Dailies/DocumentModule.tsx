@@ -47,7 +47,7 @@ export function DatabasePageLayout() : React.ReactNode {
 		setCurrentFolderStructure,
 	} = useDocumentStore();
 	const { tabs } = useChatStore();
-	const hasOpenTabs = tabs.length > 0;
+	const hasOpenTabs = tabs.filter((t) => t.type !== "chat").length > 0;
 	const [panelWidth, setPanelWidth] = useState(50); // Percentage width for the main content
 	const [isDragging, setIsDragging] = useState(false);
 

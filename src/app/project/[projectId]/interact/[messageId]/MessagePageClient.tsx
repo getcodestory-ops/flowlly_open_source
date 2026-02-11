@@ -12,7 +12,7 @@ interface MessagePageClientProps {
 
 export default function MessagePageClient({ message }: MessagePageClientProps) {
 	const { tabs, setIsWaitingForResponse } = useChatStore();
-	const hasOpenTabs = tabs.length > 0;
+	const hasOpenTabs = tabs.filter((t) => t.type !== "chat").length > 0;
 	const [panelWidth, setPanelWidth] = useState(50); // Percentage width for the chat panel
 	const [isDragging, setIsDragging] = useState(false);
 
