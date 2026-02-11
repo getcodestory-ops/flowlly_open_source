@@ -169,31 +169,38 @@ export function EnhancedSidePanel(): React.ReactNode {
 	}, [data?.length, isSuccess, setUserProjects, data]);
 
 	// Set active project based on URL, persisted ID, or fall back to first project
-	const persistedProjectId = useViewStore((s) => s.activeProjectId);
-
 	useEffect(() => {
 		if (userProjects.length === 0) return;
 		const projectId = params?.projectId;
+		// Read latest values directly from stores to avoid stale closures
+		// and to keep them OUT of the dependency array.
+		// Having activeProject or persistedProjectId as deps causes a feedback loop:
+		// switchProject sets both synchronously → this effect re-fires while
+		// params still has the OLD projectId → reverts the switch.
+		const currentActiveProject = useStore.getState().activeProject;
 
 		if (projectId) {
-			// URL takes priority
-			const project = userProjects.find(
-				(project) => project.project_id === projectId,
-			);
-			if (project) {
-				setActiveProject(project);
-				return;
+			// URL takes priority, but only sync if active project doesn't already match
+			if (currentActiveProject?.project_id !== projectId) {
+				const project = userProjects.find(
+					(project) => project.project_id === projectId,
+				);
+				if (project) {
+					setActiveProject(project);
+				}
 			}
+			return;
 		}
 
 		// If no active project yet, try persisted ID, then fall back to first
-		if (!activeProject) {
-			const persisted = persistedProjectId
-				? userProjects.find((p) => p.project_id === persistedProjectId)
+		if (!currentActiveProject) {
+			const savedProjectId = useViewStore.getState().activeProjectId;
+			const persisted = savedProjectId
+				? userProjects.find((p) => p.project_id === savedProjectId)
 				: null;
 			setActiveProject(persisted ?? userProjects[0]);
 		}
-	}, [userProjects.length, userProjects, setActiveProject, params?.projectId, persistedProjectId, activeProject]);
+	}, [userProjects.length, userProjects, setActiveProject, params?.projectId]);
 
 	// Fetch members for active project
 	const { data: membersData } = useQuery({
