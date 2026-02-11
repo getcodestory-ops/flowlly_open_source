@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Archivo_Black } from "next/font/google";
 import { UserNav } from "@/components/ProjectDashboard/components/UserNav";
-import { useStore } from "@/utils/store";
+import { useStore, useViewStore } from "@/utils/store";
 import Link from "next/link";
 import {
 	Calendar,
@@ -168,20 +168,32 @@ export function EnhancedSidePanel(): React.ReactNode {
 		}
 	}, [data?.length, isSuccess, setUserProjects, data]);
 
-	// Set active project based on URL if needed
+	// Set active project based on URL, persisted ID, or fall back to first project
+	const persistedProjectId = useViewStore((s) => s.activeProjectId);
+
 	useEffect(() => {
 		if (userProjects.length === 0) return;
 		const projectId = params?.projectId;
 
 		if (projectId) {
+			// URL takes priority
 			const project = userProjects.find(
 				(project) => project.project_id === projectId,
 			);
 			if (project) {
 				setActiveProject(project);
+				return;
 			}
 		}
-	}, [userProjects.length, userProjects, setActiveProject, params?.projectId]);
+
+		// If no active project yet, try persisted ID, then fall back to first
+		if (!activeProject) {
+			const persisted = persistedProjectId
+				? userProjects.find((p) => p.project_id === persistedProjectId)
+				: null;
+			setActiveProject(persisted ?? userProjects[0]);
+		}
+	}, [userProjects.length, userProjects, setActiveProject, params?.projectId, persistedProjectId, activeProject]);
 
 	// Fetch members for active project
 	const { data: membersData } = useQuery({

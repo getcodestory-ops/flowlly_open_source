@@ -32,7 +32,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { useStore } from "@/utils/store";
+import { useStore, useViewStore } from "@/utils/store";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getMembers } from "@/api/membersRoutes";
 import { getProjects } from "@/api/projectRoutes";
@@ -107,22 +107,31 @@ export function ProjectSwitcher({ className }: TeamSwitcherProps) : JSX.Element 
 		placeholderData: keepPreviousData,
 	});
 
+	const persistedProjectId = useViewStore((s) => s.activeProjectId);
+
 	useEffect(() => {
 		if (userProjects.length === 0) return;
 		const projectId = params?.projectId;
 
 		if (projectId) {
+			// URL takes priority
 			const project = userProjects.find(
 				(project) => project.project_id === projectId,
 			);
 			if (project) {
 				setActiveProject(project);
+				return;
 			}
-		} else {
 		}
 
-		//add the project id to the url
-	}, [userProjects.length, userProjects, setActiveProject]);
+		// If no active project yet, try persisted ID, then fall back to first
+		if (!activeProject) {
+			const persisted = persistedProjectId
+				? userProjects.find((p) => p.project_id === persistedProjectId)
+				: null;
+			setActiveProject(persisted ?? userProjects[0]);
+		}
+	}, [userProjects.length, userProjects, setActiveProject, params?.projectId, persistedProjectId, activeProject]);
 
 	useEffect(() => {
 		if (data && data.length > 0 && isSuccess) {
