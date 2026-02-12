@@ -182,6 +182,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 		return (value || " ").split("\n").length;
 	}, [value]);
 
+	// Browsers collapse a trailing newline in <pre> elements, but textarea
+	// always preserves it as an extra empty line.  Append a space so the
+	// <pre> keeps the same total height as the textarea.
+	const displayValue = useMemo(() => {
+		if (!value) return " ";
+		return value.endsWith("\n") ? value + " " : value;
+	}, [value]);
+
 	// Both layers share this left padding so code text starts at the same x-position
 	const codePaddingLeft = `calc(${LINE_GUTTER_WIDTH} + 12px)`;
 
@@ -249,14 +257,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 							padding: 0,
 							margin: 0,
 							background: "transparent",
+							display: "block",
 						},
 					}}
 					language={language}
 					style={oneLight}
-					wrapLines
 					wrapLongLines
 				>
-					{value || " "}
+					{displayValue}
 				</SyntaxHighlighter>
 			</div>
 
