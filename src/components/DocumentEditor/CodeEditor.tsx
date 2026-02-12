@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 import FloatingSaveIndicator from "./FloatingSaveIndicator";
@@ -11,6 +17,9 @@ interface CodeEditorProps {
 	isSaving?: boolean;
 	onSave?: (updated: string) => void;
 }
+
+// Fixed gutter width for line numbers
+const LINE_GUTTER_WIDTH = "4em";
 
 // Map file extensions to Prism language identifiers
 const getLanguageFromFileName = (fileName: string | undefined): string => {
@@ -96,6 +105,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 	const [hasChanges, setHasChanges] = useState(false);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const highlighterRef = useRef<HTMLDivElement>(null);
+	const lineNumberRef = useRef<HTMLDivElement>(null);
 
 	const language = getLanguageFromFileName(documentName);
 
@@ -144,11 +154,17 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 		[handleSave, value]
 	);
 
-	// Sync scroll between textarea and highlighter
+	// Sync vertical scroll between textarea, highlighter, and line numbers
+	// (horizontal scroll is eliminated by word-wrapping)
 	const handleScroll = useCallback(() => {
-		if (textareaRef.current && highlighterRef.current) {
-			highlighterRef.current.scrollTop = textareaRef.current.scrollTop;
-			highlighterRef.current.scrollLeft = textareaRef.current.scrollLeft;
+		if (textareaRef.current) {
+			const { scrollTop } = textareaRef.current;
+			if (highlighterRef.current) {
+				highlighterRef.current.scrollTop = scrollTop;
+			}
+			if (lineNumberRef.current) {
+				lineNumberRef.current.scrollTop = scrollTop;
+			}
 		}
 	}, []);
 
@@ -161,22 +177,62 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 		tabSize: 4,
 	};
 
-	// Custom style for the syntax highlighter
+	// Compute line count for the gutter
+	const lineCount = useMemo(() => {
+		return (value || " ").split("\n").length;
+	}, [value]);
+
+	// Both layers share this left padding so code text starts at the same x-position
+	const codePaddingLeft = `calc(${LINE_GUTTER_WIDTH} + 12px)`;
+
+	// Custom style for the syntax highlighter (line numbers rendered separately)
 	const highlighterStyle: React.CSSProperties = {
 		...sharedFontStyle,
 		margin: 0,
 		padding: "12px",
-		paddingLeft: "calc(3.5em + 12px)", // Account for line numbers
-		background: "#fafafa",
+		paddingLeft: codePaddingLeft,
+		background: "transparent",
 		borderRadius: 0,
 		minHeight: "100%",
-		whiteSpace: "pre",
-		wordWrap: "normal",
-		overflow: "hidden",
+		whiteSpace: "pre-wrap",
+		wordWrap: "break-word",
+		overflowWrap: "break-word",
+		overflowX: "hidden",
+		overflowY: "hidden",
 	};
 
 	return (
 		<div className="h-full w-full relative overflow-hidden bg-[#fafafa]">
+			{/* Line numbers gutter — independent layer, syncs vertical scroll */}
+			<div
+				ref={lineNumberRef}
+				className="absolute top-0 left-0 bottom-0 overflow-hidden pointer-events-none select-none z-10"
+				style={{
+					width: LINE_GUTTER_WIDTH,
+					backgroundColor: "#fafafa",
+				}}
+			>
+				<div
+					style={{
+						...sharedFontStyle,
+						padding: "12px 0",
+					}}
+				>
+					{Array.from({ length: lineCount }, (_, i) => (
+						<div
+							key={i}
+							style={{
+								textAlign: "right",
+								paddingRight: "0.75em",
+								color: "#9ca3af",
+							}}
+						>
+							{i + 1}
+						</div>
+					))}
+				</div>
+			</div>
+
 			{/* Syntax highlighted background layer */}
 			<div
 				ref={highlighterRef}
@@ -184,24 +240,27 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 			>
 				<SyntaxHighlighter
 					customStyle={highlighterStyle}
-					language={language}
-					showLineNumbers
-					lineNumberStyle={{
-						minWidth: "3em",
-						paddingRight: "1em",
-						color: "#9ca3af",
-						userSelect: "none",
-						textAlign: "right",
+					codeTagProps={{
+						style: {
+							...sharedFontStyle,
+							whiteSpace: "pre-wrap",
+							wordWrap: "break-word",
+							overflowWrap: "break-word",
+							padding: 0,
+							margin: 0,
+							background: "transparent",
+						},
 					}}
+					language={language}
 					style={oneLight}
-					wrapLines={false}
-					wrapLongLines={false}
+					wrapLines
+					wrapLongLines
 				>
 					{value || " "}
 				</SyntaxHighlighter>
 			</div>
 
-			{/* Transparent textarea for editing */}
+			{/* Transparent textarea for editing — identical padding as highlighter */}
 			<textarea
 				ref={textareaRef}
 				className="absolute inset-0 w-full h-full resize-none outline-none bg-transparent text-transparent caret-gray-800 selection:bg-blue-200/70"
@@ -212,10 +271,12 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 				style={{
 					...sharedFontStyle,
 					padding: "12px",
-					paddingLeft: "calc(3.5em + 12px)", // Match highlighter padding
-					whiteSpace: "pre",
-					wordWrap: "normal",
-					overflow: "auto",
+					paddingLeft: codePaddingLeft,
+					whiteSpace: "pre-wrap",
+					wordWrap: "break-word",
+					overflowWrap: "break-word",
+					overflowX: "hidden",
+					overflowY: "auto",
 				}}
 				value={value}
 			/>
