@@ -72,7 +72,7 @@ export default function PlatformChatInterface({
 		setIsWaitingForResponse,
 	} = usePlatformChat(folderId, chatTarget, includeContext);
 	const { setSidePanel, setCollapsed, contextFolder, selectedContexts, setSelectedContexts, clearChatAttachments } = useChatStore();
-	const { preferredModel, setPreferredModel, preferredAgentType, setPreferredAgentType } = useViewStore();
+	const { preferredModel, setPreferredModel, preferredAgentType, setPreferredAgentType, autoTier, setAutoTier } = useViewStore();
 	const isAgentTypeLocked = !!activeChatEntity?.metadata?.agent_type;
 	
 	// Track previous chat entity ID to only clear attachments on actual chat change
@@ -631,6 +631,8 @@ export default function PlatformChatInterface({
 							isLocked={isAgentTypeLocked}
 						/>
 						<ModelSelector 
+							autoTier={autoTier}
+							onTierChange={setAutoTier}
 							onModelChange={handleModelChange}
 							selectedModel={preferredModel}
 							selectedAgentType={preferredAgentType}

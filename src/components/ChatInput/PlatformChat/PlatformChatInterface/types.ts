@@ -39,6 +39,34 @@ export type ModelType = {
 export const DEFAULT_MODEL_AGENT = "claude-opus-4.6";
 export const DEFAULT_MODEL_CHAT = "gemini-3-flash-preview";
 
+// ── Smart tier system ──────────────────────────────────────────────
+// Users pick a complexity tier; the system maps it to the best model.
+export type AutoTier = "fast" | "balanced" | "complex" | "max";
+
+export const AUTO_TIER_MODELS: Record<AutoTier, Record<"agent" | "chat", string>> = {
+  fast: {
+    agent: "gemini-3-pro-preview",   // fast + high quality for agent work
+    chat: "gemini-3-flash-preview",  // fastest, cheapest for chat
+  },
+  balanced: {
+    agent: "claude-sonnet-4-5",      // great balance of speed & quality
+    chat: "gpt-5-nano",             // good balance for chat
+  },
+  complex: {
+    agent: "z-ai/glm-5",        // top-tier reasoning for complex tasks
+    chat: "claude-haiku-4.5",       // strongest chat-tier model
+  },
+  max: {
+    agent: "claude-opus-4.6",            // Flowlly agent – maximum power
+    chat: "claude-sonnet-4.6",   // heaviest chat-tier model
+  },
+};
+
+/** Resolve the model for a given tier + mode */
+export function getTierModel(tier: AutoTier, agentType: "agent" | "chat"): string {
+  return AUTO_TIER_MODELS[tier][agentType];
+}
+
 const MODEL_IDS = new Set<string>();
 
 /** Returns the model ID if it exists in MODELS, else the default for the given mode */

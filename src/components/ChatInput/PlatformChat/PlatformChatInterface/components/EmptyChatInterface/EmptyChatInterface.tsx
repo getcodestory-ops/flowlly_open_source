@@ -152,7 +152,7 @@ export default function EmptyChatInterface({
 		clearChatContext,
 	} = useChatStore();
 	const { show: showNewUserTips, dismiss: dismissNewUserTips } = useNewUserTips();
-	const { preferredModel, setPreferredModel, preferredAgentType, setPreferredAgentType } = useViewStore();
+	const { preferredModel, setPreferredModel, preferredAgentType, setPreferredAgentType, autoTier, setAutoTier } = useViewStore();
 	const localTextareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const activeTextareaRef = textareaRef || localTextareaRef;
 	const scrollContainerRef = React.useRef<HTMLDivElement>(null);
@@ -654,6 +654,8 @@ export default function EmptyChatInterface({
 									isLocked={false}
 								/>
 								<ModelSelector 
+									autoTier={autoTier}
+									onTierChange={setAutoTier}
 									onModelChange={setPreferredModel}
 									selectedModel={preferredModel}
 									selectedAgentType={preferredAgentType}

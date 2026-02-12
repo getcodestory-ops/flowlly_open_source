@@ -6,7 +6,9 @@ import {
 	DEFAULT_MODEL_AGENT,
 	DEFAULT_MODEL_CHAT,
 	resolveModel,
+	getTierModel,
 } from "@/components/ChatInput/PlatformChat/PlatformChatInterface/types";
+import type { AutoTier } from "@/components/ChatInput/PlatformChat/PlatformChatInterface/types";
 
 interface ViewState {
 	workbenchView: "table" | "calendar";
@@ -20,6 +22,7 @@ interface ViewState {
 	preferredModelAgent: string;
 	preferredModelChat: string;
 	preferredAgentType: "agent" | "chat";
+	autoTier: AutoTier | null;
 	chatLayoutMode: "split" | "agent";
 	activeProjectId: string | null;
 	activeChatEntityId: string | null;
@@ -32,6 +35,7 @@ interface ViewState {
 	setCalendarSubView: (view: "current" | "integrations") => void;
 	setPreferredModel: (model: string) => void;
 	setPreferredAgentType: (type: "agent" | "chat") => void;
+	setAutoTier: (tier: AutoTier | null) => void;
 	setChatLayoutMode: (mode: "split" | "agent") => void;
 	setActiveProjectId: (id: string | null) => void;
 	setActiveChatEntityId: (id: string | null) => void;
@@ -51,6 +55,7 @@ export const useViewStore = create<ViewState>()(
 			preferredModelAgent: DEFAULT_MODEL_AGENT,
 			preferredModelChat: DEFAULT_MODEL_CHAT,
 			preferredAgentType: "agent",
+			autoTier: null,
 			chatLayoutMode: "split",
 			activeProjectId: null,
 			activeChatEntityId: null,
@@ -64,7 +69,10 @@ export const useViewStore = create<ViewState>()(
 			setPreferredModel: (model) =>
 				set((s) => {
 					const resolved = resolveModel(model, s.preferredAgentType);
-					const updates: Partial<ViewState> = { preferredModel: resolved };
+					const updates: Partial<ViewState> = {
+						preferredModel: resolved,
+						autoTier: null, // manual selection clears any tier
+					};
 					if (s.preferredAgentType === "agent") {
 						updates.preferredModelAgent = resolved;
 					} else {
@@ -75,6 +83,17 @@ export const useViewStore = create<ViewState>()(
 			setPreferredAgentType: (type) =>
 				set((s) => {
 					if (s.preferredAgentType === type) return {};
+					// When a tier is active, auto-resolve the model for the new agent type
+					if (s.autoTier) {
+						const tierModel = getTierModel(s.autoTier, type);
+						return {
+							preferredAgentType: type,
+							preferredModel: tierModel,
+							...(type === "agent"
+								? { preferredModelAgent: tierModel }
+								: { preferredModelChat: tierModel }),
+						};
+					}
 					const stored = type === "agent" ? s.preferredModelAgent : s.preferredModelChat;
 					const resolved = resolveModel(stored, type);
 					return {
@@ -82,6 +101,21 @@ export const useViewStore = create<ViewState>()(
 						preferredModel: resolved,
 						...(type === "agent" ? { preferredModelAgent: resolved } : { preferredModelChat: resolved }),
 					};
+				}),
+			setAutoTier: (tier) =>
+				set((s) => {
+					if (!tier) return { autoTier: null };
+					const tierModel = getTierModel(tier, s.preferredAgentType);
+					const updates: Partial<ViewState> = {
+						autoTier: tier,
+						preferredModel: tierModel,
+					};
+					if (s.preferredAgentType === "agent") {
+						updates.preferredModelAgent = tierModel;
+					} else {
+						updates.preferredModelChat = tierModel;
+					}
+					return updates;
 				}),
 			setChatLayoutMode: (mode) => set(() => ({ chatLayoutMode: mode })),
 			setActiveProjectId: (id) => {
