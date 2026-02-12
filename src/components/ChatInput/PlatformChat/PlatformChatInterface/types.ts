@@ -53,7 +53,7 @@ export const AUTO_TIER_MODELS: Record<AutoTier, Record<"agent" | "chat", string>
     chat: "gpt-5-nano",             // good balance for chat
   },
   complex: {
-    agent: "z-ai/glm-5",        // top-tier reasoning for complex tasks
+    agent: "claude-opus-4.5",        // top-tier reasoning for complex tasks
     chat: "claude-haiku-4.5",       // strongest chat-tier model
   },
   max: {
@@ -193,7 +193,7 @@ export const MODELS: ModelType[] = [
 	// Other (Z-AI, Moonshotai, Xiaomi)
 	{
 		id: "z-ai/glm-5",
-		name: "Flowlly agent✨",
+		name: "Glm 5",
 		speed: 3,
 		performance: 5,
 		cost: "high",
