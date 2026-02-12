@@ -131,7 +131,6 @@ const getProviderLogo = (modelId: string): string => {
 	if (modelId.includes("gemini")) return "/providerLogos/gemini-color.svg";
 	if (modelId.includes("claude") || modelId.includes("sonnet") || modelId.includes("opus")) return "/providerLogos/anthropic.svg";
 	if (modelId.includes("gpt") || modelId.includes("openai")) return "/providerLogos/openai.svg";
-	if (modelId.includes("z-ai/glm-5")) return "/providerLogos/flowlly.svg";
 	if (modelId.includes("z-ai") || modelId.includes("glm")) return "/providerLogos/zai.svg";
 	if (modelId.includes("moonshotai") || modelId.includes("kimi")) return "/providerLogos/moonshot.svg";
 	if (modelId.includes("xiaomi") || modelId.includes("mimo")) return "/providerLogos/xiaomimimo.svg";
