@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 
 import { useToast } from "@/components/ui/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useStore } from "@/utils/store";
+import { useStore, useViewStore } from "@/utils/store";
 import { createPlatformChatEntity } from "@/api/agentRoutes";
 import { PenBoxIcon } from "lucide-react";
 import { AgentChatEntity } from "@/types/agentChats";
+import { useChatStore } from "@/hooks/useChatStore";
 
 function AddNewPlatformChatEntity({
 	folderId,
@@ -31,6 +32,8 @@ function AddNewPlatformChatEntity({
 		setLocalChats: state.setLocalChats,
 		appendChatEntity: state.appendChatEntity,
 	}));
+	const { tabs, setActiveTab } = useChatStore();
+	const chatLayoutMode = useViewStore((s) => s.chatLayoutMode);
 	const { toast } = useToast();
 
 	const [chatName, setChatName] = useState("");
@@ -88,6 +91,11 @@ function AddNewPlatformChatEntity({
 				setActiveChatEntity(null);
 				// Clear local chats when starting a new chat
 				setLocalChats([]);
+				// Auto-switch to chat tab in focus mode
+				if (chatLayoutMode === "agent") {
+					const chatTab = tabs.find((t) => t.type === "chat");
+					if (chatTab) setActiveTab(chatTab.id);
+				}
 				if (onComplete) {
 					onComplete();
 				}

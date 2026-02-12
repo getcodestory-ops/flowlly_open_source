@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useStore } from "@/utils/store";
+import { useStore, useViewStore } from "@/utils/store";
 import { Plus, ChevronDown, MessageSquare, History } from "lucide-react";
+import { useChatStore } from "@/hooks/useChatStore";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -33,6 +34,9 @@ const PlatformChatSelector = ({
     	activeProject: state.activeProject,
     	session: state.session,
     }));
+
+	const { tabs, setActiveTab } = useChatStore();
+	const chatLayoutMode = useViewStore((s) => s.chatLayoutMode);
 
 	const chatEntityQueryKey = ["documentChatEntityList", session, activeProject];
 
@@ -118,6 +122,11 @@ const PlatformChatSelector = ({
 									onSelect={() => {
 										setActiveChatEntity(chatEntity);
 										setIsOpen(false);
+										// Auto-switch to chat tab in focus mode
+										if (chatLayoutMode === "agent") {
+											const chatTab = tabs.find((t) => t.type === "chat");
+											if (chatTab) setActiveTab(chatTab.id);
+										}
 									}}
 								>
 									<div className="flex items-center gap-2 w-full">

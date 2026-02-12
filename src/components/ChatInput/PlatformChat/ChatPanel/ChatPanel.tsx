@@ -41,8 +41,8 @@ export default function ChatPanel({
 	isVisible,
 	onCreateNewChat,
 }: ChatPanelProps) {
-	const { setIsWaitingForResponse, resetForNewChat, clearChatContext, setChatDirectiveType } = useChatStore();
-	const { setPreferredAgentType } = useViewStore();
+	const { setIsWaitingForResponse, resetForNewChat, clearChatContext, setChatDirectiveType, tabs, setActiveTab } = useChatStore();
+	const { setPreferredAgentType, chatLayoutMode } = useViewStore();
 	const { toast } = useToast();
 	const router = useRouter();
 	const [editingChatId, setEditingChatId] = useState<string | null>(null);
@@ -254,6 +254,12 @@ export default function ChatPanel({
 		setLocalChats([]);
 		setIsWaitingForResponse(false);
 		
+		// Auto-switch to chat tab in focus mode so the user sees the new chat
+		if (chatLayoutMode === "agent") {
+			const chatTab = tabs.find((t) => t.type === "chat");
+			if (chatTab) setActiveTab(chatTab.id);
+		}
+		
 		// Reset chat store state for new chat
 		resetForNewChat();
 		
@@ -269,6 +275,12 @@ export default function ChatPanel({
 	const handleSelectChatEntity = async(chatEntity: any) => {
 		setIsWaitingForResponse(false);
 		setActiveChatEntity(chatEntity);
+		
+		// Auto-switch to chat tab in focus mode so the user sees the chat change
+		if (chatLayoutMode === "agent") {
+			const chatTab = tabs.find((t) => t.type === "chat");
+			if (chatTab) setActiveTab(chatTab.id);
+		}
 		
 		// Clear context and reset chat directive type when switching chats
 		clearChatContext();
