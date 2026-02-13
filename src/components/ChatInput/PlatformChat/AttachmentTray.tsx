@@ -135,23 +135,6 @@ export default function AttachmentTray(): JSX.Element | null {
 							{fileCount}
 						</span>
 					</div>
-					<TooltipProvider delayDuration={300}>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<Button
-									className="h-6 w-6 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50"
-									onClick={clearChatAttachments}
-									size="icon"
-									variant="ghost"
-								>
-									<X className="h-3 w-3" />
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent side="bottom" sideOffset={4}>
-								<p className="text-xs">Clear all files</p>
-							</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
 				</div>
 
 				{/* File list */}

@@ -1296,7 +1296,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 								<PlatformChatComponent
 									chatTarget="agent"
 									folderId={activeProject.project_id}
-									heightOffset={heightOffset + 42}
+									heightOffset={heightOffset + 42 + (splitTabId ? 28 : 0)}
 								/>
 							)}
 						</div>
