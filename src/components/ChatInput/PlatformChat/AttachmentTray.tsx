@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Paperclip, X, Box, PanelLeft } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { Paperclip, X, Box, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/hooks/useChatStore";
 import { useViewStore } from "@/utils/store";
@@ -25,19 +25,38 @@ const getExtension = (filename: string): string => {
 };
 
 // Helper to check if UUID is valid
-const isUUID = (str: string): boolean => 
+const isUUID = (str: string): boolean =>
 	/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
-const PANEL_WIDTH = 300;
-
 export default function AttachmentTray(): JSX.Element | null {
-	const { 
-		chatAttachments, 
-		clearChatAttachments, 
-		addTab, 
+	const {
+		chatAttachments,
+		clearChatAttachments,
+		addTab,
 	} = useChatStore();
-	const { chatLayoutMode, setChatLayoutMode } = useViewStore();
-	const isAgentMode = chatLayoutMode === "agent";
+	const { chatLayoutMode } = useViewStore();
+	const [isOpen, setIsOpen] = useState(false);
+	const trayRef = useRef<HTMLDivElement>(null);
+
+	const fileCount = chatAttachments.length;
+
+	// Close tray when clicking outside
+	useEffect(() => {
+		const handleClickOutside = (e: MouseEvent) => {
+			if (trayRef.current && !trayRef.current.contains(e.target as Node)) {
+				setIsOpen(false);
+			}
+		};
+		if (isOpen) {
+			document.addEventListener("mousedown", handleClickOutside);
+		}
+		return () => document.removeEventListener("mousedown", handleClickOutside);
+	}, [isOpen]);
+
+	// Auto-close when no files
+	useEffect(() => {
+		if (fileCount === 0) setIsOpen(false);
+	}, [fileCount]);
 
 	const handleAttachmentClick = (attachment: typeof chatAttachments[0]) => {
 		const isSandbox = attachment.is_sandbox_file || !isUUID(attachment.uuid);
@@ -54,35 +73,90 @@ export default function AttachmentTray(): JSX.Element | null {
 		});
 	};
 
+	// Don't render anything if no files
+	if (fileCount === 0) return null;
+
 	return (
-		<div 
-			className="h-screen flex flex-col bg-white border-l border-gray-200"
-			style={{ width: `${PANEL_WIDTH}px` }}
+		<div
+			ref={trayRef}
+			className="absolute top-0 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center"
 		>
-		{/* Files Header - only show when there are files */}
-			{chatAttachments.length > 0 && (
-				<div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-gray-50">
+			{/* Pull tab - small pill at top center */}
+			<TooltipProvider delayDuration={300}>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<button
+							type="button"
+							onClick={() => setIsOpen((prev) => !prev)}
+							className={cn(
+								"flex items-center gap-1.5 px-3 py-1 group",
+								"rounded-b-lg border border-t-0 border-gray-200",
+								"bg-white hover:bg-gray-50 shadow-sm",
+								"transition-all duration-200 cursor-pointer",
+								isOpen && "bg-gray-50 shadow-md",
+							)}
+						>
+							<Paperclip className="h-3 w-3 text-gray-500 group-hover:text-gray-700 transition-colors" />
+
+							<span className="text-[11px] font-medium text-gray-600 group-hover:text-gray-800 transition-colors">
+								{fileCount} file{fileCount !== 1 ? "s" : ""}
+							</span>
+
+							{isOpen ? (
+								<ChevronUp className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
+							) : (
+								<ChevronDown className="h-3 w-3 text-gray-400 group-hover:text-gray-600 transition-colors" />
+							)}
+						</button>
+					</TooltipTrigger>
+					<TooltipContent side="bottom" sideOffset={4}>
+						<p className="text-xs">{isOpen ? "Hide files" : "Show attached files"}</p>
+					</TooltipContent>
+				</Tooltip>
+			</TooltipProvider>
+
+			{/* Drop-down tray panel */}
+			<div
+				className={cn(
+					"bg-white border border-gray-200 rounded-b-xl rounded-t-none shadow-lg",
+					"flex flex-col overflow-hidden",
+					"transition-all duration-200 ease-in-out origin-top",
+					isOpen
+						? "max-h-[320px] w-[300px] opacity-100 scale-y-100"
+						: "max-h-0 w-[300px] opacity-0 scale-y-95 pointer-events-none border-0",
+				)}
+			>
+				{/* Tray header */}
+				<div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-gray-50/80 flex-shrink-0">
 					<div className="flex items-center gap-1.5 text-xs font-medium text-gray-600">
 						<Paperclip className="h-3.5 w-3.5" />
-						<span>Files</span>
-						<span className="text-gray-400">({chatAttachments.length})</span>
+						<span>Attached Files</span>
+						<span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-gray-200/70 text-[10px] font-semibold text-gray-500">
+							{fileCount}
+						</span>
 					</div>
-					<Button
-						className="h-5 w-5 p-0 text-gray-400 hover:text-gray-600"
-						onClick={clearChatAttachments}
-						size="icon"
-						title="Clear all"
-						variant="ghost"
-					>
-						<X className="h-3 w-3" />
-					</Button>
+					<TooltipProvider delayDuration={300}>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button
+									className="h-6 w-6 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50"
+									onClick={clearChatAttachments}
+									size="icon"
+									variant="ghost"
+								>
+									<X className="h-3 w-3" />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent side="bottom" sideOffset={4}>
+								<p className="text-xs">Clear all files</p>
+							</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
 				</div>
-			)}
 
-			{/* Scrollable file list or empty state */}
-			<ScrollArea className="flex-1">
-				{chatAttachments.length > 0 ? (
-					<div className="p-2 space-y-1">
+				{/* File list */}
+				<ScrollArea className="flex-1">
+					<div className="p-1.5 space-y-0.5">
 						{chatAttachments.map((attachment, index) => {
 							const extension = attachment.type || getExtension(attachment.name);
 							const config = getFileConfig(extension);
@@ -99,21 +173,24 @@ export default function AttachmentTray(): JSX.Element | null {
 									type="button"
 								>
 									{/* File icon */}
-									<span className={cn(
-										"flex-shrink-0 flex items-center justify-center w-6 h-6 rounded overflow-hidden",
-										config.bg, config.color,
-									)}>
+									<span
+										className={cn(
+											"flex-shrink-0 flex items-center justify-center w-6 h-6 rounded overflow-hidden",
+											config.bg,
+											config.color,
+										)}
+									>
 										<FileIconSvg className="h-3.5 w-3.5" iconKey={config.iconKey} />
 									</span>
 
 									{/* File name and extension */}
 									<div className="flex-1 min-w-0 text-left">
-										<div className="truncate text-gray-700 font-medium text-xs">
+										<div className="truncate text-gray-700 font-medium text-xs leading-tight">
 											{attachment.name}
 										</div>
-										<div className="flex items-center gap-1">
+										<div className="flex items-center gap-1 mt-0.5">
 											{extension && (
-												<span className={cn("text-[10px] uppercase", config.color)}>
+												<span className={cn("text-[10px] uppercase leading-none", config.color)}>
 													{extension}
 												</span>
 											)}
@@ -126,16 +203,8 @@ export default function AttachmentTray(): JSX.Element | null {
 							);
 						})}
 					</div>
-				) : (
-					<div className="flex flex-col items-center justify-center h-full p-4 text-center">
-						<Paperclip className="h-8 w-8 text-gray-300 mb-2" />
-						<p className="text-xs text-gray-400">No files from chat</p>
-						<p className="text-[10px] text-gray-300 mt-1">Files shared in chat will appear here</p>
-					</div>
-				)}
-			</ScrollArea>
-
-		
+				</ScrollArea>
+			</div>
 		</div>
 	);
 }

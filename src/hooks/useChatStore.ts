@@ -49,6 +49,7 @@ interface ChatStore {
 	setActiveTab: (tabId: string) => void;
 	clearAllTabs: () => void;
 	clearStreamTabs: () => void;
+	reorderTabs: (fromIndex: number, toIndex: number) => void;
 	// TODO stream states keyed by resourceId (e.g., filename)
 	todoStates: { [resourceId: string]: any };
 	setTodoState: (resourceId: string, state: any) => void;
@@ -309,6 +310,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 			// Also clear the file progress state
 			fileProgress: {},
 		};
+	}),
+	reorderTabs: (fromIndex, toIndex) => set((state) => {
+		if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return state;
+		const newTabs = [...state.tabs];
+		const [movedTab] = newTabs.splice(fromIndex, 1);
+		newTabs.splice(toIndex, 0, movedTab);
+		return { tabs: newTabs };
 	}),
 	setFileProgressContent: (fileName: string, content: string, status: "delta" | "ended" = "delta") => set((prev) => ({
 		fileProgress: {

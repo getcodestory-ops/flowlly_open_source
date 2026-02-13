@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { getInlineDocument, saveDocumentAs, fetchResource } from "@/api/folderRoutes";
 import { updateDocumentName } from "@/api/documentRoutes";
 import { useStore, useViewStore } from "@/utils/store";
-import { X, Folder, Plus, ChevronLeft, ChevronRight, Box, PanelLeft, PanelLeftClose, MessageSquare, Loader2 } from "lucide-react";
+import { X, Folder, Plus, ChevronLeft, ChevronRight, Box, PanelLeft, PanelLeftClose, MessageSquare, Loader2, Columns2 } from "lucide-react";
 import TopToolbar from "./ChatPanel/TopToolbar";
 import InlineDocumentViewer from "./ChatPanel/InlineDocumentViewer";
 import { htmlExtensions } from "./ChatPanel/fileExtensions";
@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { FileIconSvg, getFileConfig } from "@/utils/fileIconConfig";
 import PlatformChatComponent from "./PlatformChatComponent";
 import LayoutModeToggle from "./components/LayoutModeToggle";
+import AttachmentTray from "./AttachmentTray";
 
 // Helper function to get sandbox_id for API calls
 const getSandboxId = (tab: any): string => {
@@ -36,7 +37,7 @@ const getSandboxId = (tab: any): string => {
 };
 
 const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : React.ReactNode => {
-	const { tabs, activeTabId, setActiveTab, removeTab, clearAllTabs, addTab, selectedContexts, setSelectedContexts, isWaitingForResponse, streamingKey } = useChatStore();
+	const { tabs, activeTabId, setActiveTab, removeTab, clearAllTabs, addTab, reorderTabs, selectedContexts, setSelectedContexts, isWaitingForResponse, streamingKey } = useChatStore();
 	const { chatLayoutMode, setChatLayoutMode } = useViewStore();
 	const [viewModes, setViewModes] = useState<{[tabId: string]: "original" | "text"}>({});
 	const [editingTabId, setEditingTabId] = useState<string | null>(null);
@@ -52,10 +53,34 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 	const [showRightArrow, setShowRightArrow] = useState(false);
 	const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 	const tabAreaRef = React.useRef<HTMLDivElement>(null);
+	// Pointer-based drag and drop state
+	const [isDragging, setIsDragging] = useState(false);
+	const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+	const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
+	const [insertionIndex, setInsertionIndex] = useState<number | null>(null);
+	const [dragSplitZone, setDragSplitZone] = useState<"left" | "right" | null>(null);
+	const dragInfoRef = React.useRef<{
+		isDragging: boolean;
+		tabIndex: number;
+		startX: number;
+		startY: number;
+		tabWidth: number;
+		tabRects: DOMRect[];
+	} | null>(null);
+	const insertionIndexRef = React.useRef<number | null>(null);
+	const dragSplitZoneRef = React.useRef<"left" | "right" | null>(null);
+	const wasDraggingRef = React.useRef(false);
+	const contentAreaRef = React.useRef<HTMLDivElement>(null);
+	// Split view state
+	const [splitTabId, setSplitTabId] = useState<string | null>(null);
+	const [splitRatio, setSplitRatio] = useState(50);
+	const [focusedPanel, setFocusedPanel] = useState<"left" | "right">("left");
+	const [isResizingDivider, setIsResizingDivider] = useState(false);
 	const { session, activeProject, activeChatEntity, unsavedChanges, setUnsavedChanges, clearUnsavedChanges, clearAllUnsavedChanges } = useStore();
 	const { toast } = useToast();
 
 	const activeTab = tabs.find((tab) => tab.id === activeTabId);
+	const splitTab = splitTabId ? tabs.find((t) => t.id === splitTabId) : null;
 	const [isDownloading, setIsDownloading] = useState(false);
 
 	// Context attachment logic for the active tab
@@ -406,6 +431,290 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 		});
 	};
 
+	// --- Pointer-based drag and drop for tab reordering (Arc/Zen style) ---
+
+	// Compute CSS transform for each tab during drag to animate the gap
+	const getTabDragStyle = (index: number): React.CSSProperties => {
+		if (!isDragging || draggedIndex === null || dragInfoRef.current === null) return {};
+
+		// The dragged tab becomes invisible (shown as floating ghost instead)
+		if (index === draggedIndex) {
+			return { opacity: 0, pointerEvents: "none" as const };
+		}
+
+		const di = draggedIndex;
+		const w = dragInfoRef.current.tabWidth;
+		const gi = insertionIndex;
+		let shift = 0;
+
+		// Close the gap left by the dragged tab
+		if (index > di) shift -= w;
+
+		// Open gap at the insertion point
+		if (gi !== null) {
+			const compactedIndex = index > di ? index - 1 : index;
+			if (compactedIndex >= gi) shift += w;
+		}
+
+		return {
+			transform: shift ? `translateX(${shift}px)` : "none",
+			transition: "transform 200ms cubic-bezier(0.25, 0.1, 0.25, 1)",
+		};
+	};
+
+	const handleTabPointerDown = (e: React.PointerEvent, index: number) => {
+		if (e.button !== 0) return;
+
+		const el = e.currentTarget as HTMLElement;
+		const rect = el.getBoundingClientRect();
+		const tabContainer = el.parentElement!;
+		const allRects = Array.from(tabContainer.children).map(
+			(c) => (c as HTMLElement).getBoundingClientRect()
+		);
+
+		dragInfoRef.current = {
+			isDragging: false,
+			tabIndex: index,
+			startX: e.clientX,
+			startY: e.clientY,
+			tabWidth: rect.width,
+			tabRects: allRects,
+		};
+
+		const onPointerMove = (ev: PointerEvent) => {
+			const info = dragInfoRef.current;
+			if (!info) return;
+
+			const dx = ev.clientX - info.startX;
+			const dy = ev.clientY - info.startY;
+
+			if (!info.isDragging) {
+				if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+					info.isDragging = true;
+					setIsDragging(true);
+					setDraggedIndex(info.tabIndex);
+				}
+				return;
+			}
+
+			ev.preventDefault();
+			setDragPos({ x: ev.clientX, y: ev.clientY });
+
+			// Check if cursor is over the content area (below tab bar) for drag-to-split
+			const contentRect = contentAreaRef.current?.getBoundingClientRect();
+			if (contentRect && ev.clientY > contentRect.top + 30) {
+				const relX = ev.clientX - contentRect.left;
+				const mid = contentRect.width / 2;
+				const zone = relX < mid ? "left" as const : "right" as const;
+				dragSplitZoneRef.current = zone;
+				setDragSplitZone(zone);
+				insertionIndexRef.current = null;
+				setInsertionIndex(null);
+			} else {
+				dragSplitZoneRef.current = null;
+				setDragSplitZone(null);
+
+				// Compute insertion index from cursor position vs compacted tab midpoints
+				const rects = info.tabRects;
+				const di = info.tabIndex;
+				const w = info.tabWidth;
+
+				const midpoints: number[] = [];
+				for (let i = 0; i < rects.length; i++) {
+					if (i === di) continue;
+					let mp = rects[i].left + rects[i].width / 2;
+					if (i > di) mp -= w;
+					midpoints.push(mp);
+				}
+
+				let idx = midpoints.length;
+				for (let i = 0; i < midpoints.length; i++) {
+					if (ev.clientX < midpoints[i]) {
+						idx = i;
+						break;
+					}
+				}
+
+				insertionIndexRef.current = idx;
+				setInsertionIndex(idx);
+			}
+		};
+
+		const onPointerUp = () => {
+			const info = dragInfoRef.current;
+
+			if (info?.isDragging) {
+				wasDraggingRef.current = true;
+				setTimeout(() => { wasDraggingRef.current = false; }, 10);
+
+				const splitZone = dragSplitZoneRef.current;
+				const insertion = insertionIndexRef.current;
+
+				if (splitZone && tabs.length >= 2) {
+					handleDragToSplit(splitZone, info.tabIndex);
+				} else if (insertion !== null && insertion !== info.tabIndex) {
+					reorderTabs(info.tabIndex, insertion);
+				}
+			}
+
+			// Clean up all drag state
+			dragInfoRef.current = null;
+			insertionIndexRef.current = null;
+			dragSplitZoneRef.current = null;
+			setIsDragging(false);
+			setDraggedIndex(null);
+			setInsertionIndex(null);
+			setDragSplitZone(null);
+
+			document.removeEventListener("pointermove", onPointerMove);
+			document.removeEventListener("pointerup", onPointerUp);
+		};
+
+		document.addEventListener("pointermove", onPointerMove);
+		document.addEventListener("pointerup", onPointerUp);
+	};
+
+	// --- Split view handlers ---
+
+	const handleDragToSplit = (zone: "left" | "right", dragIdx: number) => {
+		const draggedTab = tabs[dragIdx];
+		if (!draggedTab) return;
+
+		if (!splitTabId) {
+			// Activate split view
+			if (zone === "right") {
+				if (draggedTab.id === activeTabId) {
+					const otherTab = tabs.find((t) => t.id !== draggedTab.id);
+					if (otherTab) { setActiveTab(otherTab.id); setSplitTabId(draggedTab.id); }
+				} else {
+					setSplitTabId(draggedTab.id);
+				}
+			} else {
+				if (draggedTab.id === activeTabId) {
+					const otherTab = tabs.find((t) => t.id !== draggedTab.id);
+					if (otherTab) setSplitTabId(otherTab.id);
+				} else {
+					const prevActive = activeTabId;
+					setActiveTab(draggedTab.id);
+					if (prevActive) setSplitTabId(prevActive);
+				}
+			}
+		} else {
+			// Split already active - update the target panel
+			if (zone === "left") {
+				if (draggedTab.id === splitTabId) {
+					const prevActive = activeTabId;
+					setActiveTab(draggedTab.id);
+					if (prevActive) setSplitTabId(prevActive);
+				} else {
+					setActiveTab(draggedTab.id);
+				}
+			} else {
+				if (draggedTab.id === activeTabId) {
+					const prevSplit = splitTabId;
+					setSplitTabId(draggedTab.id);
+					setActiveTab(prevSplit);
+				} else {
+					setSplitTabId(draggedTab.id);
+				}
+			}
+		}
+		setFocusedPanel(zone);
+	};
+
+	const toggleSplit = () => {
+		if (splitTabId) {
+			setSplitTabId(null);
+			setSplitRatio(50);
+			setFocusedPanel("left");
+		} else {
+			const otherTab = tabs.find((t) => t.id !== activeTabId);
+			if (otherTab) {
+				setSplitTabId(otherTab.id);
+				setSplitRatio(50);
+				setFocusedPanel("left");
+			}
+		}
+	};
+
+	const closeSplit = () => {
+		setSplitTabId(null);
+		setSplitRatio(50);
+		setFocusedPanel("left");
+	};
+
+	const handleTabClick = (tabId: string) => {
+		if (wasDraggingRef.current) return;
+		if (!splitTabId) {
+			setActiveTab(tabId);
+			return;
+		}
+		if (focusedPanel === "left") {
+			if (tabId === splitTabId) {
+				const prevActive = activeTabId;
+				setActiveTab(tabId);
+				setSplitTabId(prevActive);
+			} else {
+				setActiveTab(tabId);
+			}
+		} else {
+			if (tabId === activeTabId) {
+				const prevSplit = splitTabId;
+				setSplitTabId(tabId);
+				setActiveTab(prevSplit);
+			} else {
+				setSplitTabId(tabId);
+			}
+		}
+	};
+
+	// Resizable split divider
+	const handleDividerPointerDown = (e: React.PointerEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setIsResizingDivider(true);
+
+		const onMove = (ev: PointerEvent) => {
+			const contentRect = contentAreaRef.current?.getBoundingClientRect();
+			if (!contentRect) return;
+			const relX = ev.clientX - contentRect.left;
+			const ratio = Math.min(80, Math.max(20, (relX / contentRect.width) * 100));
+			setSplitRatio(ratio);
+		};
+
+		const onUp = () => {
+			setIsResizingDivider(false);
+			document.removeEventListener("pointermove", onMove);
+			document.removeEventListener("pointerup", onUp);
+			document.body.style.cursor = "";
+			document.body.style.userSelect = "";
+		};
+
+		document.body.style.cursor = "col-resize";
+		document.body.style.userSelect = "none";
+		document.addEventListener("pointermove", onMove);
+		document.addEventListener("pointerup", onUp);
+	};
+
+	// Clean up split view when tabs are removed
+	React.useEffect(() => {
+		if (splitTabId && !tabs.find((t) => t.id === splitTabId)) {
+			setSplitTabId(null);
+			setSplitRatio(50);
+			setFocusedPanel("left");
+		}
+		if (splitTabId && activeTabId && splitTabId === activeTabId) {
+			const otherTab = tabs.find((t) => t.id !== activeTabId);
+			if (otherTab) {
+				setSplitTabId(otherTab.id);
+			} else {
+				setSplitTabId(null);
+				setSplitRatio(50);
+				setFocusedPanel("left");
+			}
+		}
+	}, [tabs, activeTabId, splitTabId]);
+
 	// Tab scrolling functions
 	const checkScrollButtons = () => {
 		if (!scrollContainerRef.current) return;
@@ -549,20 +858,33 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 							<div className="flex items-center px-1.5 gap-0.25 h-[36px]">
 								{tabs.map((tab, index) => {
 									const isActive = tab.id === activeTabId;
+									const isSplitActive = splitTabId === tab.id;
 									const fileExtension = getFileExtension(tab.filename);
 									const fileConfig = getFileConfig(fileExtension);
 									
 									return (
 										<button
 											className={cn(
-												"group relative flex items-center gap-1.5 px-2.5 h-[28px] text-xs transition-all duration-150 flex-shrink-0 max-w-[160px] border border-indigo-100 rounded-t-md",
+												"group relative flex items-center gap-1.5 px-2.5 h-[28px] text-xs transition-colors duration-150 flex-shrink-0 max-w-[160px] border rounded-t-md select-none touch-none",
 												isActive 
-													? "bg-indigo-100 text-gray-900  border border-gray-300 rounded-t-md" 
-													: "text-gray-600 hover:text-gray-900 hover:bg-gray-100 "
+													? "bg-indigo-100 text-gray-900 border-gray-300" 
+													: isSplitActive
+													? "bg-emerald-50 text-gray-900 border-emerald-300"
+													: "text-gray-600 hover:text-gray-900 hover:bg-gray-100 border-indigo-100",
+												isDragging && draggedIndex !== index ? "cursor-default" : "cursor-grab"
 											)}
 											key={tab.id}
-											onClick={() => setActiveTab(tab.id)}
+											onClick={() => handleTabClick(tab.id)}
+											onPointerDown={(e) => handleTabPointerDown(e, index)}
+											style={getTabDragStyle(index)}
 										>
+										{/* Split panel indicator */}
+										{splitTabId && (isActive || isSplitActive) && (
+											<div className={cn(
+												"absolute bottom-0 left-1.5 right-1.5 h-[2px] rounded-full",
+												isActive ? "bg-indigo-400" : "bg-emerald-400"
+											)} />
+										)}
 										{/* File icon */}
 										{tab.type === "chat" ? (
 											<div className="flex-shrink-0 flex items-center justify-center w-4 h-4 rounded bg-purple-100">
@@ -634,6 +956,21 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 							</div>
 						</div>
 					</div>
+					{/* Split view toggle */}
+					{tabs.length >= 2 && (
+						<Button
+							className={cn(
+								"h-7 w-7 p-0 flex-shrink-0 ml-1",
+								splitTabId && "bg-indigo-50 hover:bg-indigo-100"
+							)}
+							onClick={toggleSplit}
+							size="icon"
+							title={splitTabId ? "Close split view" : "Split view"}
+							variant="ghost"
+						>
+							<Columns2 className={cn("h-3.5 w-3.5", splitTabId ? "text-indigo-600" : "text-gray-500")} />
+						</Button>
+					)}
 					{activeTab?.type === "chat" ? (
 					<div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border-l border-gray-200 rounded-tr-lg">
 						<LayoutModeToggle />
@@ -673,8 +1010,12 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 				)}
 				</div>
 			)}
-			<div className="flex-1 overflow-auto relative b">
-				{tabs.length === 0 && (
+		<div className="flex-1 overflow-hidden relative" ref={contentAreaRef}>
+			{/* Attachment tray - shown below tabs when chat tab is active */}
+			{activeTab?.type === "chat" && <AttachmentTray />}
+
+			{/* Empty state */}
+				{tabs.length === 0 && !splitTabId && (
 					<div className="flex items-center justify-center h-full text-gray-500">
 						<div className="text-center">
 							<Folder className="h-16 w-16 mx-auto mb-4 text-gray-300" />
@@ -708,136 +1049,291 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 						</div>
 					</div>
 				)}
-				{tabs.map((tab) => (
-					<div 
-						className={cn(
-							"absolute inset-0",
-							tab.id === activeTabId ? "block" : "hidden",
+
+				{/* Split view panel headers and resizable divider */}
+				{splitTabId && (
+					<>
+						{/* Left panel header */}
+						<div 
+							className={cn(
+								"absolute top-0 left-0 h-7 z-10 flex items-center gap-2 px-3 border-b text-xs cursor-pointer select-none transition-colors",
+								focusedPanel === "left" 
+									? "bg-indigo-50/80 border-indigo-200" 
+									: "bg-gray-50/80 border-gray-200 hover:bg-gray-100/60"
+							)}
+							onClick={() => setFocusedPanel("left")}
+							style={{ width: `${splitRatio}%` }}
+						>
+							<div className={cn(
+								"w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors",
+								focusedPanel === "left" ? "bg-indigo-400" : "bg-gray-300"
+							)} />
+							<span className={cn(
+								"truncate font-medium transition-colors",
+								focusedPanel === "left" ? "text-indigo-700" : "text-gray-500"
+							)}>
+								{activeTab?.filename || activeTab?.title}
+							</span>
+						</div>
+						{/* Right panel header */}
+						<div 
+							className={cn(
+								"absolute top-0 h-7 z-10 flex items-center justify-between gap-2 px-3 border-b text-xs cursor-pointer select-none transition-colors",
+								focusedPanel === "right" 
+									? "bg-emerald-50/80 border-emerald-200" 
+									: "bg-gray-50/80 border-gray-200 hover:bg-gray-100/60"
+							)}
+							onClick={() => setFocusedPanel("right")}
+							style={{ left: `${splitRatio}%`, width: `${100 - splitRatio}%` }}
+						>
+							<div className="flex items-center gap-2 min-w-0">
+								<div className={cn(
+									"w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors",
+									focusedPanel === "right" ? "bg-emerald-400" : "bg-gray-300"
+								)} />
+								<span className={cn(
+									"truncate font-medium transition-colors",
+									focusedPanel === "right" ? "text-emerald-700" : "text-gray-500"
+								)}>
+									{splitTab?.filename || splitTab?.title}
+								</span>
+							</div>
+							<div 
+								className="flex-shrink-0 hover:bg-gray-200/70 rounded p-0.5 transition-colors"
+								onClick={(e) => { e.stopPropagation(); closeSplit(); }}
+							>
+								<X className="h-3 w-3 text-gray-400 hover:text-gray-600" />
+							</div>
+						</div>
+						{/* Resizable divider handle */}
+						<div 
+							className={cn(
+								"absolute top-0 bottom-0 z-20 cursor-col-resize group flex items-center justify-center",
+								isResizingDivider && "bg-indigo-100/30"
+							)}
+							onPointerDown={handleDividerPointerDown}
+							style={{ left: `calc(${splitRatio}% - 4px)`, width: "8px" }}
+						>
+							<div className={cn(
+								"w-[2px] h-full transition-colors duration-150",
+								isResizingDivider ? "bg-indigo-400" : "bg-gray-200 group-hover:bg-indigo-300"
+							)} />
+						</div>
+					</>
+				)}
+
+				{/* Drag-to-split zone overlays */}
+				{isDragging && tabs.length >= 2 && (
+					<div className="absolute inset-0 z-30 pointer-events-none">
+						<div className={cn(
+							"absolute inset-y-0 left-0 w-1/2 flex items-center justify-center transition-all duration-200 rounded-l-lg",
+							dragSplitZone === "left" 
+								? "bg-indigo-500/[0.06] ring-2 ring-inset ring-indigo-300/40" 
+								: "bg-transparent"
+						)}>
+							{dragSplitZone === "left" && (
+								<div className="bg-white/95 backdrop-blur-sm px-5 py-3 rounded-xl shadow-lg border border-indigo-200/80 animate-in zoom-in-95 fade-in duration-150">
+									<div className="flex items-center gap-2.5">
+										<PanelLeft className="h-4 w-4 text-indigo-500" />
+										<span className="text-sm font-medium text-indigo-700">Left panel</span>
+									</div>
+								</div>
+							)}
+						</div>
+						<div className={cn(
+							"absolute inset-y-0 right-0 w-1/2 flex items-center justify-center transition-all duration-200 rounded-r-lg",
+							dragSplitZone === "right" 
+								? "bg-emerald-500/[0.06] ring-2 ring-inset ring-emerald-300/40" 
+								: "bg-transparent"
+						)}>
+							{dragSplitZone === "right" && (
+								<div className="bg-white/95 backdrop-blur-sm px-5 py-3 rounded-xl shadow-lg border border-emerald-200/80 animate-in zoom-in-95 fade-in duration-150">
+									<div className="flex items-center gap-2.5">
+										<Columns2 className="h-4 w-4 text-emerald-500" />
+										<span className="text-sm font-medium text-emerald-700">Right panel</span>
+									</div>
+								</div>
+							)}
+						</div>
+						{dragSplitZone && (
+							<div className="absolute top-0 bottom-0 left-1/2 w-px bg-gray-400/30" />
 						)}
-						key={tab.id}
-					>
-						{tab.type === "folder" && (
-							<DocumentSelector 
-								contextId={tab.contextId} 
-								singleSelect={tab.singleSelect}
-								useChatContext 
-							/>
-						)}
-						{tab.type === "sources" && (
-							<>
-								{inLineViewableExtensions.includes(getFileExtension(tab.filename)) && (
-									<>
-										{getCurrentViewMode(tab.id) === "original" ? (
-											["md", "py", "js", "ts", "tsx", "css", "json", "jsonl", "template", "database", "excalidraw"].includes(getFileExtension(tab.filename)) ? (
-												<ResourceTextViewer 
-													fileName={tab.filename}
-													lastReloadTime={tab.lastReloadTime}
-													resource_id={tab.resourceId}
-												/>
-											) : (
-												<InlineDocumentViewer 
-													fileExtension={getFileExtension(tab.filename)} 
-													fileName={tab.filename}
-													lastReloadTime={tab.lastReloadTime}
-													resourceId={tab.resourceId}
-												/>
-											)
-										) : (
-											<ResourceTextViewer 
-												fileName={tab.filename}
-												lastReloadTime={tab.lastReloadTime}
-												resource_id={tab.resourceId}
-											/>
-										)}
-									</>
-								)}
-								{getFileExtension(tab.filename) === "txt" && (
-									<ResourceTextViewer 
-										lastReloadTime={tab.lastReloadTime} 
-										resource_id={tab.resourceId}
-									/>
-								)}
-							</>
-						)}
-						{tab.type === "sandbox" && (
-							<>
-								{inLineViewableExtensions.includes(getFileExtension(tab.filename)) && (
-									<>
-										{getCurrentViewMode(tab.id) === "original" ? (
-											[
-												"md",
-												"py",
-												"js",
-												"ts",
-												"tsx",
-												"css",
-												"json",
-												"jsonl",
-												"txt",
-												"template",
-												"database",
-												"excalidraw",
-											].includes(getFileExtension(tab.filename)) ? (
+					</div>
+				)}
+
+				{/* Tab content panels */}
+				{tabs.map((tab) => {
+					const isLeftVisible = tab.id === activeTabId;
+					const isRightVisible = splitTabId !== null && tab.id === splitTabId;
+
+					return (
+						<div 
+							className={cn(
+								"overflow-auto",
+								splitTabId
+									? (isLeftVisible || isRightVisible ? "absolute top-7 bottom-0" : "hidden")
+									: cn("absolute inset-0", isLeftVisible ? "block" : "hidden")
+							)}
+							key={tab.id}
+							style={splitTabId && (isLeftVisible || isRightVisible) ? {
+								left: isLeftVisible ? 0 : `${splitRatio}%`,
+								width: isLeftVisible ? `${splitRatio}%` : `${100 - splitRatio}%`,
+							} : undefined}
+						>
+							{tab.type === "folder" && (
+								<DocumentSelector 
+									contextId={tab.contextId} 
+									singleSelect={tab.singleSelect}
+									useChatContext 
+								/>
+							)}
+							{tab.type === "sources" && (
+								<>
+									{inLineViewableExtensions.includes(getFileExtension(tab.filename)) && (
+										<>
+											{getCurrentViewMode(tab.id) === "original" ? (
+												["md", "py", "js", "ts", "tsx", "css", "json", "jsonl", "template", "database", "excalidraw"].includes(getFileExtension(tab.filename)) ? (
 													<ResourceTextViewer 
 														fileName={tab.filename}
-														isSandboxFile
 														lastReloadTime={tab.lastReloadTime}
-														resource_id={getSandboxId(tab)}
+														resource_id={tab.resourceId}
 													/>
 												) : (
 													<InlineDocumentViewer 
 														fileExtension={getFileExtension(tab.filename)} 
 														fileName={tab.filename}
-														isSandboxFile
 														lastReloadTime={tab.lastReloadTime}
-														resourceId={getSandboxId(tab)}
+														resourceId={tab.resourceId}
 													/>
 												)
-										) : (
-											<ResourceTextViewer 
-												fileName={tab.filename}
-												isSandboxFile
-												lastReloadTime={tab.lastReloadTime}
-												resource_id={getSandboxId(tab)}
-											/>
-										)}
-									</>
-								)}
-								{getFileExtension(tab.filename) === "txt" && (
-									<ResourceTextViewer 
-										fileName={tab.filename}
-										isSandboxFile
-										lastReloadTime={tab.lastReloadTime}
-										resource_id={getSandboxId(tab)}
-									/>
-								)}
-							</>
-						)}
-						{tab.type === "editor" && (
-							<ResourceTextViewer 
-								lastReloadTime={tab.lastReloadTime}
-								resource_id={tab.resourceId}
-							/> 
-						)}
-						{tab.type === "log" && (
-							<RunningLogViewer logId={tab.resourceId} />
-						)}
-						{tab.type === "todo" && (
-							<TodoPanel file={tab.resourceId} />
-						)}
-					{tab.type === "fileProgress" && (
-						<FileProgressPanel fileName={tab.resourceId} />
-					)}
-					{tab.type === "chat" && activeProject && (
-						<PlatformChatComponent
-							chatTarget="agent"
-							folderId={activeProject.project_id}
-							heightOffset={heightOffset + 42}
-						/>
-					)}
-				</div>
-				))}
+											) : (
+												<ResourceTextViewer 
+													fileName={tab.filename}
+													lastReloadTime={tab.lastReloadTime}
+													resource_id={tab.resourceId}
+												/>
+											)}
+										</>
+									)}
+									{getFileExtension(tab.filename) === "txt" && (
+										<ResourceTextViewer 
+											lastReloadTime={tab.lastReloadTime} 
+											resource_id={tab.resourceId}
+										/>
+									)}
+								</>
+							)}
+							{tab.type === "sandbox" && (
+								<>
+									{inLineViewableExtensions.includes(getFileExtension(tab.filename)) && (
+										<>
+											{getCurrentViewMode(tab.id) === "original" ? (
+												[
+													"md",
+													"py",
+													"js",
+													"ts",
+													"tsx",
+													"css",
+													"json",
+													"jsonl",
+													"txt",
+													"template",
+													"database",
+													"excalidraw",
+												].includes(getFileExtension(tab.filename)) ? (
+														<ResourceTextViewer 
+															fileName={tab.filename}
+															isSandboxFile
+															lastReloadTime={tab.lastReloadTime}
+															resource_id={getSandboxId(tab)}
+														/>
+													) : (
+														<InlineDocumentViewer 
+															fileExtension={getFileExtension(tab.filename)} 
+															fileName={tab.filename}
+															isSandboxFile
+															lastReloadTime={tab.lastReloadTime}
+															resourceId={getSandboxId(tab)}
+														/>
+													)
+											) : (
+												<ResourceTextViewer 
+													fileName={tab.filename}
+													isSandboxFile
+													lastReloadTime={tab.lastReloadTime}
+													resource_id={getSandboxId(tab)}
+												/>
+											)}
+										</>
+									)}
+									{getFileExtension(tab.filename) === "txt" && (
+										<ResourceTextViewer 
+											fileName={tab.filename}
+											isSandboxFile
+											lastReloadTime={tab.lastReloadTime}
+											resource_id={getSandboxId(tab)}
+										/>
+									)}
+								</>
+							)}
+							{tab.type === "editor" && (
+								<ResourceTextViewer 
+									lastReloadTime={tab.lastReloadTime}
+									resource_id={tab.resourceId}
+								/> 
+							)}
+							{tab.type === "log" && (
+								<RunningLogViewer logId={tab.resourceId} />
+							)}
+							{tab.type === "todo" && (
+								<TodoPanel file={tab.resourceId} />
+							)}
+							{tab.type === "fileProgress" && (
+								<FileProgressPanel fileName={tab.resourceId} />
+							)}
+							{tab.type === "chat" && activeProject && (
+								<PlatformChatComponent
+									chatTarget="agent"
+									folderId={activeProject.project_id}
+									heightOffset={heightOffset + 42}
+								/>
+							)}
+						</div>
+					);
+				})}
 			</div>
+			{/* Floating ghost tab - follows cursor during drag (Arc/Zen style) */}
+			{isDragging && draggedIndex !== null && draggedIndex < tabs.length && (() => {
+				const dragTab = tabs[draggedIndex];
+				const ext = getFileExtension(dragTab.filename);
+				const config = getFileConfig(ext);
+				return (
+					<div 
+						className="fixed z-[100] pointer-events-none"
+						style={{
+							left: dragPos.x,
+							top: dragPos.y,
+							transform: "translate(-50%, -50%)",
+						}}
+					>
+						<div className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white/95 backdrop-blur-md rounded-lg shadow-2xl shadow-black/[0.12] border border-gray-200/80 whitespace-nowrap scale-105">
+							{dragTab.type === "chat" ? (
+								<MessageSquare className="h-3 w-3 text-purple-600 flex-shrink-0" />
+							) : dragTab.type === "folder" ? (
+								<Folder className="h-3 w-3 text-blue-600 flex-shrink-0" />
+							) : (
+								<div className={cn("flex-shrink-0 flex items-center justify-center w-3.5 h-3.5", config.color)}>
+									<FileIconSvg className="h-3.5 w-3.5" iconKey={config.iconKey} />
+								</div>
+							)}
+							<span className="text-gray-900 font-medium max-w-[140px] truncate">
+								{dragTab.filename || dragTab.title}
+							</span>
+						</div>
+					</div>
+				);
+			})()}
 			<Dialog onOpenChange={setShowSaveAsDialog} open={showSaveAsDialog}>
 				<DialogContent className="sm:max-w-[500px]" title="Save Document As">
 					<h2 className="text-xl font-semibold mb-4">Save Document As</h2>

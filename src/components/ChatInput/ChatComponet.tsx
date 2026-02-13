@@ -5,12 +5,12 @@ import { useStore, useViewStore } from "@/utils/store";
 import { useChatStore } from "@/hooks/useChatStore";
 import { clsx } from "clsx";
 import InteractiveChatPanel from "@/components/ChatInput/PlatformChat/InteractiveChatPanel";
-import AttachmentTray from "@/components/ChatInput/PlatformChat/AttachmentTray";
+
 import { useEffect, useState, useRef } from "react";
 
 export default function ChatComponent({ heightOffset = 20 }: {heightOffset?: number}) : JSX.Element {
 	const activeProject = useStore((state) => state.activeProject);
-	const { tabs, activeTabId, chatAttachments, addTab, setActiveTab, removeTab } = useChatStore();
+	const { tabs, activeTabId, addTab, setActiveTab, removeTab } = useChatStore();
 	const { chatLayoutMode } = useViewStore();
 	const hasOpenTabs = tabs.filter((t) => t.type !== "chat").length > 0;
 	const [panelWidth, setPanelWidth] = useState(50); // Percentage width for the chat panel
@@ -82,23 +82,14 @@ export default function ChatComponent({ heightOffset = 20 }: {heightOffset?: num
 	}, [isDragging]);
 
 	// Agent mode layout
-	const activeAgentTab = tabs.find((t) => t.id === activeTabId);
-	const isChatTabActive = activeAgentTab?.type === "chat";
-
 	if (chatLayoutMode === "agent" && activeProject) {
 		return (
 			<div className="h-full relative">
 				<Toaster />
 
-				{/* Main content area - horizontal layout */}
-				<div className="h-full flex">
-					{/* Interactive Panel - takes remaining width */}
-					<div className="flex-1 min-w-0 h-full">
-						<InteractiveChatPanel heightOffset={heightOffset} />
-					</div>
-
-					{/* Attachment tray - only visible when Chat tab is active */}
-					{isChatTabActive && <AttachmentTray />}
+				{/* Main content area */}
+				<div className="h-full">
+					<InteractiveChatPanel heightOffset={heightOffset} />
 				</div>
 			</div>
 		);
