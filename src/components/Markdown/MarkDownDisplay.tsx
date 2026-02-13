@@ -786,8 +786,8 @@ type CustomMarkdownComponents = Components & {
 const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 	content,
 }) => {
-	// Custom components for ReactMarkdown
-	const components: CustomMarkdownComponents = {
+	// Memoize components to avoid recreating on every render (critical for streaming perf)
+	const components: CustomMarkdownComponents = useMemo(() => ({
 		// Custom link component that opens in new tab and shows "click here" for URLs
 		a: ({ href, children, ...props }: any) => {
 			// Check if the link text is the same as the URL (auto-generated link)
@@ -899,7 +899,11 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 		li: ({ children, ...props }: any) => {
 			return <li {...props}>{children}</li>;
 		},
-	};
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}), []);
+
+	// Memoize remarkPlugins array to avoid re-creating on every render
+	const remarkPlugins = useMemo(() => [remarkGfm, remarkDirective, remarkDirectiveComponents], []);
 
 	return (
 		<div>
@@ -918,7 +922,7 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
                 prose-pre:bg-gray-100 prose-pre:text-gray-900 prose-pre:overflow-x-auto prose-pre:whitespace-pre-wrap prose-pre:break-words
                 [&>*]:max-w-4xl [&>*]:mx-auto px-2 "
 				components={components as Components}
-				remarkPlugins={[remarkGfm, remarkDirective, remarkDirectiveComponents]}
+				remarkPlugins={remarkPlugins}
 			>
 				{content}
 			</ReactMarkdown>

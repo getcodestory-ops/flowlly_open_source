@@ -45,6 +45,7 @@ interface ChatStore {
 	streamingKey: string | null;
 	setStreamingKey: (streamingKey: string | null) => void;	
 	addTab: (tab: Omit<SidePanel, "id">, forceReload?: boolean) => void;
+	addTabWithoutFocus: (tab: Omit<SidePanel, "id">) => void;
 	removeTab: (tabId: string) => void;
 	setActiveTab: (tabId: string) => void;
 	clearAllTabs: () => void;
@@ -261,6 +262,32 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		return {
 			tabs: [...state.tabs, newTab],
 			activeTabId: tabId,
+		};
+	}),
+	addTabWithoutFocus: (tab) => set((state) => {
+		// Check if a tab with the same resourceId, type, AND filename already exists
+		const existingTab = state.tabs.find(
+			(t) => t.resourceId === tab.resourceId &&
+				   t.type === tab.type &&
+				   t.filename === tab.filename,
+		);
+
+		// If tab already exists, do nothing (don't switch focus)
+		if (existingTab) {
+			return state;
+		}
+
+		const tabId = generateTabId();
+		const newTab = {
+			...tab,
+			id: tabId,
+			title: tab.title || tab.filename || `${tab.type} ${tab.resourceId.slice(0, 8)}`,
+			lastReloadTime: Date.now(),
+		};
+
+		// Add tab but keep current activeTabId unchanged
+		return {
+			tabs: [...state.tabs, newTab],
 		};
 	}),
 	removeTab: (tabId) => set((state) => {
