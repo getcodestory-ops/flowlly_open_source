@@ -480,11 +480,23 @@ export default function PlatformChatInterface({
 				// Get the position of the last user message relative to the scroll container
 				const messageRect = lastUserMessageRef.current.getBoundingClientRect();
 				const containerRect = scrollContainer.getBoundingClientRect();
-				
-				// Calculate the scroll position to put the user message at the top
-				// with a small offset for visual breathing room
-				const offset = 16; // 16px from the top
-				const targetScroll = scrollContainer.scrollTop + (messageRect.top - containerRect.top) - offset;
+
+				// Keep short messages top-aligned, but for long messages align only the
+				// tail (last few lines) near the top so most viewport stays for streaming.
+				const topOffset = 16;
+				const viewportHeight = containerRect.height;
+				const desiredTailHeight = Math.max(96, Math.min(180, viewportHeight * 0.24));
+				const messageHeight = messageRect.height;
+
+				let targetScroll: number;
+				if (messageHeight <= desiredTailHeight + topOffset) {
+					targetScroll =
+						scrollContainer.scrollTop + (messageRect.top - containerRect.top) - topOffset;
+				} else {
+					const tailAnchorY = messageRect.bottom - desiredTailHeight;
+					targetScroll =
+						scrollContainer.scrollTop + (tailAnchorY - containerRect.top) - topOffset;
+				}
 				
 				scrollContainer.scrollTo({
 					top: Math.max(0, targetScroll),
