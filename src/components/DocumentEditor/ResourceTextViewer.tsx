@@ -7,6 +7,7 @@ import { useSandboxFileSave } from "../DocumentEditor/useSandboxFileSave";
 import LoaderAnimation from "../Animations/LoaderAnimation";
 import CodeEditor from "../DocumentEditor/CodeEditor";
 import ExcalidrawEditor from "../DocumentEditor/ExcalidrawEditor";
+import DopeCanvasEditor from "../DocumentEditor/DopeCanvasEditor";
 
 export function ResourceTextViewer({ 
 	resource_id, 
@@ -73,6 +74,10 @@ export function ResourceTextViewer({
 		const lower = (name || "").toLowerCase();
 		return lower.endsWith(".excalidraw");
 	};
+	const isDopeCanvasFile = (name?: string) => {
+		const lower = (name || "").toLowerCase();
+		return lower.endsWith(".dop");
+	};
 
 	return (
 		<div className="h-full ">
@@ -82,13 +87,20 @@ export function ResourceTextViewer({
 				</div>
 			) : content !== null ? (
 				<div className="h-full">
-					{isExcalidrawFile(documentName) ? (
-						<ExcalidrawEditor
-							content={typeof content === "string" ? content : String(content)}
-							documentName={documentName}
-							isSaving={isPending}
-							onSave={(updated) => onSubmit(updated)}
-						/>
+				{isDopeCanvasFile(documentName) ? (
+					<DopeCanvasEditor
+						content={typeof content === "string" ? content : String(content)}
+						documentName={documentName}
+						isSaving={isPending}
+						onSave={(updated) => onSubmit(updated)}
+					/>
+				) : isExcalidrawFile(documentName) ? (
+					<ExcalidrawEditor
+						content={typeof content === "string" ? content : String(content)}
+						documentName={documentName}
+						isSaving={isPending}
+						onSave={(updated) => onSubmit(updated)}
+					/>
 					) : isCodeFile(documentName) ? (
 						<CodeEditor
 							content={typeof content === "string" ? content : String(content)}

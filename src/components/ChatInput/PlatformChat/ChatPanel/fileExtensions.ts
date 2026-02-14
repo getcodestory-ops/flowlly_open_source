@@ -45,6 +45,8 @@ export const gltfExtensions = ["gltf", "glb"];
 
 export const excalidrawExtensions = ["excalidraw"];
 
+export const dopExtensions = ["dop"];
+
 export const inlineViewableExtensions = [
 	"pdf",
 	"oga",
@@ -84,6 +86,7 @@ export const inlineViewableExtensions = [
 	"gltf",
 	"glb",
 	"excalidraw",
+	"dop",
 ];
 
 

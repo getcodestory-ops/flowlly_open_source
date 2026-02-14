@@ -114,6 +114,10 @@ export const getFileConfig = (extension: string): FileConfig => {
 	if (["excalidraw"].includes(ext)) {
 		return { iconKey: "excalidraw", color: "text-indigo-600", bg: "bg-indigo-100", border: "border-indigo-200", label: "Excalidraw" };
 	}
+	// DopeCanvas files
+	if (["dop"].includes(ext)) {
+		return { iconKey: "dopecanvas", color: "text-gray-900", bg: "bg-gray-100", border: "border-gray-300", label: "DopeCanvas" };
+	}
 	// Binary/Executable
 	if (["exe", "dll", "bin", "dat", "dmg", "iso"].includes(ext)) {
 		return { iconKey: "binary", color: "text-gray-600", bg: "bg-gray-100", border: "border-gray-200", label: "Binary" };
