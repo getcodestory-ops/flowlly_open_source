@@ -102,14 +102,14 @@ const AGENT_MODEL_IDS = [
 	"gemini-3-pro-preview",
 	"gpt-5.2",
 	"z-ai/glm-5",
-	"moonshotai/kimi-k2.5",
+	"minimax/minimax-m2.5",
 ];
 
 const CHAT_MODEL_IDS = [
 	"gemini-3-flash-preview",
 	"gpt-5-nano",
 	"claude-haiku-4.5",
-	"moonshotai/kimi-k2.5",
+	"minimax/minimax-m2.5",
 ];
 
 const getMainModelIds = (agentType?: string): string[] => {
@@ -134,6 +134,7 @@ const getProviderLogo = (modelId: string): string => {
 	if (modelId.includes("z-ai") || modelId.includes("glm")) return "/providerLogos/zai.svg";
 	if (modelId.includes("moonshotai") || modelId.includes("kimi")) return "/providerLogos/moonshot.svg";
 	if (modelId.includes("xiaomi") || modelId.includes("mimo")) return "/providerLogos/xiaomimimo.svg";
+	if (modelId.includes("minimax")) return "/providerLogos/minimax.svg";
 	return "/providerLogos/openai.svg";
 };
 
