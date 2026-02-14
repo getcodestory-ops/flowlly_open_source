@@ -59,7 +59,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	const pendingFileDeltasRef = useRef<{ [fileName: string]: string }>({});
 	const fileProgressFlushRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-	const { setSidePanel, setCollapsed, setTodoState, todoStates, initFileProgress, appendFileProgressDelta, endFileProgress, clearStreamTabs } = useChatStore() as any;
+	const { setSidePanel, setCollapsed, setTodoState, todoStates, fileProgress, initFileProgress, appendFileProgressDelta, endFileProgress, clearStreamTabs } = useChatStore() as any;
 
 	// Keep ref in sync with state
 	useEffect(() => {
@@ -479,34 +479,68 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 	// Render a single stream event inline indicator
 	const renderStreamEvent = (event: StreamEvent, index: number) => {
 		if (event.type === "file") {
-			// Only "generating" status exists now - removed on completion
+			// Live file writing preview
 			const ext = getExtension(event.fileName);
 			const config = getFileConfig(ext);
+			const fp = fileProgress?.[event.fileName];
+			const content = fp?.content || "";
+			const charCount = content.length;
+			// Keep preview extraction bounded for performance on large files
+			const previewTail = charCount > 4000 ? content.slice(-4000) : content;
+			const previewLines = previewTail
+				? previewTail.split("\n").filter((l: string) => l.trim()).slice(-4)
+				: [];
+
 			return (
 				<div className="my-1.5" key={`file-${event.fileName}-${index}`}>
 					<button
 						className={cn(
-							"group inline-flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg text-sm transition-all duration-200 cursor-pointer",
-							"border shadow-sm hover:shadow-md active:scale-[0.98]",
+							"group flex flex-col gap-2 w-full max-w-md p-3 rounded-lg text-sm transition-all duration-200 cursor-pointer text-left",
+							"border shadow-sm hover:shadow-md active:scale-[0.99]",
 							"bg-white border-gray-100 hover:border-gray-200",
 						)}
 						onClick={() => handleFileEventClick(event.fileName)}
-						title={`Click to view progress for ${event.fileName}`}
+						title={`Click to view full file progress`}
 						type="button"
 					>
-						<span className={cn(
-							"flex items-center justify-center w-7 h-7 rounded-md overflow-hidden",
-							config.bg, config.color,
-						)}>
-							<Loader2 className="h-4 w-4 animate-spin" />
-						</span>
-						<span className="truncate max-w-[180px] font-medium text-gray-800">
-							{event.fileName}
-						</span>
-						{ext && (
-							<span className={cn("text-[10px] font-semibold uppercase tracking-wide", config.color)}>
-								{ext}
-							</span>
+						{/* Header with file info */}
+						<div className="flex items-center justify-between w-full">
+							<div className="flex items-center gap-2">
+								<span className={cn(
+									"flex items-center justify-center w-6 h-6 rounded-md overflow-hidden",
+									config.bg, config.color,
+								)}>
+									<FileIconSvg className="h-3.5 w-3.5" iconKey={config.iconKey} />
+								</span>
+								<span className="font-medium text-gray-800 text-xs">
+									{event.fileName}
+								</span>
+								{ext && (
+									<span className={cn("text-[10px] font-semibold uppercase tracking-wide", config.color)}>
+										{ext}
+									</span>
+								)}
+							</div>
+							<div className="flex items-center gap-1.5">
+								<span className="text-[10px] text-gray-400">
+									{charCount} chars
+								</span>
+								<Loader2 className="h-3 w-3 animate-spin text-indigo-400" />
+							</div>
+						</div>
+
+						{/* Content preview */}
+						{previewLines.length > 0 ? (
+							<div className="w-full bg-gray-50 rounded-md px-2.5 py-2 overflow-hidden border border-gray-100">
+								<pre className="text-[11px] leading-4 text-gray-500 font-mono whitespace-pre-wrap break-words line-clamp-4">
+									{previewLines.join("\n")}
+								</pre>
+							</div>
+						) : (
+							<div className="flex items-center gap-2">
+								<Loader2 className="h-3 w-3 animate-spin text-gray-300" />
+								<span className="text-xs text-gray-400">Writing file...</span>
+							</div>
 						)}
 					</button>
 				</div>
@@ -536,7 +570,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 						)}>
 							<FileIconSvg className="h-4 w-4" iconKey={config.iconKey} />
 						</span>
-						<span className="truncate max-w-[180px] font-medium text-gray-800">
+						<span className="truncate max-w-[280px] font-medium text-gray-800">
 							{event.name}
 						</span>
 						{ext && (
@@ -571,7 +605,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 				<div className="my-1.5" key={`todo-${event.fileId}-${index}`}>
 					<button
 						className={cn(
-							"group flex flex-col gap-2 w-full max-w-sm p-3 rounded-lg text-sm transition-all duration-200 cursor-pointer text-left",
+							"group flex flex-col gap-2 w-full max-w-md p-3 rounded-lg text-sm transition-all duration-200 cursor-pointer text-left",
 							"border shadow-sm hover:shadow-md active:scale-[0.99]",
 							"bg-white border-gray-100 hover:border-gray-200",
 						)}
