@@ -1165,20 +1165,25 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 				{tabs.map((tab) => {
 					const isLeftVisible = tab.id === activeTabId;
 					const isRightVisible = splitTabId !== null && tab.id === splitTabId;
+					const isTabVisible = splitTabId ? (isLeftVisible || isRightVisible) : isLeftVisible;
+					const panelStyle = splitTabId
+						? (isLeftVisible || isRightVisible
+							? {
+								left: isLeftVisible ? 0 : `${splitRatio}%`,
+								width: isLeftVisible ? `${splitRatio}%` : `${100 - splitRatio}%`,
+							}
+							: { left: 0, width: 0 })
+						: undefined;
 
 					return (
 						<div 
 							className={cn(
 								"overflow-auto",
-								splitTabId
-									? (isLeftVisible || isRightVisible ? "absolute top-7 bottom-0" : "hidden")
-									: cn("absolute inset-0", isLeftVisible ? "block" : "hidden")
+								splitTabId ? "absolute top-7 bottom-0" : "absolute inset-0",
+								isTabVisible ? "visible opacity-100 pointer-events-auto" : "invisible opacity-0 pointer-events-none"
 							)}
 							key={tab.id}
-							style={splitTabId && (isLeftVisible || isRightVisible) ? {
-								left: isLeftVisible ? 0 : `${splitRatio}%`,
-								width: isLeftVisible ? `${splitRatio}%` : `${100 - splitRatio}%`,
-							} : undefined}
+							style={panelStyle}
 						>
 							{tab.type === "folder" && (
 								<DocumentSelector 
