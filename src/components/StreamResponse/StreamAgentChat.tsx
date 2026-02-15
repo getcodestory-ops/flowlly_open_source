@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useChatStore } from "@/hooks/useChatStore";
 import MarkdownDisplay from "../Markdown/MarkDownDisplay";
-import { Loader2, ArrowUpRight, Box, CheckCircle2, Circle, CircleDot } from "lucide-react";
+import { Loader2, ArrowUpRight, Box, CheckCircle2, Circle, CircleDot, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FileIconSvg, getFileConfig } from "@/utils/fileIconConfig";
 
@@ -19,7 +19,8 @@ interface StreamComponentProps {
 type StreamEvent =
   | { type: "file"; fileName: string; action: string; status: "generating"; ts: number }
   | { type: "attachment"; name: string; uuid: string; is_sandbox_file?: boolean; resourceId: string; fileType: string; sandbox_id?: string; ts: number }
-  | { type: "todo"; fileId: string; ts: number };
+  | { type: "todo"; fileId: string; ts: number }
+  | { type: "task"; toolName: string; message: string; ts: number };
 
 // Helper to extract extension from filename
 const getExtension = (fileName: string): string => {
@@ -255,8 +256,47 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 					return;
 				}
 
+				// Check if this is an ACTIVE_PROGRESS event that came through as regular message data
+				if (event.data.includes("event: ACTIVE_PROGRESS")) {
+					const dataPart = event.data.split("data: ")[1];
+					if (dataPart) {
+						try {
+							const data = JSON.parse(dataPart.trim());
+							if (data.type === "file_progress" && data.payload) {
+								const { action, file_name: fileName } = data.payload;
+								if (fileName && action) {
+									initFileProgress(fileName, action);
+									setStreamEvents((prev) => {
+										if (prev.some((e) => e.type === "file" && e.fileName === fileName)) return prev;
+										return [...prev, { type: "file" as const, fileName, action, status: "generating" as const, ts: Date.now() }];
+									});
+								}
+							} else if (data.type === "task_progress") {
+								const toolName = data.tool_name || "unknown";
+								const message = data.message || "";
+								setStreamEvents((prev) => {
+									const withoutOldTask = prev.filter((e) => e.type !== "task");
+									return [...withoutOldTask, { type: "task" as const, toolName, message, ts: Date.now() }];
+								});
+							}
+						} catch (e) {
+							console.error("Error parsing ACTIVE_PROGRESS data:", e);
+						}
+					}
+					return;
+				}
+
 				// Clear thinking state when regular data comes in
 				setIsThinking(false);
+
+				// Clear any active task progress events when text tokens arrive
+				// (agent has moved past the tool execution)
+				setStreamEvents((prev) => {
+					if (prev.some((e) => e.type === "task")) {
+						return prev.filter((e) => e.type !== "task");
+					}
+					return prev;
+				});
 
 				// Buffer tokens instead of immediately updating state
 				const newData = event.data.replace(/\\n/g, "\n");
@@ -404,6 +444,37 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 				}
 			} catch (e) {
 				console.error("Error parsing FILE_PROGRESS:", e);
+			}
+		});
+
+		// Handle ACTIVE_PROGRESS events - catch-up mechanism for reconnects
+		// Sent as the first event when the agent is mid-file-write or mid-tool-execution
+		eventSource.addEventListener("ACTIVE_PROGRESS", (event) => {
+			if (!event.data) return;
+			try {
+				const data = JSON.parse(event.data);
+
+				if (data.type === "file_progress" && data.payload) {
+					const { action, file_name: fileName } = data.payload;
+					if (fileName && action) {
+						initFileProgress(fileName, action);
+						// Add file stream event (same as FILE_PROGRESS started), with dedup
+						setStreamEvents((prev) => {
+							if (prev.some((e) => e.type === "file" && e.fileName === fileName)) return prev;
+							return [...prev, { type: "file" as const, fileName, action, status: "generating" as const, ts: Date.now() }];
+						});
+					}
+				} else if (data.type === "task_progress") {
+					const toolName = data.tool_name || "unknown";
+					const message = data.message || "";
+					// Replace any existing task event (backend overwrites Redis key per tool)
+					setStreamEvents((prev) => {
+						const withoutOldTask = prev.filter((e) => e.type !== "task");
+						return [...withoutOldTask, { type: "task" as const, toolName, message, ts: Date.now() }];
+					});
+				}
+			} catch (e) {
+				console.error("Error parsing ACTIVE_PROGRESS:", e);
 			}
 		});
 
@@ -674,6 +745,35 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 							</div>
 						)}
 					</button>
+				</div>
+			);
+		}
+
+		if (event.type === "task") {
+			return (
+				<div className="my-1.5" key={`task-${event.toolName}-${index}`}>
+					<div
+						className={cn(
+							"flex items-center gap-2.5 w-full max-w-md px-3 py-2.5 rounded-lg text-sm",
+							"border shadow-sm",
+							"bg-white border-gray-100",
+						)}
+					>
+						<span className="flex items-center justify-center w-6 h-6 rounded-md bg-amber-50 text-amber-500">
+							<Zap className="h-3.5 w-3.5" />
+						</span>
+						<div className="flex flex-col gap-0.5 min-w-0 flex-1">
+							<span className="font-medium text-gray-800 text-xs truncate">
+								{event.toolName}
+							</span>
+							{event.message && (
+								<span className="text-[11px] text-gray-400 truncate">
+									{event.message}
+								</span>
+							)}
+						</div>
+						<Loader2 className="h-3.5 w-3.5 animate-spin text-amber-400 flex-shrink-0" />
+					</div>
 				</div>
 			);
 		}
