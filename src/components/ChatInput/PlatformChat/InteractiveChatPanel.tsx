@@ -638,7 +638,9 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 				}
 			}
 		}
-		setFocusedPanel(zone);
+		// Keep left panel focused after drag-to-split so top tab clicks
+		// continue changing the primary (left) pane by default.
+		setFocusedPanel("left");
 	};
 
 	const toggleSplit = () => {
