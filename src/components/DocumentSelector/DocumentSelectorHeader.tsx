@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,8 +29,6 @@ import {
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { AddNewFolderModal } from "../CreateNewFolderModal/CreateNewFolderModal";
-import { createSubFolder } from "@/api/folderRoutes";
-import { useDocumentStore } from "@/hooks/useDocumentStore";
 import { FileUploadButton } from "../Folder/FilesTable/FileUploadButton";
 import { FileUploadMenuItems } from "../Folder/FilesTable/FileUploadMenuItems";
 import { useFileUpload } from "../Folder/FilesTable/useFileUpload";
@@ -45,6 +42,7 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 	searchTerm,
 	setSearchTerm,
 	navigateBack,
+	onCreateFolder,
 	onScopeChange,
 	onRefresh,
 	session,
@@ -55,8 +53,6 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 	onSort,
 }) => {
 	const toolbarRef = useRef<HTMLDivElement>(null);
-	const queryClient = useQueryClient();
-	const { addFolder } = useDocumentStore();
 	const [containerWidth, setContainerWidth] = useState(1200);
 	const [isCreateFileDialogOpen, setIsCreateFileDialogOpen] = useState(false);
 	
@@ -116,26 +112,7 @@ export const DocumentSelectorHeader: React.FC<DocumentSelectorHeaderProps> = ({
 	};
 
 	const handleAddFolder = (name: string): void => {
-		if (!activeProject) return;
-		const apiFolderId = currentFolderId === "root" ? null : currentFolderId;
-		
-		createSubFolder(
-			session,
-			activeProject.project_id,
-			name,
-			apiFolderId,
-			isProjectWide,
-			(data) => {
-				addFolder(currentFolderId, data);
-				queryClient.setQueryData(
-					["folders", session?.access_token, activeProject?.project_id, currentFolderId, isProjectWide],
-					(oldData: any) => {
-						if (!oldData) return [data];
-						return [...oldData, data];
-					},
-				);
-			},
-		);
+		onCreateFolder(name);
 	};
 
 	// Determine what to show based on container width

@@ -19,6 +19,7 @@ import { useChatStore } from "@/hooks/useChatStore";
 import FormDirective from "./form/FormDirective";
 import  IntegrationDirective  from "./integration/IntegrationDirective";
 import ApprovalFlow from "./approvalFlow/ApprovalFlow";
+import SandboxPreview from "./sandboxPreview/SandboxPreview";
 
 interface MarkdownRendererProps {
   content: string;
@@ -263,6 +264,7 @@ const VALID_DIRECTIVES = [
 	"context",
 	"approval",
 	"tool_call",
+	"sandbox_preview",
 ];
 
 // Add Attachment interface
@@ -741,12 +743,18 @@ function remarkDirectiveComponents() {
 						data: extractCompleteContent(node) || "{}",
 					};
 					break;
-				case "tool_call":
-					data.hName = "custom-tool-call";
-					data.hProperties = {
-						toolName: extractCompleteContent(node) || "unknown",
-					};
-					break;
+			case "tool_call":
+				data.hName = "custom-tool-call";
+				data.hProperties = {
+					toolName: extractCompleteContent(node) || "unknown",
+				};
+				break;
+			case "sandbox_preview":
+				data.hName = "custom-sandbox-preview";
+				data.hProperties = {
+					data: extractCompleteContent(node) || "{}",
+				};
+				break;
 				case "custom-viewer":
 						data.hName = "custom-viewer";
 						try {
@@ -893,8 +901,13 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 			icon={<ListTodo className="w-4 h-4" />}
 		                                                             />,
 		"custom-integration": ({ data }: { data: string }) => <IntegrationDirective data={data} />,
-		"custom-approval": ({ data }: { data: string }) => <ApprovalFlow data={data} />,
-		"custom-tool-call": ({ toolName }: { toolName: string }) => <ToolCallComponent toolName={toolName} />,
+	"custom-approval": ({ data }: { data: string }) => <ApprovalFlow data={data} />,
+	"custom-tool-call": ({ toolName }: { toolName: string }) => <ToolCallComponent toolName={toolName} />,
+	"custom-sandbox-preview": ({ data }: { data: string }) => <SandboxPreview data={data} />,
+		// Override p to use div to prevent hydration errors from block elements nested inside <p>
+		p: ({ children, ...props }: any) => {
+			return <div {...props}>{children}</div>;
+		},
 		// Use a normal paragraph component for li elements
 		li: ({ children, ...props }: any) => {
 			return <li {...props}>{children}</li>;

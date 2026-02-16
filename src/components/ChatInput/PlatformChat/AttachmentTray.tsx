@@ -138,7 +138,7 @@ export default function AttachmentTray(): JSX.Element | null {
 				</div>
 
 				{/* File list */}
-				<ScrollArea className="flex-1">
+				<ScrollArea className="flex-1 min-h-0 overflow-hidden">
 					<div className="p-1.5 space-y-0.5">
 						{chatAttachments.map((attachment, index) => {
 							const extension = attachment.type || getExtension(attachment.name);

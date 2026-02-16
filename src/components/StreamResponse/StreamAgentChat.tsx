@@ -1,6 +1,8 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useChatStore } from "@/hooks/useChatStore";
 import MarkdownDisplay from "../Markdown/MarkDownDisplay";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Loader2, ArrowUpRight, Box, CheckCircle2, Circle, CircleDot, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FileIconSvg, getFileConfig } from "@/utils/fileIconConfig";
@@ -30,6 +32,204 @@ const getExtension = (fileName: string): string => {
 	}
 	return "";
 };
+
+// File content type categories for preview rendering
+type FileContentType = "code" | "markdown" | "text" | "config" | "data";
+
+// Map extension to Prism language for syntax highlighting
+const EXT_TO_LANGUAGE: Record<string, string> = {
+	js: "javascript", jsx: "jsx", ts: "typescript", tsx: "tsx",
+	html: "html", htm: "html", css: "css", scss: "scss", sass: "sass", less: "less",
+	py: "python", rb: "ruby", java: "java", kt: "kotlin", kts: "kotlin",
+	swift: "swift", go: "go", rs: "rust", c: "c", cpp: "cpp", cc: "cpp", cxx: "cpp",
+	h: "c", hpp: "cpp", cs: "csharp", php: "php", pl: "perl", r: "r", scala: "scala",
+	sh: "bash", bash: "bash", zsh: "bash", fish: "bash", ps1: "powershell",
+	bat: "batch", cmd: "batch",
+	json: "json", yaml: "yaml", yml: "yaml", toml: "toml", xml: "xml", ini: "ini",
+	sql: "sql", graphql: "graphql", gql: "graphql",
+	dockerfile: "docker", makefile: "makefile", lua: "lua", diff: "diff", patch: "diff",
+};
+
+const CODE_EXTENSIONS = new Set([
+	"js", "jsx", "ts", "tsx", "py", "java", "cpp", "c", "h", "hpp", "cs", "go", "rs",
+	"rb", "php", "swift", "kt", "kts", "html", "htm", "css", "scss", "sass", "less",
+	"sql", "sh", "bash", "zsh", "lua", "scala", "r", "pl", "diff", "patch",
+	"dockerfile", "makefile",
+]);
+
+const CONFIG_EXTENSIONS = new Set([
+	"json", "jsonl", "toml", "ini", "env", "config", "yaml", "yml", "xml",
+	"template", "database", "graphql", "gql",
+]);
+
+const MARKDOWN_EXTENSIONS = new Set(["md", "mdx", "markdown"]);
+
+const TEXT_EXTENSIONS = new Set(["txt", "text", "log", "rtf"]);
+
+const DATA_EXTENSIONS = new Set(["csv", "tsv"]);
+
+const getFileContentType = (ext: string): FileContentType => {
+	const e = ext.toLowerCase();
+	if (CODE_EXTENSIONS.has(e)) return "code";
+	if (CONFIG_EXTENSIONS.has(e)) return "config";
+	if (MARKDOWN_EXTENSIONS.has(e)) return "markdown";
+	if (DATA_EXTENSIONS.has(e)) return "data";
+	if (TEXT_EXTENSIONS.has(e)) return "text";
+	// Fallback: if we have a Prism language for it, treat as code
+	if (EXT_TO_LANGUAGE[e]) return "code";
+	return "text";
+};
+
+const getPrismLanguage = (ext: string): string =>
+	EXT_TO_LANGUAGE[ext.toLowerCase()] || "text";
+
+// Compact preview styles for SyntaxHighlighter in the streaming card
+const compactCodeStyle: React.CSSProperties = {
+	margin: 0,
+	padding: "8px 10px",
+	fontSize: "11px",
+	lineHeight: "16px",
+	borderRadius: "6px",
+	background: "#fafafa",
+	border: "1px solid #f0f0f0",
+	overflow: "hidden",
+};
+
+// Throttle a rapidly changing value so downstream renderers only update at most once per interval
+function useThrottledValue<T>(value: T, intervalMs: number): T {
+	const [throttled, setThrottled] = useState(value);
+	const lastUpdateRef = useRef(0);
+	const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const latestRef = useRef(value);
+	latestRef.current = value;
+
+	useEffect(() => {
+		const now = Date.now();
+		const elapsed = now - lastUpdateRef.current;
+
+		if (elapsed >= intervalMs) {
+			lastUpdateRef.current = now;
+			setThrottled(value);
+			if (timerRef.current) {
+				clearTimeout(timerRef.current);
+				timerRef.current = null;
+			}
+		} else if (!timerRef.current) {
+			timerRef.current = setTimeout(() => {
+				lastUpdateRef.current = Date.now();
+				setThrottled(latestRef.current);
+				timerRef.current = null;
+			}, intervalMs - elapsed);
+		}
+	}, [value, intervalMs]);
+
+	useEffect(() => {
+		return () => {
+			if (timerRef.current) clearTimeout(timerRef.current);
+		};
+	}, []);
+
+	return throttled;
+}
+
+const PREVIEW_THROTTLE_MS = 300;
+
+// Component that renders file content with an appropriate viewer based on file type
+const FileContentPreview: React.FC<{ content: string; fileName: string; maxLines?: number }> = React.memo(
+	({ content, fileName, maxLines = 4 }) => {
+		const ext = getExtension(fileName);
+		const contentType = getFileContentType(ext);
+
+		// Throttle content updates to avoid expensive re-renders during streaming
+		const throttledContent = useThrottledValue(content, PREVIEW_THROTTLE_MS);
+
+		// Extract last N non-empty lines for preview
+		const previewContent = useMemo(() => {
+			const tail = throttledContent.length > 4000 ? throttledContent.slice(-4000) : throttledContent;
+			const lines = tail.split("\n").filter((l: string) => l.trim());
+			return lines.slice(-maxLines).join("\n");
+		}, [throttledContent, maxLines]);
+
+		if (!previewContent) return null;
+
+		if (contentType === "markdown") {
+			return (
+				<div className="w-full bg-gray-50 rounded-md px-2.5 py-2 overflow-hidden border border-gray-100">
+					<div className="stream-md-preview text-[11px] leading-4 line-clamp-4">
+						<style>{`
+							.stream-md-preview,
+							.stream-md-preview * {
+								font-size: 11px !important;
+								line-height: 16px !important;
+								color: #6b7280 !important;
+							}
+							.stream-md-preview h1,
+							.stream-md-preview h2,
+							.stream-md-preview h3 {
+								font-size: 12px !important;
+								font-weight: 600 !important;
+								margin: 2px 0 !important;
+								color: #374151 !important;
+							}
+							.stream-md-preview p { margin: 1px 0 !important; }
+							.stream-md-preview pre,
+							.stream-md-preview code {
+								font-size: 10px !important;
+								background: #f3f4f6 !important;
+								padding: 1px 3px !important;
+								border-radius: 3px !important;
+							}
+							.stream-md-preview ul,
+							.stream-md-preview ol {
+								margin: 1px 0 !important;
+								padding-left: 14px !important;
+							}
+						`}</style>
+						<MarkdownDisplay content={previewContent} />
+					</div>
+				</div>
+			);
+		}
+
+		if (contentType === "code" || contentType === "config") {
+			const language = getPrismLanguage(ext);
+			return (
+				<div className="w-full overflow-hidden rounded-md line-clamp-4">
+					<SyntaxHighlighter
+						customStyle={compactCodeStyle}
+						language={language}
+						style={oneLight}
+						wrapLines
+						wrapLongLines
+					>
+						{previewContent}
+					</SyntaxHighlighter>
+				</div>
+			);
+		}
+
+		if (contentType === "data") {
+			// CSV / TSV - render as a mini table-like monospace preview
+			return (
+				<div className="w-full bg-gray-50 rounded-md px-2.5 py-2 overflow-hidden border border-gray-100">
+					<pre className="text-[11px] leading-4 text-gray-500 font-mono whitespace-pre-wrap break-words line-clamp-4">
+						{previewContent}
+					</pre>
+				</div>
+			);
+		}
+
+		// Default: plain text
+		return (
+			<div className="w-full bg-gray-50 rounded-md px-2.5 py-2 overflow-hidden border border-gray-100">
+				<pre className="text-[11px] leading-4 text-gray-600 font-mono whitespace-pre-wrap break-words line-clamp-4">
+					{previewContent}
+				</pre>
+			</div>
+		);
+	}
+);
+FileContentPreview.displayName = "FileContentPreview";
 
 const FLUSH_INTERVAL_MS = 100; // Flush buffered tokens/deltas every 100ms
 
@@ -556,11 +756,6 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			const fp = fileProgress?.[event.fileName];
 			const content = fp?.content || "";
 			const charCount = content.length;
-			// Keep preview extraction bounded for performance on large files
-			const previewTail = charCount > 4000 ? content.slice(-4000) : content;
-			const previewLines = previewTail
-				? previewTail.split("\n").filter((l: string) => l.trim()).slice(-4)
-				: [];
 
 			return (
 				<div className="my-1.5" key={`file-${event.fileName}-${index}`}>
@@ -600,13 +795,9 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 							</div>
 						</div>
 
-						{/* Content preview */}
-						{previewLines.length > 0 ? (
-							<div className="w-full bg-gray-50 rounded-md px-2.5 py-2 overflow-hidden border border-gray-100">
-								<pre className="text-[11px] leading-4 text-gray-500 font-mono whitespace-pre-wrap break-words line-clamp-4">
-									{previewLines.join("\n")}
-								</pre>
-							</div>
+						{/* Content preview - rendered with appropriate viewer per file type */}
+						{charCount > 0 ? (
+							<FileContentPreview content={content} fileName={event.fileName} />
 						) : (
 							<div className="flex items-center gap-2">
 								<Loader2 className="h-3 w-3 animate-spin text-gray-300" />

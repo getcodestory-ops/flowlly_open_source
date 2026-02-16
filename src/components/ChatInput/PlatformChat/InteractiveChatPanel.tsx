@@ -25,6 +25,7 @@ import { FileIconSvg, getFileConfig } from "@/utils/fileIconConfig";
 import PlatformChatComponent from "./PlatformChatComponent";
 import LayoutModeToggle from "./components/LayoutModeToggle";
 import AttachmentTray from "./AttachmentTray";
+import SandboxPreviewTab from "@/components/Markdown/sandboxPreview/SandboxPreviewTab";
 
 // Helper function to get sandbox_id for API calls
 const getSandboxId = (tab: any): string => {
@@ -1296,7 +1297,14 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 								<TodoPanel file={tab.resourceId} />
 							)}
 							{tab.type === "fileProgress" && (
-								<FileProgressPanel fileName={tab.resourceId} />
+								<FileProgressPanel fileName={tab.resourceId} title={tab.title} />
+							)}
+							{tab.type === "sandbox_preview" && tab.sandbox_id && (
+								<SandboxPreviewTab
+									port={parseInt(tab.title?.replace("Preview :", "") || "0", 10)}
+									title={tab.title}
+									token={tab.sandbox_id}
+								/>
 							)}
 							{tab.type === "chat" && activeProject && (
 								<PlatformChatComponent

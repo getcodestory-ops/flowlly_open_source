@@ -3,12 +3,13 @@ import { create } from "zustand";
 interface SidePanel {
 	id: string;
 	isOpen: boolean;
-	type: "sources" | "editor" | "pdfViewer" | "log" | "folder" | "sandbox" | "todo" | "fileProgress" | "chat";
+	type: "sources" | "editor" | "pdfViewer" | "log" | "folder" | "sandbox" | "todo" | "fileProgress" | "chat" | "sandbox_preview";
 	resourceId: string;
 	filename?: string;
 	title?: string;
 	contextId?: string;
 	sandbox_id?: string; // Explicit sandbox ID for API calls (only for sandbox files)
+	url?: string; // URL for sandbox_preview tabs (iframe source)
 	// Force reload timestamp for content refresh
 	lastReloadTime?: number;
 	// Single select mode for document selection (only allows one document at a time)
