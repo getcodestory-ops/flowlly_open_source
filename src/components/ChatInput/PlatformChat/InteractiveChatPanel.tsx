@@ -670,22 +670,22 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 			setActiveTab(tabId);
 			return;
 		}
+
+		// Do not auto-flip panels when clicking a tab that's already selected
+		// in either side of split view; only focus that panel.
+		if (tabId === activeTabId) {
+			setFocusedPanel("left");
+			return;
+		}
+		if (tabId === splitTabId) {
+			setFocusedPanel("right");
+			return;
+		}
+
 		if (focusedPanel === "left") {
-			if (tabId === splitTabId) {
-				const prevActive = activeTabId;
-				setActiveTab(tabId);
-				setSplitTabId(prevActive);
-			} else {
-				setActiveTab(tabId);
-			}
+			setActiveTab(tabId);
 		} else {
-			if (tabId === activeTabId) {
-				const prevSplit = splitTabId;
-				setSplitTabId(tabId);
-				setActiveTab(prevSplit);
-			} else {
-				setSplitTabId(tabId);
-			}
+			setSplitTabId(tabId);
 		}
 	};
 
