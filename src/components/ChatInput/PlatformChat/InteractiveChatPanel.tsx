@@ -79,6 +79,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 	const [isResizingDivider, setIsResizingDivider] = useState(false);
 	const { session, activeProject, activeChatEntity, unsavedChanges, setUnsavedChanges, clearUnsavedChanges, clearAllUnsavedChanges } = useStore();
 	const { toast } = useToast();
+	const tabVisitHistoryRef = React.useRef<string[]>([]);
 
 	const activeTab = tabs.find((tab) => tab.id === activeTabId);
 	const splitTab = splitTabId ? tabs.find((t) => t.id === splitTabId) : null;
@@ -272,9 +273,26 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 		clearUnsavedChanges(documentId);
 	};
 
+	const getLastVisitedOpenTab = (tabIdToExclude: string): string | null => {
+		const openTabIds = new Set(tabs.map((tab) => tab.id));
+		for (let i = tabVisitHistoryRef.current.length - 1; i >= 0; i -= 1) {
+			const candidateTabId = tabVisitHistoryRef.current[i];
+			if (candidateTabId !== tabIdToExclude && openTabIds.has(candidateTabId)) {
+				return candidateTabId;
+			}
+		}
+		return null;
+	};
+
 	const handleTabClose = (tabId: string, e: React.MouseEvent): void => {
 		e.stopPropagation();
 		checkUnsavedChanges(tabId, () => {
+			if (activeTabId === tabId) {
+				const fallbackTabId = getLastVisitedOpenTab(tabId);
+				if (fallbackTabId) {
+					setActiveTab(fallbackTabId);
+				}
+			}
 			removeTab(tabId);
 			clearTabUnsavedChanges(tabId);
 		});
@@ -715,6 +733,19 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 			}
 		}
 	}, [tabs, activeTabId, splitTabId]);
+
+	// Keep tab visit history in sync for "switch back to last viewed tab" behavior.
+	React.useEffect(() => {
+		const openTabIds = new Set(tabs.map((tab) => tab.id));
+		tabVisitHistoryRef.current = tabVisitHistoryRef.current.filter((tabId) => openTabIds.has(tabId));
+
+		if (!activeTabId || !openTabIds.has(activeTabId)) return;
+
+		tabVisitHistoryRef.current = [
+			...tabVisitHistoryRef.current.filter((tabId) => tabId !== activeTabId),
+			activeTabId,
+		];
+	}, [activeTabId, tabs]);
 
 	// Tab scrolling functions
 	const checkScrollButtons = () => {
