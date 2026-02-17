@@ -134,6 +134,16 @@ function useThrottledValue<T>(value: T, intervalMs: number): T {
 
 const PREVIEW_THROTTLE_MS = 300;
 
+const resolveFileProgressName = (payload: Record<string, unknown>): string => {
+	const rawFileName = typeof payload.file_name === "string" ? payload.file_name.trim() : "";
+	if (rawFileName) return rawFileName;
+	const toolUseId = typeof payload.tool_use_id === "string" ? payload.tool_use_id.trim() : "";
+	return toolUseId ? `untitled-${toolUseId}` : "untitled";
+};
+
+const isFileProgressAction = (action: string): action is "create" | "append" | "edit" =>
+	action === "create" || action === "append" || action === "edit";
+
 // Component that renders file content with an appropriate viewer based on file type
 const FileContentPreview: React.FC<{ content: string; fileName: string; maxLines?: number }> = React.memo(
 	({ content, fileName, maxLines = 4 }) => {
@@ -463,8 +473,9 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 						try {
 							const data = JSON.parse(dataPart.trim());
 							if (data.type === "file_progress" && data.payload) {
-								const { action, file_name: fileName } = data.payload;
-								if (fileName && action) {
+								const action = data.payload.action as string | undefined;
+								const fileName = resolveFileProgressName(data.payload);
+								if (action && isFileProgressAction(action)) {
 									initFileProgress(fileName, action);
 									setStreamEvents((prev) => {
 										if (prev.some((e) => e.type === "file" && e.fileName === fileName)) return prev;
@@ -578,7 +589,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 				const payload = JSON.parse(event.data);
 				const action = payload.action as string;
 				const status = payload.status as string;
-				const fileName = payload.file_name as string;
+				const fileName = resolveFileProgressName(payload);
 				const delta = (payload.delta as string) || "";
 				const op = (payload.op as string) || undefined;
 
@@ -593,6 +604,15 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 							return [...prev, { type: "file" as const, fileName, action, status: "generating", ts: Date.now() }];
 						});
 					} else if (status === "delta") {
+						// Reconnect fallback: if "started" was missed, bootstrap stream state from delta.
+						const hasProgressEntry = Boolean((useChatStore.getState() as any).fileProgress?.[fileName]);
+						if (!hasProgressEntry) {
+							initFileProgress(fileName, action as "create" | "append");
+						}
+						setStreamEvents((prev) => {
+							if (prev.some((e) => e.type === "file" && e.fileName === fileName)) return prev;
+							return [...prev, { type: "file" as const, fileName, action, status: "generating", ts: Date.now() }];
+						});
 						// Buffer delta instead of immediately updating store
 						pendingFileDeltasRef.current[fileName] =
 							(pendingFileDeltasRef.current[fileName] || "") + delta;
@@ -618,6 +638,15 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 							return [...prev, { type: "file" as const, fileName, action, status: "generating", ts: Date.now() }];
 						});
 					} else if (status === "delta") {
+						// Reconnect fallback for edit streams when "started" was missed.
+						const hasProgressEntry = Boolean((useChatStore.getState() as any).fileProgress?.[fileName]);
+						if (!hasProgressEntry) {
+							initFileProgress(fileName, "edit");
+						}
+						setStreamEvents((prev) => {
+							if (prev.some((e) => e.type === "file" && e.fileName === fileName)) return prev;
+							return [...prev, { type: "file" as const, fileName, action, status: "generating", ts: Date.now() }];
+						});
 						// Edit operations interact with existing content, keep direct updates
 						const state = (useChatStore.getState() as any);
 						const current = state.fileProgress[fileName]?.content || "";
@@ -655,8 +684,9 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 				const data = JSON.parse(event.data);
 
 				if (data.type === "file_progress" && data.payload) {
-					const { action, file_name: fileName } = data.payload;
-					if (fileName && action) {
+					const action = data.payload.action as string | undefined;
+					const fileName = resolveFileProgressName(data.payload);
+					if (action && isFileProgressAction(action)) {
 						initFileProgress(fileName, action);
 						// Add file stream event (same as FILE_PROGRESS started), with dedup
 						setStreamEvents((prev) => {
