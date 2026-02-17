@@ -904,10 +904,6 @@ const MarkDownDisplay: React.FC<MarkdownRendererProps> = React.memo(({
 	"custom-approval": ({ data }: { data: string }) => <ApprovalFlow data={data} />,
 	"custom-tool-call": ({ toolName }: { toolName: string }) => <ToolCallComponent toolName={toolName} />,
 	"custom-sandbox-preview": ({ data }: { data: string }) => <SandboxPreview data={data} />,
-		// Override p to use div to prevent hydration errors from block elements nested inside <p>
-		p: ({ children, ...props }: any) => {
-			return <div {...props}>{children}</div>;
-		},
 		// Use a normal paragraph component for li elements
 		li: ({ children, ...props }: any) => {
 			return <li {...props}>{children}</li>;
