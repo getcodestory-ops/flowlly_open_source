@@ -49,7 +49,7 @@ export const AUTO_TIER_MODELS: Record<AutoTier, Record<"agent" | "chat", string>
     chat: "gemini-3-flash-preview",  // fastest, cheapest for chat
   },
   balanced: {
-    agent: "claude-sonnet-4-5",      // great balance of speed & quality
+    agent: "claude-sonnet-4.6",      // great balance of speed & quality
     chat: "gpt-5-nano",             // good balance for chat
   },
   complex: {
@@ -99,9 +99,9 @@ export const MODELS: ModelType[] = [
 		contextSize: "medium",
 	},
 	{
-		id: "claude-sonnet-4-5",
-		name: "Claude Sonnet 4.5",
-		speed: 3,
+		id: "claude-sonnet-4.6",
+		name: "Claude Sonnet 4.6 ⚡︎",
+		speed: 4,
 		performance: 5,
 		cost: "high",
 		description: "Top-tier model for the most demanding tasks",
@@ -109,8 +109,8 @@ export const MODELS: ModelType[] = [
 		contextSize: "large",
 	},
 	{
-		id: "claude-sonnet-4",
-		name: "Claude Sonnet 4",
+		id: "claude-sonnet-4.5",
+		name: "Claude Sonnet 4.5",		
 		speed: 3,
 		performance: 5,
 		cost: "high",
