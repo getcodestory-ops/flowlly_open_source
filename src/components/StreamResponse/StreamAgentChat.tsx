@@ -19,7 +19,7 @@ interface StreamComponentProps {
 
 // Unified stream event type - all events in one chronological list
 type StreamEvent =
-  | { type: "file"; fileName: string; action: string; status: "generating"; ts: number }
+  | { type: "file"; fileName: string; action: string; status: "generating"; ts: number; toolUseId?: string }
   | { type: "attachment"; name: string; uuid: string; is_sandbox_file?: boolean; resourceId: string; fileType: string; sandbox_id?: string; ts: number }
   | { type: "todo"; fileId: string; ts: number }
   | { type: "task"; toolName: string; message: string; ts: number };
@@ -143,6 +143,11 @@ const resolveFileProgressName = (payload: Record<string, unknown>): string => {
 
 const isFileProgressAction = (action: string): action is "create" | "append" | "edit" =>
 	action === "create" || action === "append" || action === "edit";
+
+const getToolUseId = (payload: Record<string, unknown>): string | undefined => {
+	const toolUseId = typeof payload.tool_use_id === "string" ? payload.tool_use_id.trim() : "";
+	return toolUseId || undefined;
+};
 
 // Component that renders file content with an appropriate viewer based on file type
 const FileContentPreview: React.FC<{ content: string; fileName: string; maxLines?: number }> = React.memo(
@@ -268,6 +273,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 
 	// File progress delta buffering (for create/append actions)
 	const pendingFileDeltasRef = useRef<{ [fileName: string]: string }>({});
+	const toolUseIdToFileNameRef = useRef<{ [toolUseId: string]: string }>({});
 	const fileProgressFlushRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 	const { setSidePanel, setCollapsed, setTodoState, todoStates, fileProgress, initFileProgress, appendFileProgressDelta, endFileProgress, clearStreamTabs } = useChatStore() as any;
@@ -302,6 +308,68 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			}
 		}
 	}, [appendFileProgressDelta]);
+
+	const upsertFileStreamEvent = useCallback((fileName: string, action: string, toolUseId?: string) => {
+		setStreamEvents((prev) => {
+			const existingIndex = prev.findIndex((e) =>
+				e.type === "file" &&
+				((toolUseId && e.toolUseId === toolUseId) || e.fileName === fileName)
+			);
+
+			if (existingIndex === -1) {
+				return [...prev, { type: "file" as const, fileName, action, status: "generating", ts: Date.now(), toolUseId }];
+			}
+
+			const next = [...prev];
+			const existing = next[existingIndex] as Extract<StreamEvent, { type: "file" }>;
+			next[existingIndex] = {
+				...existing,
+				fileName,
+				action,
+				toolUseId: toolUseId || existing.toolUseId,
+				ts: Date.now(),
+			};
+			return next;
+		});
+	}, []);
+
+	const removeFileStreamEvent = useCallback((fileName: string, toolUseId?: string) => {
+		setStreamEvents((prev) => prev.filter((e) => {
+			if (e.type !== "file") return true;
+			if (toolUseId) return e.toolUseId !== toolUseId;
+			return e.fileName !== fileName;
+		}));
+	}, []);
+
+	const syncFileNameForToolUse = useCallback((nextFileName: string, action: string, toolUseId?: string) => {
+		if (!toolUseId) return;
+
+		const previousFileName = toolUseIdToFileNameRef.current[toolUseId];
+		if (!previousFileName || previousFileName === nextFileName) {
+			toolUseIdToFileNameRef.current[toolUseId] = nextFileName;
+			return;
+		}
+
+		toolUseIdToFileNameRef.current[toolUseId] = nextFileName;
+
+		const state = useChatStore.getState() as any;
+		const previousEntry = state.fileProgress?.[previousFileName];
+		const nextEntry = state.fileProgress?.[nextFileName];
+		if (previousEntry && !nextEntry) {
+			initFileProgress(nextFileName, isFileProgressAction(action) ? action : (previousEntry.action || "create"));
+			if (previousEntry.content) {
+				state.setFileProgressContent(nextFileName, previousEntry.content, previousEntry.status === "ended" ? "ended" : "delta");
+			}
+		}
+
+		const oldPending = pendingFileDeltasRef.current[previousFileName];
+		if (oldPending && !pendingFileDeltasRef.current[nextFileName]) {
+			pendingFileDeltasRef.current[nextFileName] = oldPending;
+		} else if (oldPending && pendingFileDeltasRef.current[nextFileName]) {
+			pendingFileDeltasRef.current[nextFileName] = oldPending + pendingFileDeltasRef.current[nextFileName];
+		}
+		delete pendingFileDeltasRef.current[previousFileName];
+	}, [initFileProgress]);
 
 	// Handle attachment events - stores locally for inline indicator instead of auto-opening tab
 	const handleAttachmentEvent = useCallback((attachmentDataString: string): void => {
@@ -475,12 +543,11 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 							if (data.type === "file_progress" && data.payload) {
 								const action = data.payload.action as string | undefined;
 								const fileName = resolveFileProgressName(data.payload);
+								const toolUseId = getToolUseId(data.payload);
 								if (action && isFileProgressAction(action)) {
+									syncFileNameForToolUse(fileName, action, toolUseId);
 									initFileProgress(fileName, action);
-									setStreamEvents((prev) => {
-										if (prev.some((e) => e.type === "file" && e.fileName === fileName)) return prev;
-										return [...prev, { type: "file" as const, fileName, action, status: "generating" as const, ts: Date.now() }];
-									});
+									upsertFileStreamEvent(fileName, action, toolUseId);
 								}
 							} else if (data.type === "task_progress") {
 								const toolName = data.tool_name || "unknown";
@@ -590,29 +657,24 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 				const action = payload.action as string;
 				const status = payload.status as string;
 				const fileName = resolveFileProgressName(payload);
+				const toolUseId = getToolUseId(payload);
 				const delta = (payload.delta as string) || "";
 				const op = (payload.op as string) || undefined;
 
 				if (!fileName || !action || !status) return;
+				syncFileNameForToolUse(fileName, action, toolUseId);
 
 				if (action === "create" || action === "append") {
 					if (status === "started") {
 						initFileProgress(fileName, action);
-						// Add to unified event list (newest at end = bottom)
-						setStreamEvents((prev) => {
-							if (prev.some((e) => e.type === "file" && e.fileName === fileName)) return prev;
-							return [...prev, { type: "file" as const, fileName, action, status: "generating", ts: Date.now() }];
-						});
+						upsertFileStreamEvent(fileName, action, toolUseId);
 					} else if (status === "delta") {
 						// Reconnect fallback: if "started" was missed, bootstrap stream state from delta.
 						const hasProgressEntry = Boolean((useChatStore.getState() as any).fileProgress?.[fileName]);
 						if (!hasProgressEntry) {
 							initFileProgress(fileName, action as "create" | "append");
 						}
-						setStreamEvents((prev) => {
-							if (prev.some((e) => e.type === "file" && e.fileName === fileName)) return prev;
-							return [...prev, { type: "file" as const, fileName, action, status: "generating", ts: Date.now() }];
-						});
+						upsertFileStreamEvent(fileName, action, toolUseId);
 						// Buffer delta instead of immediately updating store
 						pendingFileDeltasRef.current[fileName] =
 							(pendingFileDeltasRef.current[fileName] || "") + delta;
@@ -625,28 +687,19 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 						}
 						endFileProgress(fileName);
 						// Remove generating indicator - attachment event will show the final file
-						setStreamEvents((prev) => prev.filter((e) =>
-							!(e.type === "file" && e.fileName === fileName)
-						));
+						removeFileStreamEvent(fileName, toolUseId);
 					}
 				} else if (action === "edit") {
 					if (status === "started") {
 						initFileProgress(fileName, "edit");
-						// Add to unified event list (newest at end = bottom)
-						setStreamEvents((prev) => {
-							if (prev.some((e) => e.type === "file" && e.fileName === fileName)) return prev;
-							return [...prev, { type: "file" as const, fileName, action, status: "generating", ts: Date.now() }];
-						});
+						upsertFileStreamEvent(fileName, action, toolUseId);
 					} else if (status === "delta") {
 						// Reconnect fallback for edit streams when "started" was missed.
 						const hasProgressEntry = Boolean((useChatStore.getState() as any).fileProgress?.[fileName]);
 						if (!hasProgressEntry) {
 							initFileProgress(fileName, "edit");
 						}
-						setStreamEvents((prev) => {
-							if (prev.some((e) => e.type === "file" && e.fileName === fileName)) return prev;
-							return [...prev, { type: "file" as const, fileName, action, status: "generating", ts: Date.now() }];
-						});
+						upsertFileStreamEvent(fileName, action, toolUseId);
 						// Edit operations interact with existing content, keep direct updates
 						const state = (useChatStore.getState() as any);
 						const current = state.fileProgress[fileName]?.content || "";
@@ -666,9 +719,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 					} else if (status === "ended") {
 						endFileProgress(fileName);
 						// Remove generating indicator - attachment event will show the final file
-						setStreamEvents((prev) => prev.filter((e) =>
-							!(e.type === "file" && e.fileName === fileName)
-						));
+						removeFileStreamEvent(fileName, toolUseId);
 					}
 				}
 			} catch (e) {
@@ -686,13 +737,11 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 				if (data.type === "file_progress" && data.payload) {
 					const action = data.payload.action as string | undefined;
 					const fileName = resolveFileProgressName(data.payload);
+					const toolUseId = getToolUseId(data.payload);
 					if (action && isFileProgressAction(action)) {
+						syncFileNameForToolUse(fileName, action, toolUseId);
 						initFileProgress(fileName, action);
-						// Add file stream event (same as FILE_PROGRESS started), with dedup
-						setStreamEvents((prev) => {
-							if (prev.some((e) => e.type === "file" && e.fileName === fileName)) return prev;
-							return [...prev, { type: "file" as const, fileName, action, status: "generating" as const, ts: Date.now() }];
-						});
+						upsertFileStreamEvent(fileName, action, toolUseId);
 					}
 				} else if (data.type === "task_progress") {
 					const toolName = data.tool_name || "unknown";
@@ -719,6 +768,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			// Flush remaining file deltas
 			const pendingDeltas = pendingFileDeltasRef.current;
 			pendingFileDeltasRef.current = {};
+			toolUseIdToFileNameRef.current = {};
 			for (const fName of Object.keys(pendingDeltas)) {
 				if (pendingDeltas[fName]) {
 					appendFileProgressDelta(fName, pendingDeltas[fName], "delta");
@@ -775,7 +825,7 @@ const StreamComponent: React.FC<StreamComponentProps> = ({
 			eventSourceRef.current = null;
 		};
 	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setTodoState, handleAttachmentEvent, initFileProgress, appendFileProgressDelta, endFileProgress, clearStreamTabs, flushTokens, flushFileDeltas]);
+	}, [streamingKey, authToken, onStreamComplete, onThinkingChange, onThinkingContentChange, setTodoState, handleAttachmentEvent, initFileProgress, appendFileProgressDelta, endFileProgress, clearStreamTabs, flushTokens, flushFileDeltas, removeFileStreamEvent, syncFileNameForToolUse, upsertFileStreamEvent]);
 
 	// Render a single stream event inline indicator
 	const renderStreamEvent = (event: StreamEvent, index: number) => {
