@@ -150,6 +150,7 @@ function AgentMessageInteractiveView({
 		}
 		if ("function_response" in message) {
 			const getFunctionResponse = (result: any) => {
+				const genericErrorMessage = "Something went wrong. Please try again.";
 				if (typeof result === "string" ) {
 					return <MarkDownDisplay content={result} />;
 				}
@@ -289,8 +290,15 @@ function AgentMessageInteractiveView({
 							);
 						}
 					}
+					// Avoid exposing raw tool payloads when there is no visible body/content.
+					if (
+						("body" in result && (result.body === "" || result.body == null)) ||
+						("response" in result && (result.response === "" || result.response == null))
+					) {
+						return <MarkDownDisplay content={genericErrorMessage} />;
+					}
 				}
-				return <MarkDownDisplay content={JSON.stringify(result)} />;
+				return <MarkDownDisplay content={genericErrorMessage} />;
 			};
 			return (
 				<div>
