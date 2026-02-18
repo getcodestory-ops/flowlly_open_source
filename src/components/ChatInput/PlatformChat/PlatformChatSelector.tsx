@@ -37,6 +37,7 @@ const PlatformChatSelector = ({
 
 	const { tabs, setActiveTab } = useChatStore();
 	const chatLayoutMode = useViewStore((s) => s.chatLayoutMode);
+	const setPreferredModel = useViewStore((s) => s.setPreferredModel);
 
 	const chatEntityQueryKey = ["documentChatEntityList", session, activeProject];
 
@@ -110,8 +111,12 @@ const PlatformChatSelector = ({
 						<h3 className="font-medium text-sm text-slate-800">Chat History</h3>
 					</div>
 					<ScrollArea className="h-[60vh] py-2">
-						{chatEntities && chatEntities.length > 0 ? (
-							chatEntities.reverse().map((chatEntity, index) => (
+					{chatEntities && chatEntities.length > 0 ? (
+						[...chatEntities].sort((a, b) => {
+							const dateA = new Date(a.metadata?.updated_at || a.created_at).getTime();
+							const dateB = new Date(b.metadata?.updated_at || b.created_at).getTime();
+							return dateB - dateA;
+						}).map((chatEntity, index) => (
 								<DropdownMenuItem
 									className={`px-3 py-2 cursor-pointer transition-colors ${
 										chatEntity.id === activeChatEntity?.id
@@ -119,15 +124,19 @@ const PlatformChatSelector = ({
 											: "hover:bg-slate-50"
 									}`}
 									key={`chat-${chatEntity.id}-index-${index}`}
-									onSelect={() => {
-										setActiveChatEntity(chatEntity);
-										setIsOpen(false);
-										// Auto-switch to chat tab in focus mode
-										if (chatLayoutMode === "agent") {
-											const chatTab = tabs.find((t) => t.type === "chat");
-											if (chatTab) setActiveTab(chatTab.id);
-										}
-									}}
+								onSelect={() => {
+									setActiveChatEntity(chatEntity);
+									setIsOpen(false);
+									const savedModel = chatEntity.metadata?.last_model;
+									if (savedModel) {
+										setPreferredModel(savedModel);
+									}
+									// Auto-switch to chat tab in focus mode
+									if (chatLayoutMode === "agent") {
+										const chatTab = tabs.find((t) => t.type === "chat");
+										if (chatTab) setActiveTab(chatTab.id);
+									}
+								}}
 								>
 									<div className="flex items-center gap-2 w-full">
 										<MessageSquare className="h-4 w-4 text-slate-500" />

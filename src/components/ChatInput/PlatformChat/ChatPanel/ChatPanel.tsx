@@ -42,7 +42,7 @@ export default function ChatPanel({
 	onCreateNewChat,
 }: ChatPanelProps) {
 	const { setIsWaitingForResponse, resetForNewChat, clearChatContext, setChatDirectiveType, tabs, setActiveTab } = useChatStore();
-	const { setPreferredAgentType, chatLayoutMode } = useViewStore();
+	const { setPreferredAgentType, setPreferredModel, chatLayoutMode } = useViewStore();
 	const { toast } = useToast();
 	const router = useRouter();
 	const [editingChatId, setEditingChatId] = useState<string | null>(null);
@@ -245,6 +245,10 @@ export default function ChatPanel({
 		}
 		
 		return matchesSearch && matchesCategory && matchesCustomTag;
+	})?.sort((a, b) => {
+		const dateA = new Date(a.metadata?.updated_at || a.created_at).getTime();
+		const dateB = new Date(b.metadata?.updated_at || b.created_at).getTime();
+		return dateB - dateA;
 	}) || [];
 
 	const customTags = getAllCustomTags();
@@ -286,10 +290,14 @@ export default function ChatPanel({
 		clearChatContext();
 		setChatDirectiveType("chat");
 		
-		// Restore the agent type from the chat entity's metadata
+		// Restore the agent type and model from the chat entity's metadata
 		const savedAgentType = chatEntity.metadata?.agent_type;
 		if (savedAgentType === "agent" || savedAgentType === "chat") {
 			setPreferredAgentType(savedAgentType);
+		}
+		const savedModel = chatEntity.metadata?.last_model;
+		if (savedModel) {
+			setPreferredModel(savedModel);
 		}
 		
 		// Set app view to AI Chat when selecting a chat
@@ -470,17 +478,19 @@ export default function ChatPanel({
 			<ScrollArea className="flex-1 px-6">
 				<div className="pb-6">
 					{filteredChatEntities && [...filteredChatEntities].map((chatEntity, index, array) => {
-						const isEditing = editingChatId === chatEntity.id;
-						const isActive = chatEntity.id === activeChatEntity?.id;
+					const isEditing = editingChatId === chatEntity.id;
+					const isActive = chatEntity.id === activeChatEntity?.id;
 
-						// Group chats by date
-						const date = new Date(chatEntity.created_at);
-						const today = new Date();
-						const yesterday = new Date(today);
-						yesterday.setDate(yesterday.getDate() - 1);
-					
-						let dateLabel = "";
-						if (index === 0 || (index > 0 && new Date(array[index - 1].created_at).toDateString() !== date.toDateString())) {
+					const getEffectiveDate = (entity: AgentChatEntity) =>
+						new Date(entity.metadata?.updated_at || entity.created_at);
+
+					const date = getEffectiveDate(chatEntity);
+					const today = new Date();
+					const yesterday = new Date(today);
+					yesterday.setDate(yesterday.getDate() - 1);
+				
+					let dateLabel = "";
+					if (index === 0 || (index > 0 && getEffectiveDate(array[index - 1]).toDateString() !== date.toDateString())) {
 							if (date.toDateString() === today.toDateString()) {
 								dateLabel = "Today";
 							} else if (date.toDateString() === yesterday.toDateString()) {

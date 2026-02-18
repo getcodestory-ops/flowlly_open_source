@@ -92,6 +92,8 @@ export interface ChatEntityMetadata {
   }[];
   notify_email?: boolean;
   agent_type?: "agent" | "chat";
+  updated_at?: string;
+  last_model?: string;
 }
 
 export interface CreateAgentChatEntity {

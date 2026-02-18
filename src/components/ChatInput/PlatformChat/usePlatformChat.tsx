@@ -3,7 +3,7 @@ import { useStore, useViewStore } from "@/utils/store";
 import { talkToAgent, ProcessedFile, sendMessageToStreamingAgent } from "@/api/agentRoutes";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
-import { createPlatformChatEntity, getPlatformChatEntities, getAgentChats } from "@/api/agentRoutes";
+import { createPlatformChatEntity, getPlatformChatEntities, getAgentChats, updateChatEntityMetadata } from "@/api/agentRoutes";
 import { AgentChat, AgentChatEntity } from "@/types/agentChats";
 import { useChatStore } from "@/hooks/useChatStore";
 import { FunctionApproval } from "@/types/agentChats";
@@ -398,6 +398,32 @@ export function usePlatformChat(
 			});
 			setLocalChats(localChats);
 			return;
+		}
+
+		// Update `updated_at` and `last_model` so the chat bubbles to the top
+		// and the model selection is persisted per-chat
+		const now = new Date().toISOString();
+		if (chatEntityId !== "untitled" && session) {
+			const metadataPatch = {
+				...currentActiveChatEntity.metadata,
+				updated_at: now,
+				last_model: selectedModel,
+			};
+			updateChatEntityMetadata(session, currentActiveChatEntity.id, metadataPatch).catch(() => {});
+
+			// Optimistically update the cached entity list
+			const entities = queryClient.getQueryData<AgentChatEntity[]>(chatEntityQueryKey);
+			if (entities) {
+				const updated = entities.map((e) =>
+					e.id === currentActiveChatEntity.id
+						? { ...e, metadata: { ...e.metadata, updated_at: now, last_model: selectedModel } }
+						: e,
+				);
+				queryClient.setQueryData(chatEntityQueryKey, updated);
+				if (activeProject?.project_id) {
+					setCachedChatEntities(activeProject.project_id, folderId, chatTarget, updated).catch(() => {});
+				}
+			}
 		}
 
 		mutate({
