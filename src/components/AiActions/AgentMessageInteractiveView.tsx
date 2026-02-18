@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AgentMessage } from "@/types/agentChats";
 import MarkDownDisplay from "../Markdown/MarkDownDisplay";
 import MarkdownTerminal from "../Markdown/style/MarkdownTerminal";
@@ -10,7 +10,9 @@ import {
 	Eye,
 	Database,
 	EyeOff,
-	Logs
+	Logs,
+	ChevronDown,
+	ChevronUp,
 } from "lucide-react";
 import Image from "next/image";
 import ContextSourceViewer from "../Folder/ContextSourceViewer";
@@ -26,10 +28,23 @@ import {
 } from "@/components/ui/accordion";
 
 
-function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: { id?: string, message: AgentMessage | string, setIsWaitingForResponse: (value: boolean) => void }) : React.ReactNode {
+function AgentMessageInteractiveView({
+	id,
+	message,
+	setIsWaitingForResponse,
+	isUserMessage = false,
+}: {
+	id?: string,
+	message: AgentMessage | string,
+	setIsWaitingForResponse: (value: boolean) => void,
+	isUserMessage?: boolean,
+}) : React.ReactNode {
 	const { setSidePanel, setCollapsed, sidePanel } = useChatStore();
 	const { setDocumentDisplayMap, documentDisplayMap } = useChatStore();
 	const localChats = useStore((state) => state.localChats);
+	const contentRef = useRef<HTMLDivElement | null>(null);
+	const [isExpanded, setIsExpanded] = useState(false);
+	const [isOverflowing, setIsOverflowing] = useState(false);
 	
 	// Check if this is the last message in the chat
 	const isLastMessage = localChats && localChats.length > 0 && 
@@ -56,6 +71,25 @@ function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: {
 			}
 		}
 	}, [message]);
+
+	useEffect(() => {
+		setIsExpanded(false);
+	}, [id, message]);
+
+	useEffect(() => {
+		if (!isUserMessage || isExpanded) {
+			return;
+		}
+
+		const checkOverflow = () => {
+			const element = contentRef.current;
+			if (!element) return;
+			setIsOverflowing(element.scrollHeight > element.clientHeight + 1);
+		};
+
+		const rafId = window.requestAnimationFrame(checkOverflow);
+		return () => window.cancelAnimationFrame(rafId);
+	}, [message, isUserMessage, isExpanded]);
 
 
 	const setEditorSidePanel = (resource_id: string, filename: string, type: "editor" | "sources" | "log" = "editor") : void => {
@@ -305,8 +339,37 @@ function AgentMessageInteractiveView({ id, message, setIsWaitingForResponse }: {
 	};
 
 	return (
-		<div className="flex flex-col">
-			{getMessageContent()}
+		<div className="relative flex flex-col">
+			<div
+				className={`${!isExpanded && isUserMessage ? "overflow-hidden" : ""} ${isUserMessage && isOverflowing ? "pr-6" : ""}`}
+				ref={contentRef}
+				style={
+					!isExpanded && isUserMessage
+						? {
+							display: "-webkit-box",
+							WebkitBoxOrient: "vertical",
+							WebkitLineClamp: 6,
+						}
+						: undefined
+				}
+			>
+				{getMessageContent()}
+			</div>
+			{isUserMessage && isOverflowing && (
+				<button
+					aria-label={isExpanded ? "Collapse message" : "Expand message"}
+					className="absolute right-0 top-0 inline-flex h-5 w-5 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-indigo-600 transition-colors"
+					onClick={() => setIsExpanded((prev) => !prev)}
+					title={isExpanded ? "Show less" : "Show more"}
+					type="button"
+				>
+					{isExpanded ? (
+						<ChevronUp className="h-3.5 w-3.5" />
+					) : (
+						<ChevronDown className="h-3.5 w-3.5" />
+					)}
+				</button>
+			)}
 			{typeof message !== "string" && message.files && message.files.length > 0 && (
 				<AttachmentViewer 
 					files={message.files.map((file) => ({

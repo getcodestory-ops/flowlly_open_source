@@ -748,6 +748,7 @@ export default function PlatformChatInterface({
 											>
 												{history.message && (
 													<AgentMessageInteractiveView id={history.id}
+														isUserMessage={isUserMessage}
 														message={history.message}
 														setIsWaitingForResponse={setIsWaitingForResponse}
 													/>
