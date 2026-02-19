@@ -99,7 +99,7 @@ const TIER_ORDER: AutoTier[] = ["fast", "balanced", "complex", "max"];
 // Main models per mode
 const AGENT_MODEL_IDS = [
 	"claude-opus-4.6",
-	"gemini-3-pro-preview",
+	"gemini-3.1-pro-preview",
 	"gpt-5.2",
 	"z-ai/glm-5",
 	"minimax/minimax-m2.5",

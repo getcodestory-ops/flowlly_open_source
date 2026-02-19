@@ -45,7 +45,7 @@ export type AutoTier = "fast" | "balanced" | "complex" | "max";
 
 export const AUTO_TIER_MODELS: Record<AutoTier, Record<"agent" | "chat", string>> = {
   fast: {
-    agent: "gemini-3-pro-preview",   // fast + high quality for agent work
+    agent: "gemini-3.1-pro-preview",   // fast + high quality for agent work
     chat: "gemini-3-flash-preview",  // fastest, cheapest for chat
   },
   balanced: {
@@ -151,8 +151,8 @@ export const MODELS: ModelType[] = [
 	},
 	// Gemini
 	{
-		id: "gemini-3-pro-preview",
-		name: "Gemini 3 Pro Preview",
+		id: "gemini-3.1-pro-preview",
+		name: "Gemini 3.1 Pro Preview",
 		speed: 4,
 		performance: 5,
 		cost: "high",
