@@ -9,6 +9,7 @@ interface SidePanel {
 	title?: string;
 	contextId?: string;
 	sandbox_id?: string; // Explicit sandbox ID for API calls (only for sandbox files)
+	sandbox_path?: string;
 	url?: string; // URL for sandbox_preview tabs (iframe source)
 	// Force reload timestamp for content refresh
 	lastReloadTime?: number;

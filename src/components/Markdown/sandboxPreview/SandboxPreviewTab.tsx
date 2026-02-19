@@ -7,9 +7,10 @@ interface SandboxPreviewTabProps {
 	token: string;
 	port: number;
 	title?: string;
+	path?: string;
 }
 
-const SandboxPreviewTab: React.FC<SandboxPreviewTabProps> = ({ token, port, title }) => {
+const SandboxPreviewTab: React.FC<SandboxPreviewTabProps> = ({ token, port, title, path }) => {
 	const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -47,7 +48,9 @@ const SandboxPreviewTab: React.FC<SandboxPreviewTabProps> = ({ token, port, titl
 			const result = await response.json();
 
 			if (result?.url) {
-				setPreviewUrl(result.url);
+				const base = result.url.replace(/\/+$/, "");
+				const suffix = path ? `/${path.replace(/^\/+/, "")}` : "";
+				setPreviewUrl(`${base}${suffix}`);
 			} else {
 				throw new Error("No URL returned from server");
 			}
@@ -57,7 +60,7 @@ const SandboxPreviewTab: React.FC<SandboxPreviewTabProps> = ({ token, port, titl
 		} finally {
 			setIsLoading(false);
 		}
-	}, [token, session?.access_token, activeProject?.project_id]);
+	}, [token, path, session?.access_token, activeProject?.project_id]);
 
 	useEffect(() => {
 		fetchPreviewUrl();

@@ -1334,6 +1334,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 							)}
 							{tab.type === "sandbox_preview" && tab.sandbox_id && (
 								<SandboxPreviewTab
+									path={tab.sandbox_path}
 									port={parseInt(tab.title?.replace("Preview :", "") || "0", 10)}
 									title={tab.title}
 									token={tab.sandbox_id}

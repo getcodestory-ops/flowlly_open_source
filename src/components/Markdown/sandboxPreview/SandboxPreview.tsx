@@ -5,6 +5,7 @@ import { useChatStore } from "@/hooks/useChatStore";
 interface SandboxPreviewData {
 	token: string;
 	port: number;
+	path?: string;
 }
 
 interface SandboxPreviewProps {
@@ -28,6 +29,7 @@ const SandboxPreview: React.FC<SandboxPreviewProps> = ({ data }) => {
 			resourceId: `sandbox-preview-${previewData.token}`,
 			title: "Live App",
 			sandbox_id: previewData.token,
+			sandbox_path: previewData.path,
 		});
 	};
 
