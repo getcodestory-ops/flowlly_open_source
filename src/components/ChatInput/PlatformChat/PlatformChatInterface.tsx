@@ -31,7 +31,7 @@ import { Upload } from "lucide-react";
 import clsx from "clsx";
 import AtSelectorComponent from "./components/AtSelectorComponent";
 import { useChatStore } from "@/hooks/useChatStore";
-import { useViewStore } from "@/utils/store";
+import { useStore, useViewStore } from "@/utils/store";
 import EmptyChatInterface from "./PlatformChatInterface/components/EmptyChatInterface/EmptyChatInterface";
 import { requestHelp, stopAgent } from "@/api/agentRoutes";
 import ModelSelector from "./components/ModelSelector";
@@ -141,17 +141,18 @@ export default function PlatformChatInterface({
 				),
 			);
 			
-			// Add to selectedContexts for consistency with document selector
-			const chatEntityId = activeChatEntity?.id || "untitled";
-			const currentContexts = selectedContexts[chatEntityId] || [];
+			// Read directly from stores to avoid stale closure values
+			// (this callback may fire from an async polling setTimeout)
+			const latestChatEntityId = useStore.getState().activeChatEntity?.id || "untitled";
+			const latestContexts = useChatStore.getState().selectedContexts[latestChatEntityId] || [];
 			const newContext = {
 				id: processedFile.resource_id,
 				name: processedFile.resource_name,
 				extension: processedFile.extension,
 			};
 			
-			if (!currentContexts.some((ctx) => ctx.id === processedFile.resource_id)) {
-				setSelectedContexts(chatEntityId, [...currentContexts, newContext]);
+			if (!latestContexts.some((ctx) => ctx.id === processedFile.resource_id)) {
+				setSelectedContexts(latestChatEntityId, [...latestContexts, newContext]);
 			}
 		},
 		onUploadError: (error: string) => {

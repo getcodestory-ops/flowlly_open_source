@@ -98,7 +98,7 @@ export const FileUploadButton: React.FC<FileUploadButtonProps> = ({
 						<Button
 							className="h-8 px-3 text-xs hover:bg-gray-100"
 							size="sm"
-							title="Create text file"
+							title="Create a new file"
 							variant="ghost"
 						>
 							<FileText className="mr-1" size={14} />

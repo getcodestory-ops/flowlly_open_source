@@ -351,8 +351,11 @@ export function usePlatformChat(
 		// Store the chatEntityId so we can clear its contexts on success
 		pendingChatEntityIdRef.current = chatEntityId;
 		
-		const currentContexts = selectedContexts[chatEntityId] || [];
-		if (currentContexts.length > 0 && chatDirectiveType === "chat") {
+		// Read directly from store to avoid stale closure values
+		const latestSelectedContexts = useChatStore.getState().selectedContexts;
+		const latestChatDirectiveType = useChatStore.getState().chatDirectiveType;
+		const currentContexts = latestSelectedContexts[chatEntityId] || [];
+		if (currentContexts.length > 0 && !["templateCreate", "templateCreateAI"].includes(latestChatDirectiveType)) {
 			const attachmentsJson = JSON.stringify(currentContexts.map((ctx) => ({
 				name: ctx.name,
 				uuid: ctx.id,

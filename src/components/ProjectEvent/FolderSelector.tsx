@@ -104,7 +104,7 @@ export default function FolderSelector({
 		<div className="space-y-3">
 			{!hideLabel && (
 				<Label className="text-sm font-semibold">
-					{label || "Select working Folder, all files will be saved in this folder"}
+					{label || "Select Folder to save files"}
 				</Label>
 			)}
 			<Card className="border rounded-xl overflow-hidden shadow-sm">
