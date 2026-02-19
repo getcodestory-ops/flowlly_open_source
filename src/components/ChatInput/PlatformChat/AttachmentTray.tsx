@@ -7,7 +7,6 @@ import { useChatStore } from "@/hooks/useChatStore";
 import { useViewStore } from "@/utils/store";
 import { cn } from "@/lib/utils";
 import { FileIconSvg, getFileConfig } from "@/utils/fileIconConfig";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Tooltip,
 	TooltipContent,
@@ -117,14 +116,13 @@ export default function AttachmentTray(): JSX.Element | null {
 
 			{/* Drop-down tray panel */}
 			<div
-				className={cn(
-					"bg-white border border-gray-200 rounded-b-xl rounded-t-none shadow-lg",
-					"flex flex-col overflow-hidden",
-					"transition-all duration-200 ease-in-out origin-top",
-					isOpen
-						? "max-h-[320px] w-[300px] opacity-100 scale-y-100"
-						: "max-h-0 w-[300px] opacity-0 scale-y-95 pointer-events-none border-0",
-				)}
+			className={cn(
+				"bg-white border border-gray-200 rounded-b-xl rounded-t-none shadow-lg",
+				"transition-all duration-200 ease-in-out origin-top",
+				isOpen
+					? "max-h-[320px] w-[300px] opacity-100 scale-y-100"
+					: "max-h-0 w-[300px] opacity-0 scale-y-95 pointer-events-none border-0 overflow-hidden",
+			)}
 			>
 				{/* Tray header */}
 				<div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-gray-50/80 flex-shrink-0">
@@ -137,9 +135,9 @@ export default function AttachmentTray(): JSX.Element | null {
 					</div>
 				</div>
 
-				{/* File list */}
-				<ScrollArea className="flex-1 min-h-0 overflow-hidden">
-					<div className="p-1.5 space-y-0.5">
+			{/* File list */}
+			<div className="overflow-y-auto max-h-[280px]">
+				<div className="p-1.5 space-y-0.5">
 						{chatAttachments.map((attachment, index) => {
 							const extension = attachment.type || getExtension(attachment.name);
 							const config = getFileConfig(extension);
@@ -185,8 +183,8 @@ export default function AttachmentTray(): JSX.Element | null {
 								</button>
 							);
 						})}
-					</div>
-				</ScrollArea>
+				</div>
+			</div>
 			</div>
 		</div>
 	);
