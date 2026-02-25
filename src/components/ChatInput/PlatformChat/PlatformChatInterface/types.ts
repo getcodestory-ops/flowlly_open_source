@@ -53,7 +53,7 @@ export const AUTO_TIER_MODELS: Record<AutoTier, Record<"agent" | "chat", string>
     chat: "gpt-5-nano",             // good balance for chat
   },
   complex: {
-    agent: "claude-opus-4.5",        // top-tier reasoning for complex tasks
+    agent: "gpt-5.3-codex",        // top-tier reasoning for complex tasks
     chat: "claude-haiku-4.5",       // strongest chat-tier model
   },
   max: {
@@ -68,11 +68,24 @@ export function getTierModel(tier: AutoTier, agentType: "agent" | "chat"): strin
 }
 
 const MODEL_IDS = new Set<string>();
+const CHAT_DISABLED_MODEL_IDS = new Set<string>([
+  "gpt-5.3-codex",
+  "openai/gpt-5.3-codex",
+]);
+
+export function isModelAvailableForMode(modelId: string, agentType: "agent" | "chat"): boolean {
+  if (agentType === "chat" && CHAT_DISABLED_MODEL_IDS.has(modelId)) return false;
+  return true;
+}
+
+export function getModelsForMode(agentType: "agent" | "chat"): ModelType[] {
+  return MODELS.filter((model) => isModelAvailableForMode(model.id, agentType));
+}
 
 /** Returns the model ID if it exists in MODELS, else the default for the given mode */
 export function resolveModel(modelId: string, agentType: "agent" | "chat"): string {
   if (MODEL_IDS.size === 0) MODELS.forEach((m) => MODEL_IDS.add(m.id));
-  if (MODEL_IDS.has(modelId)) return modelId;
+  if (MODEL_IDS.has(modelId) && isModelAvailableForMode(modelId, agentType)) return modelId;
   return agentType === "agent" ? DEFAULT_MODEL_AGENT : DEFAULT_MODEL_CHAT;
 }
 
@@ -129,9 +142,20 @@ export const MODELS: ModelType[] = [
 		contextSize: "medium",
 	},
 	// OpenAI
+
+	{
+		id: "openai/gpt-5.3-codex",
+		name: "GPT-5.3 Codex",
+		speed: 4,
+		performance: 4,
+		cost: "medium",
+		description: "Top-tier model for the most demanding tasks",
+		bestFor: "Highly complex tasks requiring maximum intelligence",
+		contextSize: "large",
+	},
 	{
 		id: "gpt-5.2",
-		name: "OpenAI GPT-5.2",
+		name: "GPT-5.2",
 		speed: 3,
 		performance: 4,
 		cost: "high",

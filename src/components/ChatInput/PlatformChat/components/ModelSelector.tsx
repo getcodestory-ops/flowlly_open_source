@@ -14,7 +14,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { MODELS, ModelType, getTierModel } from "../PlatformChatInterface/types";
+import { ModelType, getTierModel, getModelsForMode } from "../PlatformChatInterface/types";
 import type { AutoTier } from "../PlatformChatInterface/types";
 import { cn } from "@/lib/utils";
 
@@ -98,11 +98,10 @@ const TIER_ORDER: AutoTier[] = ["fast", "balanced", "complex", "max"];
 // ── Existing model helpers ─────────────────────────────────────────
 // Main models per mode
 const AGENT_MODEL_IDS = [
+	"openai/gpt-5.3-codex",
 	"claude-opus-4.6",
 	"gemini-3.1-pro-preview",
-	"gpt-5.2",
-	"z-ai/glm-5",
-	"minimax/minimax-m2.5",
+	"gpt-5.2"
 ];
 
 const CHAT_MODEL_IDS = [
@@ -227,8 +226,8 @@ export default function ModelSelector({
 	const [open, setOpen] = React.useState(false);
 	const [showArchived, setShowArchived] = React.useState(false);
 
-	const filteredModels = MODELS;
 	const agentType = (selectedAgentType as "agent" | "chat") || "agent";
+	const filteredModels = getModelsForMode(agentType);
 
 	const mainModelIds = getMainModelIds(selectedAgentType);
 	const mainModels = filteredModels.filter((m) => mainModelIds.includes(m.id));
