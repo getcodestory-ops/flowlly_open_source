@@ -31,6 +31,72 @@ export function ResourceTextViewer({
 	
 	const { onSubmit, isPending } = isSandboxFile ? sandboxFileSave : storageFileSave;
 
+	const isHtmlFile = (name?: string) => {
+		const lower = (name || "").toLowerCase();
+		return lower.endsWith(".html") || lower.endsWith(".htm") || lower.endsWith(".xhtml");
+	};
+
+	const buildEnhancedHtml = (
+		htmlContent: string,
+		cssContent?: string,
+		headerContent?: string,
+	): string => {
+		let workingHtmlContent = htmlContent;
+		let headContent = "";
+
+		try {
+			const hasBaseTag = /<base\s[^>]*href=/i.test(workingHtmlContent);
+			const baseHref = typeof document !== "undefined" ? document.baseURI : "/";
+			if (!hasBaseTag && baseHref) {
+				headContent += `\n<base href="${baseHref}">\n`;
+			}
+		} catch {
+			// Ignore base URI issues in non-browser contexts.
+		}
+
+		if (cssContent) {
+			headContent += `\n<style type="text/css">\n${cssContent}\n</style>\n`;
+		}
+		if (headerContent) {
+			headContent += `${headerContent}\n`;
+		}
+
+		const hasHtmlTag = /<html[^>]*>/i.test(workingHtmlContent);
+		const hasHeadTag = /<head[^>]*>/i.test(workingHtmlContent);
+
+		if (!headContent) {
+			// Keep existing full HTML intact, but normalize HTML fragments to a full document.
+			return hasHtmlTag || hasHeadTag
+				? workingHtmlContent
+				: `<!DOCTYPE html>\n<html>\n<head></head>\n<body>\n${workingHtmlContent}\n</body>\n</html>`;
+		}
+
+		const headRegex = /<head[^>]*>/i;
+		const headMatch = workingHtmlContent.match(headRegex);
+		if (headMatch) {
+			const headEndIndex = headMatch.index! + headMatch[0].length;
+			return (
+				workingHtmlContent.slice(0, headEndIndex) +
+				headContent +
+				workingHtmlContent.slice(headEndIndex)
+			);
+		}
+
+		const htmlRegex = /<html[^>]*>/i;
+		const htmlMatch = workingHtmlContent.match(htmlRegex);
+		if (htmlMatch) {
+			const htmlEndIndex = htmlMatch.index! + htmlMatch[0].length;
+			const headSection = `\n<head>${headContent}</head>\n`;
+			return (
+				workingHtmlContent.slice(0, htmlEndIndex) +
+				headSection +
+				workingHtmlContent.slice(htmlEndIndex)
+			);
+		}
+
+		return `<!DOCTYPE html>\n<html>\n<head>${headContent}</head>\n<body>\n${workingHtmlContent}\n</body>\n</html>`;
+	};
+
 	// Using standardized query key: "resource" prefix for all file content fetches
 	const { data, isLoading, error } = useQuery({
 		queryKey: ["resource", activeProject?.project_id, resource_id, isSandboxFile ? "sandbox" : "storage", fileName, lastReloadTime],
@@ -40,6 +106,8 @@ export function ResourceTextViewer({
 		enabled: !!session && !!activeProject?.project_id,
 	});
 	
+
+	const documentName = data?.file_name || fileName || "Untitled";
 
 	// For sandbox files, the backend might return content directly as a string
 	// For regular files, content is in data.metadata.content
@@ -51,11 +119,25 @@ export function ResourceTextViewer({
 			}
 			// Or if it's in the standard metadata structure
 			if (data?.metadata?.content !== undefined) {
+				if (isHtmlFile(documentName) && typeof data.metadata.content === "string") {
+					return buildEnhancedHtml(
+						data.metadata.content,
+						data?.metadata?.style,
+						data?.metadata?.header || data?.metadata?.headers,
+					);
+				}
 				return data.metadata.content;
 			}
 		} else {
 			// For regular storage files, always use metadata.content
 			if (data?.metadata?.content !== undefined) {
+				if (isHtmlFile(documentName) && typeof data.metadata.content === "string") {
+					return buildEnhancedHtml(
+						data.metadata.content,
+						data?.metadata?.style,
+						data?.metadata?.header || data?.metadata?.headers,
+					);
+				}
 				return data.metadata.content;
 			}
 		}
@@ -64,7 +146,6 @@ export function ResourceTextViewer({
 	
 
 	const content = getContent();
-	const documentName = data?.file_name || fileName || "Untitled";
 	const isCodeFile = (name?: string) => {
 		const lower = (name || "").toLowerCase();
 		// Exclude .md so it renders in TipTap ContentEditor
@@ -76,7 +157,12 @@ export function ResourceTextViewer({
 	};
 	const isDopeCanvasFile = (name?: string) => {
 		const lower = (name || "").toLowerCase();
-		return lower.endsWith(".dop");
+		return (
+			lower.endsWith(".dop") ||
+			lower.endsWith(".html") ||
+			lower.endsWith(".htm") ||
+			lower.endsWith(".xhtml")
+		);
 	};
 
 	return (

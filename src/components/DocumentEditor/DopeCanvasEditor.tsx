@@ -7,7 +7,6 @@ import FloatingSaveIndicator from "./FloatingSaveIndicator";
 // Types for the lazily-loaded DopeCanvas modules
 interface DopeCanvasModules {
 	DopeCanvas: React.ForwardRefExoticComponent<any>;
-	Toolbar: React.FC<any>;
 }
 
 interface DopeCanvasEditorProps {
@@ -16,35 +15,6 @@ interface DopeCanvasEditorProps {
 	isSaving?: boolean;
 	onSave?: (updated: string) => void;
 }
-
-const DOP_SCOPE_CLASS = "dop-content-root";
-
-const scopeEmbeddedStyles = (html: string): string => {
-	return html.replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gi, (_fullMatch, cssText: string) => {
-		const scopedCss = cssText.replace(/(^|})\s*([^@}{][^{}]*)\{/g, (_m, prefix: string, selectorGroup: string) => {
-			const scopedSelectors = selectorGroup
-				.split(",")
-				.map((selector) => {
-					const trimmed = selector.trim();
-					if (!trimmed) return trimmed;
-					if (trimmed.startsWith(`.${DOP_SCOPE_CLASS}`)) return trimmed;
-					if (trimmed === "*" || trimmed === "body" || trimmed === "html" || trimmed === ":root") {
-						return `.${DOP_SCOPE_CLASS}`;
-					}
-					if (trimmed.startsWith("body ")) {
-						return `.${DOP_SCOPE_CLASS} ${trimmed.replace(/^body\s+/, "")}`;
-					}
-					if (trimmed.startsWith("html ")) {
-						return `.${DOP_SCOPE_CLASS} ${trimmed.replace(/^html\s+/, "")}`;
-					}
-					return `.${DOP_SCOPE_CLASS} ${trimmed}`;
-				})
-				.join(", ");
-			return `${prefix} ${scopedSelectors}{`;
-		});
-		return `<style>${scopedCss}</style>`;
-	});
-};
 
 const DopeCanvasEditor: React.FC<DopeCanvasEditorProps> = ({
 	content,
@@ -55,17 +25,10 @@ const DopeCanvasEditor: React.FC<DopeCanvasEditorProps> = ({
 	const [modules, setModules] = useState<DopeCanvasModules | null>(null);
 	const [hasChanges, setHasChanges] = useState(false);
 	const [isClient, setIsClient] = useState(false);
-	const [pageConfig, setPageConfig] = useState<any>(null);
-	const [pageCount, setPageCount] = useState(1);
 
 	const canvasHandleRef = useRef<any>(null);
 	const lastSavedContentRef = useRef<string>(content);
 	const isInitializedRef = useRef(false);
-	const scopedHtml = useMemo(() => {
-		const safeContent = content || "";
-		return `<div class="${DOP_SCOPE_CLASS}">${scopeEmbeddedStyles(safeContent)}</div>`;
-	}, [content]);
-
 	// Ensure we're on the client side
 	useEffect(() => {
 		setIsClient(true);
@@ -80,11 +43,7 @@ const DopeCanvasEditor: React.FC<DopeCanvasEditorProps> = ({
 				// await import("dopecanvas/style.css");
 				setModules({
 					DopeCanvas: dopecanvasModule.DopeCanvas,
-					Toolbar: dopecanvasModule.Toolbar,
 				});
-				if (dopecanvasModule.DEFAULT_PAGE_CONFIG) {
-					setPageConfig(dopecanvasModule.DEFAULT_PAGE_CONFIG);
-				}
 			} catch (error) {
 				console.error("Failed to load DopeCanvas:", error);
 			}
@@ -101,17 +60,48 @@ const DopeCanvasEditor: React.FC<DopeCanvasEditorProps> = ({
 		setHasChanges(true);
 	}, []);
 
+	const isFlowModeDocument = /\.(html?|xhtml)$/i.test(documentName || "");
+
 	// Save the current state
 	const handleSave = useCallback(() => {
 		if (!canvasHandleRef.current || !onSave) return;
 
 		const currentHTML = canvasHandleRef.current.getHTML();
 		if (currentHTML) {
-			lastSavedContentRef.current = currentHTML;
+			let finalHTML = currentHTML;
+			if (isFlowModeDocument) {
+				try {
+					if (typeof DOMParser !== "undefined") {
+						const parser = new DOMParser();
+						const sourceHtml = content || "";
+						const sourceDoc = parser.parseFromString(sourceHtml, "text/html");
+						const editedDoc = parser.parseFromString(currentHTML, "text/html");
+
+						const hasSourceDocumentShell = /<html|<head|<body/i.test(sourceHtml);
+						const editedBody =
+							/<html|<body/i.test(currentHTML)
+								? editedDoc.body?.innerHTML || ""
+								: currentHTML;
+
+						if (hasSourceDocumentShell) {
+							sourceDoc.body.innerHTML = editedBody;
+							const hasDocType = /<!doctype html>/i.test(sourceHtml);
+							const serialized = sourceDoc.documentElement.outerHTML;
+							finalHTML = hasDocType ? `<!DOCTYPE html>\n${serialized}` : serialized;
+						} else {
+							finalHTML = currentHTML;
+						}
+					}
+				} catch {
+					finalHTML = currentHTML;
+				}
+			}
+
+			lastSavedContentRef.current = finalHTML;
 			setHasChanges(false);
-			onSave(currentHTML);
+			onSave(finalHTML);
 		}
-	}, [onSave]);
+	}, [content, isFlowModeDocument, onSave]);
 
 	// Handle keyboard shortcuts
 	useEffect(() => {
@@ -127,6 +117,33 @@ const DopeCanvasEditor: React.FC<DopeCanvasEditorProps> = ({
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
 	}, [handleSave, isClient]);
+	const canvasHtml = useMemo(() => {
+		const sourceHtml = content || "";
+		if (!isFlowModeDocument || !sourceHtml) {
+			return sourceHtml;
+		}
+
+		try {
+			if (typeof DOMParser === "undefined") {
+				return sourceHtml;
+			}
+
+			const parser = new DOMParser();
+			const parsed = parser.parseFromString(sourceHtml, "text/html");
+			const hasDocumentShell = /<html|<head|<body/i.test(sourceHtml);
+			if (!hasDocumentShell) {
+				return sourceHtml;
+			}
+
+			// DopeCanvas flow mode edits content, not a full browser document.
+			// Flatten head assets into the editable payload so complex HTML keeps styling.
+			const headContent = parsed.head?.innerHTML?.trim() || "";
+			const bodyContent = parsed.body?.innerHTML?.trim() || sourceHtml;
+			return [headContent, bodyContent].filter(Boolean).join("\n");
+		} catch {
+			return sourceHtml;
+		}
+	}, [content, isFlowModeDocument]);
 
 	// Show loading state until we're on client and modules are loaded
 	if (!isClient || !modules) {
@@ -137,28 +154,68 @@ const DopeCanvasEditor: React.FC<DopeCanvasEditorProps> = ({
 		);
 	}
 
-	const { DopeCanvas, Toolbar } = modules;
+	const { DopeCanvas } = modules;
+	const execCommand = (command: string, value?: string) => {
+		canvasHandleRef.current?.execCommand(command, value);
+	};
 
 	return (
 		<div className="h-full w-full relative flex flex-col overflow-hidden">
-			<Toolbar
-				pageConfig={pageConfig}
-				pageCount={pageCount}
-				onExecCommand={(cmd: string, val?: string) =>
-					canvasHandleRef.current?.execCommand(cmd, val)
-				}
-				onPageConfigChange={(config: any) =>
-					canvasHandleRef.current?.setPageConfig(config)
-				}
-			/>
+			{!isFlowModeDocument && (
+				<div className="flex items-center gap-2 border-b border-gray-200 bg-white px-3 py-2">
+					<button
+						type="button"
+						onClick={() => execCommand("bold")}
+						className="rounded border border-gray-300 px-2 py-1 text-xs font-semibold hover:bg-gray-100"
+					>
+						B
+					</button>
+					<button
+						type="button"
+						onClick={() => execCommand("italic")}
+						className="rounded border border-gray-300 px-2 py-1 text-xs italic hover:bg-gray-100"
+					>
+						I
+					</button>
+					<button
+						type="button"
+						onClick={() => execCommand("underline")}
+						className="rounded border border-gray-300 px-2 py-1 text-xs underline hover:bg-gray-100"
+					>
+						U
+					</button>
+					<div className="mx-1 h-5 w-px bg-gray-300" />
+					<button
+						type="button"
+						onClick={() => canvasHandleRef.current?.undo()}
+						className="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-100"
+					>
+						Undo
+					</button>
+					<button
+						type="button"
+						onClick={() => canvasHandleRef.current?.redo()}
+						className="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-100"
+					>
+						Redo
+					</button>
+					<div className="mx-1 h-5 w-px bg-gray-300" />
+					<button
+						type="button"
+						onClick={() => canvasHandleRef.current?.insertPageBreak()}
+						className="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-100"
+					>
+						Page Break
+					</button>
+				</div>
+			)}
 			<div className="flex-1 min-h-0 relative overflow-hidden">
 				<DopeCanvas
 					ref={canvasHandleRef}
-					html={scopedHtml}
+					html={canvasHtml}
+					renderMode={isFlowModeDocument ? "flow" : "page"}
+					rendermode={isFlowModeDocument ? "flow" : "page"}
 					onContentChange={() => handleChange()}
-					onPageConfigChange={(config: any) => {
-						setPageConfig(config);
-					}}
 				/>
 				<FloatingSaveIndicator
 					hasChanges={hasChanges}
