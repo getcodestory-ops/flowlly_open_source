@@ -15,6 +15,7 @@ import {
 	Bird,
 	FolderOpen,
 	StopCircle,
+	Upload,
 } from "lucide-react";
 import LayoutModeToggle from "./components/LayoutModeToggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -26,7 +27,6 @@ import { useDragDropUpload } from "@/hooks/useDragDropUpload";
 import { FileUploadProgress } from "@/components/Folder/FilesTable/FileUploadProgress";
 import { FileUploadStatus as FolderFileUploadStatus } from "@/components/Folder/FilesTable/types";
 import { FileUploadStatus } from "./PlatformChatInterface/types";
-import { Upload } from "lucide-react";
 // Removed Badge, File, X imports since we no longer render separate file attachments
 import clsx from "clsx";
 import AtSelectorComponent from "./components/AtSelectorComponent";
@@ -36,8 +36,13 @@ import EmptyChatInterface from "./PlatformChatInterface/components/EmptyChatInte
 import { requestHelp, stopAgent } from "@/api/agentRoutes";
 import ModelSelector from "./components/ModelSelector";
 import AgentTypeSelector from "./components/AgentTypeSelector";
-import { MODELS } from "./PlatformChatInterface/types";
 import ChatResponseFeedback from "./PlatformChatInterface/ChatResponseFeedback";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import { DocumentSelector } from "@/components/DocumentSelector/DocumentSelector";
 
 export default function PlatformChatInterface({
 	chatTarget,
@@ -71,9 +76,11 @@ export default function PlatformChatInterface({
 		activeChatEntity,
 		setIsWaitingForResponse,
 	} = usePlatformChat(folderId, chatTarget, includeContext);
-	const { setSidePanel, setCollapsed, contextFolder, selectedContexts, setSelectedContexts, clearChatAttachments } = useChatStore();
+	const { setCollapsed, contextFolder, setSelectedContexts, clearChatAttachments } = useChatStore();
+	const { addTab } = useChatStore();
 	const { preferredModel, setPreferredModel, preferredAgentType, setPreferredAgentType, autoTier, setAutoTier } = useViewStore();
 	const isAgentTypeLocked = !!activeChatEntity?.metadata?.agent_type;
+	const [isDrivePopoverOpen, setIsDrivePopoverOpen] = useState(false);
 	
 	// Track previous chat entity ID to only clear attachments on actual chat change
 	const prevChatEntityIdRef = useRef<string | null | undefined>(undefined);
@@ -390,29 +397,63 @@ export default function PlatformChatInterface({
 	const loadDocumentPanel = (): React.ReactNode => (
 		<>
 			<div className="flex gap-2">
-			    
-				<Button
-					className={clsx(
-						"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
-						contextFolder.name && "text-indigo-500 bg-indigo-50/50",
-					)}
-					disabled={false}
-					onClick={() => {
-						setCollapsed(true);
-						setSidePanel({
-							isOpen: true,
-							type: "folder",
-							resourceId:  folderId,
-							title : "Drive"
-						});
-					}}
-					size="sm"
-					title={contextFolder.id ? `Using context: ${contextFolder.name}` : "Add context "}
-					type="button"
-					variant="ghost"
-				>
-					<Paperclip className="h-4 w-4" />
-				</Button>		
+				<Popover onOpenChange={setIsDrivePopoverOpen} open={isDrivePopoverOpen}>
+					<PopoverTrigger asChild>
+						<Button
+							className={clsx(
+								"text-slate-400 hover:text-indigo-500 hover:bg-indigo-50/50 transition-colors rounded-full p-2",
+								contextFolder.name && "text-indigo-500 bg-indigo-50/50",
+							)}
+							disabled={false}
+							size="sm"
+							title={contextFolder.id ? `Using context: ${contextFolder.name}` : "Add context "}
+							type="button"
+							variant="ghost"
+						>
+							<Paperclip className="h-4 w-4" />
+						</Button>
+					</PopoverTrigger>
+					<PopoverContent align="start" className="xs:w-[500px] sm:w-[600px] md:w-[780px] lg:w-[845px] p-0">
+						<div className="flex items-center justify-between border-b px-3 py-2">
+							<div className="text-sm font-medium">Drive</div>
+							<Button
+								className="border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800"
+								onClick={() => {
+									setCollapsed(true);
+									addTab({
+										isOpen: true,
+										type: "folder",
+										resourceId: folderId,
+										title: "Drive",
+									});
+									setIsDrivePopoverOpen(false);
+								}}
+								size="sm"
+								type="button"
+								variant="outline"
+							>
+								Open Drive
+							</Button>
+						</div>
+						<div className="h-[540px]">
+							<DocumentSelector useChatContext />
+						</div>
+						<div className="flex items-center justify-between border-t px-3 py-2">
+							<div className="flex items-center gap-2 text-xs text-muted-foreground">
+								<Upload className="h-3.5 w-3.5" />
+								<span>You can also drag and drop files from your computer directly into chat.</span>
+							</div>
+							<Button
+								onClick={() => setIsDrivePopoverOpen(false)}
+								size="sm"
+								type="button"
+								variant="default"
+							>
+								Done
+							</Button>
+						</div>
+					</PopoverContent>
+				</Popover>
 			</div>
 		</>
 	);
@@ -692,6 +733,9 @@ export default function PlatformChatInterface({
 			className="flex flex-col h-full max-w-4xl mx-auto relative"
 			{...dragHandlers}
 		>
+			{isDrivePopoverOpen && (
+				<div className="pointer-events-none fixed inset-0 z-40 bg-black/10 backdrop-blur-sm" />
+			)}
 			{/* Drag and drop overlay */}
 			{isDragging && (
 				<div className="absolute inset-0 z-50 flex items-center justify-center bg-indigo-50/90 border-2 border-dashed border-indigo-400 rounded-xl backdrop-blur-sm">
