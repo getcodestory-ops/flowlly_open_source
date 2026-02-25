@@ -33,6 +33,56 @@ const parseFormConfig = (jsonString: string) => {
 		// Extract just the JSON portion
 		return trimmed.substring(start, end + 1);
 	};
+
+	// Repairs common malformed JSON where inner quotes are not escaped inside string values.
+	// Example: "Ask people to comment (e.g., "Been there?")"
+	const escapeLikelyInnerQuotes = (str: string): string => {
+		let result = "";
+		let inString = false;
+		let isEscaped = false;
+		for (let i = 0; i < str.length; i++) {
+			const char = str[i];
+
+			if (isEscaped) {
+				result += char;
+				isEscaped = false;
+				continue;
+			}
+
+			if (char === "\\") {
+				result += char;
+				isEscaped = true;
+				continue;
+			}
+
+			if (char === "\"") {
+				if (!inString) {
+					inString = true;
+					result += char;
+					continue;
+				}
+
+				// If the next meaningful character is not a JSON delimiter,
+				// this quote is likely part of the string content and should be escaped.
+				let j = i + 1;
+				while (j < str.length && /\s/.test(str[j])) j++;
+				const nextChar = str[j];
+				const isStringTerminator = nextChar === "," || nextChar === "}" || nextChar === "]" || nextChar === ":";
+
+				if (isStringTerminator || j >= str.length) {
+					inString = false;
+					result += char;
+				} else {
+					result += "\\\"";
+				}
+				continue;
+			}
+
+			result += char;
+		}
+
+		return result;
+	};
 	
 	try {
 		// First try to parse as-is (valid JSON)
@@ -48,6 +98,12 @@ const parseFormConfig = (jsonString: string) => {
 			return JSON.parse(extractedJson);
 		} catch (secondError) {
 			try {
+				// Try repairing likely unescaped inner quotes in string values
+				const extractedJson = extractJsonObject(jsonString);
+				const repairedJson = escapeLikelyInnerQuotes(extractedJson);
+				return JSON.parse(repairedJson);
+			} catch (thirdError) {
+				try {
 				// If that fails, normalize quotes and try again
 				const extractedJson = extractJsonObject(jsonString);
 				const normalizedJson = extractedJson
@@ -57,9 +113,10 @@ const parseFormConfig = (jsonString: string) => {
 					.replace(/None/g, "null");  // Replace Python None with JSON null
 				
 				return JSON.parse(normalizedJson);
-			} catch (thirdError) {
+				} catch (fourthError) {
 				// If all attempts fail, throw the original error
 				throw firstError;
+				}
 			}
 		}
 	}
