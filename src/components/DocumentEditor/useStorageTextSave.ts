@@ -3,13 +3,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@chakra-ui/react";
 import { useStore } from "@/utils/store";
 
-export const useStorageTextFileSave = (id?: string | string[]) => {
+export const useStorageTextFileSave = (id?: string | string[], fileName?: string) => {
 	const toast = useToast();
 	const queryClient = useQueryClient();
 	const { session, activeProject } = useStore((state) => ({
 		session: state.session,
 		activeProject: state.activeProject,
 	}));
+	const isHtmlFile = /\.(html?|xhtml)$/i.test(fileName || "");
 
 	const applyUpdatedContentToCache = (oldData: any, updatedContent: string) => {
 		if (!oldData) return oldData;
@@ -51,24 +52,30 @@ export const useStorageTextFileSave = (id?: string | string[]) => {
 		onSuccess: (_data, updatedContent) => {
 			if (!activeProject || typeof id !== "string") return;
 
-			queryClient.setQueriesData(
-				{
-					predicate: (query) => {
-						const key = query.queryKey as unknown[];
-						return (
-							key[0] === "resource" &&
-							key[1] === activeProject.project_id &&
-							key[2] === id &&
-							key[3] === "storage"
-						);
+			// Avoid optimistic replacement for HTML since DopeCanvas may emit transient
+			// markup that can visually drop styles until server-normalized content returns.
+			if (!isHtmlFile) {
+				queryClient.setQueriesData(
+					{
+						predicate: (query) => {
+							const key = query.queryKey as unknown[];
+							return (
+								key[0] === "resource" &&
+								key[1] === activeProject.project_id &&
+								key[2] === id &&
+								key[3] === "storage"
+							);
+						},
 					},
-				},
-				(oldData) => applyUpdatedContentToCache(oldData, updatedContent),
-			);
+					(oldData) => applyUpdatedContentToCache(oldData, updatedContent),
+				);
+			}
 
-			queryClient.invalidateQueries({
-				queryKey: ["resource", activeProject.project_id, id, "storage"],
-			});
+			if (!isHtmlFile) {
+				queryClient.invalidateQueries({
+					queryKey: ["resource", activeProject.project_id, id, "storage"],
+				});
+			}
 		},
 	});
 

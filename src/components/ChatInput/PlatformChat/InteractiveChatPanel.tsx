@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useChatStore } from "@/hooks/useChatStore";
 import { Button } from "@/components/ui/button";
 import { getInlineDocument, saveDocumentAs, fetchResource } from "@/api/folderRoutes";
@@ -78,6 +79,7 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 	const [focusedPanel, setFocusedPanel] = useState<"left" | "right">("left");
 	const [isResizingDivider, setIsResizingDivider] = useState(false);
 	const { session, activeProject, activeChatEntity, unsavedChanges, setUnsavedChanges, clearUnsavedChanges, clearAllUnsavedChanges } = useStore();
+	const queryClient = useQueryClient();
 	const { toast } = useToast();
 	const tabVisitHistoryRef = React.useRef<string[]>([]);
 
@@ -308,10 +310,27 @@ const InteractiveChatPanel = ({ heightOffset = 20 }: {heightOffset?: number}) : 
 			checkUnsavedChanges(tabId, () => {
 				setCurrentViewMode(tabId, newMode);
 				clearTabUnsavedChanges(tabId);
+
+				// Refresh resource data so view mode shows latest saved content
+				const tab = tabs.find((t) => t.id === tabId);
+				if (tab && activeProject?.project_id) {
+					const ext = getFileExtension(tab.filename);
+					if (htmlExtensions.includes(ext)) {
+						const isSandbox = tab.type === "sandbox";
+						const resId = isSandbox ? getSandboxId(tab) : tab.resourceId;
+						queryClient.invalidateQueries({
+							queryKey: [
+								"resource",
+								activeProject.project_id,
+								resId,
+								isSandbox ? "sandbox" : "storage",
+							],
+						});
+					}
+				}
 			});
 		} else {
 			setCurrentViewMode(tabId, newMode);
-			// Note: Unsaved changes will be set by ResourceTextViewer when actual content changes occur
 		}
 	};
 

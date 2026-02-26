@@ -26,7 +26,7 @@ export function ResourceTextViewer({
 	const session = useStore((state) => state.session);
 	
 	// Use appropriate save hook based on file type
-	const storageFileSave = useStorageTextFileSave(resource_id);
+	const storageFileSave = useStorageTextFileSave(resource_id, fileName);
 	const sandboxFileSave = useSandboxFileSave(resource_id, fileName);
 	
 	const { onSubmit, isPending } = isSandboxFile ? sandboxFileSave : storageFileSave;

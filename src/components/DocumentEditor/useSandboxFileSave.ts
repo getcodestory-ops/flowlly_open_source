@@ -10,6 +10,7 @@ export const useSandboxFileSave = (sandboxId?: string, fileName?: string) => {
 		session: state.session,
 		activeProject: state.activeProject,
 	}));
+	const isHtmlFile = /\.(html?|xhtml)$/i.test(fileName || "");
 
 	const applyUpdatedContentToCache = (oldData: any, updatedContent: string) => {
 		if (!oldData) return oldData;
@@ -43,25 +44,29 @@ export const useSandboxFileSave = (sandboxId?: string, fileName?: string) => {
 		},
 		onSuccess: (_data, updatedContent) => {
 			if (activeProject && sandboxId && fileName) {
-				queryClient.setQueriesData(
-					{
-						predicate: (query) => {
-							const key = query.queryKey as unknown[];
-							return (
-								key[0] === "resource" &&
-								key[1] === activeProject.project_id &&
-								key[2] === sandboxId &&
-								key[3] === "sandbox" &&
-								key[4] === fileName
-							);
+				if (!isHtmlFile) {
+					queryClient.setQueriesData(
+						{
+							predicate: (query) => {
+								const key = query.queryKey as unknown[];
+								return (
+									key[0] === "resource" &&
+									key[1] === activeProject.project_id &&
+									key[2] === sandboxId &&
+									key[3] === "sandbox" &&
+									key[4] === fileName
+								);
+							},
 						},
-					},
-					(oldData) => applyUpdatedContentToCache(oldData, updatedContent),
-				);
+						(oldData) => applyUpdatedContentToCache(oldData, updatedContent),
+					);
+				}
 
-				queryClient.invalidateQueries({
-					queryKey: ["resource", activeProject.project_id, sandboxId, "sandbox", fileName],
-				});
+				if (!isHtmlFile) {
+					queryClient.invalidateQueries({
+						queryKey: ["resource", activeProject.project_id, sandboxId, "sandbox", fileName],
+					});
+				}
 			}
 
 			toast({

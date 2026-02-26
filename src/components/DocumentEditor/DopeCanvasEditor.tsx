@@ -28,10 +28,11 @@ const DopeCanvasEditor: React.FC<DopeCanvasEditorProps> = ({
 
 	const canvasHandleRef = useRef<any>(null);
 	const lastSavedContentRef = useRef<string>(content);
-	const isInitializedRef = useRef(false);
+	const mountTimeRef = useRef<number>(0);
 	// Ensure we're on the client side
 	useEffect(() => {
 		setIsClient(true);
+		mountTimeRef.current = Date.now();
 	}, []);
 
 	// Dynamically import DopeCanvas on client side only
@@ -51,16 +52,44 @@ const DopeCanvasEditor: React.FC<DopeCanvasEditorProps> = ({
 		loadDopeCanvas();
 	}, [isClient]);
 
-	// Handle changes in the editor
+	// Handle changes in the editor — ignore the initial onContentChange fired on mount
 	const handleChange = useCallback(() => {
-		if (!isInitializedRef.current) {
-			isInitializedRef.current = true;
-			return;
-		}
+		if (Date.now() - mountTimeRef.current < 800) return;
 		setHasChanges(true);
 	}, []);
 
 	const isFlowModeDocument = /\.(html?|xhtml)$/i.test(documentName || "");
+	const decodeHtmlEntities = (value: string): string => {
+		if (typeof document === "undefined") return value;
+		const textarea = document.createElement("textarea");
+		textarea.innerHTML = value;
+		return textarea.value;
+	};
+
+	const normalizeEditedHtml = (value: string): string => {
+		const raw = value || "";
+		if (!raw) return raw;
+
+		// If editor produced escaped HTML markup, decode it back.
+		const hasEscapedMarkup = /&lt;(?:!doctype|html|head|body|div|table|style|script)\b/i.test(raw);
+		if (hasEscapedMarkup) {
+			const decoded = decodeHtmlEntities(raw);
+			if (/<(?:!doctype|html|head|body|div|table)\b/i.test(decoded)) {
+				return decoded;
+			}
+		}
+
+		// Some editors wrap encoded full-html into a single paragraph.
+		const paragraphWrapped = raw.match(/^\s*<p>([\s\S]*)<\/p>\s*$/i);
+		if (paragraphWrapped?.[1]) {
+			const decoded = decodeHtmlEntities(paragraphWrapped[1]);
+			if (/<(?:!doctype|html|head|body)\b/i.test(decoded)) {
+				return decoded;
+			}
+		}
+
+		return raw;
+	};
 
 	// Save the current state
 	const handleSave = useCallback(() => {
@@ -68,20 +97,20 @@ const DopeCanvasEditor: React.FC<DopeCanvasEditorProps> = ({
 
 		const currentHTML = canvasHandleRef.current.getHTML();
 		if (currentHTML) {
-			let finalHTML = currentHTML;
+			let finalHTML = normalizeEditedHtml(currentHTML);
 			if (isFlowModeDocument) {
 				try {
 					if (typeof DOMParser !== "undefined") {
 						const parser = new DOMParser();
 						const sourceHtml = content || "";
 						const sourceDoc = parser.parseFromString(sourceHtml, "text/html");
-						const editedDoc = parser.parseFromString(currentHTML, "text/html");
+						const editedDoc = parser.parseFromString(finalHTML, "text/html");
 
 						const hasSourceDocumentShell = /<html|<head|<body/i.test(sourceHtml);
 						const editedBody =
-							/<html|<body/i.test(currentHTML)
+							/<html|<body/i.test(finalHTML)
 								? editedDoc.body?.innerHTML || ""
-								: currentHTML;
+								: finalHTML;
 
 						if (hasSourceDocumentShell) {
 							sourceDoc.body.innerHTML = editedBody;
@@ -89,11 +118,11 @@ const DopeCanvasEditor: React.FC<DopeCanvasEditorProps> = ({
 							const serialized = sourceDoc.documentElement.outerHTML;
 							finalHTML = hasDocType ? `<!DOCTYPE html>\n${serialized}` : serialized;
 						} else {
-							finalHTML = currentHTML;
+							finalHTML = editedBody || finalHTML;
 						}
 					}
 				} catch {
-					finalHTML = currentHTML;
+					finalHTML = normalizeEditedHtml(currentHTML);
 				}
 			}
 
