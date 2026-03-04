@@ -99,7 +99,7 @@ const TIER_ORDER: AutoTier[] = ["fast", "balanced", "complex", "max"];
 // Main models per mode
 const AGENT_MODEL_IDS = [
 	"openai/gpt-5.3-codex",
-	"claude-opus-4.6",
+	"claude-sonnet-4.6",
 	"gemini-3.1-pro-preview",
 	"gpt-5.2"
 ];

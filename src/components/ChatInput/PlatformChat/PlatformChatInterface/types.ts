@@ -36,7 +36,7 @@ export type ModelType = {
 };
 
 // Default models when stored model is unavailable
-export const DEFAULT_MODEL_AGENT = "claude-opus-4.6";
+export const DEFAULT_MODEL_AGENT = "claude-sonnet-4.6";
 export const DEFAULT_MODEL_CHAT = "gemini-3-flash-preview";
 
 // ── Smart tier system ──────────────────────────────────────────────
@@ -57,7 +57,7 @@ export const AUTO_TIER_MODELS: Record<AutoTier, Record<"agent" | "chat", string>
     chat: "claude-haiku-4.5",       // strongest chat-tier model
   },
   max: {
-    agent: "claude-opus-4.6",            // Flowlly agent – maximum power
+    agent: "claude-sonnet-4.6",            // Flowlly agent – maximum power
     chat: "claude-sonnet-4.6",   // heaviest chat-tier model
   },
 };
@@ -92,7 +92,7 @@ export function resolveModel(modelId: string, agentType: "agent" | "chat"): stri
 export const MODELS: ModelType[] = [
 	// Claude (Anthropic)
 	{
-		id: "claude-opus-4.6",
+		id: "claude-sonnet-4.6",
 		name: "Claude Opus 4.6",
 		speed: 4,
 		performance: 5,
