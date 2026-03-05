@@ -22,16 +22,19 @@ export const AddFolderButton: React.FC<AddFolderButtonProps> = ({
 	isProjectWide = true,
 }) => {
 	const queryClient = useQueryClient();
-	const { addFolder } = useDocumentStore();
+	const { addFolder, rootId } = useDocumentStore();
+
+	// Resolve "root" to the actual root folder UUID for the API
+	const apiFolderId = folderId === "root" ? rootId : folderId;
 
 	const handleAddFolder = (name: string) => {
 		if (!activeProject) return;
-		
+
 		createSubFolder(
 			session,
 			activeProject.project_id,
 			name,
-			folderId,
+			apiFolderId,
 			isProjectWide,
 			(data) => {
 				addFolder(folderId, data);
