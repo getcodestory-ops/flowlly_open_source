@@ -12,7 +12,7 @@ export const AuthBackground = ({ children }: { children: React.ReactNode }) => {
 						alt="Logo"
 						className="mx-auto"
 						height="400"
-						src="https://upthcaewktgrqjieqiya.supabase.co/storage/v1/object/public/images/hero-v2.c5845c47e7c7d49cf5c1.png"
+						src="/hero.png"
 						width="800"
 					/>
 				</div>
